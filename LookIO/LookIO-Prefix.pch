@@ -1,7 +1,0 @@
-//
-// Prefix header for all source files of the 'LookIO' target in the 'LookIO' project
-//
-
-#ifdef __OBJC__
-    #import <Foundation/Foundation.h>
-#endif

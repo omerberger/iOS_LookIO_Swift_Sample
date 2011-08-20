@@ -8,15 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		D47F12EA13FF234E0006315F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D47F12E913FF234E0006315F /* Foundation.framework */; };
-		D47F12F013FF234E0006315F /* LookIO.m in Sources */ = {isa = PBXBuildFile; fileRef = D47F12EF13FF234E0006315F /* LookIO.m */; };
+		D47F130F13FF24A90006315F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D47F130E13FF24A90006315F /* UIKit.framework */; };
+		D47F131213FF25060006315F /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D47F131013FF25060006315F /* LIOLookIOManager.h */; };
+		D47F131313FF25060006315F /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D47F131113FF25060006315F /* LIOLookIOManager.m */; };
+		D4B4F47313FF89EE00A52375 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4B4F47113FF89EE00A52375 /* GCDAsyncSocket.h */; };
+		D4B4F47413FF89EE00A52375 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B4F47213FF89EE00A52375 /* GCDAsyncSocket.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D47F12E613FF234E0006315F /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D47F12E913FF234E0006315F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D47F12ED13FF234E0006315F /* LookIO-Prefix.pch */ = {isa = PBXFileReference; path = "LookIO-Prefix.pch"; sourceTree = "<group>"; };
-		D47F12EE13FF234E0006315F /* LookIO.h */ = {isa = PBXFileReference; path = LookIO.h; sourceTree = "<group>"; };
-		D47F12EF13FF234E0006315F /* LookIO.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LookIO.m; sourceTree = "<group>"; };
+		D47F130E13FF24A90006315F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		D47F131013FF25060006315F /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOLookIOManager.h; sourceTree = SOURCE_ROOT; };
+		D47F131113FF25060006315F /* LIOLookIOManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOLookIOManager.m; sourceTree = SOURCE_ROOT; };
+		D4B4F47113FF89EE00A52375 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GCDAsyncSocket.h; path = "3rd Party/AsyncSocket/GCDAsyncSocket.h"; sourceTree = "<group>"; };
+		D4B4F47213FF89EE00A52375 /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GCDAsyncSocket.m; path = "3rd Party/AsyncSocket/GCDAsyncSocket.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -24,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D47F130F13FF24A90006315F /* UIKit.framework in Frameworks */,
 				D47F12EA13FF234E0006315F /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -34,6 +41,8 @@
 		D47F12DB13FF234E0006315F = {
 			isa = PBXGroup;
 			children = (
+				D4B4F47513FF8A3500A52375 /* Resources */,
+				D4B4F46E13FF899500A52375 /* 3rd Party */,
 				D47F12EB13FF234E0006315F /* LookIO */,
 				D47F12E813FF234E0006315F /* Frameworks */,
 				D47F12E713FF234E0006315F /* Products */,
@@ -51,6 +60,7 @@
 		D47F12E813FF234E0006315F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D47F130E13FF24A90006315F /* UIKit.framework */,
 				D47F12E913FF234E0006315F /* Foundation.framework */,
 			);
 			name = Frameworks;
@@ -59,19 +69,34 @@
 		D47F12EB13FF234E0006315F /* LookIO */ = {
 			isa = PBXGroup;
 			children = (
-				D47F12EE13FF234E0006315F /* LookIO.h */,
-				D47F12EF13FF234E0006315F /* LookIO.m */,
-				D47F12EC13FF234E0006315F /* Supporting Files */,
+				D47F131013FF25060006315F /* LIOLookIOManager.h */,
+				D47F131113FF25060006315F /* LIOLookIOManager.m */,
 			);
 			path = LookIO;
 			sourceTree = "<group>";
 		};
-		D47F12EC13FF234E0006315F /* Supporting Files */ = {
+		D4B4F46E13FF899500A52375 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				D47F12ED13FF234E0006315F /* LookIO-Prefix.pch */,
+				D4B4F47013FF89A500A52375 /* AsyncSocket */,
 			);
-			name = "Supporting Files";
+			name = "3rd Party";
+			sourceTree = "<group>";
+		};
+		D4B4F47013FF89A500A52375 /* AsyncSocket */ = {
+			isa = PBXGroup;
+			children = (
+				D4B4F47113FF89EE00A52375 /* GCDAsyncSocket.h */,
+				D4B4F47213FF89EE00A52375 /* GCDAsyncSocket.m */,
+			);
+			name = AsyncSocket;
+			sourceTree = "<group>";
+		};
+		D4B4F47513FF8A3500A52375 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -81,6 +106,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D47F131213FF25060006315F /* LIOLookIOManager.h in Headers */,
+				D4B4F47313FF89EE00A52375 /* GCDAsyncSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,7 +161,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D47F12F013FF234E0006315F /* LookIO.m in Sources */,
+				D47F131313FF25060006315F /* LIOLookIOManager.m in Sources */,
+				D4B4F47413FF89EE00A52375 /* GCDAsyncSocket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,6 +215,7 @@
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LookIO/LookIO-Prefix.pch";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -199,6 +228,7 @@
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LookIO/LookIO-Prefix.pch";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -224,6 +254,7 @@
 				D47F12F513FF234E0006315F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
