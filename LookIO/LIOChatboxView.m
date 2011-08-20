@@ -16,18 +16,23 @@
     
     if (self)
     {
+        /*
         CGRect aFrame = CGRectZero;
         aFrame.size.width = frame.size.width;
         aFrame.size.height = frame.size.height * 0.75;
-        historyView = [[UITextView alloc] initWithFrame:aFrame];
+         */
+        historyView = [[UITextView alloc] initWithFrame:frame];
         historyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        historyView.text = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut at diam. Sed odio odio, aliquet ac, luctus ac, suscipit sit amet, sem. Nulla jus";
         [self addSubview:historyView];
         
+        /*
         aFrame = CGRectZero;
         inputField = [[UITextField alloc] initWithFrame:aFrame];
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
         inputField.delegate = self;
         [self addSubview:inputField];
+         */
     }
     
     return self;

@@ -8,13 +8,23 @@
 
 #import <UIKit/UIKit.h>
 
+@class GCDAsyncSocket, LIOChatboxView, SBJsonParser, SBJsonWriter;
+
 @protocol LIOLookIOManagerDelegate
+- (void)lookIOManagerFailedToConnectWithError:(NSError *)anError;
 @end
 
 @interface LIOLookIOManager : NSObject
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
+    GCDAsyncSocket *controlSocket;
+    BOOL waitingForScreenshotAck, controlSocketConnecting, introduced;
+    LIOChatboxView *chatbox;
+    NSData *messageSeparatorData;
+    NSData *pendingScreenshotData;
+    SBJsonParser *jsonParser;
+    SBJsonWriter *jsonWriter;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -22,5 +32,6 @@
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;
 
 + (LIOLookIOManager *)sharedLookIOManager;
+- (void)beginConnecting;
 
 @end
