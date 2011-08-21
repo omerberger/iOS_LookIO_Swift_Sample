@@ -3,12 +3,14 @@
 //  LookIO
 //
 //  Created by Joseph Toscano on 8/19/11.
-//  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2011 Joseph Toscano. All rights reserved.
 //
 
 #import "LIOChatboxView.h"
 
 @implementation LIOChatboxView
+
+@synthesize delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -16,15 +18,27 @@
     
     if (self)
     {
-        /*
+        self.alpha = 0.8;
+        
         CGRect aFrame = CGRectZero;
         aFrame.size.width = frame.size.width;
-        aFrame.size.height = frame.size.height * 0.75;
-         */
-        historyView = [[UITextView alloc] initWithFrame:frame];
+        aFrame.size.height = frame.size.height;
+        historyView = [[UITextView alloc] initWithFrame:aFrame];
         historyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        historyView.text = @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut at diam. Sed odio odio, aliquet ac, luctus ac, suscipit sit amet, sem. Nulla jus";
+        historyView.font = [UIFont systemFontOfSize:18.0];
+        //historyView.text = @"oh\nhi\nthere";
+        historyView.backgroundColor = [UIColor whiteColor];
+        historyView.editable = NO;
+        historyView.scrollEnabled = YES;
         [self addSubview:historyView];
+        
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.backgroundColor = [UIColor clearColor];
+        button.frame = historyView.frame;
+        button.autoresizingMask = historyView.autoresizingMask;
+        button.backgroundColor = [UIColor clearColor];
+        [button addTarget:self action:@selector(buttonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:button];
         
         /*
         aFrame = CGRectZero;
@@ -44,6 +58,20 @@
     [inputField release];
     
     [super dealloc];
+}
+
+- (void)addText:(NSString *)someText
+{
+    historyView.text = [NSString stringWithFormat:@"%@\n%@", historyView.text, someText];    
+    
+    CGFloat offsetY = historyView.contentSize.height - 20.0;
+    if (offsetY < 0) offsetY = 0;
+    [historyView scrollRectToVisible:CGRectMake(0.0, offsetY, historyView.contentSize.width, 20.0) animated:NO];
+}
+
+- (void)buttonWasTapped
+{
+    [delegate chatboxViewWasTapped:self];
 }
 
 #pragma mark -

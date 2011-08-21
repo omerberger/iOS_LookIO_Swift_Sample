@@ -61,6 +61,10 @@
 		D4B4F68714002CBE00A52375 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		D4B4F68D1400399300A52375 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
 		D4B4F68E1400399300A52375 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
+		D4B4F6951400547400A52375 /* LookIOLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = LookIOLogo.png; path = Resources/Images/LookIOLogo.png; sourceTree = "<group>"; };
+		D4B4F6961400547400A52375 /* LookIOLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "LookIOLogo@2x.png"; path = "Resources/Images/LookIOLogo@2x.png"; sourceTree = "<group>"; };
+		D4B4F69B14007EF200A52375 /* ClickIndicator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ClickIndicator.png; path = Resources/Images/ClickIndicator.png; sourceTree = "<group>"; };
+		D4B4F69C14007EF200A52375 /* ClickIndicator@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ClickIndicator@2x.png"; path = "Resources/Images/ClickIndicator@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +145,10 @@
 		D4B4F47513FF8A3500A52375 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D4B4F69B14007EF200A52375 /* ClickIndicator.png */,
+				D4B4F69C14007EF200A52375 /* ClickIndicator@2x.png */,
+				D4B4F6951400547400A52375 /* LookIOLogo.png */,
+				D4B4F6961400547400A52375 /* LookIOLogo@2x.png */,
 			);
 			name = Resources;
 			sourceTree = "<group>";

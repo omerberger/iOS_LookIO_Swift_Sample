@@ -3,7 +3,7 @@
 //  LookIO
 //
 //  Created by Joseph Toscano on 8/19/11.
-//  Copyright (c) 2011 LookIO, Inc. All rights reserved.
+//  Copyright (c) 2011 Joseph Toscano. All rights reserved.
 //
 
 #import <QuartzCore/QuartzCore.h>
@@ -12,21 +12,22 @@
 #import "SBJSON.h"
 #import "LIOChatboxView.h"
 #import "NSData+Base64.h"
+#import "LIOChatboxView.h"
 
 // Misc. constants
-#define LIOLookIOManagerScreenCaptureInterval   1.0
+#define LIOLookIOManagerScreenCaptureInterval   0.33
 
-#define LIOLookIOManagerScreenshotTimeout       5.0
-#define LIOLookIOManagerIntroductionTimeout     5.0
+#define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerControlEndpoint         @"look.io"
+#define LIOLookIOManagerControlEndpoint         @"192.168.0.88"//@"look.io"
 #define LIOLookIOManagerControlEndpointPort     8100
+
+#define LIOLookIOMAnagerChatboxTimeoutInterval  5.0
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
-// Message identifiers
-#define LIOLookIOManagerIntroductionTag 1
-#define LIOLookIOManagerScreenshotTag   2
+#define LIOLookIOManagerCustomerPhoneNumber     @"9495052670"
+#define LIOLookIOManagerSupportPhoneNumber      @"3108716614"
 
 @implementation LIOLookIOManager
 
@@ -61,10 +62,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         CGRect aFrame = CGRectZero;
-        aFrame.size.height = 50.0;
-        aFrame.size.width = keyWindow.frame.size.width;
+        aFrame.origin.y = 40.0;
+        aFrame.size.width = 320.0;
+        aFrame.size.height = 80.0;
         chatbox = [[LIOChatboxView alloc] initWithFrame:aFrame];
+        chatbox.delegate = self;
+        chatbox.hidden = YES;
+        chatbox.layer.borderWidth = 1.0;
+        chatbox.layer.borderColor = [UIColor blackColor].CGColor;
         [keyWindow addSubview:chatbox];
+        
+        chatField = [[UITextField alloc] initWithFrame:CGRectMake(0.0, 100.0, keyWindow.frame.size.width, 30.0)];
+        chatField.hidden = YES;
+        chatField.layer.borderWidth = 1.0;
+        chatField.layer.borderColor = [UIColor blackColor].CGColor;
+        chatField.delegate = self;
+        chatField.backgroundColor = [UIColor whiteColor];
+        [keyWindow addSubview:chatField];
         
         jsonParser = [[SBJsonParser alloc] init];
         jsonWriter = [[SBJsonWriter alloc] init];
@@ -84,6 +98,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatbox release];
     [jsonParser release];
     [jsonWriter release];
+    [cursorView release];
+    [clickView release];
     
     [super dealloc];
 }
@@ -145,21 +161,44 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *screenshotImage = [self captureScreen];
         NSData *screenshotData = UIImageJPEGRepresentation(screenshotImage, 0.0);
-        NSString *base64Data = [screenshotData base64EncodedString];
-        
-        NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                             @"screenshot", @"type",
-                                                             [self nextGUID], @"screenshot_id",
-                                                             base64Data, @"screenshot",
-                                                             nil]];
-        
-        screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        waitingForScreenshotAck = YES;
-        [controlSocket writeData:[screenshot dataUsingEncoding:NSASCIIStringEncoding]
-                     withTimeout:LIOLookIOManagerScreenshotTimeout
-                             tag:LIOLookIOManagerScreenshotTag];
+        if (nil == lastScreenshotSent || NO == [lastScreenshotSent isEqualToData:screenshotData])
+        {
+            [lastScreenshotSent release];
+            lastScreenshotSent = [screenshotData retain];
+            
+            NSString *base64Data = [screenshotData base64EncodedString];
+            
+            NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                 @"screenshot", @"type",
+                                                                 [self nextGUID], @"screenshot_id",
+                                                                 base64Data, @"screenshot",
+                                                                 nil]];
+            
+            screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
+            
+            waitingForScreenshotAck = YES;
+            [controlSocket writeData:[screenshot dataUsingEncoding:NSASCIIStringEncoding]
+                         withTimeout:-1
+                                 tag:0];
+        }
     });
+}
+
+- (void)callTwilio
+{
+    NSURL *theURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.hirahim.com/twilio/lookio/make-call.php?customer=%@&support=%@", LIOLookIOManagerCustomerPhoneNumber, LIOLookIOManagerSupportPhoneNumber]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:theURL cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:60.0];
+    NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    NSLog(@"[TWILIO] Failure: %@", [error localizedDescription]);
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    NSLog(@"[TWILIO] Success! Expect a call...");
 }
 
 - (void)beginConnecting
@@ -169,6 +208,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
         return;
     }
+    
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    [keyWindow bringSubviewToFront:chatbox];
+    
+    UIImageView *logo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LookIOLogo"]];
+    logo.frame = CGRectZero;
+    logo.center = CGPointMake(keyWindow.frame.size.width / 2.0, keyWindow.frame.size.height / 2.0);
+    logo.alpha = 0.0;
+    [keyWindow addSubview:logo];
+    [UIView animateWithDuration:0.2
+                          delay:0.0
+                        options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                     animations:^{
+                         CGSize imageSize = CGSizeMake(logo.image.size.width * 3.5, logo.image.size.height * 3.5);
+                         logo.frame = CGRectMake((keyWindow.frame.size.width / 2.0) - (imageSize.width / 2.0), (keyWindow.frame.size.height / 2.0) - (imageSize.height / 2.0), imageSize.width, imageSize.height);
+                         logo.alpha = 0.9;
+                     }
+                     completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.2
+                                               delay:0.6
+                                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                                          animations:^{
+                                              CGSize imageSize = CGSizeMake(logo.image.size.width * 8.0, logo.image.size.height * 8.0);
+                                              logo.frame = CGRectMake((keyWindow.frame.size.width / 2.0) - (imageSize.width / 2.0), (keyWindow.frame.size.height / 2.0) - (imageSize.height / 2.0), imageSize.width, imageSize.height);
+                                              logo.alpha = 0.0;
+                                          }
+                                          completion:^(BOOL finished) {
+                                              [logo removeFromSuperview];
+                                              [logo release];
+                                          }];
+                     }];
     
     NSError *connectError = nil;
     BOOL connectResult = [controlSocket connectToHost:LIOLookIOManagerControlEndpoint
@@ -181,7 +251,199 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    NSLog(@"[CONNECT] Trying \"%@:%d\"...", LIOLookIOManagerControlEndpoint, LIOLookIOManagerControlEndpointPort);
+    
     controlSocketConnecting = YES;
+}
+
+- (void)chatboxTimerDidFire:(NSTimer *)theTimer
+{
+    chatbox.hidden = YES;
+    
+    chatboxTimer = nil;
+}
+
+- (void)handlePacket:(NSDictionary *)aPacket
+{
+    NSString *type = [aPacket objectForKey:@"type"];
+    if ([type isEqualToString:@"ack"])
+    {
+        if (waitingForIntroAck)
+        {
+            NSLog(@"[INTRODUCTION] Introduction complete.");
+            introduced = YES;
+            waitingForIntroAck = NO;
+        }
+        else if (waitingForScreenshotAck)
+        {
+            NSLog(@"[SCREENSHOT] Screenshot received by remote host.");
+            waitingForScreenshotAck = NO;
+        }
+    }
+    else if ([type isEqualToString:@"chat"])
+    {
+        NSString *text = [aPacket objectForKey:@"text"];
+        [chatbox addText:[NSString stringWithFormat:@"<Support> %@", text]];
+        
+        if (nil == chatboxTimer && NO == chatting)
+        {
+            chatboxTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOMAnagerChatboxTimeoutInterval
+                                                            target:self
+                                                          selector:@selector(chatboxTimerDidFire:)
+                                                          userInfo:nil
+                                                           repeats:NO];
+        }
+        
+        chatbox.hidden = NO;
+        
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        [keyWindow bringSubviewToFront:chatbox];
+        
+        NSLog(@"[CHAT] \"%@\"", text);
+    }
+    else if ([type isEqualToString:@"cursor"])
+    {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
+        if (nil == cursorView)
+        {
+            cursorView = [[UIImageView alloc] initWithImage:touchImage];
+            [keyWindow addSubview:cursorView];
+        }
+        
+        [keyWindow bringSubviewToFront:cursorView];
+        
+        NSNumber *x = [aPacket objectForKey:@"x"];
+        NSNumber *y = [aPacket objectForKey:@"y"];
+        CGRect aFrame = cursorView.frame;
+        aFrame.origin.x = [x floatValue];
+        aFrame.origin.y = [y floatValue];
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState)
+                         animations:^{ cursorView.frame = aFrame; }
+                         completion:nil];
+    }
+    else if ([type isEqualToString:@"advisory"])
+    {
+        // cursor_start, cursor_end
+        NSString *action = [aPacket objectForKey:@"action"];
+        if ([action isEqualToString:@"cursor_start"])
+        {
+            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+            
+            if (nil == cursorView)
+            {
+                cursorView = [[UIImageView alloc] initWithImage:touchImage];
+                [keyWindow addSubview:cursorView];
+            }
+            
+            [keyWindow bringSubviewToFront:cursorView];
+            
+            CGRect aFrame = CGRectZero;
+            aFrame.size.width = cursorView.image.size.width * 8.0;
+            aFrame.size.height = cursorView.image.size.height * 8.0;
+            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            cursorView.frame = aFrame;
+            cursorView.alpha = 0.0;
+            
+            aFrame.size.width = cursorView.image.size.width;
+            aFrame.size.height = cursorView.image.size.height;
+            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            
+            [UIView animateWithDuration:0.25
+                                  delay:0.0
+                                options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                             animations:^{
+                                 cursorView.frame = aFrame;
+                                 cursorView.alpha = 1.0;
+                             }
+                             completion:nil];
+            
+        }
+        else if ([action isEqualToString:@"cursor_end"])
+        {
+            /*
+            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+            
+            if (nil == cursorView)
+            {
+                cursorView = [[UIImageView alloc] initWithImage:touchImage];
+                [keyWindow addSubview:cursorView];
+            }
+            
+            [keyWindow bringSubviewToFront:cursorView];
+            
+            CGRect aFrame = CGRectZero;
+            aFrame.size.width = cursorView.image.size.width * 8.0;
+            aFrame.size.height = cursorView.image.size.height * 8.0;
+            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            
+            [UIView animateWithDuration:0.25
+                                  delay:0.0
+                                options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                             animations:^{
+                                 cursorView.frame = aFrame;
+                                 cursorView.alpha = 0.0;
+                             }
+                             completion:nil];
+             */
+            cursorView.alpha = 0.0;
+        }
+    }
+    else if ([type isEqualToString:@"click"])
+    {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
+        if (nil == clickView)
+        {
+            clickView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"ClickIndicator"]];
+            [keyWindow addSubview:clickView];
+        }
+        
+        [keyWindow bringSubviewToFront:clickView];
+        
+        NSNumber *x = [aPacket objectForKey:@"x"];
+        NSNumber *y = [aPacket objectForKey:@"y"];
+        
+        NSLog(@"[CLICK] x: %@, y: %@", x, y);
+        
+        CGRect aFrame = CGRectZero;
+        aFrame.origin.x = [x floatValue];
+        aFrame.origin.y = [y floatValue];
+        clickView.frame = aFrame;
+        clickView.alpha = 0.0;
+        
+        aFrame.size.width = clickView.image.size.width * 2.0;
+        aFrame.size.height = clickView.image.size.height * 2.0;
+        aFrame.origin.x = clickView.frame.origin.x - (aFrame.size.width / 2.0);
+        aFrame.origin.y = clickView.frame.origin.y - (aFrame.size.height / 2.0);
+        
+        [UIView animateWithDuration:0.1
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                         animations:^{
+                             clickView.frame = aFrame;
+                             clickView.alpha = 1.0;
+                         }
+                         completion:^(BOOL finished) {
+                             [UIView animateWithDuration:0.1
+                                                   delay:0.2
+                                                 options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                                              animations:^{
+                                                  clickView.alpha = 0.0;
+                                              }
+                                              completion:nil];
+                         }];
+    }
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];
 }
 
 #pragma mark -
@@ -201,9 +463,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     nil]];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
+    waitingForIntroAck = YES;
+    
     [controlSocket writeData:[intro dataUsingEncoding:NSASCIIStringEncoding]
-                 withTimeout:LIOLookIOManagerIntroductionTimeout
-                         tag:LIOLookIOManagerIntroductionTag];
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];
 }
 
 - (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
@@ -226,56 +494,86 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
-- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
-{
-    if (LIOLookIOManagerIntroductionTag == tag)
-    {
-        // Waiting for ack...
-        [controlSocket readDataToData:messageSeparatorData
-                          withTimeout:LIOLookIOManagerIntroductionTimeout
-                                  tag:LIOLookIOManagerIntroductionTag];
-    }
-    else if (LIOLookIOManagerScreenshotTag == tag)
-    {
-        // Waiting for ack...
-        [controlSocket readDataToData:messageSeparatorData
-                          withTimeout:LIOLookIOManagerScreenshotTimeout
-                                  tag:LIOLookIOManagerScreenshotTag];
-    }
-}
-
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    if (LIOLookIOManagerIntroductionTag == tag)
+    NSString *jsonString = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
+    jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
+    NSDictionary *result = [jsonParser objectWithString:jsonString];
+    
+    NSLog(@"\n[READ]\n%@\n", jsonString);
+    
+    [self performSelectorOnMainThread:@selector(handlePacket:) withObject:result waitUntilDone:NO];    
+}
+
+- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutReadWithTag:(long)tag
+                 elapsed:(NSTimeInterval)elapsed
+               bytesDone:(NSUInteger)length
+{
+    NSLog(@"\n\nREAD TIMEOUT\n\n");
+    return 0;
+}
+
+- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutWriteWithTag:(long)tag
+                 elapsed:(NSTimeInterval)elapsed
+               bytesDone:(NSUInteger)length
+{
+    NSLog(@"\n\nWRITE TIMEOUT\n\n");
+    return 0;
+}
+
+#pragma mark -
+#pragma mark LIOChatboxViewDelegate
+
+- (void)chatboxViewWasTapped:(LIOChatboxView *)aView
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+
+    [keyWindow bringSubviewToFront:chatbox];
+    [keyWindow bringSubviewToFront:chatField];
+    
+    [chatboxTimer invalidate];
+    chatboxTimer = nil;
+    
+    chatField.hidden = NO;
+    [chatField becomeFirstResponder];
+    
+    chatting = YES;
+}
+
+#pragma mark -
+#pragma mark UITextFieldDelegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                    @"chat", @"type",
+                                                    chatField.text, @"text",
+                                                    nil]];
+    chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[chat dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:-1
+                         tag:0];
+    
+    [chatbox addText:[NSString stringWithFormat:@"<Me> %@", chatField.text]];
+    
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    [keyWindow endEditing:YES];
+    chatField.text = @"";
+    chatField.hidden = YES;
+    
+    if (nil == chatboxTimer)
     {
-        NSString *jsonString = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
-        jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
-        NSDictionary *result = [jsonParser objectWithString:jsonString];
-        NSString *type = [result objectForKey:@"type"];
-        if (NO == [type isEqualToString:@"ack"])
-        {
-            NSLog(@"[INTRODUCTION] Was expecting ack. Didn't get one!");
-            return;
-        }
-        
-        NSLog(@"[INTRODUCTION] Introduction complete.");
-        introduced = YES;
+        chatboxTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOMAnagerChatboxTimeoutInterval
+                                                        target:self
+                                                      selector:@selector(chatboxTimerDidFire:)
+                                                      userInfo:nil
+                                                       repeats:NO];
     }
-    else if (LIOLookIOManagerScreenshotTag == tag)
-    {
-        NSString *jsonString = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
-        jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
-        NSDictionary *result = [jsonParser objectWithString:jsonString];
-        NSString *type = [result objectForKey:@"type"];
-        if (NO == [type isEqualToString:@"ack"])
-        {
-            NSLog(@"[SCREENSHOT] Was expecting ack. Didn't get one!");
-            return;
-        }
-        
-        NSLog(@"[SCREENSHOT] Screenshot received by remote host.");
-        waitingForScreenshotAck = NO;
-    }
+    
+    chatting = NO;
+     
+    return YES;
 }
 
 @end
