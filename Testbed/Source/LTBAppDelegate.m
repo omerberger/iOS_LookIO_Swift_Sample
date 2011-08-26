@@ -1,0 +1,26 @@
+//
+//  LTBAppDelegate.m
+//  Testbed
+//
+//  Created by Joe Toscano on 8/22/11.
+//  Copyright (c) 2011 LookIO, Inc. All rights reserved.
+//
+
+#import "LTBAppDelegate.h"
+
+@implementation LTBAppDelegate
+
+@synthesize window, mainViewController;
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self.window makeKeyAndVisible];
+    
+    self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
+    [self.window addSubview:mainViewController.view];
+    
+    return YES;
+}
+
+@end
