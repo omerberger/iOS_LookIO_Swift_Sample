@@ -8,6 +8,8 @@
 
 #import "LTBAppDelegate.h"
 
+//io.look.${PRODUCT_NAME:rfc1034identifier}
+
 @implementation LTBAppDelegate
 
 @synthesize window, mainViewController;

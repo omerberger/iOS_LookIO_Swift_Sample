@@ -10,6 +10,9 @@
 #import "LTBBookHotelsViewController.h"
 
 @interface LTBMainViewController : UIViewController <LTBBookHotelsViewControllerDelegate>
+{
+    LTBBookHotelsViewController *bookHotelsViewController;
+}
 
 @property(nonatomic, retain) LTBBookHotelsViewController *bookHotelsViewController;
 

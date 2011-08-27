@@ -10,6 +10,10 @@
 #import "LTBMainViewController.h"
 
 @interface LTBAppDelegate : UIResponder <UIApplicationDelegate>
+{
+    UIWindow *window;
+    LTBMainViewController *mainViewController;
+}
 
 @property(nonatomic, retain) UIWindow *window;
 @property(nonatomic, retain) LTBMainViewController *mainViewController;
