@@ -6,11 +6,12 @@
 //  Copyright (c) 2011 LookIO, Inc. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
 #import "LIOChatboxView.h"
 
 @implementation LIOChatboxView
 
-@synthesize delegate;
+@synthesize messageView;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -18,36 +19,23 @@
     
     if (self)
     {
-        self.alpha = 0.8;
+        bubbleView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, frame.size.height)];
+        bubbleView.backgroundColor = [UIColor blackColor];
+        bubbleView.alpha = 0.75;
+        bubbleView.layer.masksToBounds = YES;
+        bubbleView.layer.cornerRadius = 0.4;
+        [self addSubview:bubbleView];
         
-        CGRect aFrame = CGRectZero;
-        aFrame.size.width = frame.size.width;
-        aFrame.size.height = frame.size.height;
-        historyView = [[UITextView alloc] initWithFrame:aFrame];
-        historyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        historyView.font = [UIFont systemFontOfSize:16.0];
-        //historyView.text = @"oh\nhi\nthere";
-        historyView.backgroundColor = [UIColor whiteColor];
-        historyView.editable = NO;
-        historyView.scrollEnabled = YES;
-        historyView.contentInset = UIEdgeInsetsMake(2.0, 5.0, 2.0, 5.0);
-        [self addSubview:historyView];
+        messageView = [[UITextView alloc] initWithFrame:bubbleView.bounds];
+        messageView.backgroundColor = [UIColor clearColor];
+        messageView.textColor = [UIColor whiteColor];
+        [self addSubview:messageView];
         
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        button.backgroundColor = [UIColor clearColor];
-        button.frame = historyView.frame;
-        button.autoresizingMask = historyView.autoresizingMask;
-        button.backgroundColor = [UIColor clearColor];
-        [button addTarget:self action:@selector(buttonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:button];
-        
-        /*
-        aFrame = CGRectZero;
-        inputField = [[UITextField alloc] initWithFrame:aFrame];
-        inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-        inputField.delegate = self;
+        CGSize size = [@"Test" sizeWithFont:[UIFont systemFontOfSize:12.0]];
+        inputField = [[UITextField alloc] initWithFrame:CGRectMake(5.0, frame.size.height - (size.height + 5.0), frame.size.width - 1.0, size.height)];
+        inputField.backgroundColor = [UIColor whiteColor];
+        inputField.hidden = YES;
         [self addSubview:inputField];
-         */
     }
     
     return self;
@@ -55,28 +43,39 @@
 
 - (void)dealloc
 {
-    [historyView release];
     [inputField release];
+    [bubbleView release];
+    [messageView release];
     
     [super dealloc];
 }
 
-- (void)addText:(NSString *)someText
+- (void)takeInput
 {
-    historyView.text = [NSString stringWithFormat:@"%@\n%@", historyView.text, someText];    
-    
-    CGFloat offsetY = historyView.contentSize.height - 20.0;
-    if (offsetY < 0) offsetY = 0;
-    [historyView scrollRectToVisible:CGRectMake(0.0, offsetY, historyView.contentSize.width, 20.0) animated:NO];
-}
-
-- (void)buttonWasTapped
-{
-    [delegate chatboxViewWasTapped:self];
+    inputField.hidden = NO;
+    [inputField becomeFirstResponder];
 }
 
 #pragma mark -
 #pragma mark UITextFieldDelegate methods
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+    CGRect aFrame = messageView.frame;
+    aFrame.origin.y -= inputField.frame.size.height;
+    aFrame.size.height -= inputField.frame.size.height;
+    messageView.frame = aFrame;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+    CGRect aFrame = messageView.frame;
+    aFrame.origin.y += inputField.frame.size.height;
+    aFrame.size.height += inputField.frame.size.height;
+    messageView.frame = aFrame;
+    
+    inputField.hidden = YES;
+}
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {

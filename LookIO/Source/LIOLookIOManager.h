@@ -15,7 +15,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     GCDAsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
     NSData *messageSeparatorData;
     NSData *lastScreenshotSent;
     SBJsonParser_LIO *jsonParser;
@@ -27,6 +27,7 @@
     UIActivityIndicatorView *connectionSpinner;
     UILabel *connectionLabel;
     UIView *connectionBackground;
+    NSMutableArray *chatHistory;
     LIOChatViewController *chatViewController;
 }
 

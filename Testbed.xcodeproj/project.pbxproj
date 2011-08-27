@@ -35,6 +35,8 @@
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
 		D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */; };
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
+		D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3E140986AE00B73C84 /* ControlButton.png */; };
+		D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +74,8 @@
 		D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBBookFlightsViewController.m; sourceTree = "<group>"; };
 		D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityFlightDetail.png; sourceTree = "<group>"; };
 		D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TravelocityFlightDetail@2x.png"; sourceTree = "<group>"; };
+		D4B41D3E140986AE00B73C84 /* ControlButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ControlButton.png; sourceTree = "<group>"; };
+		D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ControlButton@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +127,8 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D4B41D3E140986AE00B73C84 /* ControlButton.png */,
+				D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */,
 				D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */,
 				D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */,
 				D44DD7F914044966004374FE /* ClickIndicator.png */,
@@ -248,6 +254,8 @@
 				D44DD82A14044966004374FE /* TravelocityMain@2x.png in Resources */,
 				D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */,
 				D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */,
+				D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */,
+				D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

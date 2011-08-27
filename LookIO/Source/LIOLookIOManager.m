@@ -13,6 +13,7 @@
 #import "SBJSON.h"
 #import "LIOChatboxView.h"
 #import "NSData+Base64.h"
+#import "LIOChatViewController.h"
 
 // Misc. constants
 #define LIOLookIOManagerScreenCaptureInterval   0.33
@@ -58,8 +59,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         self.touchImage = [UIImage imageNamed:@"DefaultTouch"];
-        self.controlButtonFrame = CGRectMake(0.0, 20.0, 32.0, 32.0);
+        self.controlButtonFrame = CGRectMake(keyWindow.frame.size.width - 32.0, 20.0, 32.0, 32.0);
+        
+        chatHistory = [[NSMutableArray alloc] init];
+        [chatHistory addObject:@"Support text here. Blah blah blah!"];
+        [chatHistory addObject:@"sup"];
+        [chatHistory addObject:@"Do you have an issue?"];
+        [chatHistory addObject:@"Yes. You smell bad!"];
+        [chatHistory addObject:@"That's... not the kind of issue I meant."];
+        [chatHistory addObject:@"Oh. Well, then... uh. No. Bye!"];
     }
     
     return self;
@@ -82,6 +92,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectionBackground release];
     [connectionLogo release];
     [chatViewController release];
+    [chatHistory release];
     
     [super dealloc];
 }
@@ -137,7 +148,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
-    if (controlSocket.isDisconnected || waitingForScreenshotAck || NO == introduced)
+    if (controlSocket.isDisconnected || waitingForScreenshotAck || NO == introduced || YES == enqueued)
         return;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -209,7 +220,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     connectionLogo.center = CGPointMake(keyWindow.frame.size.width / 2.0, keyWindow.frame.size.height / 2.0);
     [keyWindow addSubview:connectionLogo];
     
-    CGSize targetSize = CGSizeMake(logoImage.size.width * 3.5, logoImage.size.height * 3.5);
+    CGSize targetSize = CGSizeMake(224.0, 224.0);
     CGRect targetFrame = CGRectMake((keyWindow.frame.size.width / 2.0) - (targetSize.width / 2.0),
                                     (keyWindow.frame.size.height / 2.0) - (targetSize.height / 2.0),
                                     targetSize.width,
@@ -239,6 +250,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      }];
 }
 
+- (void)showChat
+{
+    /*
+    if (chatViewController)
+        return;
+    
+    chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
+    [chatViewController addMessages:chatHistory];
+    [[[UIApplication sharedApplication] keyWindow] addSubview:chatViewController.view];
+     */
+}
+
 - (void)handlePacket:(NSDictionary *)aPacket
 {
     NSString *type = [aPacket objectForKey:@"type"];
@@ -249,6 +272,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSLog(@"[INTRODUCTION] Introduction complete.");
             introduced = YES;
             waitingForIntroAck = NO;
+            enqueued = YES;  
+            
+            [controlSocket readDataToData:messageSeparatorData
+                              withTimeout:-1
+                                      tag:0];
         }
         else if (waitingForScreenshotAck)
         {
@@ -256,29 +284,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             waitingForScreenshotAck = NO;
         }
     }
-    /*
     else if ([type isEqualToString:@"chat"])
     {
         NSString *text = [aPacket objectForKey:@"text"];
-        [chatbox addText:[NSString stringWithFormat:@"Support: %@", text]];
-        
-        if (nil == chatboxTimer && NO == chatting)
-        {
-            chatboxTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOMAnagerChatboxTimeoutInterval
-                                                            target:self
-                                                          selector:@selector(chatboxTimerDidFire:)
-                                                          userInfo:nil
-                                                           repeats:NO];
-        }
-        
-        chatbox.hidden = NO;
-        
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        [keyWindow bringSubviewToFront:chatbox];
+        [chatHistory addObject:text];
+        [self showChat];
         
         NSLog(@"[CHAT] \"%@\"", text);
     }
-    */
     else if ([type isEqualToString:@"cursor"])
     {
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
@@ -305,8 +318,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"advisory"])
     {
-        // cursor_start, cursor_end
         NSString *action = [aPacket objectForKey:@"action"];
+        
         if ([action isEqualToString:@"cursor_start"])
         {
             UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
@@ -372,6 +385,47 @@ static LIOLookIOManager *sharedLookIOManager = nil;
              */
             cursorView.alpha = 0.0;
         }
+        else if ([action isEqualToString:@"connected"])
+        {
+            NSLog(@"[QUEUE] We're live!");
+            enqueued = NO;
+            
+            // Logo shrink down to designated position.
+            double delayInSeconds = 1.5;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                connectionSpinner.hidden = YES;
+            });
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [UIView animateWithDuration:0.5
+                                      delay:1.5
+                                    options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                                 animations:^{
+                                     connectionBackground.alpha = 0.0;
+                                     connectionLogo.frame = self.controlButtonFrame;
+                                     connectionLogo.alpha = 1.0;
+                                 }
+                                 completion:^(BOOL finished) {
+                                     [connectionBackground removeFromSuperview];
+                                     [connectionBackground release];
+                                     connectionBackground = nil;
+                                     
+                                     [connectionSpinner removeFromSuperview];
+                                     [connectionSpinner release];
+                                     connectionSpinner = nil;
+                                     
+                                     [connectionLogo removeFromSuperview];
+                                     [connectionLogo release];
+                                     connectionLogo = nil;
+                                     
+                                     controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+                                     [controlButton setImage:[UIImage imageNamed:@"ControlButton"] forState:UIControlStateNormal];
+                                     [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+                                     controlButton.frame = self.controlButtonFrame;
+                                     [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
+                                 }];
+            });        
+        }
     }
     else if ([type isEqualToString:@"click"])
     {
@@ -429,6 +483,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonWasTapped
 {
+    [self showChat];
 }
 
 #pragma mark -
@@ -466,42 +521,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1
                               tag:0];
-    
-    // Logo shrink down to designated position.
-    double delayInSeconds = 1.5;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        connectionSpinner.hidden = YES;
-    });
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [UIView animateWithDuration:0.5
-                              delay:1.5
-                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
-                         animations:^{
-                             connectionBackground.alpha = 0.0;
-                             connectionLogo.frame = self.controlButtonFrame;
-                             connectionLogo.alpha = 1.0;
-                         }
-                         completion:^(BOOL finished) {
-                             [connectionBackground removeFromSuperview];
-                             [connectionBackground release];
-                             connectionBackground = nil;
-                             
-                             [connectionSpinner removeFromSuperview];
-                             [connectionSpinner release];
-                             connectionSpinner = nil;
-                             
-                             [connectionLogo removeFromSuperview];
-                             [connectionLogo release];
-                             connectionLogo = nil;
-                             
-                             controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-                             [controlButton setBackgroundImage:[UIImage imageNamed:@"LookIOLogo"] forState:UIControlStateNormal];
-                             [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-                             controlButton.frame = self.controlButtonFrame;
-                             [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
-                         }];
-    });
 }
 
 - (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err
@@ -530,6 +549,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     introduced = NO;
     waitingForIntroAck = NO;
     waitingForScreenshotAck = NO;
+    enqueued = NO;
     
     if (err)
     {

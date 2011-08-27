@@ -8,21 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOChatboxView;
-
-@protocol LIOChatboxViewDelegate
-- (void)chatboxViewWasTapped:(LIOChatboxView *)aView;
-@end
-
 @interface LIOChatboxView : UIView <UITextFieldDelegate>
 {
-    UITextView *historyView;
+    UIView *bubbleView;
     UITextField *inputField;
-    id<LIOChatboxViewDelegate> delegate;
+    UITextView *messageView;
 }
 
-@property(nonatomic, assign) id<LIOChatboxViewDelegate> delegate;
-
-- (void)addText:(NSString *)someText;
+@property(nonatomic, readonly) UITextView *messageView;
 
 @end
