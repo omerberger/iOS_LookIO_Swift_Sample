@@ -15,6 +15,9 @@
 @end
 
 @interface LTBBookHotelsViewController : UIViewController
+{
+    id<LTBBookHotelsViewControllerDelegate> delegate;
+}
 
 @property(nonatomic, assign) id<LTBBookHotelsViewControllerDelegate> delegate;
 

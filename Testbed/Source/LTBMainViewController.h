@@ -8,12 +8,15 @@
 
 #import <UIKit/UIKit.h>
 #import "LTBBookHotelsViewController.h"
+#import "LTBBookFlightsViewController.h"
 
-@interface LTBMainViewController : UIViewController <LTBBookHotelsViewControllerDelegate>
+@interface LTBMainViewController : UIViewController <LTBBookHotelsViewControllerDelegate, LTBBookFlightsViewControllerDelegate>
 {
     LTBBookHotelsViewController *bookHotelsViewController;
+    LTBBookFlightsViewController *bookFlightsViewController;
 }
 
 @property(nonatomic, retain) LTBBookHotelsViewController *bookHotelsViewController;
+@property(nonatomic, retain) LTBBookFlightsViewController *bookFlightsViewController;
 
 @end

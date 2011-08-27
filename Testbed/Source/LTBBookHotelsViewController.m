@@ -12,27 +12,32 @@
 
 @synthesize delegate;
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (void)loadView
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    [super loadView];
+    UIView *rootView = self.view;
     
-    if (self)
-    {
-        CGRect aFrame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-        UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:aFrame];
-        UIImageView *fakeImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"TravelocityHotelDetail"]];
-        [scrollView addSubview:fakeImageView];
-        scrollView.contentSize = CGSizeMake(self.view.frame.size.width, fakeImageView.image.size.height);
-        [self.view addSubview:scrollView];
-        
-        UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        backButton.backgroundColor = [UIColor clearColor];
-        backButton.frame = CGRectMake(0, 0, 70, 30);
-        [backButton addTarget:self action:@selector(backButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [self.view addSubview:backButton];
-    }
+    UIView *blackView = [[[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, rootView.frame.size.width, rootView.frame.size.height)] autorelease];
+    blackView.backgroundColor = [UIColor blackColor];
+    [rootView addSubview:blackView];
     
-    return self;
+    CGRect aFrame = CGRectMake(0, 0, rootView.frame.size.width, rootView.frame.size.height);
+    UIScrollView *scrollView = [[[UIScrollView alloc] initWithFrame:aFrame] autorelease];
+    UIImageView *fakeImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"TravelocityHotelDetail"]] autorelease];
+    [scrollView addSubview:fakeImageView];
+    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, fakeImageView.image.size.height);
+    [rootView addSubview:scrollView];
+    
+    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    backButton.backgroundColor = [UIColor clearColor];
+    backButton.frame = CGRectMake(0, 0, 70, 30);
+    [backButton addTarget:self action:@selector(backButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    [rootView addSubview:backButton];
+}
+
+- (void)dealloc
+{
+    [super dealloc];
 }
 
 - (void)backButtonWasTapped

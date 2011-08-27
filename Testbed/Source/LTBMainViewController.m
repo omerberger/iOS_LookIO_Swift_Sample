@@ -11,7 +11,7 @@
 
 @implementation LTBMainViewController
 
-@synthesize bookHotelsViewController;
+@synthesize bookHotelsViewController, bookFlightsViewController;
 
 - (void)loadView
 {
@@ -67,6 +67,14 @@
     [[[UIApplication sharedApplication] keyWindow] addSubview:self.bookHotelsViewController.view];
 }
 
+- (void)flightsButtonWasTapped
+{
+    self.bookFlightsViewController = [[LTBBookFlightsViewController alloc] initWithNibName:nil bundle:nil];
+    self.bookFlightsViewController.delegate = self;
+    [self presentModalViewController:self.bookFlightsViewController animated:YES];
+    //[[[UIApplication sharedApplication] keyWindow] addSubview:self.bookFlightsViewController.view];
+}
+
 - (void)helpButtonWasTapped
 {
     [[LIOLookIOManager sharedLookIOManager] beginConnecting];
@@ -79,6 +87,16 @@
 {
     [bookHotelsViewController.view removeFromSuperview];
     self.bookHotelsViewController = nil;
+}
+
+#pragma mark -
+#pragma mark LTBBookFlightsViewControllerDelegate methods
+
+- (void)bookFlightsViewControllerDidTapBackButton:(LTBBookFlightsViewController *)aController
+{
+    //[bookFlightsViewController.view removeFromSuperview];
+    [self dismissModalViewControllerAnimated:YES];
+    self.bookFlightsViewController = nil;
 }
 
 @end
