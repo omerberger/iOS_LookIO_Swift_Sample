@@ -30,6 +30,8 @@
 		D48ABF3314046E6B00835205 /* LIOChatboxView.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF2F14046E6B00835205 /* LIOChatboxView.m */; };
 		D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABF3014046E6B00835205 /* LIOLookIOManager.h */; };
 		D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF3114046E6B00835205 /* LIOLookIOManager.m */; };
+		D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4B41D39140969C400B73C84 /* LIOChatViewController.h */; };
+		D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3A140969C400B73C84 /* LIOChatViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +59,8 @@
 		D48ABF2F14046E6B00835205 /* LIOChatboxView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatboxView.m; path = LookIO/Source/LIOChatboxView.m; sourceTree = "<group>"; };
 		D48ABF3014046E6B00835205 /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = LookIO/Source/LIOLookIOManager.h; sourceTree = "<group>"; };
 		D48ABF3114046E6B00835205 /* LIOLookIOManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLookIOManager.m; path = LookIO/Source/LIOLookIOManager.m; sourceTree = "<group>"; };
+		D4B41D39140969C400B73C84 /* LIOChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChatViewController.h; path = LookIO/Source/LIOChatViewController.h; sourceTree = "<group>"; };
+		D4B41D3A140969C400B73C84 /* LIOChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatViewController.m; path = LookIO/Source/LIOChatViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +149,8 @@
 				D48ABF2F14046E6B00835205 /* LIOChatboxView.m */,
 				D48ABF3014046E6B00835205 /* LIOLookIOManager.h */,
 				D48ABF3114046E6B00835205 /* LIOLookIOManager.m */,
+				D4B41D39140969C400B73C84 /* LIOChatViewController.h */,
+				D4B41D3A140969C400B73C84 /* LIOChatViewController.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -177,6 +183,7 @@
 				D48ABF191404647300835205 /* SBJsonWriter.h in Headers */,
 				D48ABF3214046E6B00835205 /* LIOChatboxView.h in Headers */,
 				D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */,
+				D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +247,7 @@
 				D48ABF1A1404647300835205 /* SBJsonWriter.m in Sources */,
 				D48ABF3314046E6B00835205 /* LIOChatboxView.m in Sources */,
 				D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */,
+				D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

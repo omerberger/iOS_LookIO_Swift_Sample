@@ -25,9 +25,14 @@ char *NewBase64Encode(
 	bool separateLines,
 	size_t *outputLength);
 
+NSData *dataFromBase64String(NSString *aString);
+NSString *base64EncodedStringFromData(NSData *someData);
+
+/*
 @interface NSData (Base64_LIO)
 
 + (NSData *)dataFromBase64String:(NSString *)aString;
 - (NSString *)base64EncodedString;
 
 @end
+*/

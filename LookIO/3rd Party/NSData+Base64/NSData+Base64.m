@@ -248,6 +248,33 @@ char *NewBase64Encode(
 	return outputBuffer;
 }
 
+NSData *dataFromBase64String(NSString *aString)
+{
+	NSData *data = [aString dataUsingEncoding:NSASCIIStringEncoding];
+	size_t outputLength;
+	void *outputBuffer = NewBase64Decode([data bytes], [data length], &outputLength);
+	NSData *result = [NSData dataWithBytes:outputBuffer length:outputLength];
+	free(outputBuffer);
+	return result;
+}
+
+NSString *base64EncodedStringFromData(NSData *someData)
+{
+	size_t outputLength;
+	char *outputBuffer =
+    NewBase64Encode([someData bytes], [someData length], false, &outputLength);
+	
+	NSString *result =
+    [[[NSString alloc]
+      initWithBytes:outputBuffer
+      length:outputLength
+      encoding:NSASCIIStringEncoding]
+     autorelease];
+	free(outputBuffer);
+	return result;
+}
+
+/*
 @implementation NSData (Base64_LIO)
 
 //
@@ -297,3 +324,4 @@ char *NewBase64Encode(
 }
 
 @end
+*/
