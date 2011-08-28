@@ -64,12 +64,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.controlButtonFrame = CGRectMake(keyWindow.frame.size.width - 32.0, 20.0, 32.0, 32.0);
         
         chatHistory = [[NSMutableArray alloc] init];
-        [chatHistory addObject:@"Support text here. Blah blah blah!"];
-        [chatHistory addObject:@"sup"];
-        [chatHistory addObject:@"Do you have an issue?"];
-        [chatHistory addObject:@"Yes. You smell bad!"];
-        [chatHistory addObject:@"That's... not the kind of issue I meant."];
-        [chatHistory addObject:@"Oh. Well, then... uh. No. Bye!"];
         
         NSURL *soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
         AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
