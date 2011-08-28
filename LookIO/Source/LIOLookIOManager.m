@@ -70,6 +70,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [chatHistory addObject:@"Yes. You smell bad!"];
         [chatHistory addObject:@"That's... not the kind of issue I meant."];
         [chatHistory addObject:@"Oh. Well, then... uh. No. Bye!"];
+        
+        NSURL *soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
+        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+        
+        soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
+        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);    
     }
     
     return self;
@@ -93,6 +99,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectionLogo release];
     [chatViewController release];
     [chatHistory release];
+    
+    AudioServicesDisposeSystemSoundID(soundDing);
+    AudioServicesDisposeSystemSoundID(soundYay);
     
     [super dealloc];
 }
@@ -203,6 +212,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    AudioServicesPlaySystemSound(soundDing);
+    
     NSLog(@"[CONNECT] Trying \"%@:%d\"...", LIOLookIOManagerControlEndpoint, LIOLookIOManagerControlEndpointPort);
     
     controlSocketConnecting = YES;
@@ -252,14 +263,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)showChat
 {
-    /*
     if (chatViewController)
         return;
     
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
+    chatViewController.delegate = self;
     [chatViewController addMessages:chatHistory];
     [[[UIApplication sharedApplication] keyWindow] addSubview:chatViewController.view];
-     */
+    
+    [chatViewController scrollToBottom];
+    
+    AudioServicesPlaySystemSound(soundYay);
 }
 
 - (void)handlePacket:(NSDictionary *)aPacket
@@ -272,7 +286,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSLog(@"[INTRODUCTION] Introduction complete.");
             introduced = YES;
             waitingForIntroAck = NO;
-            enqueued = YES;  
+            enqueued = YES;
             
             [controlSocket readDataToData:messageSeparatorData
                               withTimeout:-1
@@ -287,8 +301,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"chat"])
     {
         NSString *text = [aPacket objectForKey:@"text"];
-        [chatHistory addObject:text];
-        [self showChat];
+        [chatHistory addObject:[NSString stringWithFormat:@"Support: %@", text]];
+
+        if (nil == chatViewController)
+        {
+            [self showChat];
+        }
+        else
+        {
+            [chatViewController addMessage:[chatHistory lastObject] animated:YES];
+            [chatViewController reloadMessages];
+            [chatViewController scrollToBottom];
+        }
         
         NSLog(@"[CHAT] \"%@\"", text);
     }
@@ -391,14 +415,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             enqueued = NO;
             
             // Logo shrink down to designated position.
+            /*
             double delayInSeconds = 1.5;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            */
                 connectionSpinner.hidden = YES;
-            });
+            //});
             dispatch_async(dispatch_get_main_queue(), ^{
                 [UIView animateWithDuration:0.5
-                                      delay:1.5
+                                      delay:0.0//1.5
                                     options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
                                  animations:^{
                                      connectionBackground.alpha = 0.0;
@@ -423,8 +449,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                      [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
                                      controlButton.frame = self.controlButtonFrame;
                                      [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
+                                     
+                                     if (chatViewController)
+                                         [[[UIApplication sharedApplication] keyWindow] insertSubview:controlButton belowSubview:chatViewController.view];
                                  }];
-            });        
+            });
         }
     }
     else if ([type isEqualToString:@"click"])
@@ -508,7 +537,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     @"intro", @"type",
                                                     udid, @"device_id",
                                                     deviceType, @"device_type",
-                                                    bundleId, @"customer_id",
+                                                    bundleId, @"app_id",
                                                     nil]];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -598,6 +627,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSLog(@"\n\nWRITE TIMEOUT\n\n");
     return 0;
+}
+
+#pragma mark -
+#pragma LIOChatViewController delegate methods
+
+- (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController
+{
+    [chatViewController.view removeFromSuperview];
+    [chatViewController release];
+    chatViewController = nil;
+}
+
+- (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString
+{
+    NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                    @"chat", @"type",
+                                                    aString, @"text",
+                                                    nil]];
+    
+    [controlSocket writeData:[chat dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];
+    
+    [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
+    [chatViewController addMessage:[chatHistory lastObject] animated:YES];
+    [chatViewController reloadMessages];
+    [chatViewController scrollToBottom];
 }
 
 @end

@@ -37,6 +37,9 @@
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
 		D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3E140986AE00B73C84 /* ControlButton.png */; };
 		D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */; };
+		D4B41D54140ABE2100B73C84 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B41D53140ABE2100B73C84 /* AudioToolbox.framework */; };
+		D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */; };
+		D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D56140AC2B800B73C84 /* LookIODing.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +79,9 @@
 		D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TravelocityFlightDetail@2x.png"; sourceTree = "<group>"; };
 		D4B41D3E140986AE00B73C84 /* ControlButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ControlButton.png; sourceTree = "<group>"; };
 		D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ControlButton@2x.png"; sourceTree = "<group>"; };
+		D4B41D53140ABE2100B73C84 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIOConnect.caf; sourceTree = "<group>"; };
+		D4B41D56140AC2B800B73C84 /* LookIODing.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIODing.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4B41D54140ABE2100B73C84 /* AudioToolbox.framework in Frameworks */,
 				D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */,
 				D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */,
 				D44DD7C414044915004374FE /* UIKit.framework in Frameworks */,
@@ -105,6 +112,7 @@
 		D44DD7C214044915004374FE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4B41D53140ABE2100B73C84 /* AudioToolbox.framework */,
 				D48ABF1C1404698400835205 /* CFNetwork.framework */,
 				D48ABF1B1404698400835205 /* libLookIO.a */,
 				D44DD7C314044915004374FE /* UIKit.framework */,
@@ -117,6 +125,7 @@
 		D44DD7F714044966004374FE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D4B41D4A140ABC8E00B73C84 /* Sounds */,
 				D44DD7F814044966004374FE /* Images */,
 				D44DD80914044966004374FE /* Property Lists */,
 			);
@@ -184,6 +193,15 @@
 				D44DD7C214044915004374FE /* Frameworks */,
 				D44DD7C014044915004374FE /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D4B41D4A140ABC8E00B73C84 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */,
+				D4B41D56140AC2B800B73C84 /* LookIODing.caf */,
+			);
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -256,6 +274,8 @@
 				D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */,
 				D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */,
 				D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */,
+				D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */,
+				D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 @class GCDAsyncSocket_LIO, SBJsonParser_LIO, SBJsonWriter_LIO, LIOChatViewController;
 
@@ -29,6 +30,7 @@
     UIView *connectionBackground;
     NSMutableArray *chatHistory;
     LIOChatViewController *chatViewController;
+    SystemSoundID soundYay, soundDing;
 }
 
 @property(nonatomic, retain) UIImage *touchImage;

@@ -7,6 +7,7 @@
 //
 
 #import "LTBAppDelegate.h"
+#import "LIOLookIOManager.h"
 
 //io.look.${PRODUCT_NAME:rfc1034identifier}
 
@@ -21,6 +22,8 @@
     
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
+    
+    [LIOLookIOManager sharedLookIOManager].touchImage = [UIImage imageNamed:@"DefaultTouchOrange"];
     
     return YES;
 }

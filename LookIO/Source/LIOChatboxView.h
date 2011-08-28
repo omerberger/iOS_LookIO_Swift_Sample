@@ -13,8 +13,12 @@
     UIView *bubbleView;
     UITextField *inputField;
     UITextView *messageView;
+    BOOL canTakeInput;
+    id delegate;
 }
 
 @property(nonatomic, readonly) UITextView *messageView;
+@property(nonatomic, assign) BOOL canTakeInput;
+@property(nonatomic, assign) id delegate;
 
 @end

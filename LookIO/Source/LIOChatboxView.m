@@ -11,7 +11,7 @@
 
 @implementation LIOChatboxView
 
-@synthesize messageView;
+@synthesize messageView, canTakeInput, delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -19,23 +19,42 @@
     
     if (self)
     {
-        bubbleView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, frame.size.height)];
+        self.backgroundColor = [UIColor clearColor];
+        
+        bubbleView = [[UIView alloc] initWithFrame:self.bounds];
         bubbleView.backgroundColor = [UIColor blackColor];
         bubbleView.alpha = 0.75;
         bubbleView.layer.masksToBounds = YES;
-        bubbleView.layer.cornerRadius = 0.4;
+        bubbleView.layer.cornerRadius = 4.0;
         [self addSubview:bubbleView];
         
-        messageView = [[UITextView alloc] initWithFrame:bubbleView.bounds];
+        CGRect aFrame = bubbleView.bounds;
+        aFrame.origin.x = 5.0;
+        aFrame.size.width = aFrame.size.width - 10.0;
+        aFrame.origin.y = 5.0;
+        aFrame.size.height = aFrame.size.height - 10.0;
+        
+        messageView = [[UITextView alloc] initWithFrame:aFrame];
         messageView.backgroundColor = [UIColor clearColor];
         messageView.textColor = [UIColor whiteColor];
+        messageView.font = [UIFont systemFontOfSize:14.0];
+        messageView.editable = NO;
+        messageView.scrollEnabled = NO;
+        messageView.clipsToBounds = YES;
         [self addSubview:messageView];
         
-        CGSize size = [@"Test" sizeWithFont:[UIFont systemFontOfSize:12.0]];
-        inputField = [[UITextField alloc] initWithFrame:CGRectMake(5.0, frame.size.height - (size.height + 5.0), frame.size.width - 1.0, size.height)];
+        CGSize size = [@"jpqQABTY" sizeWithFont:messageView.font];
+        inputField = [[UITextField alloc] initWithFrame:CGRectMake(10.0, frame.size.height - (size.height + 10.0), frame.size.width - 20.0, size.height)];
+        inputField.font = messageView.font;
         inputField.backgroundColor = [UIColor whiteColor];
         inputField.hidden = YES;
+        inputField.delegate = self;
         [self addSubview:inputField];
+        
+        UIButton *buttonOverlay = [UIButton buttonWithType:UIButtonTypeCustom];
+        buttonOverlay.frame = self.bounds;
+        [buttonOverlay addTarget:self action:@selector(buttonOverlayWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:buttonOverlay];
     }
     
     return self;
@@ -57,12 +76,21 @@
 }
 
 #pragma mark -
+#pragma mark UIControl actions
+
+- (void)buttonOverlayWasTapped
+{
+    if (canTakeInput && NO == [self isFirstResponder])
+        [self takeInput];
+}
+
+#pragma mark -
 #pragma mark UITextFieldDelegate methods
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
     CGRect aFrame = messageView.frame;
-    aFrame.origin.y -= inputField.frame.size.height;
+    //aFrame.origin.y -= inputField.frame.size.height;
     aFrame.size.height -= inputField.frame.size.height;
     messageView.frame = aFrame;
 }
@@ -70,7 +98,7 @@
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
     CGRect aFrame = messageView.frame;
-    aFrame.origin.y += inputField.frame.size.height;
+    //aFrame.origin.y += inputField.frame.size.height;
     aFrame.size.height += inputField.frame.size.height;
     messageView.frame = aFrame;
     
@@ -79,6 +107,8 @@
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
+    [delegate chatboxViewDidReturn:self withText:textField.text];
+    
     return YES;
 }
 
