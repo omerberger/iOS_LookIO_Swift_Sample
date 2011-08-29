@@ -20,7 +20,7 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerControlEndpoint         @"look.io"
+#define LIOLookIOManagerControlEndpoint         @"localhost"
 #define LIOLookIOManagerControlEndpointPort     8100
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
@@ -640,6 +640,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     aString, @"text",
                                                     nil]];
     
+    chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
+
     [controlSocket writeData:[chat dataUsingEncoding:NSASCIIStringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
