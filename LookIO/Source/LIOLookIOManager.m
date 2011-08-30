@@ -20,7 +20,7 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerControlEndpoint         @"localhost"
+#define LIOLookIOManagerControlEndpoint         @"look.io"
 #define LIOLookIOManagerControlEndpointPort     8100
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
@@ -250,7 +250,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                          connectionLogo.alpha = 0.9;
                          connectionBackground.alpha = 0.33;
                      }
-                     completion:^(BOOL finished) {
+                     completion:^(BOOL finished) {                    
                          connectionSpinner.alpha = 1.0;
                      }];
 }
