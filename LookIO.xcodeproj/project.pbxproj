@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
+		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
 		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
 		D48ABF0A1404647300835205 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEF71404647300835205 /* GCDAsyncSocket.h */; };
@@ -36,6 +38,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
+		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D48ABEF31404644B00835205 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -155,6 +159,8 @@
 				D48ABF3114046E6B00835205 /* LIOLookIOManager.m */,
 				D4B41D39140969C400B73C84 /* LIOChatViewController.h */,
 				D4B41D3A140969C400B73C84 /* LIOChatViewController.m */,
+				D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */,
+				D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -188,6 +194,7 @@
 				D48ABF3214046E6B00835205 /* LIOChatboxView.h in Headers */,
 				D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */,
 				D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */,
+				D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -252,6 +259,7 @@
 				D48ABF3314046E6B00835205 /* LIOChatboxView.m in Sources */,
 				D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */,
 				D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */,
+				D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

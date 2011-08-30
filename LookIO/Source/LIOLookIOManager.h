@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
 
-@class GCDAsyncSocket_LIO, SBJsonParser_LIO, SBJsonWriter_LIO, LIOChatViewController;
+@class GCDAsyncSocket_LIO, SBJsonParser_LIO, SBJsonWriter_LIO, LIOChatViewController, LIOConnectViewController;
 
 @interface LIOLookIOManager : NSObject <UIAlertViewDelegate>
 {
@@ -23,14 +23,11 @@
     SBJsonWriter_LIO *jsonWriter;
     UIImageView *cursorView, *clickView;
     UIButton *controlButton;
-    UIImageView *connectionLogo;
-    UIButton *hideButton, *cancelButton;
+    UIActivityIndicatorView *controlButtonSpinner;
     CGRect controlButtonFrame;
-    UIActivityIndicatorView *connectionSpinner;
-    UILabel *connectionLabel;
-    UIView *connectionBackground;
     NSMutableArray *chatHistory;
     LIOChatViewController *chatViewController;
+    LIOConnectViewController *connectViewController;
     SystemSoundID soundYay, soundDing;
     BOOL unloadAfterDisconnect;
     BOOL minimized;
