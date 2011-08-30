@@ -24,6 +24,7 @@
     UIImageView *cursorView, *clickView;
     UIButton *controlButton;
     UIImageView *connectionLogo;
+    UIButton *hideButton, *cancelButton;
     CGRect controlButtonFrame;
     UIActivityIndicatorView *connectionSpinner;
     UILabel *connectionLabel;
@@ -32,6 +33,7 @@
     LIOChatViewController *chatViewController;
     SystemSoundID soundYay, soundDing;
     BOOL unloadAfterDisconnect;
+    BOOL minimized;
 }
 
 @property(nonatomic, retain) UIImage *touchImage;

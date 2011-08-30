@@ -100,7 +100,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController release];
     [chatHistory release];
     [lastScreenshotSent release];
-    
+    [hideButton release];
+    [cancelButton release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -108,6 +109,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSLog(@"[LOOKIO] Unloaded.");
     
     [super dealloc];
+}
+
+- (void)unload
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [chatViewController.view removeFromSuperview];
+        
+        [cursorView removeFromSuperview];
+        [clickView removeFromSuperview];
+        [controlButton removeFromSuperview];
+        [connectionLogo removeFromSuperview];
+        [hideButton removeFromSuperview];
+        [cancelButton removeFromSuperview];
+        [connectionSpinner removeFromSuperview];
+        [connectionLabel removeFromSuperview];
+        [connectionBackground removeFromSuperview];
+        
+        [screenCaptureTimer invalidate];
+        screenCaptureTimer = nil;
+        
+        [sharedLookIOManager release];
+        sharedLookIOManager = nil;
+    });
 }
 
 - (UIImage *)captureScreen
@@ -190,6 +214,141 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     });
 }
 
+- (void)showConnectionUI
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    
+    if (nil == connectionBackground)
+    {
+        connectionBackground = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, keyWindow.frame.size.width, keyWindow.frame.size.height)];
+        connectionBackground.backgroundColor = [UIColor blackColor];
+        [keyWindow addSubview:connectionBackground];
+    }
+    connectionBackground.alpha = 0.0;
+    
+    if (nil == connectionLogo)
+    {
+        UIImage *logoImage = [UIImage imageNamed:@"LookIOLogo"];
+        connectionLogo = [[UIImageView alloc] initWithImage:logoImage];
+        [keyWindow addSubview:connectionLogo];
+    }
+    connectionLogo.frame = CGRectZero;
+    connectionLogo.center = CGPointMake(keyWindow.frame.size.width / 2.0, keyWindow.frame.size.height / 2.0);
+    
+    CGSize targetSize = CGSizeMake(224.0, 224.0);
+    CGRect targetFrame = CGRectMake((keyWindow.frame.size.width / 2.0) - (targetSize.width / 2.0),
+                                    (keyWindow.frame.size.height / 2.0) - (targetSize.height / 2.0),
+                                    targetSize.width,
+                                    targetSize.height);
+    
+    if (nil == connectionSpinner)
+    {
+        connectionSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        [connectionLogo addSubview:connectionSpinner];
+    }
+    CGFloat spinnerSize = 64.0;
+    connectionSpinner.frame = CGRectMake((targetFrame.size.width / 2.0) - (spinnerSize / 2.0),
+                                         (targetFrame.size.height / 2.0) - (spinnerSize / 2.0),
+                                         spinnerSize,
+                                         spinnerSize);
+    [connectionSpinner startAnimating];
+    connectionSpinner.alpha = 0.0;
+    
+    if (nil == cancelButton)
+    {
+        cancelButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+        [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+        [cancelButton sizeToFit];
+        [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [keyWindow addSubview:cancelButton];
+    }
+    CGRect aFrame = cancelButton.frame;
+    aFrame.origin.x = 10.0;
+    aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    cancelButton.frame = aFrame;
+    cancelButton.alpha = 0.0;
+    
+    if (nil == hideButton)
+    {
+        hideButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+        [hideButton setTitle:@"Hide" forState:UIControlStateNormal];
+        [hideButton sizeToFit];
+        [hideButton addTarget:self action:@selector(hideButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [keyWindow addSubview:hideButton];
+    }
+    aFrame = hideButton.frame;
+    aFrame.origin.x = keyWindow.frame.size.width - aFrame.size.width - 10.0;
+    aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    hideButton.frame = aFrame;
+    hideButton.alpha = 0.0;
+    
+    // Logo zoom to center.
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                     animations:^{
+                         connectionLogo.frame = targetFrame;
+                         connectionLogo.alpha = 0.9;
+                         connectionBackground.alpha = 0.33;
+                         hideButton.alpha = 1.0;
+                         cancelButton.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {                    
+                         connectionSpinner.alpha = 1.0;
+                     }];
+}
+
+- (void)hideConnectionUI
+{
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                     animations:^{
+                         connectionBackground.alpha = 0.0;
+                         connectionLogo.frame = self.controlButtonFrame;
+                         connectionSpinner.frame = CGRectMake(0.0, 0.0, self.controlButtonFrame.size.width, self.controlButtonFrame.size.height);
+                         connectionLogo.alpha = 1.0;
+                         cancelButton.alpha = 0.0;
+                         hideButton.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
+                         [connectionBackground removeFromSuperview];
+                         [connectionBackground release];
+                         connectionBackground = nil;
+                         
+                         if (NO == enqueued)
+                         {
+                             [connectionSpinner removeFromSuperview];
+                             [connectionSpinner release];
+                             connectionSpinner = nil;
+                         }
+                         
+                         [connectionLogo removeFromSuperview];
+                         [connectionLogo release];
+                         connectionLogo = nil;
+                         
+                         [cancelButton removeFromSuperview];
+                         [cancelButton release];
+                         cancelButton = nil;
+                         
+                         [hideButton removeFromSuperview];
+                         [hideButton release];
+                         hideButton = nil;
+                         
+                         if (nil == controlButton)
+                         {
+                             controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+                             [controlButton setImage:[UIImage imageNamed:@"ControlButton"] forState:UIControlStateNormal];
+                             [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+                             controlButton.frame = self.controlButtonFrame;
+                             [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
+                         }
+                         
+                         if (chatViewController)
+                             [[[UIApplication sharedApplication] keyWindow] insertSubview:controlButton belowSubview:chatViewController.view];
+                     }];
+}
+
 - (void)beginConnecting
 {
     if (controlSocket.isConnected || controlSocketConnecting)
@@ -222,47 +381,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     controlSocketConnecting = YES;
     
-    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    
-    connectionBackground = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, keyWindow.frame.size.width, keyWindow.frame.size.height)];
-    connectionBackground.backgroundColor = [UIColor blackColor];
-    connectionBackground.alpha = 0.0;
-    [keyWindow addSubview:connectionBackground];
-    
-    UIImage *logoImage = [UIImage imageNamed:@"LookIOLogo"];
-    connectionLogo = [[UIImageView alloc] initWithImage:logoImage];
-    connectionLogo.frame = CGRectZero;
-    connectionLogo.center = CGPointMake(keyWindow.frame.size.width / 2.0, keyWindow.frame.size.height / 2.0);
-    [keyWindow addSubview:connectionLogo];
-    
-    CGSize targetSize = CGSizeMake(224.0, 224.0);
-    CGRect targetFrame = CGRectMake((keyWindow.frame.size.width / 2.0) - (targetSize.width / 2.0),
-                                    (keyWindow.frame.size.height / 2.0) - (targetSize.height / 2.0),
-                                    targetSize.width,
-                                    targetSize.height);
-    
-    CGFloat spinnerSize = 64.0;
-    connectionSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    connectionSpinner.frame = CGRectMake((targetFrame.size.width / 2.0) - (spinnerSize / 2.0),
-                                         (targetFrame.size.height / 2.0) - (spinnerSize / 2.0),
-                                         spinnerSize,
-                                         spinnerSize);
-    [connectionSpinner startAnimating];
-    connectionSpinner.alpha = 0.0;
-    [connectionLogo addSubview:connectionSpinner];
-    
-    // Logo zoom to center.
-    [UIView animateWithDuration:0.5
-                          delay:0.0
-                        options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
-                     animations:^{
-                         connectionLogo.frame = targetFrame;
-                         connectionLogo.alpha = 0.9;
-                         connectionBackground.alpha = 0.33;
-                     }
-                     completion:^(BOOL finished) {                    
-                         connectionSpinner.alpha = 1.0;
-                     }];
+    [self showConnectionUI];
 }
 
 - (void)killConnection
@@ -436,45 +555,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSLog(@"[QUEUE] We're live!");
             enqueued = NO;
             
-            // Logo shrink down to designated position.
-            /*
-            double delayInSeconds = 1.5;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            */
-                connectionSpinner.hidden = YES;
-            //});
             dispatch_async(dispatch_get_main_queue(), ^{
-                [UIView animateWithDuration:0.5
-                                      delay:0.0//1.5
-                                    options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
-                                 animations:^{
-                                     connectionBackground.alpha = 0.0;
-                                     connectionLogo.frame = self.controlButtonFrame;
-                                     connectionLogo.alpha = 1.0;
-                                 }
-                                 completion:^(BOOL finished) {
-                                     [connectionBackground removeFromSuperview];
-                                     [connectionBackground release];
-                                     connectionBackground = nil;
-                                     
-                                     [connectionSpinner removeFromSuperview];
-                                     [connectionSpinner release];
-                                     connectionSpinner = nil;
-                                     
-                                     [connectionLogo removeFromSuperview];
-                                     [connectionLogo release];
-                                     connectionLogo = nil;
-                                     
-                                     controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-                                     [controlButton setImage:[UIImage imageNamed:@"ControlButton"] forState:UIControlStateNormal];
-                                     [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-                                     controlButton.frame = self.controlButtonFrame;
-                                     [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
-                                     
-                                     if (chatViewController)
-                                         [[[UIApplication sharedApplication] keyWindow] insertSubview:controlButton belowSubview:chatViewController.view];
-                                 }];
+                [self hideConnectionUI];
             });
         }
     }
@@ -534,7 +616,35 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonWasTapped
 {
-    [self showChat];
+    if (enqueued && minimized)
+    {
+        [controlButton removeFromSuperview];
+        [controlButton release];
+        controlButton = nil;
+        
+        [self showConnectionUI];
+        minimized = NO;
+    }
+    else
+        [self showChat];
+}
+
+- (void)hideButtonWasTapped
+{
+    [self hideConnectionUI];
+    minimized = YES;
+}
+
+- (void)cancelButtonWasTapped
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
+                                                        message:@"Cancel this session?"
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"No", @"Yes", nil];
+    alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
+    [alertView show];
+    [alertView autorelease];
 }
 
 #pragma mark -
@@ -577,26 +687,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err
 {
-    [connectionBackground removeFromSuperview];
-    [connectionBackground release];
-    connectionBackground = nil;
-    
-    [connectionSpinner removeFromSuperview];
-    [connectionSpinner release];
-    connectionSpinner = nil;
-    
-    [connectionLabel removeFromSuperview];
-    [connectionLabel release];
-    connectionLabel = nil;
-    
-    [connectionLogo removeFromSuperview];
-    [connectionLogo release];
-    connectionLogo = nil;
-    
-    [controlButton removeFromSuperview];
-    [controlButton release];
-    controlButton = nil;
-    
     controlSocketConnecting = NO;
     introduced = NO;
     waitingForIntroAck = NO;
@@ -625,17 +715,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     if (unloadAfterDisconnect)
-    {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [chatViewController.view removeFromSuperview];
-            
-            [screenCaptureTimer invalidate];
-            screenCaptureTimer = nil;
-            
-            [sharedLookIOManager release];
-            sharedLookIOManager = nil;
-        });
-    }
+        [self unload];
 }
 
 - (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -721,8 +801,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (1 == buttonIndex) // "Yes"
             {
-                unloadAfterDisconnect = YES;
-                [self killConnection];
+                if (controlSocket.isDisconnected)
+                    [self unload];
+                else
+                {
+                    unloadAfterDisconnect = YES;
+                    [self killConnection];
+                }
             }
             
             break;
