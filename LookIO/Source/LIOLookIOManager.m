@@ -16,6 +16,8 @@
 #import "LIOChatViewController.h"
 
 // Misc. constants
+#define LIOLookIOManagerVersion @"0.1"
+
 #define LIOLookIOManagerScreenCaptureInterval   0.33
 
 #define LIOLookIOManagerWriteTimeout            5.0
@@ -24,6 +26,8 @@
 #define LIOLookIOManagerControlEndpointPort     8100
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
+
+#define LIOLookIOManagerDisconnectConfirmAlertViewTag 1
 
 @implementation LIOLookIOManager
 
@@ -45,6 +49,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        NSLog(@"[LOOKIO] Loaded.");
+        
         dispatch_queue_t delegateQueue = dispatch_queue_create("async_socket_delegate", NULL);
         controlSocket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
         
@@ -93,9 +99,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectionLogo release];
     [chatViewController release];
     [chatHistory release];
+    [lastScreenshotSent release];
+    
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
+    
+    NSLog(@"[LOOKIO] Unloaded.");
     
     [super dealloc];
 }
@@ -253,6 +263,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      completion:^(BOOL finished) {                    
                          connectionSpinner.alpha = 1.0;
                      }];
+}
+
+- (void)killConnection
+{
+    NSString *udid = [[UIDevice currentDevice] uniqueIdentifier];
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+    NSString *outro = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                    @"outro", @"type",
+                                                    udid, @"device_id",
+                                                    bundleId, @"app_id",
+                                                    nil]];
+    outro = [outro stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[outro dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    [controlSocket disconnectAfterWriting];
 }
 
 - (void)showChat
@@ -532,6 +560,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     udid, @"device_id",
                                                     deviceType, @"device_type",
                                                     bundleId, @"app_id",
+                                                    LIOLookIOManagerVersion, @"version",
                                                     nil]];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -594,6 +623,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSLog(@"[CONNECT] Socket disconnected.");
     }
+    
+    if (unloadAfterDisconnect)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [chatViewController.view removeFromSuperview];
+            
+            [screenCaptureTimer invalidate];
+            screenCaptureTimer = nil;
+            
+            [sharedLookIOManager release];
+            sharedLookIOManager = nil;
+        });
+    }
 }
 
 - (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -654,6 +696,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController addMessage:[chatHistory lastObject] animated:YES];
     [chatViewController reloadMessages];
     [chatViewController scrollToBottom];
+}
+
+- (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
+                                                        message:@"Cancel this session?"
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"No", @"Yes", nil];
+    alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
+    [alertView show];
+    [alertView autorelease];
+}
+
+#pragma mark -
+#pragma mark UIAlertViewDelegate methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    switch (alertView.tag)
+    {
+        case LIOLookIOManagerDisconnectConfirmAlertViewTag:
+        {
+            if (1 == buttonIndex) // "Yes"
+            {
+                unloadAfterDisconnect = YES;
+                [self killConnection];
+            }
+            
+            break;
+        }
+    }
 }
 
 @end

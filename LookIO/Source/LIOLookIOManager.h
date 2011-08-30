@@ -11,7 +11,7 @@
 
 @class GCDAsyncSocket_LIO, SBJsonParser_LIO, SBJsonWriter_LIO, LIOChatViewController;
 
-@interface LIOLookIOManager : NSObject
+@interface LIOLookIOManager : NSObject <UIAlertViewDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -31,6 +31,7 @@
     NSMutableArray *chatHistory;
     LIOChatViewController *chatViewController;
     SystemSoundID soundYay, soundDing;
+    BOOL unloadAfterDisconnect;
 }
 
 @property(nonatomic, retain) UIImage *touchImage;
@@ -38,5 +39,6 @@
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)beginConnecting;
+- (void)killConnection;
 
 @end

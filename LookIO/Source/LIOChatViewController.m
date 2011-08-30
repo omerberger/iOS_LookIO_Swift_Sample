@@ -32,6 +32,16 @@
     dismissalButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [dismissalButton addTarget:self action:@selector(dismissalButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [scrollView addSubview:dismissalButton];
+    
+    endSessionButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
+    [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    [endSessionButton sizeToFit];
+    CGRect aFrame = endSessionButton.frame;
+    aFrame.origin.y = rootView.bounds.size.height - aFrame.size.height - 5.0;
+    aFrame.origin.x = (rootView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    endSessionButton.frame = aFrame;
+    [rootView addSubview:endSessionButton];
 }
 
 - (void)viewDidLoad
@@ -155,6 +165,11 @@
 - (void)dismissalButtonWasTapped
 {
     [delegate chatViewControllerWasDismissed:self];
+}
+
+- (void)endSessionButtonWasTapped
+{
+    [delegate chatViewControllerDidTapEndSessionButton:self];
 }
 
 @end

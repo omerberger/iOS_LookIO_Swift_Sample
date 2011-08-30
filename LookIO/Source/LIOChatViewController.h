@@ -13,6 +13,8 @@
 /*
 @protocol LIOChatViewControllerDelegate
 - (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController;
+- (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString;
+- (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 @end
  */
 
@@ -22,6 +24,7 @@
     UIScrollView *scrollView;
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
+    UIButton *endSessionButton;
     id delegate;
 }
 
