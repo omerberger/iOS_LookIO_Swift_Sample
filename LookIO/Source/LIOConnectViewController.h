@@ -31,6 +31,7 @@
 
 @property(nonatomic, assign) id delegate;
 @property(nonatomic, assign) CGRect targetLogoFrameForHiding;
+@property(nonatomic, readonly) UILabel *connectionLabel;
 
 - (void)showAnimated:(BOOL)animated;
 - (void)hideAnimated:(BOOL)animated;

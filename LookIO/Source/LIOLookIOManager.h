@@ -31,6 +31,7 @@
     SystemSoundID soundYay, soundDing;
     BOOL unloadAfterDisconnect;
     BOOL minimized;
+    NSNumber *lastKnownQueuePosition;
 }
 
 @property(nonatomic, retain) UIImage *touchImage;

@@ -6,11 +6,12 @@
 //  Copyright 2011 LookIO, Inc. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
 #import "LIOConnectViewController.h"
 
 @implementation LIOConnectViewController
 
-@synthesize delegate, targetLogoFrameForHiding;
+@synthesize delegate, targetLogoFrameForHiding, connectionLabel;
 
 - (void)loadView
 {
@@ -48,6 +49,20 @@
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
     hideButton.frame = aFrame;
     [rootView addSubview:hideButton];
+    
+    connectionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    connectionLabel.text = @"jY";
+    connectionLabel.textAlignment = UITextAlignmentCenter;
+    [connectionLabel sizeToFit];
+    aFrame = connectionLabel.frame;
+    aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = rootView.frame.size.width - 20.0;
+    connectionLabel.frame = aFrame;
+    connectionLabel.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.5];
+    connectionLabel.layer.masksToBounds = YES;
+    connectionLabel.layer.cornerRadius = 2.0;
+    [rootView addSubview:connectionLabel];
 }
 
 - (void)dealloc
@@ -100,6 +115,11 @@
                                     targetSize.width,
                                     targetSize.height);
     
+    CGRect aFrame = connectionLabel.frame;
+    aFrame.origin.y = targetFrame.origin.y + targetFrame.size.height + 5.0;
+    connectionLabel.frame = aFrame;
+    connectionLabel.alpha = 0.0;
+    
     CGFloat spinnerSize = 64.0;
     connectionSpinner.frame = CGRectMake((targetFrame.size.width / 2.0) - (spinnerSize / 2.0),
                                          (targetFrame.size.height / 2.0) - (spinnerSize / 2.0),
@@ -124,6 +144,7 @@
                              connectionBackground.alpha = 0.33;
                              hideButton.alpha = 1.0;
                              cancelButton.alpha = 1.0;
+                             connectionLabel.alpha = 1.0;
                          }
                          completion:^(BOOL finished) {                    
                              connectionSpinner.alpha = 1.0;
@@ -154,6 +175,7 @@
                              connectionBackground.alpha = 0.0;
                              cancelButton.alpha = 0.0;
                              hideButton.alpha = 0.0;
+                             connectionLabel.alpha = 0.0;
                          }
                          completion:^(BOOL finished) {
                              [delegate connectViewControllerWasHidden:self];

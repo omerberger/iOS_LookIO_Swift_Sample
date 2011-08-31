@@ -30,6 +30,7 @@
 		D44DD82D14044966004374FE /* LTBBookHotelsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D44DD80F14044966004374FE /* LTBBookHotelsViewController.m */; };
 		D44DD82E14044966004374FE /* LTBMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D44DD81114044966004374FE /* LTBMainViewController.m */; };
 		D44DD82F14044966004374FE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D44DD81214044966004374FE /* main.m */; };
+		D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */; };
 		D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1B1404698400835205 /* libLookIO.a */; };
 		D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1C1404698400835205 /* CFNetwork.framework */; };
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
@@ -71,6 +72,7 @@
 		D44DD81014044966004374FE /* LTBMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBMainViewController.h; sourceTree = "<group>"; };
 		D44DD81114044966004374FE /* LTBMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBMainViewController.m; sourceTree = "<group>"; };
 		D44DD81214044966004374FE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		D48ABF1B1404698400835205 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = "build/Release-iphoneos/libLookIO.a"; sourceTree = "<group>"; };
 		D48ABF1C1404698400835205 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
 		D4B41D3114086D1D00B73C84 /* LTBBookFlightsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBBookFlightsViewController.h; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */,
 				D4B41D54140ABE2100B73C84 /* AudioToolbox.framework in Frameworks */,
 				D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */,
 				D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */,
@@ -112,6 +115,7 @@
 		D44DD7C214044915004374FE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */,
 				D4B41D53140ABE2100B73C84 /* AudioToolbox.framework */,
 				D48ABF1C1404698400835205 /* CFNetwork.framework */,
 				D48ABF1B1404698400835205 /* libLookIO.a */,

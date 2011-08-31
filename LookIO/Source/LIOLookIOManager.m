@@ -111,6 +111,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController release];
     [chatHistory release];
     [lastScreenshotSent release];
+    [lastKnownQueuePosition release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -227,6 +228,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     connectViewController.delegate = self;
     connectViewController.targetLogoFrameForHiding = self.controlButtonFrame;
     [[[UIApplication sharedApplication] keyWindow] addSubview:connectViewController.view];
+    
+    if (lastKnownQueuePosition)
+    {
+        if ([lastKnownQueuePosition intValue] == 1)
+            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+        else
+            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
+    }
+    else if (controlSocketConnecting)
+    {
+        connectViewController.connectionLabel.text = @"Connecting...";
+    }
+    else
+    {
+        connectViewController.connectionLabel.text = @"Not connected.";
+    }
+    
     [connectViewController showAnimated:YES];
 }
 
@@ -440,6 +458,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [connectViewController hideAnimated:YES];
                 controlButtonSpinner.hidden = YES;
             });
+        }
+        else if ([action isEqualToString:@"queued"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSNumber *position = [data objectForKey:@"position"];
+            [lastKnownQueuePosition release];
+            lastKnownQueuePosition = [position retain];
+            if ([lastKnownQueuePosition intValue] == 1)
+                connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+            else
+                connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
         }
     }
     else if ([type isEqualToString:@"click"])
