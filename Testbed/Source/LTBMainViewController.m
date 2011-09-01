@@ -19,17 +19,19 @@
     UIView *rootView = self.view;
     
     UIImageView *fakeImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"TravelocityMain"]] autorelease];
+    fakeImageView.frame = rootView.bounds;
+    fakeImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:fakeImageView];
     
     UIButton *flightsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     flightsButton.frame = CGRectMake(20, 70, 80, 80);
-    flightsButton.backgroundColor = [UIColor clearColor];
+    flightsButton.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.33];
     [flightsButton addTarget:self action:@selector(flightsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [rootView addSubview:flightsButton];
     
     UIButton *hotelsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     hotelsButton.frame = CGRectMake(115, 70, 80, 80);
-    hotelsButton.backgroundColor = [UIColor clearColor];
+    hotelsButton.backgroundColor = [UIColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.33];
     [hotelsButton addTarget:self action:@selector(hotelsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [rootView addSubview:hotelsButton];
     
@@ -38,6 +40,7 @@
     helpButton.contentMode = UIViewContentModeCenter;
     [helpButton setBackgroundImage:[UIImage imageNamed:@"HelpButton"] forState:UIControlStateNormal];
     [helpButton addTarget:self action:@selector(helpButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    helpButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     [rootView addSubview:helpButton];
     
     /*
@@ -55,6 +58,18 @@
     [bookHotelsViewController release];
     
     [super dealloc];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return YES;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    [[LIOLookIOManager sharedLookIOManager] recordCurrentUILocation:@"Main Menu"];
 }
 
 #pragma mark -
@@ -77,7 +92,7 @@
 
 - (void)helpButtonWasTapped
 {
-    [[LIOLookIOManager sharedLookIOManager] beginConnecting];
+    [[LIOLookIOManager sharedLookIOManager] beginSession];
 }
 
 #pragma mark -

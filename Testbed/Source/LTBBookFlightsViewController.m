@@ -7,6 +7,7 @@
 //
 
 #import "LTBBookFlightsViewController.h"
+#import "LIOLookIOManager.h"
 
 @implementation LTBBookFlightsViewController
 
@@ -43,6 +44,18 @@
 - (void)backButtonWasTapped
 {
     [delegate bookFlightsViewControllerDidTapBackButton:self];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return YES;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    [[LIOLookIOManager sharedLookIOManager] recordCurrentUILocation:@"Book Flights"];
 }
 
 @end

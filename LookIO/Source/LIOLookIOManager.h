@@ -7,40 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <AudioToolbox/AudioToolbox.h>
 
-@class GCDAsyncSocket_LIO, SBJsonParser_LIO, SBJsonWriter_LIO, LIOChatViewController, LIOConnectViewController;
-
-@interface LIOLookIOManager : NSObject <UIAlertViewDelegate>
-{
-    NSTimer *screenCaptureTimer;
-    UIImage *touchImage;
-    GCDAsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
-    NSData *messageSeparatorData;
-    NSData *lastScreenshotSent;
-    SBJsonParser_LIO *jsonParser;
-    SBJsonWriter_LIO *jsonWriter;
-    UIImageView *cursorView, *clickView;
-    UIButton *controlButton;
-    UIActivityIndicatorView *controlButtonSpinner;
-    CGRect controlButtonFrame;
-    NSMutableArray *chatHistory;
-    LIOChatViewController *chatViewController;
-    LIOConnectViewController *connectViewController;
-    SystemSoundID soundYay, soundDing;
-    BOOL unloadAfterDisconnect;
-    BOOL minimized;
-    NSNumber *lastKnownQueuePosition;
-    BOOL screenshotsAllowed;
-    UIBackgroundTaskIdentifier backgroundTaskId;
-}
+@interface LIOLookIOManager : NSObject
 
 @property(nonatomic, retain) UIImage *touchImage;
+@property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, assign) CGRect controlButtonFrame;
 
 + (LIOLookIOManager *)sharedLookIOManager;
-- (void)beginConnecting;
-- (void)killConnection;
+- (void)beginSession;
+- (void)recordCurrentUILocation:(NSString *)aLocationString;
 
 @end

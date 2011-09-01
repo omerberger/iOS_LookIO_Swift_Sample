@@ -52,23 +52,44 @@
     [hideButton setFrame:aFrame];
     [rootView addSubview:(UIView *)hideButton];
     
+    if ([hideButton frame].size.width > [cancelButton frame].size.width)
+    {
+        CGRect newFrame = CGRectMake([cancelButton frame].origin.x,
+                                     [cancelButton frame].origin.y,
+                                     [hideButton frame].size.width,
+                                     [cancelButton frame].size.height);
+        [cancelButton setFrame:newFrame];
+    }
+    else
+    {
+        CGRect newFrame = CGRectMake(rootView.frame.size.width - [cancelButton frame].size.width - 10.0,
+                                     [hideButton frame].origin.y,
+                                     [cancelButton frame].size.width,
+                                     [hideButton frame].size.height);
+        [hideButton setFrame:newFrame];
+    }
+    
     connectionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     connectionLabel.text = @"jY";
     connectionLabel.textAlignment = UITextAlignmentCenter;
     [connectionLabel sizeToFit];
     aFrame = connectionLabel.frame;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-    aFrame.origin.x = 10.0;
-    aFrame.size.width = rootView.frame.size.width - 20.0;
+    aFrame.size.width = rootView.frame.size.width;
     connectionLabel.frame = aFrame;
     connectionLabel.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.5];
-    connectionLabel.layer.masksToBounds = YES;
-    connectionLabel.layer.cornerRadius = 2.0;
     [rootView addSubview:connectionLabel];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(deviceOrientationDidChange:)
+                                                 name:UIDeviceOrientationDidChangeNotification
+                                               object:nil];
 }
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [connectionLogo release];
     [hideButton release];
     [cancelButton release];
@@ -189,6 +210,11 @@
     }
 }
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return YES;
+}
+
 #pragma mark -
 #pragma mark UIControl actions
 
@@ -200,6 +226,32 @@
 - (void)cancelButtonWasTapped
 {
     [delegate connectViewControllerDidTapCancelButton:self];
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)deviceOrientationDidChange:(NSNotification *)aNotification
+{
+    UIInterfaceOrientation newOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    switch (newOrientation)
+    {
+        case UIInterfaceOrientationPortrait:
+        {
+            break;
+        }
+            
+        case UIInterfaceOrientationPortraitUpsideDown:
+        {
+            break;
+        }
+            
+        case UIInterfaceOrientationLandscapeLeft:
+        case UIInterfaceOrientationLandscapeRight:
+        {
+            break;
+        }
+    }
 }
 
 @end

@@ -7,6 +7,7 @@
 //
 
 #import <QuartzCore/QuartzCore.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import <sys/sysctl.h>
 #import "LIOLookIOManager.h"
 #import "GCDAsyncSocket.h"
@@ -31,9 +32,37 @@
 #define LIOLookIOManagerDisconnectConfirmAlertViewTag       1
 #define LIOLookIOManagerScreenshotPermissionAlertViewTag    2
 
+@interface LIOLookIOManager ()
+{
+    NSTimer *screenCaptureTimer;
+    UIImage *touchImage;
+    GCDAsyncSocket_LIO *controlSocket;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
+    NSData *messageSeparatorData;
+    NSData *lastScreenshotSent;
+    SBJsonParser_LIO *jsonParser;
+    SBJsonWriter_LIO *jsonWriter;
+    UIImageView *cursorView, *clickView;
+    UIButton *controlButton;
+    UIActivityIndicatorView *controlButtonSpinner;
+    CGRect controlButtonFrame;
+    NSMutableArray *chatHistory;
+    LIOChatViewController *chatViewController;
+    LIOConnectViewController *connectViewController;
+    SystemSoundID soundYay, soundDing;
+    BOOL unloadAfterDisconnect;
+    BOOL minimized;
+    NSNumber *lastKnownQueuePosition;
+    BOOL screenshotsAllowed;
+    UIBackgroundTaskIdentifier backgroundTaskId;
+    NSString *targetAgentId;    
+}
+
+@end
+
 @implementation LIOLookIOManager
 
-@synthesize touchImage, controlButtonFrame;
+@synthesize touchImage, controlButtonFrame, targetAgentId;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -51,8 +80,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
-        NSLog(@"[LOOKIO] Loaded.");
-        
         dispatch_queue_t delegateQueue = dispatch_queue_create("async_socket_delegate", NULL);
         controlSocket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
         
@@ -104,6 +131,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  selector:@selector(applicationDidBecomeActive:)
                                                      name:UIApplicationDidBecomeActiveNotification
                                                    object:nil];
+        
+        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+        
+        NSLog(@"[LOOKIO] Loaded.");
     }
     
     return self;
@@ -127,6 +158,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatHistory release];
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
+    [targetAgentId release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -210,6 +242,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *screenshotImage = [self captureScreen];
+        CGSize screenshotSize = screenshotImage.size;
         NSData *screenshotData = UIImageJPEGRepresentation(screenshotImage, 0.0);
         if (nil == lastScreenshotSent || NO == [lastScreenshotSent isEqualToData:screenshotData])
         {
@@ -218,10 +251,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             NSString *base64Data = base64EncodedStringFromData(screenshotData);
             
+            NSString *orientation = @"portrait";
+            if (UIInterfaceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
+                orientation = @"landscape";
+            else if (UIInterfaceOrientationPortraitUpsideDown == [[UIDevice currentDevice] orientation])
+                orientation = @"portrait_ud";
+            
             NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                                  @"screenshot", @"type",
                                                                  [self nextGUID], @"screenshot_id",
                                                                  base64Data, @"screenshot",
+                                                                 [NSNumber numberWithFloat:screenshotSize.width], @"width",
+                                                                 [NSNumber numberWithFloat:screenshotSize.height], @"height",
+                                                                 orientation, @"orientation",
                                                                  nil]];
             
             screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
@@ -230,6 +272,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [controlSocket writeData:[screenshot dataUsingEncoding:NSASCIIStringEncoding]
                          withTimeout:-1
                                  tag:0];
+            
+            NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (base64: %u bytes).", (int)screenshotSize.width, (int)screenshotSize.height, orientation, [base64Data length]);
         }
     });
 }
@@ -263,7 +307,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController showAnimated:YES];
 }
 
-- (void)beginConnecting
+- (void)beginSession
 {
     if (controlSocket.isConnected || controlSocketConnecting)
     {
@@ -300,12 +344,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)killConnection
 {
-    NSString *udid = [[UIDevice currentDevice] uniqueIdentifier];
-    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     NSString *outro = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"outro", @"type",
-                                                    udid, @"device_id",
-                                                    bundleId, @"app_id",
                                                     nil]];
     outro = [outro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -314,6 +354,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                          tag:0];
     
     [controlSocket disconnectAfterWriting];
+}
+
+- (void)recordCurrentUILocation:(NSString *)aLocationString
+{
+    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:aLocationString, @"location_name", nil];
+    NSString *uiLocation = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                         @"advisory", @"type",
+                                                         @"ui_location", @"action",
+                                                         dataDict, @"data",
+                                                         nil]];
+    uiLocation = [uiLocation stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[uiLocation dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
 }
 
 - (void)showChat
@@ -595,13 +650,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *udid = [[UIDevice currentDevice] uniqueIdentifier];
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
-    NSString *intro = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                    @"intro", @"type",
-                                                    udid, @"device_id",
-                                                    deviceType, @"device_type",
-                                                    bundleId, @"app_id",
-                                                    LIOLookIOManagerVersion, @"version",
-                                                    nil]];
+    NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      @"intro", @"type",
+                                      udid, @"device_id",
+                                      deviceType, @"device_type",
+                                      bundleId, @"app_id",
+                                      LIOLookIOManagerVersion, @"version",
+                                      nil];
+    if ([targetAgentId length])
+        [introDict setObject:targetAgentId forKey:@"agent_id"];
+    
+    NSString *intro = [jsonWriter stringWithObject:introDict];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
     waitingForIntroAck = YES;
