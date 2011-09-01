@@ -24,7 +24,7 @@
     UIScrollView *scrollView;
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
-    UIButton *endSessionButton;
+    id endSessionButton;
     id delegate;
 }
 

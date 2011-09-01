@@ -33,14 +33,16 @@
     [dismissalButton addTarget:self action:@selector(dismissalButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [scrollView addSubview:dismissalButton];
     
-    endSessionButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
+    
+    endSessionButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
     [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [endSessionButton sizeToFit];
-    CGRect aFrame = endSessionButton.frame;
+    CGRect aFrame = [endSessionButton frame];
     aFrame.origin.y = rootView.bounds.size.height - aFrame.size.height - 5.0;
     aFrame.origin.x = (rootView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-    endSessionButton.frame = aFrame;
+    [endSessionButton setFrame:aFrame];
     [rootView addSubview:endSessionButton];
 }
 

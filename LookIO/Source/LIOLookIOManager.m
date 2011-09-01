@@ -28,7 +28,8 @@
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
-#define LIOLookIOManagerDisconnectConfirmAlertViewTag 1
+#define LIOLookIOManagerDisconnectConfirmAlertViewTag       1
+#define LIOLookIOManagerScreenshotPermissionAlertViewTag    2
 
 @implementation LIOLookIOManager
 
@@ -90,7 +91,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
         
         soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
-        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);    
+        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
+        
+        backgroundTaskId = UIBackgroundTaskInvalid;
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive:)
+                                                     name:UIApplicationWillResignActiveNotification
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationDidBecomeActive:)
+                                                     name:UIApplicationDidBecomeActiveNotification
+                                                   object:nil];
     }
     
     return self;
@@ -98,6 +111,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     self.touchImage = nil;
     
     [controlSocket disconnect];
@@ -190,7 +205,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
-    if (controlSocket.isDisconnected || waitingForScreenshotAck || NO == introduced || YES == enqueued)
+    if (controlSocket.isDisconnected || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed)
         return;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -457,6 +472,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [connectViewController hideAnimated:YES];
                 controlButtonSpinner.hidden = YES;
+                
+                if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+                {
+                    UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                    localNotification.soundName = @"LookIODing.caf";
+                    localNotification.alertBody = @"The support agent is ready to chat with you!";
+                    localNotification.alertAction = @"Go!";
+                    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+                }
             });
         }
         else if ([action isEqualToString:@"queued"])
@@ -469,6 +493,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
             else
                 connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
+        }
+        else if ([action isEqualToString:@"permission"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSString *permission = [data objectForKey:@"permission"];
+            if ([permission isEqualToString:@"screenshot"])
+            {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Security"
+                                                                    message:@"Allow remote agent to see your screen?"
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:@"No", @"Yes", nil];
+                alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
+                [alertView show];
+                [alertView autorelease];
+            }
         }
     }
     else if ([type isEqualToString:@"click"])
@@ -636,7 +676,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma LIOChatViewController delegate methods
+#pragma mark LIOChatViewController delegate methods
 
 - (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController
 {
@@ -702,6 +742,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             break;
         }
+            
+        case LIOLookIOManagerScreenshotPermissionAlertViewTag:
+        {
+            if (1 == buttonIndex) // "Yes"
+            {
+                screenshotsAllowed = YES;
+            }
+            
+            break;
+        }
     }
 }
 
@@ -734,6 +784,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController.view removeFromSuperview];
     [connectViewController release];
     connectViewController = nil;
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
+    if (UIBackgroundTaskInvalid == backgroundTaskId)
+    {
+        backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
+            backgroundTaskId = UIBackgroundTaskInvalid;
+        }];
+    }
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)aNotification
+{
+    if (UIBackgroundTaskInvalid != backgroundTaskId)
+    {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
+        backgroundTaskId = UIBackgroundTaskInvalid;
+    }
 }
 
 @end

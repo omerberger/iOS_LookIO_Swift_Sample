@@ -21,7 +21,7 @@
 @interface LIOConnectViewController : UIViewController
 {
     UIImageView *connectionLogo;
-    UIButton *hideButton, *cancelButton;
+    id hideButton, cancelButton;
     UIActivityIndicatorView *connectionSpinner;
     UILabel *connectionLabel;
     UIView *connectionBackground;

@@ -32,6 +32,8 @@
     BOOL unloadAfterDisconnect;
     BOOL minimized;
     NSNumber *lastKnownQueuePosition;
+    BOOL screenshotsAllowed;
+    UIBackgroundTaskIdentifier backgroundTaskId;
 }
 
 @property(nonatomic, retain) UIImage *touchImage;

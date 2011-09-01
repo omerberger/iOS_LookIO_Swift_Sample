@@ -30,25 +30,27 @@
     [connectionSpinner startAnimating];
     [connectionLogo addSubview:connectionSpinner];
     
-    cancelButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
+    
+    cancelButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
     [cancelButton sizeToFit];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    CGRect aFrame = cancelButton.frame;
+    CGRect aFrame = [cancelButton frame];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-    cancelButton.frame = aFrame;
-    [rootView addSubview:cancelButton];
+    [cancelButton setFrame:aFrame];
+    [rootView addSubview:(UIView *)cancelButton];
     
-    hideButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    hideButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
     [hideButton setTitle:@"Hide" forState:UIControlStateNormal];
     [hideButton sizeToFit];
     [hideButton addTarget:self action:@selector(hideButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    aFrame = hideButton.frame;
+    aFrame = [hideButton frame];
     aFrame.origin.x = rootView.frame.size.width - aFrame.size.width - 10.0;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-    hideButton.frame = aFrame;
-    [rootView addSubview:hideButton];
+    [hideButton setFrame:aFrame];
+    [rootView addSubview:(UIView *)hideButton];
     
     connectionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     connectionLabel.text = @"jY";
@@ -130,8 +132,8 @@
     connectionLogo.frame = CGRectZero;
     connectionLogo.center = CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height / 2.0);
     
-    cancelButton.alpha = 0.0;
-    hideButton.alpha = 0.0;
+    [cancelButton setAlpha:0.0];
+    [hideButton setAlpha:0.0];
     
     if (animated)
     {
@@ -142,8 +144,8 @@
                              connectionLogo.frame = targetFrame;
                              connectionLogo.alpha = 0.9;
                              connectionBackground.alpha = 0.33;
-                             hideButton.alpha = 1.0;
-                             cancelButton.alpha = 1.0;
+                             [cancelButton setAlpha:1.0];
+                             [hideButton setAlpha:1.0];
                              connectionLabel.alpha = 1.0;
                          }
                          completion:^(BOOL finished) {                    
@@ -155,8 +157,8 @@
         connectionLogo.frame = targetFrame;
         connectionLogo.alpha = 0.9;
         connectionBackground.alpha = 0.33;
-        hideButton.alpha = 1.0;
-        cancelButton.alpha = 1.0;
+        [cancelButton setAlpha:1.0];
+        [hideButton setAlpha:1.0];
         connectionSpinner.alpha = 1.0;
     }
 }
@@ -173,8 +175,8 @@
                              connectionSpinner.frame = CGRectMake(0.0, 0.0, self.targetLogoFrameForHiding.size.width, self.targetLogoFrameForHiding.size.height);
                              connectionLogo.alpha = 1.0;
                              connectionBackground.alpha = 0.0;
-                             cancelButton.alpha = 0.0;
-                             hideButton.alpha = 0.0;
+                             [cancelButton setAlpha:0.0];
+                             [hideButton setAlpha:0.0];
                              connectionLabel.alpha = 0.0;
                          }
                          completion:^(BOOL finished) {
