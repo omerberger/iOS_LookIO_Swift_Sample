@@ -343,7 +343,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     AudioServicesPlaySystemSound(soundDing);
     
-    NSLog(@"[CONNECT] Trying \"%@:%d\"...", LIOLookIOManagerControlEndpoint, LIOLookIOManagerControlEndpointPort);
+    NSLog(@"[CONNECT] Trying \"%@:%d\"...", LIOLookIOManagerControlEndpoint, chosenPort);
     
     controlSocketConnecting = YES;
     
