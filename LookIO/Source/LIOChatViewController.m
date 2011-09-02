@@ -128,6 +128,7 @@
     buttonFrame.size.height = contentSize.height - contentHeight;
     dismissalButton.frame = buttonFrame;
     
+    NSUInteger indexOfViewWithFocus = NSNotFound;
     for (int i=0; i<[messageViews count]; i++)
     {
         LIOChatboxView *aChatbox = [messageViews objectAtIndex:i];
@@ -136,6 +137,17 @@
         aChatbox.frame = aFrame;
         aChatbox.canTakeInput = i == [messageViews count] - 1;
         aChatbox.delegate = aChatbox.canTakeInput ? self : nil;
+        
+        if ([aChatbox isFirstResponder] && i != [messageViews count] - 1)
+            indexOfViewWithFocus = i;
+    }
+    
+    if (indexOfViewWithFocus != NSNotFound && indexOfViewWithFocus != [messageViews count] - 1)
+    {
+        LIOChatboxView *previouslyFocusedChatbox = [messageViews objectAtIndex:indexOfViewWithFocus];
+        LIOChatboxView *newFocusedChatbox = [messageViews lastObject];
+        newFocusedChatbox.inputField.text = previouslyFocusedChatbox.inputField.text;
+        previouslyFocusedChatbox.inputField.text = [NSString string];
     }
 }
 

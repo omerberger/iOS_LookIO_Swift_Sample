@@ -18,6 +18,7 @@
 }
 
 @property(nonatomic, readonly) UITextView *messageView;
+@property(nonatomic, readonly) UITextField *inputField;
 @property(nonatomic, assign) BOOL canTakeInput;
 @property(nonatomic, assign) id delegate;
 

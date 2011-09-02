@@ -55,14 +55,15 @@
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
-    NSString *targetAgentId;    
+    NSString *targetAgentId;
+    BOOL usesTLS;
 }
 
 @end
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, controlButtonFrame, targetAgentId;
+@synthesize touchImage, controlButtonFrame, targetAgentId, usesTLS;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -133,6 +134,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                    object:nil];
         
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+        
+        usesTLS = YES;
         
         NSLog(@"[LOOKIO] Loaded.");
     }
@@ -617,37 +620,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                               tag:0];
 }
 
-#pragma mark -
-#pragma mark UIControl actions
-
-- (void)controlButtonWasTapped
+- (void)performIntroduction
 {
-    if (enqueued && minimized)
-    {
-        controlButton.hidden = YES;
-        [self showConnectionUI];
-        minimized = NO;
-    }
-    else
-        [self showChat];
-}
-
-#pragma mark -
-#pragma mark GCDAsyncSocketDelegate methods
-
-- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
-{
-    controlSocketConnecting = NO;
-    
-    NSLog(@"[CONNECT] Connected!");
-    
-    [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
-}
-
-- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
-{
-    NSLog(@"[CONNECT] Secured.");
-    
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
     char *machine = malloc(size);  
@@ -678,7 +652,44 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1
-                              tag:0];
+                              tag:0];    
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)controlButtonWasTapped
+{
+    if (enqueued && minimized)
+    {
+        controlButton.hidden = YES;
+        [self showConnectionUI];
+        minimized = NO;
+    }
+    else
+        [self showChat];
+}
+
+#pragma mark -
+#pragma mark GCDAsyncSocketDelegate methods
+
+- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
+{
+    controlSocketConnecting = NO;
+    
+    NSLog(@"[CONNECT] Connected!");
+    
+    if (usesTLS)
+        [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
+    else
+        [self performIntroduction];
+}
+
+- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
+{
+    NSLog(@"[CONNECT] Secured.");    
+    
+    [self performIntroduction];
 }
 
 - (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err

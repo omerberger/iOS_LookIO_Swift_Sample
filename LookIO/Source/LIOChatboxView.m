@@ -11,7 +11,7 @@
 
 @implementation LIOChatboxView
 
-@synthesize messageView, canTakeInput, delegate;
+@synthesize messageView, canTakeInput, delegate, inputField;
 
 - (id)initWithFrame:(CGRect)frame
 {
