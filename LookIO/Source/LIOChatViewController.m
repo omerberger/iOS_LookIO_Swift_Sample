@@ -138,12 +138,13 @@
         aChatbox.canTakeInput = i == [messageViews count] - 1;
         aChatbox.delegate = aChatbox.canTakeInput ? self : nil;
         
-        if ([aChatbox isFirstResponder] && i != [messageViews count] - 1)
+        if ([aChatbox.inputField isFirstResponder] && i != [messageViews count] - 1)
             indexOfViewWithFocus = i;
     }
     
     if (indexOfViewWithFocus != NSNotFound && indexOfViewWithFocus != [messageViews count] - 1)
     {
+        [self.view endEditing:YES];
         LIOChatboxView *previouslyFocusedChatbox = [messageViews objectAtIndex:indexOfViewWithFocus];
         LIOChatboxView *newFocusedChatbox = [messageViews lastObject];
         newFocusedChatbox.inputField.text = previouslyFocusedChatbox.inputField.text;

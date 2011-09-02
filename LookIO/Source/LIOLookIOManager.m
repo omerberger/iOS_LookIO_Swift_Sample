@@ -32,6 +32,7 @@
 
 #define LIOLookIOManagerDisconnectConfirmAlertViewTag       1
 #define LIOLookIOManagerScreenshotPermissionAlertViewTag    2
+#define LIOLookIOManagerDisconnectErrorAlertViewTag         3
 
 @interface LIOLookIOManager ()
 {
@@ -343,7 +344,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     AudioServicesPlaySystemSound(soundDing);
     
-    NSLog(@"[CONNECT] Trying \"%@:%d\"...", LIOLookIOManagerControlEndpoint, chosenPort);
+    NSLog(@"[CONNECT] Trying \"%@:%u\"...", LIOLookIOManagerControlEndpoint, chosenPort);
     
     controlSocketConnecting = YES;
     
@@ -711,9 +712,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                             message:[err localizedDescription]
                                                            delegate:nil
                                                   cancelButtonTitle:nil
-                                                  otherButtonTitles:@"k :(", nil];
+                                                  otherButtonTitles:@"Dismiss", nil];
+        alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
         [alertView show];
         [alertView autorelease];
+        
+        unloadAfterDisconnect = YES;
         
         NSLog(@"[CONNECT] Connection failed. Reason: %@", [err localizedDescription]);
         return;
