@@ -641,6 +641,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSLog(@"[CONNECT] Connected!");
     
+    [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
+}
+
+- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
+{
+    NSLog(@"[CONNECT] Secured.");
+    
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
     char *machine = malloc(size);  
@@ -684,19 +691,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (err)
     {
-        if (controlSocketConnecting)
-        {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
-                                                                message:[err localizedDescription]
-                                                               delegate:nil
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"k :(", nil];
-            [alertView show];
-            [alertView autorelease];
-            
-            NSLog(@"[CONNECT] Connection failed. Reason: %@", [err localizedDescription]);
-            return;
-        }
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
+                                                            message:[err localizedDescription]
+                                                           delegate:nil
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"k :(", nil];
+        [alertView show];
+        [alertView autorelease];
+        
+        NSLog(@"[CONNECT] Connection failed. Reason: %@", [err localizedDescription]);
+        return;
     }
     else
     {
