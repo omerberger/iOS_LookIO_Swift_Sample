@@ -26,6 +26,7 @@
 
 #define LIOLookIOManagerControlEndpoint         @"look.io"
 #define LIOLookIOManagerControlEndpointPort     8100
+#define LIOLookIOManagerControlEndpointPortTLS  9000
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -318,9 +319,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
+    if (NO == usesTLS)
+        chosenPort = LIOLookIOManagerControlEndpointPort;
+    
     NSError *connectError = nil;
     BOOL connectResult = [controlSocket connectToHost:LIOLookIOManagerControlEndpoint
-                                               onPort:LIOLookIOManagerControlEndpointPort
+                                               onPort:chosenPort
                                                 error:&connectError];
     if (NO == connectResult)
     {
