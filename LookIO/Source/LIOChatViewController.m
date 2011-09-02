@@ -148,6 +148,7 @@
         LIOChatboxView *newFocusedChatbox = [messageViews lastObject];
         newFocusedChatbox.inputField.text = previouslyFocusedChatbox.inputField.text;
         previouslyFocusedChatbox.inputField.text = [NSString string];
+        [newFocusedChatbox takeInput];
     }
 }
 

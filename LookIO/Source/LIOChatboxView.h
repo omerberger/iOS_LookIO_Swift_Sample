@@ -22,4 +22,6 @@
 @property(nonatomic, assign) BOOL canTakeInput;
 @property(nonatomic, assign) id delegate;
 
+- (void)takeInput;
+
 @end
