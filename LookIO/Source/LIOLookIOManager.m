@@ -33,6 +33,7 @@
 #define LIOLookIOManagerDisconnectConfirmAlertViewTag       1
 #define LIOLookIOManagerScreenshotPermissionAlertViewTag    2
 #define LIOLookIOManagerDisconnectErrorAlertViewTag         3
+#define LIOLookIOManagerNoAgentsOnlineAlertViewTag          4
 
 @interface LIOLookIOManager ()
 {
@@ -59,6 +60,7 @@
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
     BOOL usesTLS;
+    UIWindow *lookioWindow;
 }
 
 @end
@@ -83,6 +85,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
+        lookioWindow.hidden = YES;
+        lookioWindow.windowLevel = 0.1;//UIWindowLevelAlert;
+        
         dispatch_queue_t delegateQueue = dispatch_queue_create("async_socket_delegate", NULL);
         controlSocket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
         
@@ -97,9 +104,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         self.touchImage = [UIImage imageNamed:@"DefaultTouch"];
-        self.controlButtonFrame = CGRectMake(keyWindow.frame.size.width - 32.0, 20.0, 32.0, 32.0);
+        self.controlButtonFrame = CGRectMake(lookioWindow.frame.size.width - 32.0, 20.0, 32.0, 32.0);
         
         chatHistory = [[NSMutableArray alloc] init];
 
@@ -108,7 +114,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         controlButton.frame = self.controlButtonFrame;
         controlButton.hidden = YES;
-        [[[UIApplication sharedApplication] keyWindow] addSubview:controlButton];
+        [keyWindow addSubview:controlButton];
         
         controlButtonSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         controlButtonSpinner.frame = controlButton.bounds;
@@ -133,6 +139,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidBecomeActive:)
                                                      name:UIApplicationDidBecomeActiveNotification
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(deviceOrientationDidChange:)
+                                                     name:UIDeviceOrientationDidChangeNotification
                                                    object:nil];
         
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
@@ -164,6 +175,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
     [targetAgentId release];
+    [lookioWindow release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -291,7 +303,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     connectViewController = [[LIOConnectViewController alloc] initWithNibName:nil bundle:nil];
     connectViewController.delegate = self;
     connectViewController.targetLogoFrameForHiding = self.controlButtonFrame;
-    [[[UIApplication sharedApplication] keyWindow] addSubview:connectViewController.view];
+    [lookioWindow addSubview:connectViewController.view];
+    lookioWindow.hidden = NO;
     
     if (lastKnownQueuePosition)
     {
@@ -388,7 +401,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
     [chatViewController addMessages:chatHistory];
-    [[[UIApplication sharedApplication] keyWindow] addSubview:chatViewController.view];
+    [lookioWindow addSubview:chatViewController.view];
+    lookioWindow.hidden = NO;
     
     [chatViewController scrollToBottom];
     
@@ -437,15 +451,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"cursor"])
     {
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        
         if (nil == cursorView)
         {
+            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
             cursorView = [[UIImageView alloc] initWithImage:touchImage];
             [keyWindow addSubview:cursorView];
         }
         
-        [keyWindow bringSubviewToFront:cursorView];
+        [lookioWindow bringSubviewToFront:cursorView];
         
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
@@ -550,13 +563,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else if ([action isEqualToString:@"queued"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
-            NSNumber *position = [data objectForKey:@"position"];
-            [lastKnownQueuePosition release];
-            lastKnownQueuePosition = [position retain];
-            if ([lastKnownQueuePosition intValue] == 1)
-                connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+            NSNumber *online = [data objectForKey:@"online"];
+            if (online && NO == [online boolValue])
+            {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Sorry"
+                                                                    message:@"No agents are available right now. Would you like to leave a message?"
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:@"No", @"Yes", nil];
+                alertView.tag = LIOLookIOManagerNoAgentsOnlineAlertViewTag;
+                [alertView show];
+                [alertView autorelease];
+            }
             else
-                connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
+            {
+                NSNumber *position = [data objectForKey:@"position"];
+                [lastKnownQueuePosition release];
+                lastKnownQueuePosition = [position retain];
+                if ([lastKnownQueuePosition intValue] == 1)
+                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+                else
+                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
+            }
         }
         else if ([action isEqualToString:@"permission"])
         {
@@ -564,7 +592,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSString *permission = [data objectForKey:@"permission"];
             if ([permission isEqualToString:@"screenshot"])
             {
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Security"
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Question"
                                                                     message:@"Allow remote agent to see your screen?"
                                                                    delegate:self
                                                           cancelButtonTitle:nil
@@ -766,6 +794,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
+    
+    lookioWindow.hidden = YES;
 }
 
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString
@@ -835,6 +865,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             break;
         }
+            
+        case LIOLookIOManagerNoAgentsOnlineAlertViewTag:
+        {
+            if (1 == buttonIndex) // "Yes"
+            {
+                // Do some crap!
+            }
+            else
+            {
+                unloadAfterDisconnect = YES;
+                [self killConnection];
+            }
+            
+            break;
+        }
     }
 }
 
@@ -867,6 +912,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController.view removeFromSuperview];
     [connectViewController release];
     connectViewController = nil;
+    
+    lookioWindow.hidden = YES;
 }
 
 #pragma mark -
@@ -890,6 +937,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
         backgroundTaskId = UIBackgroundTaskInvalid;
     }
+}
+
+- (void)deviceOrientationDidChange:(NSNotification *)aNotification
+{
+    CGAffineTransform transform;
+    if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        transform = CGAffineTransformIdentity;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        transform = CGAffineTransformMakeRotation(-90.0 / 180.0 * M_PI);
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        transform = CGAffineTransformMakeRotation(-180.0 / 180.0 * M_PI);
+    }
+    else // Landscape, home button right
+    {
+        transform = CGAffineTransformMakeRotation(-270.0 / 180.0 * M_PI);
+    }
+    
+    cursorView.transform = transform;
+    clickView.transform = transform;
+    controlButton.transform = transform;
 }
 
 @end

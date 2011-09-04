@@ -24,13 +24,18 @@
     backgroundView = [[UIView alloc] initWithFrame:rootView.bounds];
     backgroundView.backgroundColor = [UIColor blackColor];
     backgroundView.alpha = 0.33;
+    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:backgroundView];
     
     scrollView = [[UIScrollView alloc] initWithFrame:rootView.bounds];
+    scrollView.autoresizingMask = backgroundView.autoresizingMask;
+    scrollView.backgroundColor = [UIColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.33];
     [rootView addSubview:scrollView];
     
     dismissalButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [dismissalButton addTarget:self action:@selector(dismissalButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    //dismissalButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    dismissalButton.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.66];
     [scrollView addSubview:dismissalButton];
     
     Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
@@ -43,6 +48,7 @@
     aFrame.origin.y = rootView.bounds.size.height - aFrame.size.height - 5.0;
     aFrame.origin.x = (rootView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     [endSessionButton setFrame:aFrame];
+    [endSessionButton setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin];
     [rootView addSubview:endSessionButton];
 }
 
@@ -103,6 +109,7 @@
     
     LIOChatboxView *newMessage = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
     newMessage.messageView.text = aMessage;
+    newMessage.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [messageViews addObject:newMessage];
     [scrollView addSubview:newMessage];
 }
@@ -118,14 +125,14 @@
 - (void)reloadMessages
 {
     CGFloat contentHeight = ([messageViews count] - 1) * (LIOChatViewControllerChatboxHeight + LIOChatViewControllerChatboxPadding);
-    CGSize contentSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height + contentHeight);
+    CGSize contentSize = contentSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height + contentHeight);
     scrollView.contentSize = contentSize;
-    
+
     CGRect buttonFrame = CGRectZero;
     buttonFrame.origin.x = 0.0;
-    buttonFrame.size.width = self.view.frame.size.width;
+    buttonFrame.size.width = scrollView.frame.size.width;
     buttonFrame.origin.y = contentHeight;
-    buttonFrame.size.height = contentSize.height - contentHeight;
+    buttonFrame.size.height = scrollView.frame.size.height;
     dismissalButton.frame = buttonFrame;
     
     NSUInteger indexOfViewWithFocus = NSNotFound;
@@ -161,6 +168,11 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
     return YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [self reloadMessages];
 }
 
 #pragma mark -

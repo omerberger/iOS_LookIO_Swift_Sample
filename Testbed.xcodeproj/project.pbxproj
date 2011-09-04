@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D416C513141411F600D3509B /* LIOInputBar.png in Resources */ = {isa = PBXBuildFile; fileRef = D416C512141411F600D3509B /* LIOInputBar.png */; };
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
 		D44DD7C814044915004374FE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C714044915004374FE /* CoreGraphics.framework */; };
@@ -44,6 +45,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D416C512141411F600D3509B /* LIOInputBar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOInputBar.png; sourceTree = "<group>"; };
 		D44DD7BF14044915004374FE /* Testbed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testbed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7C514044915004374FE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -140,6 +142,7 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D416C512141411F600D3509B /* LIOInputBar.png */,
 				D4B41D3E140986AE00B73C84 /* ControlButton.png */,
 				D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */,
 				D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */,
@@ -280,6 +283,7 @@
 				D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */,
 				D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */,
 				D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */,
+				D416C513141411F600D3509B /* LIOInputBar.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
