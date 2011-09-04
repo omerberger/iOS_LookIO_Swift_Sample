@@ -105,7 +105,11 @@
 
 - (void)addMessage:(NSString *)aMessage animated:(BOOL)animated
 {
-    CGRect aFrame = CGRectMake(10.0, 0.0, self.view.frame.size.width - 20.0, LIOChatViewControllerChatboxHeight);
+    CGRect aFrame = CGRectZero;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        aFrame = CGRectMake(10.0, 0.0, self.view.frame.size.width - 20.0, LIOChatViewControllerChatboxHeight);
+    else
+        aFrame = CGRectMake(10.0, 0.0, self.view.frame.size.height - 20.0, LIOChatViewControllerChatboxHeight);
     
     LIOChatboxView *newMessage = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
     newMessage.messageView.text = aMessage;

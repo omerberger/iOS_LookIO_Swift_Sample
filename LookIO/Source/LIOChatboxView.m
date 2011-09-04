@@ -117,7 +117,9 @@
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [delegate chatboxViewDidReturn:self withText:textField.text];
+    NSString *text = textField.text;
+    textField.text = [NSString string];
+    [delegate chatboxViewDidReturn:self withText:text];
     
     return YES;
 }
