@@ -795,7 +795,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController release];
     chatViewController = nil;
     
-    lookioWindow.hidden = YES;
+    if (nil == connectViewController)
+        lookioWindow.hidden = YES;
 }
 
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString
@@ -913,7 +914,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController release];
     connectViewController = nil;
     
-    lookioWindow.hidden = YES;
+    if (nil == chatViewController)
+        lookioWindow.hidden = YES;
 }
 
 #pragma mark -

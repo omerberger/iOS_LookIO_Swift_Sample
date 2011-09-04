@@ -29,13 +29,13 @@
     
     scrollView = [[UIScrollView alloc] initWithFrame:rootView.bounds];
     scrollView.autoresizingMask = backgroundView.autoresizingMask;
-    scrollView.backgroundColor = [UIColor colorWithRed:0.0 green:0.0 blue:1.0 alpha:0.33];
+    scrollView.backgroundColor = [UIColor clearColor];
     [rootView addSubview:scrollView];
     
     dismissalButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [dismissalButton addTarget:self action:@selector(dismissalButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     //dismissalButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    dismissalButton.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.66];
+    dismissalButton.backgroundColor = [UIColor clearColor];
     [scrollView addSubview:dismissalButton];
     
     Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
