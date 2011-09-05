@@ -12,7 +12,9 @@
 
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
-@property(nonatomic, assign) CGRect controlButtonFrame;
+@property(nonatomic, assign) CGPoint controlButtonCenter;
+@property(nonatomic, assign) CGPoint controlButtonCenterLandscape;
+@property(nonatomic, assign) CGRect controlButtonBounds;
 @property(nonatomic, assign) BOOL usesTLS;
 
 + (LIOLookIOManager *)sharedLookIOManager;

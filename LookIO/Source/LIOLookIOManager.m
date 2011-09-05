@@ -49,6 +49,7 @@
     UIButton *controlButton;
     UIActivityIndicatorView *controlButtonSpinner;
     CGRect controlButtonFrame;
+    CGRect controlButtonFrameLandscape;
     NSMutableArray *chatHistory;
     LIOChatViewController *chatViewController;
     LIOConnectViewController *connectViewController;
@@ -67,7 +68,7 @@
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, controlButtonFrame, targetAgentId, usesTLS;
+@synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds, targetAgentId, usesTLS;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -104,15 +105,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
+        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        
         self.touchImage = [UIImage imageNamed:@"DefaultTouch"];
-        self.controlButtonFrame = CGRectMake(lookioWindow.frame.size.width - 32.0, 20.0, 32.0, 32.0);
+        self.controlButtonCenter = CGPointMake(16.0, 36.0);
+        self.controlButtonCenterLandscape = CGPointMake(16.0, 36.0);
+        self.controlButtonBounds = CGRectMake(0.0, 0.0, 32.0, 32.0);
         
         chatHistory = [[NSMutableArray alloc] init];
 
         controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         [controlButton setImage:[UIImage imageNamed:@"ControlButton"] forState:UIControlStateNormal];
         [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        controlButton.frame = self.controlButtonFrame;
+        controlButton.bounds = self.controlButtonBounds;
+        controlButton.center = self.controlButtonCenter;
         controlButton.hidden = YES;
         [keyWindow addSubview:controlButton];
         
@@ -302,7 +308,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     connectViewController = [[LIOConnectViewController alloc] initWithNibName:nil bundle:nil];
     connectViewController.delegate = self;
-    connectViewController.targetLogoFrameForHiding = self.controlButtonFrame;
+    
+    connectViewController.targetLogoBoundsForHiding = self.controlButtonBounds;
+    if (UIInterfaceOrientationIsLandscape((UIInterfaceOrientation)[[UIDevice currentDevice] orientation]))
+        connectViewController.targetLogoCenterForHiding = self.controlButtonCenterLandscape;
+    else
+        connectViewController.targetLogoCenterForHiding = self.controlButtonCenter;
+    
     [lookioWindow addSubview:connectViewController.view];
     lookioWindow.hidden = NO;
     
@@ -943,27 +955,52 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)deviceOrientationDidChange:(NSNotification *)aNotification
 {
+    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     CGAffineTransform transform;
+    
     if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
-    {
+    { 
         transform = CGAffineTransformIdentity;
+        
+        controlButton.bounds = controlButtonBounds;
+        controlButton.center = controlButtonCenter;
+        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
+        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformMakeRotation(-90.0 / 180.0 * M_PI);
+        transform = CGAffineTransformTranslate(transform, -screenSize.height, 0.0);
+        
+        controlButton.bounds = controlButtonBounds;
+        controlButton.center = controlButtonCenterLandscape;
+        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
+        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformMakeRotation(-180.0 / 180.0 * M_PI);
+        transform = CGAffineTransformTranslate(transform, -screenSize.width, -screenSize.height);
+        
+        controlButton.bounds = controlButtonBounds;
+        controlButton.center = controlButtonCenter;
+        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
+        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     else // Landscape, home button right
     {
         transform = CGAffineTransformMakeRotation(-270.0 / 180.0 * M_PI);
+        transform = CGAffineTransformTranslate(transform, 0.0, -screenSize.width);
+        
+        controlButton.bounds = controlButtonBounds;
+        controlButton.center = controlButtonCenterLandscape;
+        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
+        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     
-    cursorView.transform = transform;
-    clickView.transform = transform;
     controlButton.transform = transform;
+    clickView.transform = transform;
+    cursorView.transform = transform;
 }
 
 @end

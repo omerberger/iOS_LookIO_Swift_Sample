@@ -11,7 +11,7 @@
 
 @implementation LIOConnectViewController
 
-@synthesize delegate, targetLogoFrameForHiding, connectionLabel;
+@synthesize delegate, targetLogoBoundsForHiding, targetLogoCenterForHiding, connectionLabel;
 
 - (void)loadView
 {
@@ -209,8 +209,9 @@
                               delay:0.0
                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
                          animations:^{
-                             connectionLogo.frame = self.targetLogoFrameForHiding;
-                             connectionSpinner.frame = CGRectMake(0.0, 0.0, self.targetLogoFrameForHiding.size.width, self.targetLogoFrameForHiding.size.height);
+                             connectionLogo.bounds = self.targetLogoBoundsForHiding;
+                             connectionLogo.center = self.targetLogoCenterForHiding;
+                             connectionSpinner.frame = CGRectMake(0.0, 0.0, self.targetLogoBoundsForHiding.size.width, self.targetLogoBoundsForHiding.size.height);
                              connectionLogo.alpha = 1.0;
                              connectionBackground.alpha = 0.0;
                              [cancelButton setAlpha:0.0];

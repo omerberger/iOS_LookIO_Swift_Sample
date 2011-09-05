@@ -30,7 +30,8 @@
 }
 
 @property(nonatomic, assign) id delegate;
-@property(nonatomic, assign) CGRect targetLogoFrameForHiding;
+@property(nonatomic, assign) CGRect targetLogoBoundsForHiding;
+@property(nonatomic, assign) CGPoint targetLogoCenterForHiding;
 @property(nonatomic, readonly) UILabel *connectionLabel;
 
 - (void)showAnimated:(BOOL)animated;
