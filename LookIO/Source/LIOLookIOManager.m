@@ -105,7 +105,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
-        CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+        //CGSize screenSize = [[UIScreen mainScreen] bounds].size;
         
         self.touchImage = [UIImage imageNamed:@"DefaultTouch"];
         self.controlButtonCenter = CGPointMake(16.0, 36.0);
@@ -123,7 +123,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [keyWindow addSubview:controlButton];
         
         controlButtonSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        controlButtonSpinner.frame = controlButton.bounds;
+        controlButtonSpinner.frame = CGRectMake(0.0, 0.0, controlButton.bounds.size.width * 0.9, controlButton.bounds.size.height * 0.9);
+        controlButtonSpinner.center = CGPointMake(controlButton.bounds.size.width / 2.0, controlButton.bounds.size.height / 2.0);
         [controlButtonSpinner startAnimating];
         controlButtonSpinner.hidden = YES;
         controlButtonSpinner.userInteractionEnabled = NO;
@@ -277,8 +278,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSString *orientation = @"portrait";
             if (UIInterfaceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
                 orientation = @"landscape";
+            /*
             else if (UIInterfaceOrientationPortraitUpsideDown == [[UIDevice currentDevice] orientation])
                 orientation = @"portrait_ud";
+             */
             
             NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                                  @"screenshot", @"type",
@@ -412,10 +415,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
-    [chatViewController addMessages:chatHistory];
+    chatViewController.dataSource = self;
     [lookioWindow addSubview:chatViewController.view];
     lookioWindow.hidden = NO;
     
+    [chatViewController reloadMessages];
     [chatViewController scrollToBottom];
     
     AudioServicesPlaySystemSound(soundYay);
@@ -454,12 +458,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            [chatViewController addMessage:[chatHistory lastObject] animated:YES];
             [chatViewController reloadMessages];
             [chatViewController scrollToBottom];
         }
-        
-        NSLog(@"[CHAT] \"%@\"", text);
     }
     else if ([type isEqualToString:@"cursor"])
     {
@@ -801,6 +802,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #pragma mark -
 #pragma mark LIOChatViewController delegate methods
 
+- (NSArray *)chatViewControllerChatMessages:(LIOChatViewController *)aController
+{
+    return chatHistory;
+}
+
+#pragma mark -
+#pragma mark LIOChatViewController delegate methods
+
 - (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController
 {
     [chatViewController.view removeFromSuperview];
@@ -829,7 +838,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                               tag:0];
     
     [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
-    [chatViewController addMessage:[chatHistory lastObject] animated:YES];
     [chatViewController reloadMessages];
     [chatViewController scrollToBottom];
 }
@@ -955,7 +963,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)deviceOrientationDidChange:(NSNotification *)aNotification
 {
-    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+    //CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     CGAffineTransform transform;
     
     if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
@@ -970,7 +978,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformMakeRotation(-90.0 / 180.0 * M_PI);
-        transform = CGAffineTransformTranslate(transform, -screenSize.height, 0.0);
+        //transform = CGAffineTransformTranslate(transform, -screenSize.height, 0.0);
         
         controlButton.bounds = controlButtonBounds;
         controlButton.center = controlButtonCenterLandscape;
@@ -980,7 +988,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformMakeRotation(-180.0 / 180.0 * M_PI);
-        transform = CGAffineTransformTranslate(transform, -screenSize.width, -screenSize.height);
+        //transform = CGAffineTransformTranslate(transform, -screenSize.width, -screenSize.height);
         
         controlButton.bounds = controlButtonBounds;
         controlButton.center = controlButtonCenter;
@@ -990,7 +998,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else // Landscape, home button right
     {
         transform = CGAffineTransformMakeRotation(-270.0 / 180.0 * M_PI);
-        transform = CGAffineTransformTranslate(transform, 0.0, -screenSize.width);
+        //transform = CGAffineTransformTranslate(transform, 0.0, -screenSize.width);
         
         controlButton.bounds = controlButtonBounds;
         controlButton.center = controlButtonCenterLandscape;

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D4177D5D1416D950006CDD52 /* LIOSexuallyAppealingTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */; };
+		D4177D5E1416D950006CDD52 /* LIOSexuallyAppealingTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */; };
 		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
@@ -38,6 +40,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSexuallyAppealingTextField.h; path = LookIO/Source/LIOSexuallyAppealingTextField.h; sourceTree = "<group>"; };
+		D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSexuallyAppealingTextField.m; path = LookIO/Source/LIOSexuallyAppealingTextField.m; sourceTree = "<group>"; };
 		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -153,6 +157,8 @@
 		D48ABF2D14046E4B00835205 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */,
+				D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */,
 				D48ABF2E14046E6B00835205 /* LIOChatboxView.h */,
 				D48ABF2F14046E6B00835205 /* LIOChatboxView.m */,
 				D48ABF3014046E6B00835205 /* LIOLookIOManager.h */,
@@ -195,6 +201,7 @@
 				D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */,
 				D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */,
 				D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */,
+				D4177D5D1416D950006CDD52 /* LIOSexuallyAppealingTextField.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +284,7 @@
 				D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */,
 				D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */,
 				D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */,
+				D4177D5E1416D950006CDD52 /* LIOSexuallyAppealingTextField.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

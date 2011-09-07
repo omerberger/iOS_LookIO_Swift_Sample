@@ -8,6 +8,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "LIOChatboxView.h"
+#import "LIOSexuallyAppealingTextField.h"
 
 @implementation LIOChatboxView
 
@@ -52,11 +53,11 @@
         [self addSubview:messageView];
         
         CGSize size = [@"jpqQABTY" sizeWithFont:messageView.font];
-        inputField = [[UITextField alloc] initWithFrame:CGRectMake(10.0, frame.size.height - (size.height + 10.0), frame.size.width - 20.0, size.height)];
+        inputField = [[LIOSexuallyAppealingTextField alloc] initWithFrame:CGRectMake(10.0, frame.size.height - (size.height + 15.0), frame.size.width - 20.0, size.height + 5.0)];
         inputField.font = messageView.font;
-        inputField.backgroundColor = [UIColor whiteColor];
         inputField.hidden = YES;
         inputField.delegate = self;
+        inputField.placeholder = @"Tap here to chat";
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:inputField];
         

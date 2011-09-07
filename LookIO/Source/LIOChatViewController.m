@@ -8,13 +8,14 @@
 
 #import "LIOChatViewController.h"
 #import "LIOChatboxView.h"
+#import "LIOSexuallyAppealingTextField.h"
 
 #define LIOChatViewControllerChatboxHeight  85.0
 #define LIOChatViewControllerChatboxPadding 10.0
 
 @implementation LIOChatViewController
 
-@synthesize delegate;
+@synthesize delegate, dataSource;
 
 - (void)loadView
 {
@@ -103,6 +104,7 @@
     [self reloadMessages];
 }
 
+/*
 - (void)addMessage:(NSString *)aMessage animated:(BOOL)animated
 {
     CGRect aFrame = CGRectZero;
@@ -116,6 +118,8 @@
     newMessage.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [messageViews addObject:newMessage];
     [scrollView addSubview:newMessage];
+    
+    NSLog(@"[CHAT] Message view added to collection: \"%@\"", newMessage.messageView.text);
 }
 
 - (void)addMessages:(NSArray *)messages
@@ -125,13 +129,40 @@
     
     [self reloadMessages];
 }
+*/
 
 - (void)reloadMessages
 {
-    CGFloat contentHeight = ([messageViews count] - 1) * (LIOChatViewControllerChatboxHeight + LIOChatViewControllerChatboxPadding);
-    CGSize contentSize = contentSize = CGSizeMake(scrollView.frame.size.width, scrollView.frame.size.height + contentHeight);
+    for (LIOChatboxView *aView in messageViews)
+        [aView removeFromSuperview];
+    
+    [messageViews removeAllObjects];
+    
+    //- (NSArray *)chatViewControllerChatMessages:(LIOChatViewController *)aController;
+    NSArray *textMessages = [dataSource chatViewControllerChatMessages:self];
+    for (NSString *aMessage in textMessages)
+    {
+        //CGRect aFrame = CGRectZero;
+        //if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+            CGRect aFrame = aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxHeight);
+        //else
+         //   aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.height - 20.0, LIOChatViewControllerChatboxHeight);
+        
+        LIOChatboxView *newMessage = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
+        newMessage.messageView.text = aMessage;
+        newMessage.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [messageViews addObject:newMessage];
+        [scrollView addSubview:newMessage];
+    }
+    
+    NSUInteger count = 0;
+    if ([messageViews count])
+        count = [messageViews count] - 1;
+    
+    CGFloat contentHeight = count * (LIOChatViewControllerChatboxHeight + LIOChatViewControllerChatboxPadding);
+    CGSize contentSize = contentSize = CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height + contentHeight);
     scrollView.contentSize = contentSize;
-
+    
     CGRect buttonFrame = CGRectZero;
     buttonFrame.origin.x = 0.0;
     buttonFrame.size.width = scrollView.frame.size.width;

@@ -16,7 +16,11 @@
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString;
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 @end
- */
+
+@protocol LIOChatViewControllerDataSource
+- (NSArray *)chatViewControllerChatMessages:(LIOChatViewController *)aController;
+@end
+*/
 
 @interface LIOChatViewController : UIViewController
 {
@@ -26,13 +30,12 @@
     UIButton *dismissalButton;
     id endSessionButton;
     id delegate;
+    id dataSource;
 }
 
-@property(nonatomic, assign) id delegate;
+@property(nonatomic, assign) id delegate, dataSource;
 
 - (void)reloadMessages;
-- (void)addMessage:(NSString *)aMessage animated:(BOOL)animated;
-- (void)addMessages:(NSArray *)messages;
 - (void)scrollToBottom;
 
 @end

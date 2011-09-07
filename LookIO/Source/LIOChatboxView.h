@@ -8,17 +8,19 @@
 
 #import <UIKit/UIKit.h>
 
+@class LIOSexuallyAppealingTextField;
+
 @interface LIOChatboxView : UIView <UITextFieldDelegate>
 {
     UIView *bubbleView;
-    UITextField *inputField;
+    LIOSexuallyAppealingTextField *inputField;
     UITextView *messageView;
     BOOL canTakeInput;
     id delegate;
 }
 
 @property(nonatomic, readonly) UITextView *messageView;
-@property(nonatomic, readonly) UITextField *inputField;
+@property(nonatomic, readonly) LIOSexuallyAppealingTextField *inputField;
 @property(nonatomic, assign) BOOL canTakeInput;
 @property(nonatomic, assign) id delegate;
 
