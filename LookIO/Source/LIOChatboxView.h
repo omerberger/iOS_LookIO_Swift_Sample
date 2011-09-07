@@ -16,12 +16,14 @@
     LIOSexuallyAppealingTextField *inputField;
     UITextView *messageView;
     BOOL canTakeInput;
+    UIButton *sendButton;
     id delegate;
 }
 
 @property(nonatomic, readonly) UITextView *messageView;
 @property(nonatomic, readonly) LIOSexuallyAppealingTextField *inputField;
 @property(nonatomic, assign) BOOL canTakeInput;
+@property(nonatomic, readonly) UIButton *sendButton;
 @property(nonatomic, assign) id delegate;
 
 - (void)takeInput;

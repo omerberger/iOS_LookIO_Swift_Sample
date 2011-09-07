@@ -10,7 +10,7 @@
 #import "LIOChatboxView.h"
 #import "LIOSexuallyAppealingTextField.h"
 
-#define LIOChatViewControllerChatboxHeight  85.0
+#define LIOChatViewControllerChatboxHeight  100.0
 #define LIOChatViewControllerChatboxPadding 10.0
 
 @implementation LIOChatViewController
@@ -179,6 +179,17 @@
         aChatbox.frame = aFrame;
         aChatbox.canTakeInput = i == [messageViews count] - 1;
         aChatbox.delegate = aChatbox.canTakeInput ? self : nil;
+        
+        if (aChatbox.canTakeInput)
+        {
+            aChatbox.inputField.hidden = NO;
+            aChatbox.sendButton.hidden = NO;
+        }
+        else
+        {
+            aChatbox.inputField.hidden = YES;
+            aChatbox.sendButton.hidden = YES;
+        }
         
         if ([aChatbox.inputField isFirstResponder] && i != [messageViews count] - 1)
             indexOfViewWithFocus = i;

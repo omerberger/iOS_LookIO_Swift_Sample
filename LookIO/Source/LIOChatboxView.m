@@ -12,7 +12,7 @@
 
 @implementation LIOChatboxView
 
-@synthesize messageView, canTakeInput, delegate, inputField;
+@synthesize messageView, canTakeInput, delegate, inputField, sendButton;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -53,19 +53,22 @@
         [self addSubview:messageView];
         
         CGSize size = [@"jpqQABTY" sizeWithFont:messageView.font];
-        inputField = [[LIOSexuallyAppealingTextField alloc] initWithFrame:CGRectMake(10.0, frame.size.height - (size.height + 15.0), frame.size.width - 20.0, size.height + 5.0)];
+        size.height = 24.0;
+        inputField = [[LIOSexuallyAppealingTextField alloc] initWithFrame:CGRectMake(10.0, frame.size.height - (size.height + 15.0), frame.size.width - 87.0, size.height + 5.0)];
         inputField.font = messageView.font;
-        inputField.hidden = YES;
         inputField.delegate = self;
         inputField.placeholder = @"Tap here to chat";
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        inputField.returnKeyType = UIReturnKeySend;
+        inputField.hidden = YES;
         [self addSubview:inputField];
         
-        UIButton *buttonOverlay = [UIButton buttonWithType:UIButtonTypeCustom];
-        buttonOverlay.frame = self.bounds;
-        [buttonOverlay addTarget:self action:@selector(buttonOverlayWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        buttonOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:buttonOverlay];
+        sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        [sendButton setBackgroundImage:[UIImage imageNamed:@"LIOSendActive"] forState:UIControlStateNormal];
+        sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y + 1.0, 59.0, 27.0);
+        [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        sendButton.hidden = YES;
+        [self addSubview:sendButton];
     }
     
     return self;
@@ -76,23 +79,32 @@
     [inputField release];
     [bubbleView release];
     [messageView release];
+    [sendButton release];
     
     [super dealloc];
 }
 
 - (void)takeInput
 {
-    inputField.hidden = NO;
     [inputField becomeFirstResponder];
 }
 
 #pragma mark -
 #pragma mark UIControl actions
 
+/*
 - (void)buttonOverlayWasTapped
 {
     if (canTakeInput && NO == [self isFirstResponder])
         [self takeInput];
+}
+*/
+
+- (void)sendButtonWasTapped
+{
+    NSString *text = inputField.text;
+    inputField.text = [NSString string];
+    [delegate chatboxViewDidReturn:self withText:text];
 }
 
 #pragma mark -
@@ -112,15 +124,11 @@
     //aFrame.origin.y += inputField.frame.size.height;
     aFrame.size.height += inputField.frame.size.height;
     messageView.frame = aFrame;
-    
-    inputField.hidden = YES;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    NSString *text = textField.text;
-    textField.text = [NSString string];
-    [delegate chatboxViewDidReturn:self withText:text];
+    [self sendButtonWasTapped];
     
     return YES;
 }

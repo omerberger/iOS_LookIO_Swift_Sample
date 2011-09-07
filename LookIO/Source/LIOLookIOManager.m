@@ -450,7 +450,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"chat"])
     {
         NSString *text = [aPacket objectForKey:@"text"];
-        [chatHistory addObject:[NSString stringWithFormat:@"Support: %@", text]];
+        [chatHistory addObject:[NSString stringWithFormat:@"Agent: %@", text]];
 
         if (nil == chatViewController)
         {

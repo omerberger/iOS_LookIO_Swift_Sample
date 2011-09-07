@@ -28,8 +28,8 @@
 {
     CGRect newBounds = bounds;
     newBounds.origin.x = 10.0;
-    newBounds.origin.y = 3.0;
-    newBounds.size.width = bounds.size.width - 15.0;
+    newBounds.origin.y = 5.0;
+    newBounds.size.width = bounds.size.width - 17.0;
     return newBounds;
 }
 
@@ -37,8 +37,8 @@
 {
     CGRect newBounds = bounds;
     newBounds.origin.x = 10.0;
-    newBounds.origin.y = 3.0;
-    newBounds.size.width = bounds.size.width - 15.0;
+    newBounds.origin.y = 5.0;
+    newBounds.size.width = bounds.size.width - 17.0;
     return newBounds;
 }
 
@@ -46,8 +46,8 @@
 {
     CGRect newBounds = bounds;
     newBounds.origin.x = 10.0;
-    newBounds.origin.y = 3.0;
-    newBounds.size.width = bounds.size.width - 15.0;
+    newBounds.origin.y = 5.0;
+    newBounds.size.width = bounds.size.width - 17.0;
     return newBounds;
 }
 
