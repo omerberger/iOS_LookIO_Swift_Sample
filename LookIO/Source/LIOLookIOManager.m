@@ -10,7 +10,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <sys/sysctl.h>
 #import "LIOLookIOManager.h"
-#import "GCDAsyncSocket.h"
+#import "AsyncSocket.h"
 #import "SBJSON.h"
 #import "LIOChatboxView.h"
 #import "NSData+Base64.h"
@@ -39,7 +39,7 @@
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
-    GCDAsyncSocket_LIO *controlSocket;
+    AsyncSocket_LIO *controlSocket;
     BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
     NSData *messageSeparatorData;
     NSData *lastScreenshotSent;
@@ -82,6 +82,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (id)init
 {
+    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
+    
     self = [super init];
     
     if (self)
@@ -91,8 +93,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lookioWindow.hidden = YES;
         lookioWindow.windowLevel = 0.1;//UIWindowLevelAlert;
         
-        dispatch_queue_t delegateQueue = dispatch_queue_create("async_socket_delegate", NULL);
-        controlSocket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
+        //dispatch_queue_t delegateQueue = dispatch_queue_create("async_socket_delegate", NULL);
+        controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
         
         screenCaptureTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOManagerScreenCaptureInterval
                                                               target:self
@@ -194,20 +196,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)unload
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [chatViewController.view removeFromSuperview];
-        [connectViewController.view removeFromSuperview];
-        
-        [cursorView removeFromSuperview];
-        [clickView removeFromSuperview];
-        [controlButton removeFromSuperview];
-        
-        [screenCaptureTimer invalidate];
-        screenCaptureTimer = nil;
-        
-        [sharedLookIOManager release];
-        sharedLookIOManager = nil;
-    });
+    [chatViewController.view removeFromSuperview];
+    [connectViewController.view removeFromSuperview];
+    
+    [cursorView removeFromSuperview];
+    [clickView removeFromSuperview];
+    [controlButton removeFromSuperview];
+    
+    [screenCaptureTimer invalidate];
+    screenCaptureTimer = nil;
+    
+    [sharedLookIOManager release];
+    sharedLookIOManager = nil;
 }
 
 - (UIImage *)captureScreen
@@ -261,7 +261,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
-    if (controlSocket.isDisconnected || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed)
+    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed)
         return;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -427,6 +427,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)handlePacket:(NSDictionary *)aPacket
 {
+    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
+    
     NSString *type = [aPacket objectForKey:@"type"];
     if ([type isEqualToString:@"ack"])
     {
@@ -559,19 +561,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSLog(@"[QUEUE] We're live!");
             enqueued = NO;
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [connectViewController hideAnimated:YES];
-                controlButtonSpinner.hidden = YES;
-                
-                if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
-                {
-                    UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
-                    localNotification.soundName = @"LookIODing.caf";
-                    localNotification.alertBody = @"The support agent is ready to chat with you!";
-                    localNotification.alertAction = @"Go!";
-                    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
-                }
-            });
+            [connectViewController hideAnimated:YES];
+            controlButtonSpinner.hidden = YES;
+            
+            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+            {
+                UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = @"The support agent is ready to chat with you!";
+                localNotification.alertAction = @"Go!";
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
         }
         else if ([action isEqualToString:@"queued"])
         {
@@ -718,13 +718,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma mark GCDAsyncSocketDelegate methods
+#pragma mark AsyncSocketDelegate methods
 
-- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
+- (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port
 {
     controlSocketConnecting = NO;
     
-    NSLog(@"[CONNECT] Connected!");
+    NSLog(@"[CONNECT] Connected to %@:%u", host, port);
     
     if (usesTLS)
         [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
@@ -732,14 +732,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self performIntroduction];
 }
 
-- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
+- (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
     NSLog(@"[CONNECT] Secured.");    
     
     [self performIntroduction];
 }
 
-- (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err
+- (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
     controlSocketConnecting = NO;
     introduced = NO;
@@ -772,7 +772,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self unload];
 }
 
-- (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
+- (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
     NSString *jsonString = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
     jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
@@ -783,17 +783,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self performSelectorOnMainThread:@selector(handlePacket:) withObject:result waitUntilDone:NO];    
 }
 
-- (NSTimeInterval)socket:(GCDAsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag
-                 elapsed:(NSTimeInterval)elapsed
-               bytesDone:(NSUInteger)length
+- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
 {
     NSLog(@"\n\nREAD TIMEOUT\n\n");
     return 0;
 }
 
-- (NSTimeInterval)socket:(GCDAsyncSocket_LIO *)sock shouldTimeoutWriteWithTag:(long)tag
-                 elapsed:(NSTimeInterval)elapsed
-               bytesDone:(NSUInteger)length
+- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutWriteWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
 {
     NSLog(@"\n\nWRITE TIMEOUT\n\n");
     return 0;
@@ -865,7 +861,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (1 == buttonIndex) // "Yes"
             {
-                if (controlSocket.isDisconnected)
+                if (NO == [controlSocket isConnected])
                     [self unload];
                 else
                 {
