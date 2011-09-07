@@ -64,6 +64,8 @@
     UIWindow *lookioWindow;
 }
 
+- (void)controlButtonWasTapped;
+
 @end
 
 @implementation LIOLookIOManager
@@ -203,6 +205,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [clickView removeFromSuperview];
     [controlButton removeFromSuperview];
     
+    [controlSocket setDelegate:nil];
+    
     [screenCaptureTimer invalidate];
     screenCaptureTimer = nil;
     
@@ -261,7 +265,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
-    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed)
+    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -340,11 +344,44 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController showAnimated:YES];
 }
 
+- (void)showChat
+{
+    if (chatViewController)
+        return;
+    
+    chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
+    chatViewController.delegate = self;
+    chatViewController.dataSource = self;
+    [lookioWindow addSubview:chatViewController.view];
+    lookioWindow.hidden = NO;
+    
+    [chatViewController reloadMessages];
+    [chatViewController scrollToBottom];
+    
+    AudioServicesPlaySystemSound(soundYay);
+    
+    NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                     @"advisory", @"type",
+                                                     @"chat_up", @"action",
+                                                     nil]];
+    chatUp = [chatUp stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[chatUp dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+}
+
 - (void)beginSession
 {
-    if (controlSocket.isConnected || controlSocketConnecting)
+    if (controlSocketConnecting)
     {
         NSLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
+        return;
+    }
+    
+    if (introduced)
+    {
+        [self controlButtonWasTapped];
         return;
     }
     
@@ -408,23 +445,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                          tag:0];
 }
 
-- (void)showChat
-{
-    if (chatViewController)
-        return;
-    
-    chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
-    chatViewController.delegate = self;
-    chatViewController.dataSource = self;
-    [lookioWindow addSubview:chatViewController.view];
-    lookioWindow.hidden = NO;
-    
-    [chatViewController reloadMessages];
-    [chatViewController scrollToBottom];
-    
-    AudioServicesPlaySystemSound(soundYay);
-}
-
 - (void)handlePacket:(NSDictionary *)aPacket
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
@@ -462,6 +482,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             [chatViewController reloadMessages];
             [chatViewController scrollToBottom];
+        }
+        
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        {
+            UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+            localNotification.soundName = @"LookIODing.caf";
+            localNotification.alertBody = @"The support agent has sent a chat message to you.";
+            localNotification.alertAction = @"Go!";
+            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
         }
     }
     else if ([type isEqualToString:@"cursor"])
@@ -605,6 +634,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSString *permission = [data objectForKey:@"permission"];
             if ([permission isEqualToString:@"screenshot"])
             {
+                if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+                {
+                    UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                    localNotification.soundName = @"LookIODing.caf";
+                    localNotification.alertBody = @"The support agent wants to view your screen.";
+                    localNotification.alertAction = @"Go!";
+                    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+                }
+                
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Question"
                                                                     message:@"Allow remote agent to see your screen?"
                                                                    delegate:self
@@ -749,8 +787,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (err)
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
-                                                            message:[err localizedDescription]
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                            message:@"Couldn't connect right now. Please try again later!"
                                                            delegate:nil
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];
@@ -761,12 +799,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         unloadAfterDisconnect = YES;
         
         NSLog(@"[CONNECT] Connection failed. Reason: %@", [err localizedDescription]);
-        return;
     }
-    else
-    {
-        NSLog(@"[CONNECT] Socket disconnected.");
-    }
+}
+
+- (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
+{
+    NSLog(@"[CONNECT] Socket disconnected.");
     
     if (unloadAfterDisconnect)
         [self unload];
@@ -811,6 +849,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
+    
+    NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                       @"advisory", @"type",
+                                                       @"chat_down", @"action",
+                                                       nil]];
+    chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[chatDown dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
     
     if (nil == connectViewController)
         lookioWindow.hidden = YES;

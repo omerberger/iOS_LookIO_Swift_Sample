@@ -133,6 +133,19 @@
 
 - (void)reloadMessages
 {
+    // First check to see if the user has entered anything into the input field.    
+    NSString *savedChat = nil;
+    BOOL hadFocus = NO;
+    if ([messageViews count])
+    {
+        LIOChatboxView *aView = [messageViews lastObject];
+        hadFocus = [aView.inputField isFirstResponder];
+        if ([aView.inputField.text length])
+            savedChat = [[aView.inputField.text retain] autorelease];
+        
+        [self.view endEditing:YES];
+    }    
+    
     for (LIOChatboxView *aView in messageViews)
         [aView removeFromSuperview];
     
@@ -170,7 +183,6 @@
     buttonFrame.size.height = scrollView.frame.size.height;
     dismissalButton.frame = buttonFrame;
     
-    NSUInteger indexOfViewWithFocus = NSNotFound;
     for (int i=0; i<[messageViews count]; i++)
     {
         LIOChatboxView *aChatbox = [messageViews objectAtIndex:i];
@@ -184,25 +196,17 @@
         {
             aChatbox.inputField.hidden = NO;
             aChatbox.sendButton.hidden = NO;
+            if (savedChat)
+                aChatbox.inputField.text = savedChat;
+            
+            if (hadFocus)
+                [aChatbox takeInput];
         }
         else
         {
             aChatbox.inputField.hidden = YES;
             aChatbox.sendButton.hidden = YES;
         }
-        
-        if ([aChatbox.inputField isFirstResponder] && i != [messageViews count] - 1)
-            indexOfViewWithFocus = i;
-    }
-    
-    if (indexOfViewWithFocus != NSNotFound && indexOfViewWithFocus != [messageViews count] - 1)
-    {
-        [self.view endEditing:YES];
-        LIOChatboxView *previouslyFocusedChatbox = [messageViews objectAtIndex:indexOfViewWithFocus];
-        LIOChatboxView *newFocusedChatbox = [messageViews lastObject];
-        newFocusedChatbox.inputField.text = previouslyFocusedChatbox.inputField.text;
-        previouslyFocusedChatbox.inputField.text = [NSString string];
-        [newFocusedChatbox takeInput];
     }
 }
 
