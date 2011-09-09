@@ -1,14 +1,14 @@
 //
-//  LIOSexuallyAppealingTextField.m
+//  LIONiceTextField.m
 //  LookIO
 //
 //  Created by Joe Toscano on 9/6/11.
 //  Copyright 2011 LookIO, Inc. All rights reserved.
 //
 
-#import "LIOSexuallyAppealingTextField.h"
+#import "LIONiceTextField.h"
 
-@implementation LIOSexuallyAppealingTextField
+@implementation LIONiceTextField
 
 - (id)initWithFrame:(CGRect)frame
 {

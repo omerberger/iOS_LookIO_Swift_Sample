@@ -8,10 +8,10 @@
 
 #import "LIOChatViewController.h"
 #import "LIOChatboxView.h"
-#import "LIOSexuallyAppealingTextField.h"
+#import "LIONiceTextField.h"
 
-#define LIOChatViewControllerChatboxHeight  100.0
-#define LIOChatViewControllerChatboxPadding 10.0
+#define LIOChatViewControllerChatboxMinHeight  100.0
+#define LIOChatViewControllerChatboxPadding     10.0
 
 @implementation LIOChatViewController
 
@@ -39,6 +39,7 @@
     dismissalButton.backgroundColor = [UIColor clearColor];
     [scrollView addSubview:dismissalButton];
     
+    /*
     Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
     
     endSessionButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
@@ -51,6 +52,7 @@
     [endSessionButton setFrame:aFrame];
     [endSessionButton setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin];
     [rootView addSubview:endSessionButton];
+     */
 }
 
 - (void)viewDidLoad
@@ -104,33 +106,6 @@
     [self reloadMessages];
 }
 
-/*
-- (void)addMessage:(NSString *)aMessage animated:(BOOL)animated
-{
-    CGRect aFrame = CGRectZero;
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-        aFrame = CGRectMake(10.0, 0.0, scrollView.frame.size.width - 20.0, LIOChatViewControllerChatboxHeight);
-    else
-        aFrame = CGRectMake(10.0, 0.0, scrollView.frame.size.height - 20.0, LIOChatViewControllerChatboxHeight);
-    
-    LIOChatboxView *newMessage = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
-    newMessage.messageView.text = aMessage;
-    newMessage.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [messageViews addObject:newMessage];
-    [scrollView addSubview:newMessage];
-    
-    NSLog(@"[CHAT] Message view added to collection: \"%@\"", newMessage.messageView.text);
-}
-
-- (void)addMessages:(NSArray *)messages
-{
-    for (NSString *aMessage in messages)
-        [self addMessage:aMessage animated:NO];
-    
-    [self reloadMessages];
-}
-*/
-
 - (void)reloadMessages
 {
     // First check to see if the user has entered anything into the input field.    
@@ -151,28 +126,39 @@
     
     [messageViews removeAllObjects];
     
-    //- (NSArray *)chatViewControllerChatMessages:(LIOChatViewController *)aController;
+    CGFloat contentHeight = LIOChatViewControllerChatboxPadding;
     NSArray *textMessages = [dataSource chatViewControllerChatMessages:self];
     for (NSString *aMessage in textMessages)
     {
-        //CGRect aFrame = CGRectZero;
-        //if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-            CGRect aFrame = aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxHeight);
-        //else
-         //   aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.height - 20.0, LIOChatViewControllerChatboxHeight);
+        CGRect aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxMinHeight);
+        LIOChatboxView *newChatbox = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
+        [newChatbox populateMessageViewWithText:aMessage];
+        //newChatbox.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [messageViews addObject:newChatbox];
+        [scrollView addSubview:newChatbox];
         
-        LIOChatboxView *newMessage = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
-        newMessage.messageView.text = aMessage;
-        newMessage.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [messageViews addObject:newMessage];
-        [scrollView addSubview:newMessage];
+        aFrame = newChatbox.frame;
+        aFrame.origin.y = contentHeight;
+        newChatbox.frame = aFrame;
+        
+        contentHeight += newChatbox.frame.size.height + LIOChatViewControllerChatboxPadding;
     }
     
+    CGFloat lastChatboxHeight = 0.0;
+    if ([messageViews count])
+    {
+        LIOChatboxView *lastChatbox = [messageViews lastObject];
+        lastChatboxHeight = lastChatbox.frame.size.height;
+    }
+
+    /*
     NSUInteger count = 0;
     if ([messageViews count])
         count = [messageViews count] - 1;
     
     CGFloat contentHeight = count * (LIOChatViewControllerChatboxHeight + LIOChatViewControllerChatboxPadding);
+    */
+    contentHeight -= lastChatboxHeight + (LIOChatViewControllerChatboxPadding * 2.0);
     CGSize contentSize = contentSize = CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height + contentHeight);
     scrollView.contentSize = contentSize;
     
@@ -186,33 +172,33 @@
     for (int i=0; i<[messageViews count]; i++)
     {
         LIOChatboxView *aChatbox = [messageViews objectAtIndex:i];
-        CGRect aFrame = aChatbox.frame;
-        aFrame.origin.y = LIOChatViewControllerChatboxPadding + ((LIOChatViewControllerChatboxHeight + LIOChatViewControllerChatboxPadding) * i);
-        aChatbox.frame = aFrame;
-        aChatbox.canTakeInput = i == [messageViews count] - 1;
-        aChatbox.delegate = aChatbox.canTakeInput ? self : nil;
+        BOOL canTakeInput = i == [messageViews count] - 1;
+        aChatbox.delegate = canTakeInput ? self : nil;
         
-        if (aChatbox.canTakeInput)
+        if (canTakeInput)
         {
             aChatbox.inputField.hidden = NO;
             aChatbox.sendButton.hidden = NO;
+            [aChatbox.settingsButton setHidden:NO];
+            
             if (savedChat)
                 aChatbox.inputField.text = savedChat;
             
             if (hadFocus)
-                [aChatbox takeInput];
+                [aChatbox.inputField becomeFirstResponder];
         }
         else
         {
             aChatbox.inputField.hidden = YES;
             aChatbox.sendButton.hidden = YES;
+            [aChatbox.settingsButton setHidden:YES];
         }
     }
 }
 
 - (void)scrollToBottom
 {
-    [scrollView scrollRectToVisible:CGRectMake(0.0, scrollView.contentSize.height - LIOChatViewControllerChatboxHeight, scrollView.frame.size.width, LIOChatViewControllerChatboxHeight) animated:YES];
+    [scrollView scrollRectToVisible:CGRectMake(0.0, scrollView.contentSize.height - LIOChatViewControllerChatboxMinHeight, scrollView.frame.size.width, LIOChatViewControllerChatboxMinHeight) animated:YES];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
@@ -225,15 +211,33 @@
     [self reloadMessages];
 }
 
+- (void)showSettingsMenu
+{
+    [self.view endEditing:YES];
+    
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
+                                                             delegate:self
+                                                    cancelButtonTitle:@"Cancel"
+                                               destructiveButtonTitle:@"End Session"
+                                                    otherButtonTitles:@"End Screen Sharing", @"E-Mail Chat History", nil];
+    [actionSheet showInView:self.view];
+    [actionSheet autorelease];
+}
+
 #pragma mark -
 #pragma mark LIOChatboxView delegate methods
 
-- (void)chatboxViewDidReturn:(LIOChatboxView *)aView withText:(NSString *)aString
+- (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString
 {
     if ([aString length])
         [delegate chatViewController:self didChatWithText:aString];
     
     [self.view endEditing:YES];
+}
+
+- (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView
+{
+    [self showSettingsMenu];
 }
 
 #pragma mark -
@@ -244,9 +248,37 @@
     [delegate chatViewControllerWasDismissed:self];
 }
 
+/*
 - (void)endSessionButtonWasTapped
 {
     [delegate chatViewControllerDidTapEndSessionButton:self];
+}
+*/
+                                  
+#pragma mark -
+#pragma mark UIActionSheetDelegate methods
+
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    // 0 = end, 1 = end sharing, 2 = email, 3 = cancel
+    switch (buttonIndex)
+    {
+        case 0:
+        {
+            [delegate chatViewControllerDidTapEndSessionButton:self];
+            break;
+        }
+            
+        case 1:
+        {
+            break;
+        }
+            
+        case 2:
+        {
+            break;
+        }
+    }
 }
 
 @end

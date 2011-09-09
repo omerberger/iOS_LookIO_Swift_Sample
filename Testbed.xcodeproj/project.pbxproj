@@ -36,6 +36,8 @@
 		D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1C1404698400835205 /* CFNetwork.framework */; };
 		D492012414172EF80038C941 /* LIOSendActive.png in Resources */ = {isa = PBXBuildFile; fileRef = D492012214172EF80038C941 /* LIOSendActive.png */; };
 		D492012514172EF80038C941 /* LIOSendActive@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D492012314172EF80038C941 /* LIOSendActive@2x.png */; };
+		D4AA89BC141AD6E20044316A /* LIOSettingsIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */; };
+		D4AA89BD141AD6E20044316A /* LIOSettingsIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */; };
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
 		D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */; };
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
@@ -81,6 +83,8 @@
 		D48ABF1C1404698400835205 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
 		D492012214172EF80038C941 /* LIOSendActive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSendActive.png; sourceTree = "<group>"; };
 		D492012314172EF80038C941 /* LIOSendActive@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSendActive@2x.png"; sourceTree = "<group>"; };
+		D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSettingsIcon.png; sourceTree = "<group>"; };
+		D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSettingsIcon@2x.png"; sourceTree = "<group>"; };
 		D4B41D3114086D1D00B73C84 /* LTBBookFlightsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBBookFlightsViewController.h; sourceTree = "<group>"; };
 		D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBBookFlightsViewController.m; sourceTree = "<group>"; };
 		D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityFlightDetail.png; sourceTree = "<group>"; };
@@ -146,6 +150,8 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */,
+				D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */,
 				D492012214172EF80038C941 /* LIOSendActive.png */,
 				D492012314172EF80038C941 /* LIOSendActive@2x.png */,
 				D416C512141411F600D3509B /* LIOInputBar.png */,
@@ -292,6 +298,8 @@
 				D416C513141411F600D3509B /* LIOInputBar.png in Resources */,
 				D492012414172EF80038C941 /* LIOSendActive.png in Resources */,
 				D492012514172EF80038C941 /* LIOSendActive@2x.png in Resources */,
+				D4AA89BC141AD6E20044316A /* LIOSettingsIcon.png in Resources */,
+				D4AA89BD141AD6E20044316A /* LIOSettingsIcon@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

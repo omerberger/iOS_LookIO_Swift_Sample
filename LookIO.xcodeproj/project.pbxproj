@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D4177D5D1416D950006CDD52 /* LIOSexuallyAppealingTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */; };
-		D4177D5E1416D950006CDD52 /* LIOSexuallyAppealingTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */; };
+		D4177D5D1416D950006CDD52 /* LIONiceTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4177D5B1416D950006CDD52 /* LIONiceTextField.h */; };
+		D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIONiceTextField.m */; };
 		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
+		D4743CEE141A9BA10089E9A0 /* LIOFeedbackViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4743CEC141A9BA10089E9A0 /* LIOFeedbackViewController.h */; };
+		D4743CEF141A9BA10089E9A0 /* LIOFeedbackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4743CED141A9BA10089E9A0 /* LIOFeedbackViewController.m */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
 		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
 		D48ABF0C1404647300835205 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFA1404647300835205 /* NSData+Base64.h */; };
@@ -40,10 +42,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSexuallyAppealingTextField.h; path = LookIO/Source/LIOSexuallyAppealingTextField.h; sourceTree = "<group>"; };
-		D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSexuallyAppealingTextField.m; path = LookIO/Source/LIOSexuallyAppealingTextField.m; sourceTree = "<group>"; };
+		D4177D5B1416D950006CDD52 /* LIONiceTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONiceTextField.h; path = LookIO/Source/LIONiceTextField.h; sourceTree = "<group>"; };
+		D4177D5C1416D950006CDD52 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = LookIO/Source/LIONiceTextField.m; sourceTree = "<group>"; };
 		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
+		D4743CEC141A9BA10089E9A0 /* LIOFeedbackViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOFeedbackViewController.h; path = LookIO/Source/LIOFeedbackViewController.h; sourceTree = "<group>"; };
+		D4743CED141A9BA10089E9A0 /* LIOFeedbackViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOFeedbackViewController.m; path = LookIO/Source/LIOFeedbackViewController.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D48ABEF31404644B00835205 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -157,8 +161,8 @@
 		D48ABF2D14046E4B00835205 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				D4177D5B1416D950006CDD52 /* LIOSexuallyAppealingTextField.h */,
-				D4177D5C1416D950006CDD52 /* LIOSexuallyAppealingTextField.m */,
+				D4177D5B1416D950006CDD52 /* LIONiceTextField.h */,
+				D4177D5C1416D950006CDD52 /* LIONiceTextField.m */,
 				D48ABF2E14046E6B00835205 /* LIOChatboxView.h */,
 				D48ABF2F14046E6B00835205 /* LIOChatboxView.m */,
 				D48ABF3014046E6B00835205 /* LIOLookIOManager.h */,
@@ -167,6 +171,8 @@
 				D4B41D3A140969C400B73C84 /* LIOChatViewController.m */,
 				D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */,
 				D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */,
+				D4743CEC141A9BA10089E9A0 /* LIOFeedbackViewController.h */,
+				D4743CED141A9BA10089E9A0 /* LIOFeedbackViewController.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -200,8 +206,9 @@
 				D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */,
 				D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */,
 				D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */,
-				D4177D5D1416D950006CDD52 /* LIOSexuallyAppealingTextField.h in Headers */,
+				D4177D5D1416D950006CDD52 /* LIONiceTextField.h in Headers */,
 				D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */,
+				D4743CEE141A9BA10089E9A0 /* LIOFeedbackViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,8 +290,9 @@
 				D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */,
 				D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */,
 				D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */,
-				D4177D5E1416D950006CDD52 /* LIOSexuallyAppealingTextField.m in Sources */,
+				D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */,
 				D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */,
+				D4743CEF141A9BA10089E9A0 /* LIOFeedbackViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

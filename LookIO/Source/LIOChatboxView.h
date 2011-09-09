@@ -8,24 +8,30 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOSexuallyAppealingTextField;
+@class LIONiceTextField, LIOTextView;
+
+/*
+@protocol LIOChatboxViewDelegate
+- (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString;
+- (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView;
+@end
+*/
 
 @interface LIOChatboxView : UIView <UITextFieldDelegate>
 {
     UIView *bubbleView;
-    LIOSexuallyAppealingTextField *inputField;
-    UITextView *messageView;
-    BOOL canTakeInput;
+    LIONiceTextField *inputField;
+    UILabel *messageView;
     UIButton *sendButton;
+    id settingsButton;
     id delegate;
 }
 
-@property(nonatomic, readonly) UITextView *messageView;
-@property(nonatomic, readonly) LIOSexuallyAppealingTextField *inputField;
-@property(nonatomic, assign) BOOL canTakeInput;
+@property(nonatomic, readonly) LIONiceTextField *inputField;
 @property(nonatomic, readonly) UIButton *sendButton;
+@property(nonatomic, readonly) id settingsButton;
 @property(nonatomic, assign) id delegate;
 
-- (void)takeInput;
+- (void)populateMessageViewWithText:(NSString *)aString;
 
 @end

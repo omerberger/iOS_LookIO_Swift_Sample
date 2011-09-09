@@ -22,13 +22,13 @@
 @end
 */
 
-@interface LIOChatViewController : UIViewController
+@interface LIOChatViewController : UIViewController <UIActionSheetDelegate>
 {
     UIView *backgroundView;
     UIScrollView *scrollView;
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
-    id endSessionButton;
+    //id endSessionButton;
     id delegate;
     id dataSource;
 }

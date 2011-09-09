@@ -1,5 +1,5 @@
 //
-//  LIOSexuallyAppealingTextField.h
+//  LIONiceTextField.h
 //  LookIO
 //
 //  Created by Joe Toscano on 9/6/11.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface LIOSexuallyAppealingTextField : UITextField
+@interface LIONiceTextField : UITextField
 {
 }
 
