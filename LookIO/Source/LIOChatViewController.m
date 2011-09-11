@@ -9,6 +9,8 @@
 #import "LIOChatViewController.h"
 #import "LIOChatboxView.h"
 #import "LIONiceTextField.h"
+#import "LIOLookIOManager.h"
+#import <MessageUI/MessageUI.h>
 
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
@@ -128,6 +130,10 @@
     
     CGFloat contentHeight = LIOChatViewControllerChatboxPadding;
     NSArray *textMessages = [dataSource chatViewControllerChatMessages:self];
+    NSUInteger count = [textMessages count];
+    if (count > 10)
+        textMessages = [textMessages subarrayWithRange:NSMakeRange(count - 10, 10)];
+    
     for (NSString *aMessage in textMessages)
     {
         CGRect aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxMinHeight);
@@ -198,7 +204,14 @@
 
 - (void)scrollToBottom
 {
-    [scrollView scrollRectToVisible:CGRectMake(0.0, scrollView.contentSize.height - LIOChatViewControllerChatboxMinHeight, scrollView.frame.size.width, LIOChatViewControllerChatboxMinHeight) animated:YES];
+    /*
+    [scrollView scrollRectToVisible:CGRectMake(0.0, scrollView.contentSize.height - LIOChatViewControllerChatboxMinHeight, scrollView.frame.size.width, 
+     LIOChatViewControllerChatboxMinHeight) animated:YES];
+     */
+    
+    [UIView animateWithDuration:0.5 animations:^{
+        scrollView.contentOffset = CGPointMake(0.0, scrollView.contentSize.height - scrollView.frame.size.height);
+    }];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
@@ -215,13 +228,43 @@
 {
     [self.view endEditing:YES];
     
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
-                                                             delegate:self
-                                                    cancelButtonTitle:@"Cancel"
-                                               destructiveButtonTitle:@"End Session"
-                                                    otherButtonTitles:@"End Screen Sharing", @"E-Mail Chat History", nil];
+    endSessionIndex = 0;
+    endSharingIndex = NSNotFound;
+    emailIndex = NSNotFound;
+    NSUInteger cancelIndex = 1;
+    
+    if ([[LIOLookIOManager sharedLookIOManager] screenshotsAllowed])
+        endSharingIndex = 1;
+    
+    if ([MFMailComposeViewController canSendMail])
+    {
+        if (endSharingIndex != NSNotFound)
+            emailIndex = 2;
+        else
+            emailIndex = 1;
+    }
+    
+    UIActionSheet *actionSheet = [[[UIActionSheet alloc] init] autorelease];
+    [actionSheet addButtonWithTitle:@"End Session"];
+    
+    if (endSharingIndex != NSNotFound)
+    {
+        [actionSheet addButtonWithTitle:@"End Session"];
+        cancelIndex++;
+    }
+    
+    if (emailIndex != NSNotFound)
+    {
+        [actionSheet addButtonWithTitle:@"Email Chat History"];
+        cancelIndex++;
+    }
+    
+    [actionSheet addButtonWithTitle:@"Cancel"];
+    
+    [actionSheet setDestructiveButtonIndex:endSessionIndex];
+    actionSheet.cancelButtonIndex = cancelIndex;
+    [actionSheet setDelegate:self];
     [actionSheet showInView:self.view];
-    [actionSheet autorelease];
 }
 
 #pragma mark -
@@ -260,24 +303,17 @@
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    // 0 = end, 1 = end sharing, 2 = email, 3 = cancel
-    switch (buttonIndex)
+    if (endSessionIndex == buttonIndex)
     {
-        case 0:
-        {
-            [delegate chatViewControllerDidTapEndSessionButton:self];
-            break;
-        }
-            
-        case 1:
-        {
-            break;
-        }
-            
-        case 2:
-        {
-            break;
-        }
+        [delegate chatViewControllerDidTapEndSessionButton:self];
+    }
+    else if (endSharingIndex == buttonIndex)
+    {
+        [delegate chatViewControllerDidTapEndScreenshotsButton:self];
+    }
+    else if (emailIndex == buttonIndex)
+    {
+        [delegate chatViewControllerDidTapEmailButton:self];
     }
 }
 

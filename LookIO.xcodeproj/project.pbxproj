@@ -13,6 +13,7 @@
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
 		D4743CEE141A9BA10089E9A0 /* LIOFeedbackViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4743CEC141A9BA10089E9A0 /* LIOFeedbackViewController.h */; };
 		D4743CEF141A9BA10089E9A0 /* LIOFeedbackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4743CED141A9BA10089E9A0 /* LIOFeedbackViewController.m */; };
+		D4797071141D4E8D00950E53 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4797070141D4E8D00950E53 /* MessageUI.framework */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
 		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
 		D48ABF0C1404647300835205 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFA1404647300835205 /* NSData+Base64.h */; };
@@ -36,7 +37,7 @@
 		D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF3114046E6B00835205 /* LIOLookIOManager.m */; };
 		D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4B41D39140969C400B73C84 /* LIOChatViewController.h */; };
 		D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3A140969C400B73C84 /* LIOChatViewController.m */; };
-		D4B41D52140ABD2C00B73C84 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */; };
+		D4B41D52140ABD2C00B73C84 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */; };
 		D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */; };
 /* End PBXBuildFile section */
@@ -48,6 +49,7 @@
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
 		D4743CEC141A9BA10089E9A0 /* LIOFeedbackViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOFeedbackViewController.h; path = LookIO/Source/LIOFeedbackViewController.h; sourceTree = "<group>"; };
 		D4743CED141A9BA10089E9A0 /* LIOFeedbackViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOFeedbackViewController.m; path = LookIO/Source/LIOFeedbackViewController.m; sourceTree = "<group>"; };
+		D4797070141D4E8D00950E53 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/MessageUI.framework; sourceTree = DEVELOPER_DIR; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D48ABEF31404644B00835205 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -82,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4797071141D4E8D00950E53 /* MessageUI.framework in Frameworks */,
 				D4B41D52140ABD2C00B73C84 /* AudioToolbox.framework in Frameworks */,
 				D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */,
 				D48ABEE81404607500835205 /* Foundation.framework in Frameworks */,
@@ -102,6 +105,7 @@
 		D48ABEE61404607500835205 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4797070141D4E8D00950E53 /* MessageUI.framework */,
 				D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */,
 				D48ABEF31404644B00835205 /* UIKit.framework */,
 				D48ABEE71404607500835205 /* Foundation.framework */,

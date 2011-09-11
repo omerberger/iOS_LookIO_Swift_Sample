@@ -15,7 +15,7 @@
 @property(nonatomic, assign) CGPoint controlButtonCenter;
 @property(nonatomic, assign) CGPoint controlButtonCenterLandscape;
 @property(nonatomic, assign) CGRect controlButtonBounds;
-@property(nonatomic, assign) BOOL usesTLS;
+@property(nonatomic, assign) BOOL usesTLS, usesControlButton, usesSounds;
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)beginSession;

@@ -15,6 +15,8 @@
 - (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController;
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString;
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
+- (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
+- (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
 @end
 
 @protocol LIOChatViewControllerDataSource
@@ -28,6 +30,7 @@
     UIScrollView *scrollView;
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
+    NSUInteger endSessionIndex, endSharingIndex, emailIndex;
     //id endSessionButton;
     id delegate;
     id dataSource;

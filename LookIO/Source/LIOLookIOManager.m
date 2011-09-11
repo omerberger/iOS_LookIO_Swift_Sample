@@ -25,7 +25,7 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerControlEndpointRequestURL   @"http://look.io/api/v1/endpoint"
+#define LIOLookIOManagerControlEndpointRequestURL   @"http://connect.look.io/api/v1/endpoint"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
@@ -60,7 +60,7 @@
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
-    BOOL usesTLS;
+    BOOL usesTLS, usesControlButton, usesSounds;
     UIWindow *lookioWindow;
     NSMutableURLRequest *endpointRequest;
     NSURLConnection *endpointRequestConnection;
@@ -71,6 +71,8 @@
     LIOConnectViewController *connectViewController;
     LIOFeedbackViewController *feedbackViewController;
 }
+
+@property(nonatomic, readonly) BOOL screenshotsAllowed;
 
 - (void)controlButtonWasTapped;
 
@@ -91,7 +93,8 @@ NSBundle *lookioBundle(void)
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds, targetAgentId, usesTLS;
+@synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds;
+@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -158,10 +161,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [endpointRequest setValue:[[NSBundle mainBundle] bundleIdentifier] forHTTPHeaderField:@"X-LookIO-BundleID"];
         
         NSURL *soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
-        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+        if (soundURL)
+            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
         
+        soundURL = nil;
         soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
-        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
+        if (soundURL)
+            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
         
         backgroundTaskId = UIBackgroundTaskInvalid;
         
@@ -183,6 +189,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         
         usesTLS = YES;
+        usesControlButton = YES;
+        usesSounds = YES;
         
         NSLog(@"[LOOKIO] Loaded.");
     }
@@ -389,7 +397,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController reloadMessages];
     [chatViewController scrollToBottom];
     
-    AudioServicesPlaySystemSound(soundYay);
+    if (usesSounds)
+        AudioServicesPlaySystemSound(soundYay);
     
     NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                      @"advisory", @"type",
@@ -451,7 +460,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    AudioServicesPlaySystemSound(soundDing);
+    if (usesSounds)
+        AudioServicesPlaySystemSound(soundDing);
     
     NSLog(@"[CONNECT] Trying \"%@:%u\"...", controlEndpoint, chosenPort);
     
@@ -889,7 +899,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma mark LIOChatViewController delegate methods
+#pragma mark LIOChatViewControllerDataSource methods
 
 - (NSArray *)chatViewControllerChatMessages:(LIOChatViewController *)aController
 {
@@ -944,13 +954,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController
 {
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
-                                                        message:@"Cancel this session?"
+                                                        message:@"End this session?"
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"No", @"Yes", nil];
     alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
     [alertView show];
     [alertView autorelease];
+}
+
+- (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController
+{
+    screenshotsAllowed = NO;
+    
+    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
+    NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    @"advisory", @"type",
+                                    @"permission_revoked", @"action",
+                                    dataDict, @"data",
+                                    nil];
+    
+    NSString *permissionRevoked = [jsonWriter stringWithObject:permissionDict];
+    permissionRevoked = [permissionRevoked stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[permissionRevoked dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+
+}
+
+- (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController
+{
 }
 
 #pragma mark -
@@ -981,6 +1015,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 screenshotsAllowed = YES;
+                
+                if (chatViewController)
+                {
+                    [chatViewController.view removeFromSuperview];
+                    [chatViewController release];
+                    chatViewController = nil;
+                    lookioWindow.hidden = YES;
+                }
             }
             
             break;
@@ -1028,7 +1070,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)connectViewControllerDidTapCancelButton:(LIOConnectViewController *)aController
 {
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
-                                                        message:@"Cancel this session?"
+                                                        message:@"End this session?"
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"No", @"Yes", nil];
@@ -1039,7 +1081,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)connectViewControllerWasHidden:(LIOConnectViewController *)aController
 {
-    controlButton.hidden = NO;
+    if (usesControlButton)
+        controlButton.hidden = NO;
+    
     controlButtonSpinner.hidden = NO == enqueued;
     
     [connectViewController.view removeFromSuperview];
