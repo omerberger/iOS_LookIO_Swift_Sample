@@ -10,7 +10,6 @@
 #import "LIOChatboxView.h"
 #import "LIONiceTextField.h"
 #import "LIOLookIOManager.h"
-#import <MessageUI/MessageUI.h>
 
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
@@ -242,14 +241,11 @@
     
     if ([[LIOLookIOManager sharedLookIOManager] screenshotsAllowed])
         endSharingIndex = 1;
-    
-    if ([MFMailComposeViewController canSendMail])
-    {
-        if (endSharingIndex != NSNotFound)
-            emailIndex = 2;
-        else
-            emailIndex = 1;
-    }
+
+    if (endSharingIndex != NSNotFound)
+        emailIndex = 2;
+    else
+        emailIndex = 1;
     
     UIActionSheet *actionSheet = [[[UIActionSheet alloc] init] autorelease];
     [actionSheet addButtonWithTitle:@"End Session"];
