@@ -73,6 +73,7 @@
     LIOTextEntryViewController *feedbackViewController, *emailEntryViewController;
     NSString *pendingFeedbackText;
     NSString *friendlyName;
+    NSArray *supportedOrientations;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -97,7 +98,7 @@ NSBundle *lookioBundle()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds;
-@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed;
+@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -117,6 +118,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        // Try to get supported orientation information from plist.
+        NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
+        if (plistOrientations)
+        {
+            NSMutableArray *orientationNumbers = [NSMutableArray array];
+            
+            if ([plistOrientations containsObject:@"UIInterfaceOrientationPortrait"])
+                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortrait]];
+            
+            if ([plistOrientations containsObject:@"UIInterfaceOrientationPortraitUpsideDown"])
+                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown]];
+            
+            if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeLeft"])
+                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft]];
+
+            if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeRight"])
+                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]];
+            
+            supportedOrientations = [orientationNumbers retain];
+        }
+        else
+        {
+            supportedOrientations = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:UIInterfaceOrientationPortrait], [NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], nil];
+        }
+        
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
         lookioWindow.hidden = YES;
@@ -192,7 +218,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         
         usesTLS = YES;
-        usesControlButton = YES;
+        usesControlButton = NO;
         usesSounds = YES;
         numIncomingChatMessages = 0;
         
@@ -230,6 +256,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailEntryViewController release];
     [pendingFeedbackText release];
     [friendlyName release];
+    [supportedOrientations release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -385,13 +412,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (lastKnownQueuePosition)
     {
         if ([lastKnownQueuePosition intValue] == 1)
-            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"Waiting for live agent..."];
         else
             connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
     }
     else if (controlSocketConnecting)
     {
-        connectViewController.connectionLabel.text = @"Connecting...";
+        connectViewController.connectionLabel.text = @"Connecting to a live agent...";
     }
     else
     {
@@ -715,7 +742,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [lastKnownQueuePosition release];
                 lastKnownQueuePosition = [position retain];
                 if ([lastKnownQueuePosition intValue] == 1)
-                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are next in line!"];
+                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"Waiting for live agent..."];
                 else
                     connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
             }

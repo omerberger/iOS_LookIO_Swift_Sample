@@ -34,12 +34,14 @@
 		D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */; };
 		D479706F141D4B5E00950E53 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D479706E141D4B5E00950E53 /* AudioToolbox.framework */; };
 		D4797073141D530900950E53 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4797072141D530900950E53 /* MessageUI.framework */; };
+		D47CD779142FACBE0024C677 /* LIOGrayButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD777142FACBE0024C677 /* LIOGrayButton.png */; };
+		D47CD77A142FACBE0024C677 /* LIOGreenButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD778142FACBE0024C677 /* LIOGreenButton.png */; };
+		D47CD77F142FB0E20024C677 /* LIOGrayButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77B142FB0E20024C677 /* LIOGrayButton@2x.png */; };
+		D47CD780142FB0E20024C677 /* LIOGreenButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77C142FB0E20024C677 /* LIOGreenButton@2x.png */; };
+		D47CD781142FB0E20024C677 /* LIOSettingsButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */; };
+		D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */; };
 		D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1B1404698400835205 /* libLookIO.a */; };
 		D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1C1404698400835205 /* CFNetwork.framework */; };
-		D492012414172EF80038C941 /* LIOSendActive.png in Resources */ = {isa = PBXBuildFile; fileRef = D492012214172EF80038C941 /* LIOSendActive.png */; };
-		D492012514172EF80038C941 /* LIOSendActive@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D492012314172EF80038C941 /* LIOSendActive@2x.png */; };
-		D4AA89BC141AD6E20044316A /* LIOSettingsIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */; };
-		D4AA89BD141AD6E20044316A /* LIOSettingsIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */; };
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
 		D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */; };
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
@@ -82,12 +84,14 @@
 		D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		D479706E141D4B5E00950E53 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		D4797072141D530900950E53 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/MessageUI.framework; sourceTree = DEVELOPER_DIR; };
+		D47CD777142FACBE0024C677 /* LIOGrayButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOGrayButton.png; sourceTree = "<group>"; };
+		D47CD778142FACBE0024C677 /* LIOGreenButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOGreenButton.png; sourceTree = "<group>"; };
+		D47CD77B142FB0E20024C677 /* LIOGrayButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOGrayButton@2x.png"; sourceTree = "<group>"; };
+		D47CD77C142FB0E20024C677 /* LIOGreenButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOGreenButton@2x.png"; sourceTree = "<group>"; };
+		D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSettingsButton.png; sourceTree = "<group>"; };
+		D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSettingsButton@2x.png"; sourceTree = "<group>"; };
 		D48ABF1B1404698400835205 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = "build/Release-iphoneos/libLookIO.a"; sourceTree = "<group>"; };
 		D48ABF1C1404698400835205 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
-		D492012214172EF80038C941 /* LIOSendActive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSendActive.png; sourceTree = "<group>"; };
-		D492012314172EF80038C941 /* LIOSendActive@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSendActive@2x.png"; sourceTree = "<group>"; };
-		D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSettingsIcon.png; sourceTree = "<group>"; };
-		D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSettingsIcon@2x.png"; sourceTree = "<group>"; };
 		D4B41D3114086D1D00B73C84 /* LTBBookFlightsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBBookFlightsViewController.h; sourceTree = "<group>"; };
 		D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBBookFlightsViewController.m; sourceTree = "<group>"; };
 		D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityFlightDetail.png; sourceTree = "<group>"; };
@@ -154,10 +158,12 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				D4AA89BA141AD6E20044316A /* LIOSettingsIcon.png */,
-				D4AA89BB141AD6E20044316A /* LIOSettingsIcon@2x.png */,
-				D492012214172EF80038C941 /* LIOSendActive.png */,
-				D492012314172EF80038C941 /* LIOSendActive@2x.png */,
+				D47CD77B142FB0E20024C677 /* LIOGrayButton@2x.png */,
+				D47CD77C142FB0E20024C677 /* LIOGreenButton@2x.png */,
+				D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */,
+				D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */,
+				D47CD777142FACBE0024C677 /* LIOGrayButton.png */,
+				D47CD778142FACBE0024C677 /* LIOGreenButton.png */,
 				D416C512141411F600D3509B /* LIOInputBar.png */,
 				D4B41D3E140986AE00B73C84 /* ControlButton.png */,
 				D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */,
@@ -300,10 +306,12 @@
 				D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */,
 				D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */,
 				D416C513141411F600D3509B /* LIOInputBar.png in Resources */,
-				D492012414172EF80038C941 /* LIOSendActive.png in Resources */,
-				D492012514172EF80038C941 /* LIOSendActive@2x.png in Resources */,
-				D4AA89BC141AD6E20044316A /* LIOSettingsIcon.png in Resources */,
-				D4AA89BD141AD6E20044316A /* LIOSettingsIcon@2x.png in Resources */,
+				D47CD779142FACBE0024C677 /* LIOGrayButton.png in Resources */,
+				D47CD77A142FACBE0024C677 /* LIOGreenButton.png in Resources */,
+				D47CD77F142FB0E20024C677 /* LIOGrayButton@2x.png in Resources */,
+				D47CD780142FB0E20024C677 /* LIOGreenButton@2x.png in Resources */,
+				D47CD781142FB0E20024C677 /* LIOSettingsButton.png in Resources */,
+				D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

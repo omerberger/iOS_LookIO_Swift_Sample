@@ -30,6 +30,7 @@
     CGRect targetLogoFrameForHiding;
     LIONiceTextField *nameEntryField;
     UIView *nameEntryBackground;
+    UIButton *nameEntrySendButton;
     BOOL nameEntryShown;
     id delegate;
 }

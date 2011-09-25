@@ -8,6 +8,7 @@
 
 #import "LIOTextEntryViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOLookIOManager.h"
 
 @implementation LIOTextEntryViewController
 
@@ -209,9 +210,9 @@
      */
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
-    return YES;
+    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:toInterfaceOrientation]];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation

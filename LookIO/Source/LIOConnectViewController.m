@@ -8,6 +8,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import "LIOConnectViewController.h"
+#import "LIOLookIOManager.h"
 
 @implementation LIOConnectViewController
 
@@ -103,12 +104,26 @@
     aFrame = nameEntryField.frame;
     aFrame.size.height = 29.0;
     nameEntryField.frame = aFrame;
-    nameEntryField.placeholder = @"Hi! Enter your name while you wait.";
+    nameEntryField.placeholder = @"Please enter your name.";
     nameEntryField.font = [UIFont systemFontOfSize:14.0];
     //nameEntryField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     nameEntryField.delegate = self;
     nameEntryField.returnKeyType = UIReturnKeyDone;
     [nameEntryBackground addSubview:nameEntryField];
+    
+    UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
+    greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
+    
+    nameEntrySendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [nameEntrySendButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+    [nameEntrySendButton setTitle:@"Save" forState:UIControlStateNormal];
+    nameEntrySendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    aFrame = nameEntrySendButton.frame;
+    aFrame.size.width = 59.0;
+    aFrame.size.height = 27.0;
+    nameEntrySendButton.frame = aFrame;
+    [nameEntrySendButton addTarget:self action:@selector(nameEntrySendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    [nameEntryBackground addSubview:nameEntrySendButton];
 }
 
 - (void)dealloc
@@ -121,6 +136,7 @@
     [connectionBackground release];
     [nameEntryField release];
     [nameEntryBackground release];
+    [nameEntrySendButton release];
     
     [super dealloc];
 }
@@ -157,6 +173,9 @@
     
     [nameEntryBackground release];
     nameEntryBackground = nil;
+    
+    [nameEntrySendButton release];
+    nameEntrySendButton = nil;
 }
 
 - (void)showAnimated:(BOOL)animated
@@ -194,6 +213,9 @@
     connectionLabel.alpha = 0.0;
     
     CGFloat spinnerSize = 64.0;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        spinnerSize = 128.0;
+    
     connectionSpinner.frame = CGRectMake((targetFrame.size.width / 2.0) - (spinnerSize / 2.0),
                                          (targetFrame.size.height / 2.0) - (spinnerSize / 2.0),
                                          spinnerSize,
@@ -264,6 +286,36 @@
     }
 }
 
+- (void)rejiggerNameEntryFieldLayout
+{
+    CGRect nameEntryFieldFrame = nameEntryField.frame;
+    nameEntryFieldFrame.origin.y = -2.0;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+    {
+        if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+            nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.5;
+        else
+            nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.9;
+        
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.width / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    else
+    {
+        if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+            nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.5;
+        else
+            nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.9;
+        
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.height / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    nameEntryFieldFrame.size.width -= (nameEntrySendButton.frame.size.width * 1.4) - 15.0;
+    nameEntryField.frame = nameEntryFieldFrame;
+    
+    CGRect aFrame = nameEntrySendButton.frame;
+    aFrame.origin.x = nameEntryField.frame.origin.x + nameEntryField.frame.size.width + 7.5;
+    nameEntrySendButton.frame = aFrame;
+}
+
 - (void)showNameEntryFieldAnimated:(BOOL)animated
 {
     if (nameEntryShown)
@@ -272,19 +324,7 @@
     CGRect connectionLabelFrame = connectionLabel.frame;
     connectionLabelFrame.origin.y -= connectionLabelFrame.size.height;
     
-    CGRect nameEntryFieldFrame = nameEntryField.frame;
-    nameEntryFieldFrame.origin.y = -2.0;
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-    {
-        nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.8;
-        nameEntryFieldFrame.origin.x = (self.view.frame.size.width / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
-    }
-    else
-    {
-        nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.8;
-        nameEntryFieldFrame.origin.x = (self.view.frame.size.height / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
-    }
-    nameEntryField.frame = nameEntryFieldFrame;
+    [self rejiggerNameEntryFieldLayout];
     
     nameEntryField.hidden = NO;
     nameEntryField.alpha = 0.0;
@@ -351,26 +391,12 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
-    return YES;
+    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:toInterfaceOrientation]];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    // what is this i dont even
-    
-    CGRect nameEntryFieldFrame = nameEntryField.frame;
-    nameEntryFieldFrame.origin.y = -2.0;
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-    {
-        nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.8;
-        nameEntryFieldFrame.origin.x = (self.view.frame.size.width / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
-    }
-    else
-    {
-        nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.8;
-        nameEntryFieldFrame.origin.x = (self.view.frame.size.height / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
-    }
-    nameEntryField.frame = nameEntryFieldFrame;
+    [self rejiggerNameEntryFieldLayout];
 }
 
 #pragma mark -
@@ -384,6 +410,18 @@
 - (void)cancelButtonWasTapped
 {
     [delegate connectViewControllerDidTapCancelButton:self];
+}
+
+- (void)nameEntrySendButtonWasTapped
+{
+    if ([nameEntryField.text length])
+    {
+        [delegate connectViewController:self didEnterFriendlyName:nameEntryField.text];
+        [self hideNameEntryFieldAnimated:YES];
+        nameEntryField.text = [NSString string];
+    }
+    
+    [self.view endEditing:YES];
 }
 
 #pragma mark -

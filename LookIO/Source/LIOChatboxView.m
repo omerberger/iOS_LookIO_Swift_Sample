@@ -63,32 +63,28 @@
         inputField.hidden = YES;
         [self addSubview:inputField];
         
+        UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
+        greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
+        
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [sendButton setBackgroundImage:[UIImage imageNamed:@"LIOSendActive"] forState:UIControlStateNormal];
+        [sendButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+        [sendButton setTitle:@"Send" forState:UIControlStateNormal];
+        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
         sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y + 1.0, 59.0, 27.0);
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.hidden = YES;
         [self addSubview:sendButton];
         
-        Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
-        
-        settingsButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
-        [settingsButton setImage:[UIImage imageNamed:@"LIOSettingsIcon"] forState:UIControlStateNormal];
-        [settingsButton setTintColor:[UIColor colorWithWhite:0.1 alpha:1.0]];
-        //[settingsButton imageView].contentMode = 
-        //[settingsButton sizeToFit];
+        settingsButton = [[UIButton alloc] initWithFrame:CGRectZero];
+        [settingsButton setBackgroundImage:[UIImage imageNamed:@"LIOSettingsButton"] forState:UIControlStateNormal];
         [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         aFrame = CGRectZero;
-        aFrame.size.width = 40.0;
-        aFrame.size.height = 40.0;
+        aFrame.size.width = 33.0;
+        aFrame.size.height = 33.0;
         aFrame.origin.x = self.frame.size.width - aFrame.size.width - 7.0;
         aFrame.origin.y = 7.0;
         [settingsButton setFrame:aFrame];
         [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
-        //[settingsButton layer].shadowColor = [UIColor whiteColor].CGColor;
-        //[settingsButton layer].shadowOpacity = 0.7;
-        //[settingsButton layer].shadowOffset = CGSizeMake(0.0, 1.0);
-        //[settingsButton layer].shadowRadius = 1.0;
         [self addSubview:(UIView *)settingsButton];
     }
     

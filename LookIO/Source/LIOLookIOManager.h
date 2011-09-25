@@ -12,6 +12,7 @@
 
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
+@property(nonatomic, retain) NSArray *supportedOrientations;
 @property(nonatomic, assign) CGPoint controlButtonCenter;
 @property(nonatomic, assign) CGPoint controlButtonCenterLandscape;
 @property(nonatomic, assign) CGRect controlButtonBounds;
