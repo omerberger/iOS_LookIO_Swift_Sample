@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIONiceTextField.h"
 
 /*
 @class LIOConnectViewController;
@@ -15,10 +16,11 @@
 - (void)connectViewControllerDidTapHideButton:(LIOConnectViewController *)aController;
 - (void)connectViewControllerDidTapCancelButton:(LIOConnectViewController *)aController;
 - (void)connectViewControllerWasHidden:(LIOConnectViewController *)aController;
+- (void)connectViewController:(LIOConnectViewController *)aController didEnterFriendlyName:(NSString *)aString;
 @end
 */
 
-@interface LIOConnectViewController : UIViewController
+@interface LIOConnectViewController : UIViewController <UITextFieldDelegate>
 {
     UIImageView *connectionLogo;
     id hideButton, cancelButton;
@@ -26,6 +28,9 @@
     UILabel *connectionLabel;
     UIView *connectionBackground;
     CGRect targetLogoFrameForHiding;
+    LIONiceTextField *nameEntryField;
+    UIView *nameEntryBackground;
+    BOOL nameEntryShown;
     id delegate;
 }
 
@@ -36,5 +41,7 @@
 
 - (void)showAnimated:(BOOL)animated;
 - (void)hideAnimated:(BOOL)animated;
+- (void)showNameEntryFieldAnimated:(BOOL)animated;
+- (void)hideNameEntryFieldAnimated:(BOOL)animated;
 
 @end

@@ -40,6 +40,7 @@
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     CGRect aFrame = [cancelButton frame];
     aFrame.origin.x = 10.0;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom]) aFrame.origin.x = 75.0;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
     [cancelButton setFrame:aFrame];
     [cancelButton setAutoresizingMask:UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin];
@@ -51,6 +52,7 @@
     [hideButton addTarget:self action:@selector(hideButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = [hideButton frame];
     aFrame.origin.x = rootView.frame.size.width - aFrame.size.width - 10.0;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom]) aFrame.origin.x = rootView.frame.size.width - aFrame.size.width - 75.0;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
     [hideButton setFrame:aFrame];
     [hideButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin];
@@ -66,10 +68,14 @@
     }
     else
     {
-        CGRect newFrame = CGRectMake(rootView.frame.size.width - [cancelButton frame].size.width - 10.0,
+        CGRect newFrame = CGRectMake([hideButton frame].origin.x,
                                      [hideButton frame].origin.y,
                                      [cancelButton frame].size.width,
                                      [hideButton frame].size.height);
+        
+        newFrame.origin.x = rootView.frame.size.width - newFrame.size.width - 10.0;
+        if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom]) newFrame.origin.x = rootView.frame.size.width - newFrame.size.width - 75.0;
+        
         [hideButton setFrame:newFrame];
     }
     
@@ -79,13 +85,30 @@
     connectionLabel.textAlignment = UITextAlignmentCenter;
     [connectionLabel sizeToFit];
     aFrame = connectionLabel.frame;
-    aFrame.size.height += 6.0;
+    aFrame.size.height = 32.0;
     aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
     aFrame.size.width = rootView.frame.size.width;
     connectionLabel.frame = aFrame;
     connectionLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.7];
-    connectionLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    [rootView addSubview:connectionLabel];    
+    connectionLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [rootView addSubview:connectionLabel];
+    
+    nameEntryBackground = [[UIView alloc] init];
+    nameEntryBackground.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.7];
+    nameEntryBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    nameEntryBackground.hidden = YES;
+    [rootView addSubview:nameEntryBackground];
+    
+    nameEntryField = [[LIONiceTextField alloc] initWithFrame:CGRectZero];
+    aFrame = nameEntryField.frame;
+    aFrame.size.height = 29.0;
+    nameEntryField.frame = aFrame;
+    nameEntryField.placeholder = @"Hi! Enter your name while you wait.";
+    nameEntryField.font = [UIFont systemFontOfSize:14.0];
+    //nameEntryField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    nameEntryField.delegate = self;
+    nameEntryField.returnKeyType = UIReturnKeyDone;
+    [nameEntryBackground addSubview:nameEntryField];
 }
 
 - (void)dealloc
@@ -96,6 +119,8 @@
     [connectionSpinner release];
     [connectionLabel release];
     [connectionBackground release];
+    [nameEntryField release];
+    [nameEntryBackground release];
     
     [super dealloc];
 }
@@ -126,6 +151,12 @@
     
     [connectionBackground release];
     connectionBackground = nil;
+    
+    [nameEntryField release];
+    nameEntryField = nil;
+    
+    [nameEntryBackground release];
+    nameEntryBackground = nil;
 }
 
 - (void)showAnimated:(BOOL)animated
@@ -133,7 +164,9 @@
     connectionBackground.alpha = 0.0;
     
     CGSize targetSize = CGSizeMake(224.0, 224.0);
-    
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        targetSize = CGSizeMake(430.0, 430.0);
+        
     // If in landscape mode, origin.x and origin.y must be swapped.
     // There's probably a better way to do this. D:!
     CGRect targetFrame = CGRectZero;
@@ -153,7 +186,10 @@
     }
     
     CGRect aFrame = connectionLabel.frame;
-    aFrame.origin.y = targetFrame.origin.y + targetFrame.size.height + 5.0;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        aFrame.origin.y = targetFrame.origin.y - aFrame.size.height - 5.0;
+    else
+        aFrame.origin.y = targetFrame.origin.y + aFrame.size.height;
     connectionLabel.frame = aFrame;
     connectionLabel.alpha = 0.0;
     
@@ -228,9 +264,113 @@
     }
 }
 
+- (void)showNameEntryFieldAnimated:(BOOL)animated
+{
+    if (nameEntryShown)
+        return;    
+    
+    CGRect connectionLabelFrame = connectionLabel.frame;
+    connectionLabelFrame.origin.y -= connectionLabelFrame.size.height;
+    
+    CGRect nameEntryFieldFrame = nameEntryField.frame;
+    nameEntryFieldFrame.origin.y = -2.0;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+    {
+        nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.8;
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.width / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    else
+    {
+        nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.8;
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.height / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    nameEntryField.frame = nameEntryFieldFrame;
+    
+    nameEntryField.hidden = NO;
+    nameEntryField.alpha = 0.0;
+    
+    nameEntryBackground.hidden = NO;
+    nameEntryBackground.alpha = 0.0;
+    
+    nameEntryBackground.frame = connectionLabel.frame;
+    
+    if (animated)
+    {
+        [UIView animateWithDuration:0.5
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseIn
+                         animations:^{
+                             connectionLabel.frame = connectionLabelFrame;
+                             nameEntryField.alpha = 1.0;
+                             nameEntryBackground.alpha = 1.0;
+                         }
+                         completion:nil];
+    }
+    else
+    {
+        connectionLabel.frame = connectionLabelFrame;
+        nameEntryField.alpha = 1.0;
+        nameEntryBackground.alpha = 1.0;
+    }
+    
+    nameEntryShown = YES;
+}
+
+- (void)hideNameEntryFieldAnimated:(BOOL)animated
+{
+    if (NO == nameEntryShown)
+        return;
+    
+    CGRect connectionLabelFrame = connectionLabel.frame;
+    connectionLabelFrame.origin.y += connectionLabelFrame.size.height;
+    
+    if (animated)
+    {
+        [UIView animateWithDuration:0.5
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseIn
+                         animations:^{
+                             connectionLabel.frame = connectionLabelFrame;
+                             nameEntryField.alpha = 0.0;
+                             nameEntryBackground.alpha = 0.0;
+                         }
+                         completion:^(BOOL finished) {
+                             nameEntryField.hidden = YES;
+                             nameEntryBackground.hidden = YES;
+                         }];
+    }
+    else
+    {
+        connectionLabel.frame = connectionLabelFrame;
+        nameEntryField.hidden = YES;
+        nameEntryBackground.hidden = YES;
+    }
+    
+    nameEntryShown = NO;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
     return YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    // what is this i dont even
+    
+    CGRect nameEntryFieldFrame = nameEntryField.frame;
+    nameEntryFieldFrame.origin.y = -2.0;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+    {
+        nameEntryFieldFrame.size.width = self.view.frame.size.width * 0.8;
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.width / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    else
+    {
+        nameEntryFieldFrame.size.width = self.view.frame.size.height * 0.8;
+        nameEntryFieldFrame.origin.x = (self.view.frame.size.height / 2.0) - (nameEntryFieldFrame.size.width / 2.0);
+    }
+    nameEntryField.frame = nameEntryFieldFrame;
 }
 
 #pragma mark -
@@ -244,6 +384,23 @@
 - (void)cancelButtonWasTapped
 {
     [delegate connectViewControllerDidTapCancelButton:self];
+}
+
+#pragma mark -
+#pragma mark UITextFieldDelegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    if ([textField.text length])
+    {
+        [delegate connectViewController:self didEnterFriendlyName:textField.text];
+        [self hideNameEntryFieldAnimated:YES];
+        textField.text = [NSString string];
+    }
+    
+    [self.view endEditing:YES];
+    
+    return NO;
 }
 
 @end

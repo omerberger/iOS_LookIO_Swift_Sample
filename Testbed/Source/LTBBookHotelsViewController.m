@@ -34,6 +34,18 @@
     backButton.frame = CGRectMake(0, 0, 70, 30);
     [backButton addTarget:self action:@selector(backButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [rootView addSubview:backButton];
+    
+    UITextField *textField = [[[UITextField alloc] init] autorelease];
+    textField.borderStyle = UITextBorderStyleBezel;
+    textField.backgroundColor = [UIColor whiteColor];
+    textField.text = @"jyI";
+    [textField sizeToFit];
+    aFrame = textField.frame;
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = rootView.frame.size.width - 20.0;
+    aFrame.origin.y = 50.0;
+    textField.frame = aFrame;
+    [rootView addSubview:textField];
 }
 
 - (void)dealloc

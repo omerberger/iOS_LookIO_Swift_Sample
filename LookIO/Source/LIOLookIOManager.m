@@ -16,7 +16,7 @@
 #import "NSData+Base64.h"
 #import "LIOChatViewController.h"
 #import "LIOConnectViewController.h"
-#import "LIOFeedbackViewController.h"
+#import "LIOTextEntryViewController.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"0.1"
@@ -67,9 +67,12 @@
     NSString *controlEndpoint;
     NSMutableData *endpointRequestData;
     NSInteger endpointRequestHTTPResponseCode;
+    NSInteger numIncomingChatMessages;
     LIOChatViewController *chatViewController;
     LIOConnectViewController *connectViewController;
-    LIOFeedbackViewController *feedbackViewController;
+    LIOTextEntryViewController *feedbackViewController, *emailEntryViewController;
+    NSString *pendingFeedbackText;
+    NSString *friendlyName;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -78,7 +81,7 @@
 
 @end
 
-NSBundle *lookioBundle(void)
+NSBundle *lookioBundle()
 {
     static NSBundle *bundle = nil;
     
@@ -108,7 +111,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (id)init
 {
-    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
+    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
     
     self = [super init];
     
@@ -191,6 +194,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         usesTLS = YES;
         usesControlButton = YES;
         usesSounds = YES;
+        numIncomingChatMessages = 0;
         
         NSLog(@"[LOOKIO] Loaded.");
     }
@@ -223,6 +227,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [endpointRequestConnection release];
     [endpointRequestData release];
     [feedbackViewController release];
+    [emailEntryViewController release];
+    [pendingFeedbackText release];
+    [friendlyName release];
     
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
@@ -237,6 +244,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [connectViewController.view removeFromSuperview];
     [feedbackViewController.view removeFromSuperview];
+    [emailEntryViewController.view removeFromSuperview];
     
     [cursorView removeFromSuperview];
     [clickView removeFromSuperview];
@@ -302,6 +310,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    if (keyWindow != lookioWindow)
+    {
+        [keyWindow bringSubviewToFront:controlButton];
+        [keyWindow bringSubviewToFront:cursorView];
+        [keyWindow bringSubviewToFront:clickView];
+    }
+    
     if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
@@ -352,6 +368,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (connectViewController)
         return;
     
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
     connectViewController = [[LIOConnectViewController alloc] initWithNibName:nil bundle:nil];
     connectViewController.delegate = self;
     
@@ -381,12 +399,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [connectViewController showAnimated:YES];
+    
+    if (0 == [friendlyName length])
+    {
+        double delayInSeconds = 1.0;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [connectViewController showNameEntryFieldAnimated:YES];
+        });
+    }
 }
 
 - (void)showChat
 {
     if (chatViewController)
         return;
+    
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
@@ -424,6 +453,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self controlButtonWasTapped];
         return;
     }
+
+    // Bypass REST call.
+    [controlEndpoint release];
+    controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
     
     if (0 == [controlEndpoint length])
     {
@@ -435,6 +468,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             return;
     }
+     
     
     NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
     if (NO == usesTLS)
@@ -538,7 +572,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [chatViewController scrollToBottom];
         }
         
-        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        if (numIncomingChatMessages > 0 && UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
             UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
             localNotification.soundName = @"LookIODing.caf";
@@ -546,6 +580,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             localNotification.alertAction = @"Go!";
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
         }
+        
+        numIncomingChatMessages++;
     }
     else if ([type isEqualToString:@"cursor"])
     {
@@ -647,6 +683,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [connectViewController hideAnimated:YES];
             controlButtonSpinner.hidden = YES;
             
+            /*
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
             {
                 UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
@@ -655,6 +692,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertAction = @"Go!";
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             }
+            */
         }
         else if ([action isEqualToString:@"queued"])
         {
@@ -774,7 +812,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
-    char *machine = malloc(size);  
+    char *machine = malloc(size);
     sysctlbyname("hw.machine", machine, &size, NULL, 0);  
     NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
     free(machine);
@@ -786,6 +824,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       udid, @"device_id",
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
+                                      @"Apple iOS", @"platform",
                                       LIOLookIOManagerVersion, @"version",
                                       nil];
     if ([targetAgentId length])
@@ -985,6 +1024,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController
 {
+    [chatViewController.view removeFromSuperview];
+    [chatViewController release];
+    chatViewController = nil;
+    
+    emailEntryViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
+    emailEntryViewController.delegate = self;
+    emailEntryViewController.instructionsText = @"Please enter your e-mail address.";
+    [lookioWindow addSubview:emailEntryViewController.view];
+    lookioWindow.hidden = NO;
 }
 
 #pragma mark -
@@ -1036,8 +1084,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [connectViewController release];
                 connectViewController = nil;
                 
-                feedbackViewController = [[LIOFeedbackViewController alloc] initWithNibName:nil bundle:nil];
+                feedbackViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
                 feedbackViewController.delegate = self;
+                feedbackViewController.instructionsText = @"Please leave a message.";
                 [lookioWindow addSubview:feedbackViewController.view];
                 lookioWindow.hidden = NO;
             }
@@ -1092,6 +1141,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (nil == chatViewController)
         lookioWindow.hidden = YES;
+}
+
+- (void)connectViewController:(LIOConnectViewController *)aController didEnterFriendlyName:(NSString *)aString
+{
+    [friendlyName release];
+    friendlyName = [aString retain];
+    
+    NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:friendlyName, @"name", nil];
+    NSMutableDictionary *nameDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                     @"advisory", @"type",
+                                     @"friendly_name", @"action",
+                                     aDict, @"data",
+                                     nil];
+    
+    NSString *name = [jsonWriter stringWithObject:nameDict];
+    name = [name stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[name dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
 }
 
 #pragma mark -
@@ -1221,46 +1290,143 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma mark LIOFeedbackViewController delegate methods
+#pragma mark LIOTextEntryViewController delegate methods
 
-- (void)feedbackViewControllerWasDismissed:(LIOFeedbackViewController *)aController
+- (void)textEntryViewControllerWasDismissed:(LIOTextEntryViewController *)aController
 {
-    [feedbackViewController.view removeFromSuperview];
-    [feedbackViewController release];
-    feedbackViewController = nil;
-    
-    lookioWindow.hidden = YES;
-    
-    unloadAfterDisconnect = YES;
-    [self killConnection];
-}
-
-- (void)feedbackViewController:(LIOFeedbackViewController *)aController wantsToSendMessage:(NSString *)aMessage
-{
-    [feedbackViewController.view removeFromSuperview];
-    [feedbackViewController release];
-    feedbackViewController = nil;
-    
-    lookioWindow.hidden = YES;
-    
-    if ([aMessage length])
+    if (feedbackViewController == aController)
     {
-        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                          @"feedback", @"type",
-                                          aMessage, @"message",
-                                          nil];
-
-        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
-        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
-
-        [controlSocket writeData:[feedback dataUsingEncoding:NSASCIIStringEncoding]
-                  withTimeout:LIOLookIOManagerWriteTimeout
-                          tag:0];
+        [feedbackViewController.view removeFromSuperview];
+        [feedbackViewController release];
+        feedbackViewController = nil;
+        
+        lookioWindow.hidden = YES;
+        
+        unloadAfterDisconnect = YES;
+        [self killConnection];
     }
-    
-    unloadAfterDisconnect = YES;
-    [self killConnection];
+    else if (emailEntryViewController == aController)
+    {
+        [emailEntryViewController.view removeFromSuperview];
+        [emailEntryViewController release];
+        emailEntryViewController = nil;
+        
+        lookioWindow.hidden = YES;
+    }
 }
 
+- (void)textEntryViewController:(LIOTextEntryViewController *)aController wasDismissedWithText:(NSString *)someText
+{
+    if (feedbackViewController == aController)
+    {
+        [feedbackViewController.view removeFromSuperview];
+        [feedbackViewController release];
+        feedbackViewController = nil;
+        
+        lookioWindow.hidden = YES;
+        
+        if ([someText length])
+        {
+            [pendingFeedbackText release];
+            pendingFeedbackText = [someText retain];
+            
+            emailEntryViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
+            emailEntryViewController.delegate = self;
+            emailEntryViewController.instructionsText = @"Please enter your e-mail address.";
+            [lookioWindow addSubview:emailEntryViewController.view];
+            lookioWindow.hidden = NO;
+        }
+        else
+        {
+            unloadAfterDisconnect = YES;
+            [self killConnection];
+        }
+    }
+    else if (emailEntryViewController == aController)
+    {
+        [emailEntryViewController.view removeFromSuperview];
+        [emailEntryViewController release];
+        emailEntryViewController = nil;
+        
+        lookioWindow.hidden = YES;
+        
+        if ([pendingFeedbackText length])
+        {
+            // Post-feedback e-mail entry.
+            if ([someText length])
+            {
+                NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                     @"feedback", @"type",
+                                                     someText, @"email_address",
+                                                     pendingFeedbackText, @"message",
+                                                     nil];
+                
+                NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+                feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+                
+                [controlSocket writeData:[feedback dataUsingEncoding:NSASCIIStringEncoding]
+                             withTimeout:LIOLookIOManagerWriteTimeout
+                                     tag:0];
+                
+                [pendingFeedbackText release];
+                pendingFeedbackText = nil;
+                
+                unloadAfterDisconnect = YES;
+                [self killConnection];
+            }
+        }
+        else
+        {
+            // Straight up e-mail entry.
+            NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:someText], @"email_addresses", nil];
+            NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                 @"advisory", @"type",
+                                                 @"chat_history", @"action",
+                                                 aDict, @"data",
+                                                 nil];
+            
+            NSString *email = [jsonWriter stringWithObject:emailDict];
+            email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+            
+            [controlSocket writeData:[email dataUsingEncoding:NSASCIIStringEncoding]
+                         withTimeout:LIOLookIOManagerWriteTimeout
+                                 tag:0];
+        }
+    }
+}
+
+- (UIReturnKeyType)textEntryViewControllerReturnKeyType:(LIOTextEntryViewController *)aController
+{
+    if (emailEntryViewController == aController)
+        return UIReturnKeySend;
+    else if (feedbackViewController == aController)
+        return UIReturnKeyNext;
+    
+    return UIReturnKeyDefault;
+}
+
+- (UIKeyboardType)textEntryViewControllerKeyboardType:(LIOTextEntryViewController *)aController
+{
+    if (emailEntryViewController == aController)
+        return UIKeyboardTypeEmailAddress;
+    
+    return UIKeyboardTypeDefault;
+}
+
+- (UITextAutocorrectionType)textEntryViewControllerAutocorrectionType:(LIOTextEntryViewController *)aController
+{
+    if (emailEntryViewController == aController)
+        return UITextAutocorrectionTypeNo;
+    
+    return UITextAutocorrectionTypeDefault;
+}
+
+- (UITextAutocapitalizationType)textEntryViewControllerAutocapitalizationType:(LIOTextEntryViewController *)aController
+{
+    if (emailEntryViewController == aController)
+        return UITextAutocapitalizationTypeNone;
+    
+    return UITextAutocapitalizationTypeSentences;
+}
 
 @end

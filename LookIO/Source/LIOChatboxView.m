@@ -85,10 +85,10 @@
         aFrame.origin.y = 7.0;
         [settingsButton setFrame:aFrame];
         [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
-        [settingsButton layer].shadowColor = [UIColor whiteColor].CGColor;
-        [settingsButton layer].shadowOpacity = 0.7;
-        [settingsButton layer].shadowOffset = CGSizeMake(0.0, 1.0);
-        [settingsButton layer].shadowRadius = 1.0;
+        //[settingsButton layer].shadowColor = [UIColor whiteColor].CGColor;
+        //[settingsButton layer].shadowOpacity = 0.7;
+        //[settingsButton layer].shadowOffset = CGSizeMake(0.0, 1.0);
+        //[settingsButton layer].shadowRadius = 1.0;
         [self addSubview:(UIView *)settingsButton];
     }
     
@@ -119,7 +119,7 @@
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
     inputField.frame = aFrame;
     
-    sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y + 1.0, 59.0, 27.0);    
+    sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y + 1.0, 59.0, 27.0);
     
     aFrame = self.frame;
     aFrame.size.height = boxSize.height + 10.0 + inputField.frame.size.height + 10.0 + 5.0;

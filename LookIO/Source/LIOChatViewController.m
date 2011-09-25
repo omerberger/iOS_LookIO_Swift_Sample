@@ -137,9 +137,16 @@
     for (NSString *aMessage in textMessages)
     {
         CGRect aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxMinHeight);
+        if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        {
+            if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+                aFrame = CGRectMake(228.0, 0.0, 598.0, LIOChatViewControllerChatboxMinHeight);
+            else
+                aFrame = CGRectMake(100.0, 0.0, 568.0, LIOChatViewControllerChatboxMinHeight);
+        }
         LIOChatboxView *newChatbox = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
         [newChatbox populateMessageViewWithText:aMessage];
-        //newChatbox.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        //newChatbox.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [messageViews addObject:newChatbox];
         [scrollView addSubview:newChatbox];
         
@@ -249,7 +256,7 @@
     
     if (endSharingIndex != NSNotFound)
     {
-        [actionSheet addButtonWithTitle:@"End Session"];
+        [actionSheet addButtonWithTitle:@"End Screen Sharing"];
         cancelIndex++;
     }
     
@@ -264,7 +271,16 @@
     [actionSheet setDestructiveButtonIndex:endSessionIndex];
     actionSheet.cancelButtonIndex = cancelIndex;
     [actionSheet setDelegate:self];
-    [actionSheet showInView:self.view];
+    
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
+        LIOChatboxView *chatbox = [messageViews lastObject];
+        CGRect aFrame = [chatbox.settingsButton frame];
+        [actionSheet showFromRect:aFrame inView:chatbox animated:YES];
+    }
+    else
+        [actionSheet showInView:self.view];
+    
 }
 
 #pragma mark -
