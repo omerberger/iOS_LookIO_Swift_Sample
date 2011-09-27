@@ -829,6 +829,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                               completion:nil];
                          }];
     }
+    else if ([type isEqualToString:@"outro"])
+    {
+        unloadAfterDisconnect = YES;
+        [self killConnection];
+    }
     
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1
