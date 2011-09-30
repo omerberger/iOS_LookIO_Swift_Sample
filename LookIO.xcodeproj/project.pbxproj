@@ -41,6 +41,8 @@
 		D4C1987214363E4B009A71B2 /* LIOLeaveMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */; };
 		D4C1987614365136009A71B2 /* LIOTimerProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C1987414365136009A71B2 /* LIOTimerProxy.h */; };
 		D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C1987514365136009A71B2 /* LIOTimerProxy.m */; };
+		D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */; };
+		D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */; };
 		D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */; };
 		D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */; };
 /* End PBXBuildFile section */
@@ -81,6 +83,8 @@
 		D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLeaveMessageViewController.m; path = LookIO/Source/LIOLeaveMessageViewController.m; sourceTree = "<group>"; };
 		D4C1987414365136009A71B2 /* LIOTimerProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOTimerProxy.h; path = LookIO/Source/LIOTimerProxy.h; sourceTree = "<group>"; };
 		D4C1987514365136009A71B2 /* LIOTimerProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOTimerProxy.m; path = LookIO/Source/LIOTimerProxy.m; sourceTree = "<group>"; };
+		D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEmailHistoryViewController.h; path = LookIO/Source/LIOEmailHistoryViewController.h; sourceTree = "<group>"; };
+		D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEmailHistoryViewController.m; path = LookIO/Source/LIOEmailHistoryViewController.m; sourceTree = "<group>"; };
 		D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -185,6 +189,8 @@
 				D4743CED141A9BA10089E9A0 /* LIOTextEntryViewController.m */,
 				D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */,
 				D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */,
+				D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */,
+				D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -223,6 +229,7 @@
 				D4743CEE141A9BA10089E9A0 /* LIOTextEntryViewController.h in Headers */,
 				D4C1987114363E4B009A71B2 /* LIOLeaveMessageViewController.h in Headers */,
 				D4C1987614365136009A71B2 /* LIOTimerProxy.h in Headers */,
+				D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,6 +316,7 @@
 				D4743CEF141A9BA10089E9A0 /* LIOTextEntryViewController.m in Sources */,
 				D4C1987214363E4B009A71B2 /* LIOLeaveMessageViewController.m in Sources */,
 				D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */,
+				D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

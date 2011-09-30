@@ -16,8 +16,8 @@
 #import "NSData+Base64.h"
 #import "LIOChatViewController.h"
 #import "LIOConnectViewController.h"
-#import "LIOTextEntryViewController.h"
 #import "LIOLeaveMessageViewController.h"
+#import "LIOEmailHistoryViewController.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"0.1"
@@ -71,7 +71,7 @@
     NSInteger numIncomingChatMessages;
     LIOChatViewController *chatViewController;
     LIOConnectViewController *connectViewController;
-    LIOTextEntryViewController *emailEntryViewController;
+    LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
     NSString *pendingFeedbackText;
     NSString *friendlyName;
@@ -255,7 +255,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [endpointRequestConnection release];
     [endpointRequestData release];
     [leaveMessageViewController release];
-    [emailEntryViewController release];
+    [emailHistoryViewController release];
     [pendingFeedbackText release];
     [friendlyName release];
     [supportedOrientations release];
@@ -273,7 +273,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [connectViewController.view removeFromSuperview];
     [leaveMessageViewController.view removeFromSuperview];
-    [emailEntryViewController.view removeFromSuperview];
+    [emailHistoryViewController.view removeFromSuperview];
     
     [cursorView removeFromSuperview];
     [clickView removeFromSuperview];
@@ -1076,10 +1076,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController release];
     chatViewController = nil;
     
-    emailEntryViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
-    emailEntryViewController.delegate = self;
-    emailEntryViewController.instructionsText = @"Please enter your e-mail address.";
-    [lookioWindow addSubview:emailEntryViewController.view];
+    emailHistoryViewController = [[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil];
+    emailHistoryViewController.delegate = self;
+    [lookioWindow addSubview:emailHistoryViewController.view];
     lookioWindow.hidden = NO;
 }
 
@@ -1446,146 +1445,41 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
 }
 
-/*
 #pragma mark -
-#pragma mark LIOTextEntryViewController delegate methods
+#pragma mark LIOEmailHistoryViewControllerDelegate methods
 
-- (void)textEntryViewControllerWasDismissed:(LIOTextEntryViewController *)aController
+- (void)emailHistoryViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
 {
-    if (feedbackViewController == aController)
-    {
-        [feedbackViewController.view removeFromSuperview];
-        [feedbackViewController release];
-        feedbackViewController = nil;
-        
-        lookioWindow.hidden = YES;
-        
-        unloadAfterDisconnect = YES;
-        [self killConnection];
-    }
-    else if (emailEntryViewController == aController)
-    {
-        [emailEntryViewController.view removeFromSuperview];
-        [emailEntryViewController release];
-        emailEntryViewController = nil;
-        
-        lookioWindow.hidden = YES;
-    }
-}
-
-- (void)textEntryViewController:(LIOTextEntryViewController *)aController wasDismissedWithText:(NSString *)someText
-{
-    if (feedbackViewController == aController)
-    {
-        [feedbackViewController.view removeFromSuperview];
-        [feedbackViewController release];
-        feedbackViewController = nil;
-        
-        lookioWindow.hidden = YES;
-        
-        if ([someText length])
-        {
-            [pendingFeedbackText release];
-            pendingFeedbackText = [someText retain];
-            
-            emailEntryViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
-            emailEntryViewController.delegate = self;
-            emailEntryViewController.instructionsText = @"Please enter your e-mail address.";
-            [lookioWindow addSubview:emailEntryViewController.view];
-            lookioWindow.hidden = NO;
-        }
-        else
-        {
-            unloadAfterDisconnect = YES;
-            [self killConnection];
-        }
-    }
-    else if (emailEntryViewController == aController)
-    {
-        [emailEntryViewController.view removeFromSuperview];
-        [emailEntryViewController release];
-        emailEntryViewController = nil;
-        
-        lookioWindow.hidden = YES;
-        
-        if ([pendingFeedbackText length])
-        {
-            // Post-feedback e-mail entry.
-            if ([someText length])
-            {
-                NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                                     @"feedback", @"type",
-                                                     someText, @"email_address",
-                                                     pendingFeedbackText, @"message",
-                                                     nil];
-                
-                NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
-                feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
-                
-                [controlSocket writeData:[feedback dataUsingEncoding:NSASCIIStringEncoding]
-                             withTimeout:LIOLookIOManagerWriteTimeout
-                                     tag:0];
-                
-                [pendingFeedbackText release];
-                pendingFeedbackText = nil;
-                
-                unloadAfterDisconnect = YES;
-                [self killConnection];
-            }
-        }
-        else
-        {
-            // Straight up e-mail entry.
-            NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:someText], @"email_addresses", nil];
-            NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                                 @"advisory", @"type",
-                                                 @"chat_history", @"action",
-                                                 aDict, @"data",
-                                                 nil];
-            
-            NSString *email = [jsonWriter stringWithObject:emailDict];
-            email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
-            
-            [controlSocket writeData:[email dataUsingEncoding:NSASCIIStringEncoding]
-                         withTimeout:LIOLookIOManagerWriteTimeout
-                                 tag:0];
-        }
-    }
-}
-
-- (UIReturnKeyType)textEntryViewControllerReturnKeyType:(LIOTextEntryViewController *)aController
-{
-    if (emailEntryViewController == aController)
-        return UIReturnKeySend;
-    else if (feedbackViewController == aController)
-        return UIReturnKeyNext;
+    [emailHistoryViewController.view removeFromSuperview];
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
     
-    return UIReturnKeyDefault;
+    if (nil == chatViewController)
+        lookioWindow.hidden = YES;
 }
 
-- (UIKeyboardType)textEntryViewControllerKeyboardType:(LIOTextEntryViewController *)aController
+- (void)emailHistoryViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
 {
-    if (emailEntryViewController == aController)
-        return UIKeyboardTypeEmailAddress;
+    [emailHistoryViewController.view removeFromSuperview];
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
     
-    return UIKeyboardTypeDefault;
-}
-
-- (UITextAutocorrectionType)textEntryViewControllerAutocorrectionType:(LIOTextEntryViewController *)aController
-{
-    if (emailEntryViewController == aController)
-        return UITextAutocorrectionTypeNo;
+    if (nil == chatViewController)
+        lookioWindow.hidden = YES;
     
-    return UITextAutocorrectionTypeDefault;
-}
-
-- (UITextAutocapitalizationType)textEntryViewControllerAutocapitalizationType:(LIOTextEntryViewController *)aController
-{
-    if (emailEntryViewController == aController)
-        return UITextAutocapitalizationTypeNone;
+    NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:anEmail], @"email_addresses", nil];
+    NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      @"advisory", @"type",
+                                      @"chat_history", @"action",
+                                      aDict, @"data",
+                                      nil];
     
-    return UITextAutocapitalizationTypeSentences;
+    NSString *email = [jsonWriter stringWithObject:emailDict];
+    email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[email dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
 }
-*/
 
 @end
