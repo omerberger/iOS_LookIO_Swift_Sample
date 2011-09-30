@@ -141,6 +141,7 @@
 
 - (void)sendButtonWasTapped
 {
+    [inputField resignFirstResponder];
     NSString *text = inputField.text;
     inputField.text = [NSString string];
     [delegate chatboxView:self didReturnWithText:text];

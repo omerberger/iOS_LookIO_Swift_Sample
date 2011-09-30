@@ -279,6 +279,38 @@
     
 }
 
+- (void)performDismissalAnimation
+{
+    CGAffineTransform newTransform = CGAffineTransformMakeScale(0.01, 0.01);
+    
+    [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         scrollView.transform = newTransform;
+                         self.view.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
+                         if ([delegate respondsToSelector:@selector(chatViewControllerDidFinishDismissalAnimation:)])
+                             [delegate chatViewControllerDidFinishDismissalAnimation:self];
+                     }];
+}
+
+- (void)performRevealAnimation
+{
+    self.view.alpha = 0.0;
+    scrollView.transform = CGAffineTransformMakeScale(0.01, 0.01);
+    
+    [UIView animateWithDuration:0.25
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         scrollView.transform = CGAffineTransformIdentity;
+                         self.view.alpha = 1.0;
+                     }
+                     completion:nil];
+}
+
 #pragma mark -
 #pragma mark LIOChatboxView delegate methods
 

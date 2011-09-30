@@ -17,6 +17,8 @@
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
+@optional
+- (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController;
 @end
 
 @protocol LIOChatViewControllerDataSource
@@ -40,5 +42,7 @@
 
 - (void)reloadMessages;
 - (void)scrollToBottom;
+- (void)performDismissalAnimation;
+- (void)performRevealAnimation;
 
 @end

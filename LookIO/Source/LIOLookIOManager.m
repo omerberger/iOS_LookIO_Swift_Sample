@@ -54,7 +54,7 @@
     CGRect controlButtonFrameLandscape;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
-    BOOL unloadAfterDisconnect;
+    BOOL unloadAfterDisconnect, killConnectionAfterChatViewDismissal;
     BOOL minimized;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
@@ -447,8 +447,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
     chatViewController.dataSource = self;
+    chatViewController.view.alpha = 0.0;
     [lookioWindow addSubview:chatViewController.view];
     lookioWindow.hidden = NO;
+    
+    [chatViewController performRevealAnimation];
     
     [chatViewController reloadMessages];
     [chatViewController scrollToBottom];
@@ -528,7 +531,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     controlSocketConnecting = YES;
     
-    [self showConnectionUI];
+    //[self showConnectionUI];
+    [chatHistory addObject:@"sup how can we help u lol"];
+    [self showChat];
 }
 
 - (void)killConnection
@@ -881,6 +886,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonWasTapped
 {
+    /*
     if (enqueued && minimized)
     {
         controlButton.hidden = YES;
@@ -888,6 +894,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         minimized = NO;
     }
     else
+     */
         [self showChat];
 }
 
@@ -982,22 +989,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController
 {
-    [chatViewController.view removeFromSuperview];
-    [chatViewController release];
-    chatViewController = nil;
-    
-    NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                       @"advisory", @"type",
-                                                       @"chat_down", @"action",
-                                                       nil]];
-    chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[chatDown dataUsingEncoding:NSASCIIStringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-    
-    if (nil == connectViewController)
-        lookioWindow.hidden = YES;
+    [chatViewController performDismissalAnimation];
 }
 
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString
@@ -1067,6 +1059,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     lookioWindow.hidden = NO;
 }
 
+- (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController
+{
+    [chatViewController.view removeFromSuperview];
+    [chatViewController release];
+    chatViewController = nil;
+    
+    NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                       @"advisory", @"type",
+                                                       @"chat_down", @"action",
+                                                       nil]];
+    chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[chatDown dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    if (nil == connectViewController)
+        lookioWindow.hidden = YES;
+    
+    if (killConnectionAfterChatViewDismissal)
+    {
+        unloadAfterDisconnect = YES;
+        [self killConnection];
+    }
+}
+
 #pragma mark -
 #pragma mark UIAlertViewDelegate methods
 
@@ -1080,11 +1098,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 if (NO == [controlSocket isConnected])
                     [self unload];
+                else if (chatViewController)
+                {
+                    killConnectionAfterChatViewDismissal = YES;
+                    [chatViewController performDismissalAnimation];
+                }
                 else
                 {
                     unloadAfterDisconnect = YES;
                     [self killConnection];
                 }
+                
             }
             
             break;
