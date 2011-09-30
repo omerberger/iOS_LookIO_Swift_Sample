@@ -61,6 +61,7 @@
     [super viewDidLoad];
     
     messageViews = [[NSMutableArray alloc] init];
+    
 }
 
 - (void)viewDidUnload
@@ -80,6 +81,10 @@
     
     [dismissalButton release];
     dismissalButton = nil;
+    
+    [typingTimer stopTimer];
+    [typingTimer release];
+    typingTimer = nil;
 }
 
 - (void)dealloc
@@ -88,6 +93,10 @@
     [scrollView release];
     [messageViews release];
     [dismissalButton release];
+    
+    [typingTimer stopTimer];
+    [typingTimer release];
+    typingTimer = nil;
     
     [super dealloc];
 }
@@ -312,6 +321,20 @@
 }
 
 #pragma mark -
+#pragma mark Timer callbacks
+
+- (void)typingTimerDidFire
+{
+    typing = NO;
+    
+    [typingTimer stopTimer];
+    [typingTimer release];
+    typingTimer = nil;
+    
+    [delegate chatViewControllerTypingDidStop:self];
+}
+
+#pragma mark -
 #pragma mark LIOChatboxView delegate methods
 
 - (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString
@@ -325,6 +348,20 @@
 - (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView
 {
     [self showSettingsMenu];
+}
+
+- (void)chatboxViewDidTypeStuff:(LIOChatboxView *)aView
+{
+    if (NO == typing)
+    {
+        typing = YES;
+        [delegate chatViewControllerTypingDidStart:self];
+    }
+    
+    [typingTimer stopTimer];
+    [typingTimer release];
+    typingTimer = nil;
+    typingTimer = [[LIOTimerProxy alloc] initWithTimeInterval:1.5 target:self selector:@selector(typingTimerDidFire)];
 }
 
 #pragma mark -

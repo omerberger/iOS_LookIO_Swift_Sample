@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOTimerProxy.h"
 
 @class LIOChatboxView, LIOChatViewController;
 
@@ -19,6 +20,8 @@
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
 @optional
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController;
+- (void)chatViewControllerTypingDidStart:(LIOChatViewController *)aController;
+- (void)chatViewControllerTypingDidStop:(LIOChatViewController *)aController;
 @end
 
 @protocol LIOChatViewControllerDataSource
@@ -33,7 +36,8 @@
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
     NSUInteger endSessionIndex, endSharingIndex, emailIndex;
-    //id endSessionButton;
+    LIOTimerProxy *typingTimer;
+    BOOL typing;
     id delegate;
     id dataSource;
 }

@@ -155,6 +155,13 @@
 #pragma mark -
 #pragma mark UITextFieldDelegate methods
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    [delegate chatboxViewDidTypeStuff:self];
+    
+    return YES;
+}
+
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
     [self sendButtonWasTapped];

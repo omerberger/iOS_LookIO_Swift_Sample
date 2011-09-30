@@ -14,6 +14,8 @@
 @protocol LIOChatboxViewDelegate
 - (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString;
 - (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView;
+@optional
+- (void)chatboxViewDidTypeStuff:(LIOChatboxView *)aView;
 @end
 */
 

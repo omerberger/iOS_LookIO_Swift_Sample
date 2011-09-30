@@ -17,6 +17,7 @@
 #import "LIOChatViewController.h"
 #import "LIOConnectViewController.h"
 #import "LIOTextEntryViewController.h"
+#import "LIOLeaveMessageViewController.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"0.1"
@@ -70,7 +71,8 @@
     NSInteger numIncomingChatMessages;
     LIOChatViewController *chatViewController;
     LIOConnectViewController *connectViewController;
-    LIOTextEntryViewController *feedbackViewController, *emailEntryViewController;
+    LIOTextEntryViewController *emailEntryViewController;
+    LIOLeaveMessageViewController *leaveMessageViewController;
     NSString *pendingFeedbackText;
     NSString *friendlyName;
     NSArray *supportedOrientations;
@@ -252,7 +254,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlEndpoint release];
     [endpointRequestConnection release];
     [endpointRequestData release];
-    [feedbackViewController release];
+    [leaveMessageViewController release];
     [emailEntryViewController release];
     [pendingFeedbackText release];
     [friendlyName release];
@@ -270,7 +272,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [chatViewController.view removeFromSuperview];
     [connectViewController.view removeFromSuperview];
-    [feedbackViewController.view removeFromSuperview];
+    [leaveMessageViewController.view removeFromSuperview];
     [emailEntryViewController.view removeFromSuperview];
     
     [cursorView removeFromSuperview];
@@ -459,15 +461,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (usesSounds)
         AudioServicesPlaySystemSound(soundYay);
     
-    NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                     @"advisory", @"type",
-                                                     @"chat_up", @"action",
-                                                     nil]];
-    chatUp = [chatUp stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    if (introduced)
+    {
+        NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                         @"advisory", @"type",
+                                                         @"chat_up", @"action",
+                                                         nil]];
+        chatUp = [chatUp stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[chatUp dataUsingEncoding:NSASCIIStringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
+- (void)showLeaveMessageUI
+{
+    if (leaveMessageViewController)
+        return;
     
-    [controlSocket writeData:[chatUp dataUsingEncoding:NSASCIIStringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
+    leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
+    leaveMessageViewController.delegate = self;
+    [lookioWindow addSubview:leaveMessageViewController.view];
+    lookioWindow.hidden = NO;
 }
 
 - (void)beginSession
@@ -532,7 +550,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlSocketConnecting = YES;
     
     //[self showConnectionUI];
-    [chatHistory addObject:@"sup how can we help u lol"];
+    [chatHistory addObject:@"How can we help you today? Get answers from live customer service:"];
     [self showChat];
 }
 
@@ -732,6 +750,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSNumber *online = [data objectForKey:@"online"];
             if (online && NO == [online boolValue])
             {
+                if (chatViewController)
+                    [chatViewController performDismissalAnimation];
+                
+                [self showLeaveMessageUI];
+                /*
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Sorry"
                                                                     message:@"No agents are available right now. Would you like to leave a message?"
                                                                    delegate:self
@@ -740,6 +763,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 alertView.tag = LIOLookIOManagerNoAgentsOnlineAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
+                 */
             }
             else
             {
@@ -1075,13 +1099,45 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
     
-    if (nil == connectViewController)
+    if (nil == leaveMessageViewController)
         lookioWindow.hidden = YES;
     
     if (killConnectionAfterChatViewDismissal)
     {
         unloadAfterDisconnect = YES;
         [self killConnection];
+    }
+}
+
+- (void)chatViewControllerTypingDidStart:(LIOChatViewController *)aController
+{
+    if (introduced)
+    {
+        NSString *typingStart = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                              @"advisory", @"type",
+                                                              @"typing_start", @"action",
+                                                              nil]];
+        typingStart = [typingStart stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[typingStart dataUsingEncoding:NSASCIIStringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
+- (void)chatViewControllerTypingDidStop:(LIOChatViewController *)aController
+{
+    if (introduced)
+    {
+        NSString *typingStop = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                             @"advisory", @"type",
+                                                             @"typing_stop", @"action",
+                                                             nil]];
+        typingStop = [typingStop stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[typingStop dataUsingEncoding:NSASCIIStringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
     }
 }
 
@@ -1132,6 +1188,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
         }
             
+        /*    
         case LIOLookIOManagerNoAgentsOnlineAlertViewTag:
         {
             if (1 == buttonIndex) // "Yes"
@@ -1154,6 +1211,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             break;
         }
+        */
             
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
@@ -1346,6 +1404,50 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
+#pragma mark LIOLeaveMessageViewControllerDelegate methods
+
+- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
+{
+    [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    if (nil == chatViewController)
+        lookioWindow.hidden = YES;
+    
+    unloadAfterDisconnect = YES;
+    [self killConnection];
+}
+
+- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail message:(NSString *)aMessage
+{
+    [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    if (nil == chatViewController)
+        lookioWindow.hidden = YES;
+    
+    NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                         @"feedback", @"type",
+                                         anEmail, @"email_address",
+                                         aMessage, @"message",
+                                         nil];
+    
+    NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+    feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[feedback dataUsingEncoding:NSASCIIStringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    unloadAfterDisconnect = YES;
+    [self killConnection];
+    
+}
+
+/*
+#pragma mark -
 #pragma mark LIOTextEntryViewController delegate methods
 
 - (void)textEntryViewControllerWasDismissed:(LIOTextEntryViewController *)aController
@@ -1484,5 +1586,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     return UITextAutocapitalizationTypeSentences;
 }
+*/
 
 @end
