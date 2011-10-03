@@ -154,7 +154,6 @@
         }
         LIOChatboxView *newChatbox = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
         [newChatbox populateMessageViewWithText:aMessage];
-        //newChatbox.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [messageViews addObject:newChatbox];
         [scrollView addSubview:newChatbox];
         
@@ -198,21 +197,13 @@
         
         if (canTakeInput)
         {
-            aChatbox.inputField.hidden = NO;
-            aChatbox.sendButton.hidden = NO;
-            [aChatbox.settingsButton setHidden:NO];
-            
             if (savedChat)
                 aChatbox.inputField.text = savedChat;
             
-            if (hadFocus)
+            //if (hadFocus)
                 [aChatbox.inputField becomeFirstResponder];
-        }
-        else
-        {
-            aChatbox.inputField.hidden = YES;
-            aChatbox.sendButton.hidden = YES;
-            [aChatbox.settingsButton setHidden:YES];
+            
+            [aChatbox switchToMode:LIOChatboxViewModeFull];
         }
     }
 }
@@ -369,6 +360,7 @@
 
 - (void)dismissalButtonWasTapped
 {
+    [self.view endEditing:YES];
     [delegate chatViewControllerWasDismissed:self];
 }
 

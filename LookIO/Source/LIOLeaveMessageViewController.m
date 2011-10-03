@@ -12,7 +12,7 @@
 
 @implementation LIOLeaveMessageViewController
 
-@synthesize delegate;
+@synthesize delegate, initialMessage;
 
 - (void)loadView
 {
@@ -133,6 +133,7 @@
     aFrame.size.height = 71.0;
     messageView.frame = aFrame;
     messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    messageView.text = initialMessage;
     [scrollView addSubview:messageView];
     
     UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];

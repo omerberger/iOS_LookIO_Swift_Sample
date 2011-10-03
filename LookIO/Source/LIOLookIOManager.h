@@ -17,6 +17,7 @@
 @property(nonatomic, assign) CGPoint controlButtonCenterLandscape;
 @property(nonatomic, assign) CGRect controlButtonBounds;
 @property(nonatomic, assign) BOOL usesTLS, usesControlButton, usesSounds;
+@property(nonatomic, retain) NSDictionary *sessionExtras;
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)beginSession;

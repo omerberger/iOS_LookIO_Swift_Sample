@@ -76,6 +76,8 @@
     NSString *pendingFeedbackText;
     NSString *friendlyName;
     NSArray *supportedOrientations;
+    BOOL pendingLeaveMessage;
+    NSDictionary *sessionExtras;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -484,6 +486,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
     leaveMessageViewController.delegate = self;
+    leaveMessageViewController.initialMessage = pendingFeedbackText;
     [lookioWindow addSubview:leaveMessageViewController.view];
     lookioWindow.hidden = NO;
 }
@@ -750,10 +753,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSNumber *online = [data objectForKey:@"online"];
             if (online && NO == [online boolValue])
             {
+                pendingLeaveMessage = YES;
+                /*
                 if (chatViewController)
                     [chatViewController performDismissalAnimation];
                 
                 [self showLeaveMessageUI];
+                
+                 */
                 /*
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Sorry"
                                                                     message:@"No agents are available right now. Would you like to leave a message?"
@@ -891,6 +898,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([targetAgentId length])
         [introDict setObject:targetAgentId forKey:@"agent_id"];
     
+    if ([sessionExtras count])
+        [introDict setObject:introDict forKey:@"extras"];
+    
     NSString *intro = [jsonWriter stringWithObject:introDict];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -1018,24 +1028,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString
 {
-    NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                    @"chat", @"type",
-                                                    aString, @"text",
-                                                    nil]];
-    
-    chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    if (pendingLeaveMessage)
+    {
+        [pendingFeedbackText release];
+        pendingFeedbackText = [aString retain];
+        [self showLeaveMessageUI];
+    }
+    else
+    {
+        NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                        @"chat", @"type",
+                                                        aString, @"text",
+                                                        nil]];
+        
+        chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
 
-    [controlSocket writeData:[chat dataUsingEncoding:NSASCIIStringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-    
-    [controlSocket readDataToData:messageSeparatorData
-                      withTimeout:-1
-                              tag:0];
-    
-    [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
-    [chatViewController reloadMessages];
-    [chatViewController scrollToBottom];
+        [controlSocket writeData:[chat dataUsingEncoding:NSASCIIStringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];
+        
+        [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
+        [chatViewController reloadMessages];
+        [chatViewController scrollToBottom];
+    }
 }
 
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController

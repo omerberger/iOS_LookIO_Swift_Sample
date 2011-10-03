@@ -23,9 +23,11 @@
     LIONiceTextField *emailField;
     UITextView *messageView;
     BOOL keyboardShown;
+    NSString *initialMessage;
     id delegate;
 }
 
 @property(nonatomic, assign) id delegate;
+@property(nonatomic, retain) NSString *initialMessage;
 
 @end

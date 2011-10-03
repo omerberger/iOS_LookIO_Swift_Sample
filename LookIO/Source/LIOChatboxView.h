@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
+#define LIOChatboxViewMaxTextLength         500
+#define LIOChatboxViewMaxLinesPortrait      8
+#define LIOChatboxViewMaxLinesLandscape     3
+
 @class LIONiceTextField, LIOTextView;
 
 /*
@@ -19,21 +23,33 @@
 @end
 */
 
-@interface LIOChatboxView : UIView <UITextFieldDelegate>
+typedef enum
+{
+    LIOChatboxViewModeMinimal,
+    LIOChatboxViewModeFull
+} LIOChatboxViewMode;
+
+@interface LIOChatboxView : UIView <UITextViewDelegate>
 {
     UIView *bubbleView;
-    LIONiceTextField *inputField;
+    UITextView *inputField;
     UILabel *messageView;
     UIButton *sendButton;
+    UIImageView *inputFieldBackground;
     id settingsButton;
+    
+    CGFloat singleLineHeight;
+    LIOChatboxViewMode currentMode;
     id delegate;
 }
 
-@property(nonatomic, readonly) LIONiceTextField *inputField;
+@property(nonatomic, readonly) UITextView *inputField;
 @property(nonatomic, readonly) UIButton *sendButton;
 @property(nonatomic, readonly) id settingsButton;
 @property(nonatomic, assign) id delegate;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
+- (void)switchToMode:(LIOChatboxViewMode)aMode;
+- (void)rejiggerLayout;
 
 @end
