@@ -388,7 +388,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              withTimeout:-1
                                      tag:0];
                 
+#ifdef DEBUG
                 NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (base64: %u bytes).", (int)screenshotSize.width, (int)screenshotSize.height, orientation, [base64Data length]);
+#endif
             });
         }
     });
@@ -548,7 +550,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (usesSounds)
         AudioServicesPlaySystemSound(soundDing);
     
+#ifdef DEBUG
     NSLog(@"[CONNECT] Trying \"%@:%u\"...", controlEndpoint, chosenPort);
+#endif
     
     controlSocketConnecting = YES;
     
@@ -595,7 +599,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (waitingForIntroAck)
         {
+#ifdef DEBUG
             NSLog(@"[INTRODUCTION] Introduction complete.");
+#endif
             introduced = YES;
             waitingForIntroAck = NO;
             enqueued = YES;
@@ -606,7 +612,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if (waitingForScreenshotAck)
         {
+#ifdef DEBUG
             NSLog(@"[SCREENSHOT] Screenshot received by remote host.");
+#endif
             waitingForScreenshotAck = NO;
         }
     }
@@ -730,7 +738,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"connected"])
         {
+#ifdef DEBUG
             NSLog(@"[QUEUE] We're live!");
+#endif
             enqueued = NO;
             
             [connectViewController hideAnimated:YES];
@@ -835,7 +845,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
         
+#ifdef DEBUG
         NSLog(@"[CLICK] x: %@, y: %@", x, y);
+#endif
         
         CGRect aFrame = CGRectZero;
         aFrame.origin.x = [x floatValue];
@@ -993,7 +1005,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
     NSDictionary *result = [jsonParser objectWithString:jsonString];
     
+#ifdef DEBUG
     NSLog(@"\n[READ]\n%@\n", jsonString);
+#endif
     
     [self performSelectorOnMainThread:@selector(handlePacket:) withObject:result waitUntilDone:NO];    
 }
@@ -1032,6 +1046,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [pendingFeedbackText release];
         pendingFeedbackText = [aString retain];
+        
+        [chatViewController performDismissalAnimation];
+        
         [self showLeaveMessageUI];
     }
     else
@@ -1394,7 +1411,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [controlEndpoint release];
         controlEndpoint = [endpoint retain];
+        
+#ifdef DEBUG
         NSLog(@"[CONNECT] Got an endpoint: \"%@\"", controlEndpoint);
+#endif
     }
     
     [endpointRequestData release];

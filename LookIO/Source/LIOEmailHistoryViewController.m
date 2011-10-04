@@ -30,10 +30,14 @@
     scrollView.autoresizingMask = backgroundView.autoresizingMask;
     [rootView addSubview:scrollView];
     
+    CGFloat xInset = 5.0;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        xInset = 100.0;
+    
     bubbleView = [[UIView alloc] init];
     CGRect aFrame = CGRectZero;
-    aFrame.origin.x = 5.0;
-    aFrame.size.width = rootView.frame.size.width - 10.0;
+    aFrame.origin.x = xInset;
+    aFrame.size.width = rootView.frame.size.width - (xInset * 2.0);
     aFrame.origin.y = 5.0;
     aFrame.size.height = 137.0;
     bubbleView.frame = aFrame;
@@ -159,9 +163,9 @@
     [super dealloc];
 }
 
-- (void)viewWillAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
+    [super viewDidAppear:animated];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidShow:)
@@ -172,8 +176,11 @@
                                              selector:@selector(keyboardDidHide:)
                                                  name:UIKeyboardDidHideNotification
                                                object:nil];
-    
-    [emailField becomeFirstResponder];
+    double delayInSeconds = 0.5;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [emailField becomeFirstResponder];
+    });
 }
 
 - (void)viewWillDisappear:(BOOL)animated

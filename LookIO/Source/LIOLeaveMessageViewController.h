@@ -24,6 +24,10 @@
     UITextView *messageView;
     BOOL keyboardShown;
     NSString *initialMessage;
+    UILabel *instructionsLabel, *emailLabel, *messageLabel;
+    UIButton *cancelButton, *sendButton;
+    UIImageView *messageViewBackground;
+    BOOL suppressKeyboardNotifications;
     id delegate;
 }
 

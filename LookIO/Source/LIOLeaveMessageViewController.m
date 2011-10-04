@@ -19,6 +19,8 @@
     [super loadView];
     UIView *rootView = self.view;
     
+    suppressKeyboardNotifications = YES;
+    
     UIView *backgroundView = [[[UIView alloc] initWithFrame:rootView.bounds] autorelease];
     backgroundView.backgroundColor = [UIColor blackColor];
     backgroundView.alpha = 0.33;
@@ -28,12 +30,17 @@
     scrollView = [[UIScrollView alloc] init];
     scrollView.frame = rootView.bounds;
     scrollView.autoresizingMask = backgroundView.autoresizingMask;
+    //scrollView.backgroundColor = [UIColor colorWithRed:0.0 green:1.0 blue:0.0 alpha:0.5];
     [rootView addSubview:scrollView];
+
+    CGFloat xInset = 5.0;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        xInset = 100.0;
     
     bubbleView = [[UIView alloc] init];
     CGRect aFrame = CGRectZero;
-    aFrame.origin.x = 5.0;
-    aFrame.size.width = rootView.frame.size.width - 10.0;
+    aFrame.origin.x = xInset;
+    aFrame.size.width = rootView.frame.size.width - (xInset * 2.0);
     aFrame.origin.y = 5.0;
     aFrame.size.height = 237.0;
     bubbleView.frame = aFrame;
@@ -46,7 +53,7 @@
     bubbleView.autoresizingMask = UIViewAutoresizingFlexibleWidth;// | UIViewAutoresizingFlexibleHeight;
     [scrollView addSubview:bubbleView];
     
-    UILabel *instructionsLabel = [[[UILabel alloc] init] autorelease];
+    instructionsLabel = [[UILabel alloc] init];
     instructionsLabel.font = [UIFont boldSystemFontOfSize:13.0];
     instructionsLabel.backgroundColor = [UIColor clearColor];
     instructionsLabel.textColor = [UIColor whiteColor];
@@ -64,8 +71,8 @@
     instructionsLabel.frame = aFrame;
     [scrollView addSubview:instructionsLabel];
     
-    UILabel *emailLabel = [[[UILabel alloc] init] autorelease];
-    emailLabel.font = [UIFont systemFontOfSize:14.0];
+    emailLabel = [[UILabel alloc] init];
+    emailLabel.font = [UIFont systemFontOfSize:13.0];
     emailLabel.backgroundColor = [UIColor clearColor];
     emailLabel.textColor = [UIColor whiteColor];
     emailLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -83,6 +90,7 @@
     [scrollView addSubview:emailLabel];
     
     emailField = [[LIONiceTextField alloc] init];
+    emailField.font = [UIFont systemFontOfSize:13.0];
     emailField.delegate = self;
     emailField.placeholder = @"name@example.com";
     emailField.keyboardType = UIKeyboardTypeEmailAddress;
@@ -96,8 +104,8 @@
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
     
-    UILabel *messageLabel = [[[UILabel alloc] init] autorelease];
-    messageLabel.font = [UIFont systemFontOfSize:14.0];
+    messageLabel = [[UILabel alloc] init];
+    messageLabel.font = [UIFont systemFontOfSize:13.0];
     messageLabel.backgroundColor = [UIColor clearColor];
     messageLabel.textColor = [UIColor whiteColor];
     messageLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -114,7 +122,7 @@
     messageLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:messageLabel];
     
-    UIImageView *messageViewBackground = [[[UIImageView alloc] init] autorelease];
+    messageViewBackground = [[UIImageView alloc] init];
     messageViewBackground.image = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
     aFrame.size.width = bubbleView.frame.size.width - 24.0;
@@ -139,7 +147,7 @@
     UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
     greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
     
-    UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
     aFrame.size.width = 65.0;
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
@@ -151,7 +159,7 @@
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [scrollView addSubview:cancelButton];
     
-    UIButton *sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.size.width = 59.0;
     aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - 59.0 - 12.0;
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
@@ -189,6 +197,21 @@
     
     [scrollView release];
     scrollView = nil;
+    
+    [instructionsLabel release];
+    instructionsLabel = nil;
+    
+    [emailLabel release];
+    emailLabel = nil;
+    
+    [messageLabel release];
+    messageLabel = nil;
+    
+    [cancelButton release];
+    cancelButton = nil;
+    
+    [sendButton release];
+    sendButton = nil;
 }
                    
 - (void)dealloc
@@ -199,25 +222,40 @@
     [messageView release];
     [bubbleView release];
     [scrollView release];
+    [instructionsLabel release];
+    [emailLabel release];
+    [messageLabel release];
+    [cancelButton release];
+    [sendButton release];
     
     [super dealloc];
 }
 
-- (void)viewWillAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
-    
+    [super viewDidAppear:animated];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidShow:)
                                                  name:UIKeyboardDidShowNotification
                                                object:nil];
-
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidHide:)
                                                  name:UIKeyboardDidHideNotification
                                                object:nil];
     
-    [emailField becomeFirstResponder];
+    // auuuguguguguuughhhhhh
+    double delayInSeconds = 0.5;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [emailField becomeFirstResponder];
+    });
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -307,11 +345,13 @@
 
 - (void)cancelButtonWasTapped
 {
+    [self.view endEditing:YES];
     [delegate leaveMessageViewControllerWasDismissed:self];
 }
 
 - (void)sendButtonWasTapped
 {
+    [self.view endEditing:YES];
     [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
 }
 
