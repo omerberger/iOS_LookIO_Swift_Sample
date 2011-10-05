@@ -182,6 +182,8 @@
     CGSize contentSize = contentSize = CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height + contentHeight);
     scrollView.contentSize = contentSize;
     
+    [self scrollToBottom];
+    
     CGRect buttonFrame = CGRectZero;
     buttonFrame.origin.x = 0.0;
     buttonFrame.size.width = scrollView.frame.size.width;
@@ -215,7 +217,7 @@
      LIOChatViewControllerChatboxMinHeight) animated:YES];
      */
     
-    [UIView animateWithDuration:0.5 animations:^{
+    [UIView animateWithDuration:0.33 animations:^{
         scrollView.contentOffset = CGPointMake(0.0, scrollView.contentSize.height - scrollView.frame.size.height);
     }];
 }

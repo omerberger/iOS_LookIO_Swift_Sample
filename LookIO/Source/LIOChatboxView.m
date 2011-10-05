@@ -256,7 +256,10 @@
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-    [delegate chatboxViewDidTypeStuff:self];
+    if ([text isEqualToString:@"\n"])
+        [self sendButtonWasTapped];
+    else
+        [delegate chatboxViewDidTypeStuff:self];
     
     return YES;
 }

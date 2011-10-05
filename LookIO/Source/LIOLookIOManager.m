@@ -460,7 +460,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController performRevealAnimation];
     
     [chatViewController reloadMessages];
-    [chatViewController scrollToBottom];
+    //[chatViewController scrollToBottom];
     
     if (usesSounds)
         AudioServicesPlaySystemSound(soundYay);
@@ -501,7 +501,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    if (introduced)
+    if ([controlSocket isConnected])
     {
         [self controlButtonWasTapped];
         return;
@@ -630,7 +630,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
         {
             [chatViewController reloadMessages];
-            [chatViewController scrollToBottom];
+            //[chatViewController scrollToBottom];
         }
         
         if (numIncomingChatMessages > 0 && UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -746,7 +746,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [connectViewController hideAnimated:YES];
             controlButtonSpinner.hidden = YES;
             
-            /*
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
             {
                 UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
@@ -754,8 +753,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertBody = @"The support agent is ready to chat with you!";
                 localNotification.alertAction = @"Go!";
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+                
+                [self showChat];
             }
-            */
         }
         else if ([action isEqualToString:@"queued"])
         {
@@ -1070,7 +1070,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
         [chatViewController reloadMessages];
-        [chatViewController scrollToBottom];
+        //[chatViewController scrollToBottom];
     }
 }
 
