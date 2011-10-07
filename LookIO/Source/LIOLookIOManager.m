@@ -78,6 +78,7 @@
     NSArray *supportedOrientations;
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
+    UIWindow *previousKeyWindow;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -102,7 +103,7 @@ NSBundle *lookioBundle()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds;
-@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations;
+@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations, sessionExtras;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -290,6 +291,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     sharedLookIOManager = nil;
 }
 
+- (void)rejiggerWindows
+{
+    if (chatViewController || leaveMessageViewController || emailHistoryViewController)
+    {
+        // Make sure the LIO window is shown, and is key.
+        if (nil == previousKeyWindow)
+        {
+            previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+            [lookioWindow makeKeyAndVisible];
+        }
+    }
+    else if (previousKeyWindow)
+    {
+        [previousKeyWindow makeKeyAndVisible];
+        previousKeyWindow = nil;
+        
+        lookioWindow.hidden = YES;
+        
+        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    }
+}
+
 - (UIImage *)captureScreen
 {
     CGSize imageSize = [[UIScreen mainScreen] bounds].size;
@@ -401,8 +424,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (connectViewController)
         return;
     
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    
     connectViewController = [[LIOConnectViewController alloc] initWithNibName:nil bundle:nil];
     connectViewController.delegate = self;
     
@@ -413,7 +434,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         connectViewController.targetLogoCenterForHiding = self.controlButtonCenter;
     
     [lookioWindow addSubview:connectViewController.view];
-    lookioWindow.hidden = NO;
+    [self rejiggerWindows];
     
     if (lastKnownQueuePosition)
     {
@@ -448,14 +469,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (chatViewController)
         return;
     
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
     chatViewController.dataSource = self;
     chatViewController.view.alpha = 0.0;
     [lookioWindow addSubview:chatViewController.view];
-    lookioWindow.hidden = NO;
+    [self rejiggerWindows];
     
     [chatViewController performRevealAnimation];
     
@@ -484,13 +503,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (leaveMessageViewController)
         return;
     
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    
     leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
     leaveMessageViewController.delegate = self;
     leaveMessageViewController.initialMessage = pendingFeedbackText;
     [lookioWindow addSubview:leaveMessageViewController.view];
-    lookioWindow.hidden = NO;
+    [self rejiggerWindows];
 }
 
 - (void)beginSession
@@ -533,6 +550,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                 error:&connectError];
     if (NO == connectResult)
     {
+        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        
         NSLog(@"[CONNECT] Connection failed. Reason: %@", [connectError localizedDescription]);
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
                                                             message:[connectError localizedDescription]
@@ -808,6 +827,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
                 }
                 
+                [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+                
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Question"
                                                                     message:@"Allow remote agent to see your screen?"
                                                                    delegate:self
@@ -820,6 +841,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"unprovisioned"])
         {
+            [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+            
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
                                                                 message:@"This app is not configured for live help. Please contact the app developer."
                                                                delegate:self
@@ -911,7 +934,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [introDict setObject:targetAgentId forKey:@"agent_id"];
     
     if ([sessionExtras count])
-        [introDict setObject:introDict forKey:@"extras"];
+        [introDict setObject:sessionExtras forKey:@"extras"];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
@@ -976,6 +999,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (err)
     {
+        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
                                                             message:@"Couldn't connect right now. Please try again later!"
                                                            delegate:nil
@@ -1076,6 +1101,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController
 {
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
                                                         message:@"End this session?"
                                                        delegate:self
@@ -1115,7 +1142,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     emailHistoryViewController = [[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil];
     emailHistoryViewController.delegate = self;
     [lookioWindow addSubview:emailHistoryViewController.view];
-    lookioWindow.hidden = NO;
+    [self rejiggerWindows];
 }
 
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController
@@ -1133,9 +1160,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[chatDown dataUsingEncoding:NSASCIIStringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-    
-    if (nil == leaveMessageViewController)
-        lookioWindow.hidden = YES;
+
+    [self rejiggerWindows];
     
     if (killConnectionAfterChatViewDismissal)
     {
@@ -1216,7 +1242,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [chatViewController.view removeFromSuperview];
                     [chatViewController release];
                     chatViewController = nil;
-                    lookioWindow.hidden = YES;
+                    [self rejiggerWindows];
                 }
             }
             
@@ -1267,6 +1293,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)connectViewControllerDidTapCancelButton:(LIOConnectViewController *)aController
 {
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
                                                         message:@"End this session?"
                                                        delegate:self
@@ -1287,9 +1315,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [connectViewController.view removeFromSuperview];
     [connectViewController release];
     connectViewController = nil;
-    
-    if (nil == chatViewController)
-        lookioWindow.hidden = YES;
+
+    [self rejiggerWindows];
 }
 
 - (void)connectViewController:(LIOConnectViewController *)aController didEnterFriendlyName:(NSString *)aString
@@ -1430,6 +1457,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSLog(@"[CONNECT] Couldn't get an endpoint via HTTP. Reason: %@", [error localizedDescription]);
     
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
                                                         message:@"Could not connect to the look.io service."
                                                        delegate:nil
@@ -1449,9 +1478,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController.view removeFromSuperview];
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
-    
-    if (nil == chatViewController)
-        lookioWindow.hidden = YES;
+
+    [self rejiggerWindows];
     
     unloadAfterDisconnect = YES;
     [self killConnection];
@@ -1462,9 +1490,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController.view removeFromSuperview];
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
-    
-    if (nil == chatViewController)
-        lookioWindow.hidden = YES;
+
+    [self rejiggerWindows];
     
     NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                          @"feedback", @"type",
@@ -1492,9 +1519,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController.view removeFromSuperview];
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
-    
-    if (nil == chatViewController)
-        lookioWindow.hidden = YES;
+
+    [self showChat];
 }
 
 - (void)emailHistoryViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
@@ -1503,8 +1529,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
     
-    if (nil == chatViewController)
-        lookioWindow.hidden = YES;
+    [self showChat];
     
     NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:anEmail], @"email_addresses", nil];
     NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:

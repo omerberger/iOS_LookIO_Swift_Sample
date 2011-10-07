@@ -147,17 +147,8 @@
     UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
     greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
     
-    cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
-    aFrame.size.width = 65.0;
-    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
-    aFrame.size.height = 27.0;
-    cancelButton.frame = aFrame;
-    [cancelButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
-    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
-    cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    [scrollView addSubview:cancelButton];
+    UIImage *grayButtonImage = [UIImage imageNamed:@"LIOGrayButton"];
+    grayButtonImage = [grayButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
     
     sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.size.width = 59.0;
@@ -171,6 +162,19 @@
     [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [scrollView addSubview:sendButton];
+    
+    cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    aFrame.size.width = 65.0;
+    aFrame.origin.x = sendButton.frame.origin.x - aFrame.size.width - 10.0;
+    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
+    aFrame.size.height = 27.0;
+    cancelButton.frame = aFrame;
+    [cancelButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
+    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    [scrollView addSubview:cancelButton];
     
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
 }
