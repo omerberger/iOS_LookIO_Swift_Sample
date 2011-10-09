@@ -243,7 +243,7 @@
 				D48ABEE01404607500835205 /* Sources */,
 				D48ABEE11404607500835205 /* Frameworks */,
 				D48ABEE21404607500835205 /* Headers */,
-				D40B8BC614117F4F00AE4D4F /* ShellScript */,
+				D49BC419144241FC0016B23D /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -280,7 +280,7 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		D40B8BC614117F4F00AE4D4F /* ShellScript */ = {
+		D49BC419144241FC0016B23D /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -327,7 +327,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					i386,
+					armv7,
+					armv6,
+				);
 				COPY_PHASE_STRIP = NO;
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -353,7 +357,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					i386,
+					armv7,
+					armv6,
+				);
 				COPY_PHASE_STRIP = YES;
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
