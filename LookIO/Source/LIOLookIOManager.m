@@ -886,8 +886,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"outro"])
     {
+        if ([controlSocket isConnected])
+        {
+            unloadAfterDisconnect = YES;
+            [self killConnection];
+        }
+        else
+            [self unload];
+        
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
+        /*
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Notice"
                                                             message:@"The remote agent ended the session."
                                                            delegate:self
@@ -896,6 +905,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         alertView.tag = LIOLookIOManagerAgentEndedSessionAlertViewTag;
         [alertView show];
         [alertView autorelease];
+        */
     }
     
     [controlSocket readDataToData:messageSeparatorData
