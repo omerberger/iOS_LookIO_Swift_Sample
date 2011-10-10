@@ -79,7 +79,6 @@
     NSArray *supportedOrientations;
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
-    UIWindow *previousKeyWindow;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -294,24 +293,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerWindows
 {
-    if (chatViewController || leaveMessageViewController || emailHistoryViewController)
-    {
-        // Make sure the LIO window is shown, and is key.
-        if (nil == previousKeyWindow)
-        {
-            previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
-            [lookioWindow makeKeyAndVisible];
-        }
-    }
-    else if (previousKeyWindow)
-    {
-        [previousKeyWindow makeKeyAndVisible];
-        previousKeyWindow = nil;
-        
-        lookioWindow.hidden = YES;
-        
-        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    }
+    lookioWindow.hidden = NO == (chatViewController || leaveMessageViewController || emailHistoryViewController);
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
 }
 
 - (UIImage *)captureScreen
@@ -1291,8 +1274,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerAgentEndedSessionAlertViewTag:
         {
-            unloadAfterDisconnect = YES;
-            [self killConnection];
+            if ([controlSocket isConnected])
+            {
+                unloadAfterDisconnect = YES;
+                [self killConnection];
+            }
+            else
+            {
+                [self unload];
+            }
         }
     }
 }

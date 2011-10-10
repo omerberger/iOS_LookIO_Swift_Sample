@@ -14,7 +14,7 @@
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
 
-#define LIOChatViewControllerMaxHistoryLength   20
+#define LIOChatViewControllerMaxHistoryLength   10
 
 @implementation LIOChatViewController
 
@@ -313,7 +313,10 @@
 - (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString
 {
     if ([aString length])
+    {
+        [delegate chatViewControllerTypingDidStop:self];
         [delegate chatViewController:self didChatWithText:aString];
+    }
     
     [self.view endEditing:YES];
 }

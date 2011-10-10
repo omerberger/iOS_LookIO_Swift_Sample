@@ -99,8 +99,8 @@
         aFrame = CGRectZero;
         aFrame.size.width = 33.0;
         aFrame.size.height = 33.0;
-        aFrame.origin.x = self.frame.size.width - aFrame.size.width - 7.0;
-        aFrame.origin.y = 7.0;
+        aFrame.origin.x = self.frame.size.width - aFrame.size.width - 10.0;
+        aFrame.origin.y = 5.0;
         [settingsButton setFrame:aFrame];
         [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
         [self addSubview:(UIView *)settingsButton];
@@ -259,8 +259,6 @@
 {
     if ([text isEqualToString:@"\n"])
         [self sendButtonWasTapped];
-    else
-        [delegate chatboxViewDidTypeStuff:self];
     
     return YES;
 }
@@ -277,6 +275,8 @@
     }
     
     [self rejiggerLayout];
+    
+    [delegate chatboxViewDidTypeStuff:self];
 }
 
 @end
