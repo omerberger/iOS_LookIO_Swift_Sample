@@ -1409,6 +1409,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)deviceOrientationDidChange:(NSNotification *)aNotification
 {
+    /*
     //CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     CGAffineTransform transform;
     
@@ -1455,6 +1456,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.transform = transform;
     clickView.transform = transform;
     cursorView.transform = transform;
+    */
 }
 
 #pragma mark -
