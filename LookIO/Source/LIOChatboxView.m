@@ -74,6 +74,7 @@
         inputField.returnKeyType = UIReturnKeySend;
         inputField.hidden = YES;
         inputField.backgroundColor = [UIColor clearColor];
+        //inputField.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];
         aFrame = inputField.frame;
         aFrame.origin.y = -3.0;
         aFrame.size.height = 4800.0;
@@ -197,7 +198,7 @@
         }
         
         aFrame = inputField.frame;
-        aFrame.size.height = maxLines * singleLineHeight;
+        aFrame.size.height = (maxLines + 1) * singleLineHeight;
         inputField.frame = aFrame;
         
         aFrame = inputFieldBackground.frame;

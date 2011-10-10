@@ -14,6 +14,8 @@
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
 
+#define LIOChatViewControllerMaxHistoryLength   20
+
 @implementation LIOChatViewController
 
 @synthesize delegate, dataSource;
@@ -81,10 +83,6 @@
     
     [dismissalButton release];
     dismissalButton = nil;
-    
-    [typingTimer stopTimer];
-    [typingTimer release];
-    typingTimer = nil;
 }
 
 - (void)dealloc
@@ -93,10 +91,6 @@
     [scrollView release];
     [messageViews release];
     [dismissalButton release];
-    
-    [typingTimer stopTimer];
-    [typingTimer release];
-    typingTimer = nil;
     
     [super dealloc];
 }
@@ -139,8 +133,8 @@
     CGFloat contentHeight = LIOChatViewControllerChatboxPadding;
     NSArray *textMessages = [dataSource chatViewControllerChatMessages:self];
     NSUInteger count = [textMessages count];
-    if (count > 10)
-        textMessages = [textMessages subarrayWithRange:NSMakeRange(count - 10, 10)];
+    if (count > LIOChatViewControllerMaxHistoryLength)
+        textMessages = [textMessages subarrayWithRange:NSMakeRange(count - LIOChatViewControllerMaxHistoryLength, LIOChatViewControllerMaxHistoryLength)];
     
     for (NSString *aMessage in textMessages)
     {
@@ -314,20 +308,6 @@
 }
 
 #pragma mark -
-#pragma mark Timer callbacks
-
-- (void)typingTimerDidFire
-{
-    typing = NO;
-    
-    [typingTimer stopTimer];
-    [typingTimer release];
-    typingTimer = nil;
-    
-    [delegate chatViewControllerTypingDidStop:self];
-}
-
-#pragma mark -
 #pragma mark LIOChatboxView delegate methods
 
 - (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString
@@ -345,16 +325,20 @@
 
 - (void)chatboxViewDidTypeStuff:(LIOChatboxView *)aView
 {
-    if (NO == typing)
+    NSUInteger currentTextLength = [aView.inputField.text length];
+    if (0 == previousTextLength)
     {
-        typing = YES;
-        [delegate chatViewControllerTypingDidStart:self];
+        // "Typing" started.
+        if (currentTextLength)
+            [delegate chatViewControllerTypingDidStart:self];
+    }
+    else
+    {
+        if (0 == currentTextLength)
+            [delegate chatViewControllerTypingDidStop:self];
     }
     
-    [typingTimer stopTimer];
-    [typingTimer release];
-    typingTimer = nil;
-    typingTimer = [[LIOTimerProxy alloc] initWithTimeInterval:1.5 target:self selector:@selector(typingTimerDidFire)];
+    previousTextLength = currentTextLength;
 }
 
 #pragma mark -

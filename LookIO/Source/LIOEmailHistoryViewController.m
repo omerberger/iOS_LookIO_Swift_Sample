@@ -125,7 +125,7 @@
     aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 8.0;
     aFrame.size.height = 27.0;
     cancelButton.frame = aFrame;
-    [cancelButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+    [cancelButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
     cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];

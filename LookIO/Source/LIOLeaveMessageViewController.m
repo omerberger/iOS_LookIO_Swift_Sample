@@ -138,7 +138,8 @@
     aFrame.origin.x = bubbleView.frame.origin.x + 14.0;
     aFrame.size.width = bubbleView.frame.size.width - 28.0;
     aFrame.origin.y = messageLabel.frame.origin.y + messageLabel.frame.size.height + 7.0;
-    aFrame.size.height = 71.0;
+    //aFrame.size.height = 71.0;
+    aFrame.size.height = 95.0;
     messageView.frame = aFrame;
     messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     messageView.text = initialMessage;
@@ -153,7 +154,7 @@
     sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.size.width = 59.0;
     aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - 59.0 - 12.0;
-    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
+    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 - 24.0;
     aFrame.size.height = 27.0;
     sendButton.frame = aFrame;
     [sendButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
@@ -166,7 +167,7 @@
     cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.size.width = 65.0;
     aFrame.origin.x = sendButton.frame.origin.x - aFrame.size.width - 10.0;
-    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0;
+    aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 - 24.0;
     aFrame.size.height = 27.0;
     cancelButton.frame = aFrame;
     [cancelButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
@@ -277,11 +278,13 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    [self.view endEditing:YES];
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
     scrollView.contentSize = CGSizeMake(self.view.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
 }
 

@@ -36,8 +36,7 @@
     NSMutableArray *messageViews;
     UIButton *dismissalButton;
     NSUInteger endSessionIndex, endSharingIndex, emailIndex;
-    LIOTimerProxy *typingTimer;
-    BOOL typing;
+    NSUInteger previousTextLength;
     id delegate;
     id dataSource;
 }

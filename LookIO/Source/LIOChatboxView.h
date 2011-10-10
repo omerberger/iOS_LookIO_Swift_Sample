@@ -8,9 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOChatboxViewMaxTextLength         500
+#define LIOChatboxViewMaxTextLength         400
 #define LIOChatboxViewMaxLinesPortrait      8
-#define LIOChatboxViewMaxLinesLandscape     3
+#define LIOChatboxViewMaxLinesLandscape     4
 
 @class LIONiceTextField, LIOTextView;
 
