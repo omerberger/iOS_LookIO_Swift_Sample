@@ -907,7 +907,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Notice"
                                                             message:@"The remote agent ended the session."
-                                                           delegate:nil
+                                                           delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];
         alertView.tag = LIOLookIOManagerAgentEndedSessionAlertViewTag;
