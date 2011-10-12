@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CDB6AFC214464ED6007BF92D /* LIOFullLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */; };
+		CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */; };
 		D416C513141411F600D3509B /* LIOInputBar.png in Resources */ = {isa = PBXBuildFile; fileRef = D416C512141411F600D3509B /* LIOInputBar.png */; };
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
@@ -52,6 +54,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOFullLogo.png; sourceTree = "<group>"; };
+		CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOFullLogo@2x.png"; sourceTree = "<group>"; };
 		D416C512141411F600D3509B /* LIOInputBar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOInputBar.png; sourceTree = "<group>"; };
 		D44DD7BF14044915004374FE /* Testbed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testbed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -158,6 +162,8 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */,
+				CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */,
 				D47CD77B142FB0E20024C677 /* LIOGrayButton@2x.png */,
 				D47CD77C142FB0E20024C677 /* LIOGreenButton@2x.png */,
 				D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */,
@@ -312,6 +318,8 @@
 				D47CD780142FB0E20024C677 /* LIOGreenButton@2x.png in Resources */,
 				D47CD781142FB0E20024C677 /* LIOSettingsButton.png in Resources */,
 				D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */,
+				CDB6AFC214464ED6007BF92D /* LIOFullLogo.png in Resources */,
+				CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

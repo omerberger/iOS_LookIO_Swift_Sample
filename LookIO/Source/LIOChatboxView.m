@@ -9,6 +9,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOChatboxView.h"
 #import "LIONiceTextField.h"
+#import "LIOLookIOManager.h"
 
 #define LIOChatboxViewMinHeight 100.0
 
@@ -129,6 +130,7 @@
         inputField.hidden = YES;
         inputFieldBackground.hidden = YES;
         [settingsButton setHidden:YES];
+        messageView.hidden = NO;
         
         CGSize maxSize = CGSizeMake(bubbleView.frame.size.width - bubbleView.frame.origin.x - 20.0, FLT_MAX);
         CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
@@ -138,6 +140,50 @@
         CGRect aFrame = self.frame;
         aFrame.size.height = boxSize.height + 20.0;
         self.frame = aFrame;
+        
+        if ([messageView.text isEqualToString:LIOChatboxViewAdTextTrigger])
+        {
+            messageView.hidden = YES;
+            
+            UILabel *topLabel = [[[UILabel alloc] init] autorelease];
+            topLabel.textColor = [UIColor whiteColor];
+            topLabel.backgroundColor = [UIColor clearColor];
+            topLabel.text = @"Live chat powered by";
+            [topLabel sizeToFit];
+            aFrame = topLabel.frame;
+            aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));
+            aFrame.origin.y = 10.0;
+            topLabel.frame = aFrame;
+            topLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            [self addSubview:topLabel];
+            
+            UIImageView *logoImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LIOFullLogo"]] autorelease];
+            logoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            aFrame = logoImageView.frame;
+            aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));
+            aFrame.origin.y = topLabel.frame.origin.y + topLabel.frame.size.height + 10.0;
+            logoImageView.frame = aFrame;
+            [self addSubview:logoImageView];
+            
+            UILabel *bottomLabel = [[[UILabel alloc] init] autorelease];
+            bottomLabel.textColor = [UIColor whiteColor];
+            bottomLabel.backgroundColor = [UIColor clearColor];
+            bottomLabel.text = @"Tap to learn more!";
+            [bottomLabel sizeToFit];
+            aFrame = bottomLabel.frame;
+            aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));
+            aFrame.origin.y = logoImageView.frame.origin.y + logoImageView.frame.size.height + 10.0;
+            bottomLabel.frame = aFrame;
+            bottomLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            [self addSubview:bottomLabel];
+            
+            aFrame = self.frame;
+            aFrame.size.height = bottomLabel.frame.origin.y + bottomLabel.frame.size.height + 20.0;
+            self.frame = aFrame;
+            
+            UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
+            [self addGestureRecognizer:tapper];
+        }
     }
     else
     {
@@ -145,6 +191,7 @@
         inputField.hidden = NO;
         inputFieldBackground.hidden = NO;
         [settingsButton setHidden:NO];
+        messageView.hidden = NO;
         
         CGRect aFrame = inputFieldBackground.frame;
         aFrame.size.width = bubbleView.frame.size.width - bubbleView.frame.origin.x - [settingsButton frame].size.width - 50.0;
@@ -277,6 +324,15 @@
     [self rejiggerLayout];
     
     [delegate chatboxViewDidTypeStuff:self];
+}
+
+#pragma mark -
+#pragma mark Gesture handlers
+
+- (void)handleTap:(UITapGestureRecognizer *)aTapper
+{
+    if (aTapper.state == UIGestureRecognizerStateEnded)
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://look.io"]];
 }
 
 @end

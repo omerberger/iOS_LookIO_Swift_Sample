@@ -560,6 +560,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlSocketConnecting = YES;
     
     //[self showConnectionUI];
+    [chatHistory addObject:LIOChatboxViewAdTextTrigger];
     [chatHistory addObject:@"Send a message to our live service reps for immediate help."];
     [self showChat];
 }

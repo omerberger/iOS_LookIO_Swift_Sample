@@ -83,6 +83,9 @@
     
     [dismissalButton release];
     dismissalButton = nil;
+    
+    [settingsActionSheet release];
+    settingsActionSheet = nil;
 }
 
 - (void)dealloc
@@ -91,6 +94,7 @@
     [scrollView release];
     [messageViews release];
     [dismissalButton release];
+    [settingsActionSheet release];
     
     [super dealloc];
 }
@@ -108,6 +112,13 @@
     [super viewWillAppear:animated];
     
     [self reloadMessages];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [settingsActionSheet dismissWithClickedButtonIndex:2742 animated:NO];
 }
 
 - (void)reloadMessages
@@ -243,35 +254,35 @@
     else
         emailIndex = 1;
     
-    UIActionSheet *actionSheet = [[[UIActionSheet alloc] init] autorelease];
-    [actionSheet addButtonWithTitle:@"End Session"];
+    settingsActionSheet = [[UIActionSheet alloc] init];
+    [settingsActionSheet addButtonWithTitle:@"End Session"];
     
     if (endSharingIndex != NSNotFound)
     {
-        [actionSheet addButtonWithTitle:@"End Screen Sharing"];
+        [settingsActionSheet addButtonWithTitle:@"End Screen Sharing"];
         cancelIndex++;
     }
     
     if (emailIndex != NSNotFound)
     {
-        [actionSheet addButtonWithTitle:@"Email Chat History"];
+        [settingsActionSheet addButtonWithTitle:@"Email Chat History"];
         cancelIndex++;
     }
     
-    [actionSheet addButtonWithTitle:@"Cancel"];
+    [settingsActionSheet addButtonWithTitle:@"Cancel"];
     
-    [actionSheet setDestructiveButtonIndex:endSessionIndex];
-    actionSheet.cancelButtonIndex = cancelIndex;
-    [actionSheet setDelegate:self];
+    [settingsActionSheet setDestructiveButtonIndex:endSessionIndex];
+    settingsActionSheet.cancelButtonIndex = cancelIndex;
+    [settingsActionSheet setDelegate:self];
     
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
     {
         LIOChatboxView *chatbox = [messageViews lastObject];
         CGRect aFrame = [chatbox.settingsButton frame];
-        [actionSheet showFromRect:aFrame inView:chatbox animated:YES];
+        [settingsActionSheet showFromRect:aFrame inView:chatbox animated:YES];
     }
     else
-        [actionSheet showInView:self.view];
+        [settingsActionSheet showInView:self.view];
     
 }
 
@@ -377,6 +388,9 @@
     {
         [delegate chatViewControllerDidTapEmailButton:self];
     }
+    
+    [settingsActionSheet autorelease];
+    settingsActionSheet = nil;
 }
 
 @end

@@ -37,6 +37,7 @@
     UIButton *dismissalButton;
     NSUInteger endSessionIndex, endSharingIndex, emailIndex;
     NSUInteger previousTextLength;
+    UIActionSheet *settingsActionSheet;
     id delegate;
     id dataSource;
 }
