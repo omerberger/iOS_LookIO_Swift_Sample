@@ -15,9 +15,7 @@ echo Building LookIO v$1, please wait...
 rm -rf build
 xcodebuild -project LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
 
-echo
-
-if [ "$?" -ne 0 ]
+if [ $? -ne 0 ]
 then
     echo Build failed. Check $LOG_FILE for details.
     exit 1
