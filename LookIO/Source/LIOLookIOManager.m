@@ -166,7 +166,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
-        self.touchImage = [UIImage imageNamed:@"DefaultTouch"];
+        self.touchImage = [UIImage imageNamed:@"LIODefaultTouch"];
         self.controlButtonCenter = CGPointMake(16.0, 36.0);
         self.controlButtonCenterLandscape = CGPointMake(16.0, 36.0);
         self.controlButtonBounds = CGRectMake(0.0, 0.0, 32.0, 32.0);
@@ -174,7 +174,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatHistory = [[NSMutableArray alloc] init];
 
         controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [controlButton setImage:[UIImage imageNamed:@"ControlButton"] forState:UIControlStateNormal];
+        [controlButton setImage:[UIImage imageNamed:@"LIOControlButton"] forState:UIControlStateNormal];
         [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         controlButton.bounds = self.controlButtonBounds;
         controlButton.center = self.controlButtonCenter;
@@ -844,7 +844,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (nil == clickView)
         {
-            clickView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"ClickIndicator"]];
+            clickView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LIOClickIndicator"]];
             [keyWindow addSubview:clickView];
         }
         

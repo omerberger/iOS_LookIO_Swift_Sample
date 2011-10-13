@@ -23,7 +23,7 @@
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
     
-    [LIOLookIOManager sharedLookIOManager].touchImage = [UIImage imageNamed:@"DefaultTouchOrange"];
+    //[LIOLookIOManager sharedLookIOManager].touchImage = [UIImage imageNamed:@"DefaultTouchOrange"];
     [LIOLookIOManager sharedLookIOManager].sessionExtras = [NSDictionary dictionaryWithObjectsAndKeys:@"joe@whatever.com", @"email", @"poop", @"wug", nil];
     
     return YES;

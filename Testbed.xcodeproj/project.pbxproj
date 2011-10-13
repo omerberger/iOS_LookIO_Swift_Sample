@@ -13,16 +13,8 @@
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
 		D44DD7C814044915004374FE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C714044915004374FE /* CoreGraphics.framework */; };
-		D44DD81B14044966004374FE /* ClickIndicator.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7F914044966004374FE /* ClickIndicator.png */; };
-		D44DD81C14044966004374FE /* ClickIndicator@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FA14044966004374FE /* ClickIndicator@2x.png */; };
-		D44DD81D14044966004374FE /* DefaultTouch.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FB14044966004374FE /* DefaultTouch.png */; };
-		D44DD81E14044966004374FE /* DefaultTouch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FC14044966004374FE /* DefaultTouch@2x.png */; };
-		D44DD81F14044966004374FE /* DefaultTouchOrange.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FD14044966004374FE /* DefaultTouchOrange.png */; };
-		D44DD82014044966004374FE /* DefaultTouchOrange@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FE14044966004374FE /* DefaultTouchOrange@2x.png */; };
 		D44DD82114044966004374FE /* HelpButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD7FF14044966004374FE /* HelpButton.png */; };
 		D44DD82214044966004374FE /* HelpButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80014044966004374FE /* HelpButton@2x.png */; };
-		D44DD82314044966004374FE /* LookIOLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80114044966004374FE /* LookIOLogo.png */; };
-		D44DD82414044966004374FE /* LookIOLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80214044966004374FE /* LookIOLogo@2x.png */; };
 		D44DD82514044966004374FE /* TalkButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80314044966004374FE /* TalkButton.png */; };
 		D44DD82614044966004374FE /* TalkButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80414044966004374FE /* TalkButton@2x.png */; };
 		D44DD82714044966004374FE /* TravelocityHotelDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D44DD80514044966004374FE /* TravelocityHotelDetail.png */; };
@@ -44,11 +36,15 @@
 		D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */; };
 		D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1B1404698400835205 /* libLookIO.a */; };
 		D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1C1404698400835205 /* CFNetwork.framework */; };
+		D49A536D1446791900B218AA /* LIOClickIndicator.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53671446791900B218AA /* LIOClickIndicator.png */; };
+		D49A536E1446791900B218AA /* LIOClickIndicator@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53681446791900B218AA /* LIOClickIndicator@2x.png */; };
+		D49A536F1446791900B218AA /* LIOControlButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53691446791900B218AA /* LIOControlButton.png */; };
+		D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536A1446791900B218AA /* LIOControlButton@2x.png */; };
+		D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536B1446791900B218AA /* LIODefaultTouch.png */; };
+		D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */; };
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
 		D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */; };
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
-		D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3E140986AE00B73C84 /* ControlButton.png */; };
-		D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */; };
 		D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */; };
 		D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D56140AC2B800B73C84 /* LookIODing.caf */; };
 /* End PBXBuildFile section */
@@ -61,16 +57,8 @@
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7C514044915004374FE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7C714044915004374FE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
-		D44DD7F914044966004374FE /* ClickIndicator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ClickIndicator.png; sourceTree = "<group>"; };
-		D44DD7FA14044966004374FE /* ClickIndicator@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ClickIndicator@2x.png"; sourceTree = "<group>"; };
-		D44DD7FB14044966004374FE /* DefaultTouch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DefaultTouch.png; sourceTree = "<group>"; };
-		D44DD7FC14044966004374FE /* DefaultTouch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "DefaultTouch@2x.png"; sourceTree = "<group>"; };
-		D44DD7FD14044966004374FE /* DefaultTouchOrange.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DefaultTouchOrange.png; sourceTree = "<group>"; };
-		D44DD7FE14044966004374FE /* DefaultTouchOrange@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "DefaultTouchOrange@2x.png"; sourceTree = "<group>"; };
 		D44DD7FF14044966004374FE /* HelpButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HelpButton.png; sourceTree = "<group>"; };
 		D44DD80014044966004374FE /* HelpButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "HelpButton@2x.png"; sourceTree = "<group>"; };
-		D44DD80114044966004374FE /* LookIOLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LookIOLogo.png; sourceTree = "<group>"; };
-		D44DD80214044966004374FE /* LookIOLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LookIOLogo@2x.png"; sourceTree = "<group>"; };
 		D44DD80314044966004374FE /* TalkButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TalkButton.png; sourceTree = "<group>"; };
 		D44DD80414044966004374FE /* TalkButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TalkButton@2x.png"; sourceTree = "<group>"; };
 		D44DD80514044966004374FE /* TravelocityHotelDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityHotelDetail.png; sourceTree = "<group>"; };
@@ -96,12 +84,16 @@
 		D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSettingsButton@2x.png"; sourceTree = "<group>"; };
 		D48ABF1B1404698400835205 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = "build/Release-iphoneos/libLookIO.a"; sourceTree = "<group>"; };
 		D48ABF1C1404698400835205 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
+		D49A53671446791900B218AA /* LIOClickIndicator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOClickIndicator.png; sourceTree = "<group>"; };
+		D49A53681446791900B218AA /* LIOClickIndicator@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOClickIndicator@2x.png"; sourceTree = "<group>"; };
+		D49A53691446791900B218AA /* LIOControlButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOControlButton.png; sourceTree = "<group>"; };
+		D49A536A1446791900B218AA /* LIOControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOControlButton@2x.png"; sourceTree = "<group>"; };
+		D49A536B1446791900B218AA /* LIODefaultTouch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIODefaultTouch.png; sourceTree = "<group>"; };
+		D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIODefaultTouch@2x.png"; sourceTree = "<group>"; };
 		D4B41D3114086D1D00B73C84 /* LTBBookFlightsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBBookFlightsViewController.h; sourceTree = "<group>"; };
 		D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBBookFlightsViewController.m; sourceTree = "<group>"; };
 		D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityFlightDetail.png; sourceTree = "<group>"; };
 		D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TravelocityFlightDetail@2x.png"; sourceTree = "<group>"; };
-		D4B41D3E140986AE00B73C84 /* ControlButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ControlButton.png; sourceTree = "<group>"; };
-		D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ControlButton@2x.png"; sourceTree = "<group>"; };
 		D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIOConnect.caf; sourceTree = "<group>"; };
 		D4B41D56140AC2B800B73C84 /* LookIODing.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIODing.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -162,6 +154,12 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D49A53671446791900B218AA /* LIOClickIndicator.png */,
+				D49A53681446791900B218AA /* LIOClickIndicator@2x.png */,
+				D49A53691446791900B218AA /* LIOControlButton.png */,
+				D49A536A1446791900B218AA /* LIOControlButton@2x.png */,
+				D49A536B1446791900B218AA /* LIODefaultTouch.png */,
+				D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */,
 				CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */,
 				CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */,
 				D47CD77B142FB0E20024C677 /* LIOGrayButton@2x.png */,
@@ -171,20 +169,10 @@
 				D47CD777142FACBE0024C677 /* LIOGrayButton.png */,
 				D47CD778142FACBE0024C677 /* LIOGreenButton.png */,
 				D416C512141411F600D3509B /* LIOInputBar.png */,
-				D4B41D3E140986AE00B73C84 /* ControlButton.png */,
-				D4B41D3F140986AE00B73C84 /* ControlButton@2x.png */,
 				D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */,
 				D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */,
-				D44DD7F914044966004374FE /* ClickIndicator.png */,
-				D44DD7FA14044966004374FE /* ClickIndicator@2x.png */,
-				D44DD7FB14044966004374FE /* DefaultTouch.png */,
-				D44DD7FC14044966004374FE /* DefaultTouch@2x.png */,
-				D44DD7FD14044966004374FE /* DefaultTouchOrange.png */,
-				D44DD7FE14044966004374FE /* DefaultTouchOrange@2x.png */,
 				D44DD7FF14044966004374FE /* HelpButton.png */,
 				D44DD80014044966004374FE /* HelpButton@2x.png */,
-				D44DD80114044966004374FE /* LookIOLogo.png */,
-				D44DD80214044966004374FE /* LookIOLogo@2x.png */,
 				D44DD80314044966004374FE /* TalkButton.png */,
 				D44DD80414044966004374FE /* TalkButton@2x.png */,
 				D44DD80514044966004374FE /* TravelocityHotelDetail.png */,
@@ -289,16 +277,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D44DD81B14044966004374FE /* ClickIndicator.png in Resources */,
-				D44DD81C14044966004374FE /* ClickIndicator@2x.png in Resources */,
-				D44DD81D14044966004374FE /* DefaultTouch.png in Resources */,
-				D44DD81E14044966004374FE /* DefaultTouch@2x.png in Resources */,
-				D44DD81F14044966004374FE /* DefaultTouchOrange.png in Resources */,
-				D44DD82014044966004374FE /* DefaultTouchOrange@2x.png in Resources */,
 				D44DD82114044966004374FE /* HelpButton.png in Resources */,
 				D44DD82214044966004374FE /* HelpButton@2x.png in Resources */,
-				D44DD82314044966004374FE /* LookIOLogo.png in Resources */,
-				D44DD82414044966004374FE /* LookIOLogo@2x.png in Resources */,
 				D44DD82514044966004374FE /* TalkButton.png in Resources */,
 				D44DD82614044966004374FE /* TalkButton@2x.png in Resources */,
 				D44DD82714044966004374FE /* TravelocityHotelDetail.png in Resources */,
@@ -307,8 +287,6 @@
 				D44DD82A14044966004374FE /* TravelocityMain@2x.png in Resources */,
 				D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */,
 				D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */,
-				D4B41D40140986AE00B73C84 /* ControlButton.png in Resources */,
-				D4B41D41140986AE00B73C84 /* ControlButton@2x.png in Resources */,
 				D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */,
 				D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */,
 				D416C513141411F600D3509B /* LIOInputBar.png in Resources */,
@@ -320,6 +298,12 @@
 				D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */,
 				CDB6AFC214464ED6007BF92D /* LIOFullLogo.png in Resources */,
 				CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */,
+				D49A536D1446791900B218AA /* LIOClickIndicator.png in Resources */,
+				D49A536E1446791900B218AA /* LIOClickIndicator@2x.png in Resources */,
+				D49A536F1446791900B218AA /* LIOControlButton.png in Resources */,
+				D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */,
+				D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */,
+				D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
