@@ -148,6 +148,7 @@
             UILabel *topLabel = [[[UILabel alloc] init] autorelease];
             topLabel.textColor = [UIColor whiteColor];
             topLabel.backgroundColor = [UIColor clearColor];
+            topLabel.font = [UIFont systemFontOfSize:14.0];
             topLabel.text = @"Live chat powered by";
             [topLabel sizeToFit];
             aFrame = topLabel.frame;
@@ -168,6 +169,7 @@
             UILabel *bottomLabel = [[[UILabel alloc] init] autorelease];
             bottomLabel.textColor = [UIColor whiteColor];
             bottomLabel.backgroundColor = [UIColor clearColor];
+            bottomLabel.font = [UIFont systemFontOfSize:14.0];
             bottomLabel.text = @"Tap to learn more!";
             [bottomLabel sizeToFit];
             aFrame = bottomLabel.frame;
