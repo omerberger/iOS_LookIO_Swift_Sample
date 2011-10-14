@@ -156,6 +156,10 @@
             aFrame.origin.y = 10.0;
             topLabel.frame = aFrame;
             topLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            topLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+            topLabel.layer.shadowOpacity = 1.0;
+            topLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
+            topLabel.layer.shadowRadius = 1.0;
             [self addSubview:topLabel];
             
             UIImageView *logoImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LIOFullLogo"]] autorelease];
@@ -166,6 +170,7 @@
             logoImageView.frame = aFrame;
             [self addSubview:logoImageView];
             
+            /*
             UILabel *bottomLabel = [[[UILabel alloc] init] autorelease];
             bottomLabel.textColor = [UIColor whiteColor];
             bottomLabel.backgroundColor = [UIColor clearColor];
@@ -177,10 +182,15 @@
             aFrame.origin.y = logoImageView.frame.origin.y + logoImageView.frame.size.height + 10.0;
             bottomLabel.frame = aFrame;
             bottomLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            topLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+            topLabel.layer.shadowOpacity = 1.0;
+            topLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
+            topLabel.layer.shadowRadius = 1.0;
             [self addSubview:bottomLabel];
+            */
             
             aFrame = self.frame;
-            aFrame.size.height = bottomLabel.frame.origin.y + bottomLabel.frame.size.height + 20.0;
+            aFrame.size.height = logoImageView.frame.origin.y + logoImageView.frame.size.height + 20.0;
             self.frame = aFrame;
             
             UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
