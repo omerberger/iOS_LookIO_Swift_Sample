@@ -1217,12 +1217,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController
 {
     [chatViewController.view removeFromSuperview];
-    [chatViewController release];
+    [chatViewController autorelease];
     chatViewController = nil;
     
     emailHistoryViewController = [[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil];
     emailHistoryViewController.delegate = self;
     [lookioWindow addSubview:emailHistoryViewController.view];
+    
     [self rejiggerWindows];
 }
 
