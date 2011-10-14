@@ -83,6 +83,7 @@
     NSArray *supportedOrientations;
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
+    UIWindow *previousKeyWindow;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -355,7 +356,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerWindows
 {
-    lookioWindow.hidden = NO == (chatViewController || leaveMessageViewController || emailHistoryViewController);
+    if (chatViewController || leaveMessageViewController || emailHistoryViewController)
+    {
+        if (nil == previousKeyWindow)
+        {
+            previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+            [lookioWindow makeKeyAndVisible];
+        }
+    }
+    else
+    {
+        lookioWindow.hidden = YES;
+        
+        [previousKeyWindow makeKeyAndVisible];
+        previousKeyWindow = nil;
+    }
+    
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
 }
 
