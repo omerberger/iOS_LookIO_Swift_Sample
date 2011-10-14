@@ -6,8 +6,12 @@
 //  Copyright (c) 2011 LookIO, Inc. All rights reserved.
 //
 
+#import <CommonCrypto/CommonDigest.h>
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import <sys/socket.h>
+#import <net/if.h>
+#import <net/if_dl.h>
 #import <sys/sysctl.h>
 #import "LIOLookIOManager.h"
 #import "AsyncSocket.h"
@@ -98,6 +102,64 @@ NSBundle *lookioBundle()
     }
     
     return bundle;
+}
+
+NSString *uniqueIdentifier()
+{
+    int mib[6];
+    size_t len;
+    char *buf;
+    unsigned char *ptr;
+    struct if_msghdr *ifm;
+    struct sockaddr_dl *sdl;
+    
+    mib[0] = CTL_NET;
+    mib[1] = AF_ROUTE;
+    mib[2] = 0;
+    mib[3] = AF_LINK;
+    mib[4] = NET_RT_IFLIST;
+    
+    if ((mib[5] = if_nametoindex("en0")) == 0)
+    {
+        printf("Error: if_nametoindex error\n");
+        return NULL;
+    }
+    
+    if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
+    {
+        printf("Error: sysctl, take 1\n");
+        return NULL;
+    }
+    
+    if ((buf = malloc(len)) == NULL)
+    {
+        printf("Could not allocate memory. error!\n");
+        return NULL;
+    }
+    
+    if (sysctl(mib, 6, buf, &len, NULL, 0) < 0)
+    {
+        printf("Error: sysctl, take 2");
+        return NULL;
+    }
+    
+    ifm = (struct if_msghdr *)buf;
+    sdl = (struct sockaddr_dl *)(ifm + 1);
+    ptr = (unsigned char *)LLADDR(sdl);
+    NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
+                           *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
+    free(buf);
+    
+    const char *value = [outstring UTF8String];
+    
+    unsigned char outputBuffer[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(value, strlen(value), outputBuffer);
+    
+    NSMutableString *outputString = [[NSMutableString alloc] initWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (NSInteger count = 0; count < CC_MD5_DIGEST_LENGTH; count++)
+        [outputString appendFormat:@"%02x",outputBuffer[count]];
+    
+    return [outputString autorelease];
 }
 
 @implementation LIOLookIOManager
@@ -923,7 +985,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
     free(machine);
     
-    NSString *udid = [[UIDevice currentDevice] uniqueIdentifier];
+    NSString *udid = uniqueIdentifier();
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       @"intro", @"type",
@@ -1405,6 +1467,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [controlSocket writeData:[foregrounded dataUsingEncoding:NSUTF8StringEncoding]
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
+        
+        // We also force the LookIO UI to the foreground here.
+        // This prevents any jank: the user can always go out of the app and come back in
+        // to correct any wackiness that might occur.
+        [leaveMessageViewController.view removeFromSuperview];
+        [leaveMessageViewController release];
+        leaveMessageViewController = nil;
+        
+        [emailHistoryViewController.view removeFromSuperview];
+        [emailHistoryViewController release];
+        emailHistoryViewController = nil;
+        
+        [chatViewController.view removeFromSuperview];
+        [chatViewController release];
+        chatViewController = nil;
+        
+        [self showChat];
     }
 }
 
