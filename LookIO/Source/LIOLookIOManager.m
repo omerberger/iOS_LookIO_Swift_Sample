@@ -105,6 +105,20 @@ NSBundle *lookioBundle()
     return bundle;
 }
 
+/*
+UIImage *imageFromBundle(NSString *filename)
+{
+    NSBundle *bundle = lookioBundle();
+    if (bundle)
+    {
+    }
+    else
+    {
+        return [UIImage imageNamed:filename];
+    }
+}
+ */
+
 NSString *uniqueIdentifier()
 {
     int mib[6];
@@ -1500,6 +1514,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [chatViewController release];
         chatViewController = nil;
         
+        [self rejiggerWindows];
+        
         [self showChat];
     }
 }
@@ -1669,12 +1685,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)emailHistoryViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
 {
-    [emailHistoryViewController.view removeFromSuperview];
-    [emailHistoryViewController release];
-    emailHistoryViewController = nil;
-    
-    [self showChat];
-    
     NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:anEmail], @"email_addresses", nil];
     NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       @"advisory", @"type",
@@ -1688,6 +1698,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
+    
+    [emailHistoryViewController.view removeFromSuperview];
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
+    
+    [self showChat];
 }
 
 @end
