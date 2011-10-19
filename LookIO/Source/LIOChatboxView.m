@@ -82,14 +82,19 @@
         inputField.frame = aFrame;
         [inputFieldBackground addSubview:inputField];
         
+        /*
         UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
         greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
+         */
+        
+        UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+        glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [sendButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+        [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:@"Send" forState:UIControlStateNormal];
         sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-        sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y + 1.0, 59.0, 27.0);
+        sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y, 59.0, 30.0);
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.hidden = YES;
         [self addSubview:sendButton];
@@ -214,8 +219,8 @@
         inputField.frame = aFrame;
         
         sendButton.frame = CGRectMake(inputFieldBackground.frame.origin.x + inputFieldBackground.frame.size.width + 6.0,
-                                      inputFieldBackground.frame.origin.y + 1.0,
-                                      59.0, 27.0);
+                                      inputFieldBackground.frame.origin.y,
+                                      59.0, 30.0);
         
         CGSize maxSize = CGSizeMake(inputField.frame.size.width, FLT_MAX);
         CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
@@ -268,8 +273,8 @@
         if (settingsSpacing)
         {
             sendButton.frame = CGRectMake(inputFieldBackground.frame.origin.x + inputFieldBackground.frame.size.width + 6.0,
-                                          inputFieldBackground.frame.origin.y + 4.0,
-                                          59.0, 27.0);
+                                          inputFieldBackground.frame.origin.y + 2.0,
+                                          59.0, 30.0);
         }
         
         aFrame = self.frame;

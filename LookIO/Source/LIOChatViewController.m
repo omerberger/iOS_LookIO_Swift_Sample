@@ -34,6 +34,8 @@
     scrollView = [[UIScrollView alloc] initWithFrame:rootView.bounds];
     scrollView.autoresizingMask = backgroundView.autoresizingMask;
     scrollView.backgroundColor = [UIColor clearColor];
+    scrollView.showsHorizontalScrollIndicator = NO;
+    scrollView.showsVerticalScrollIndicator = NO;
     [rootView addSubview:scrollView];
     
     dismissalButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];

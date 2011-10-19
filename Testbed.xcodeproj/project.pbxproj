@@ -10,6 +10,7 @@
 		CDB6AFC214464ED6007BF92D /* LIOFullLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */; };
 		CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */; };
 		D416C513141411F600D3509B /* LIOInputBar.png in Resources */ = {isa = PBXBuildFile; fileRef = D416C512141411F600D3509B /* LIOInputBar.png */; };
+		D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D445B38B144E67B700C90F30 /* LIOGlassButton.png */; };
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
 		D44DD7C814044915004374FE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C714044915004374FE /* CoreGraphics.framework */; };
@@ -53,6 +54,7 @@
 		CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOFullLogo.png; sourceTree = "<group>"; };
 		CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOFullLogo@2x.png"; sourceTree = "<group>"; };
 		D416C512141411F600D3509B /* LIOInputBar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOInputBar.png; sourceTree = "<group>"; };
+		D445B38B144E67B700C90F30 /* LIOGlassButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOGlassButton.png; sourceTree = "<group>"; };
 		D44DD7BF14044915004374FE /* Testbed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testbed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7C514044915004374FE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -154,6 +156,7 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D445B38B144E67B700C90F30 /* LIOGlassButton.png */,
 				D49A53671446791900B218AA /* LIOClickIndicator.png */,
 				D49A53681446791900B218AA /* LIOClickIndicator@2x.png */,
 				D49A53691446791900B218AA /* LIOControlButton.png */,
@@ -304,6 +307,7 @@
 				D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */,
 				D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */,
 				D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */,
+				D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,9 +350,7 @@
 				HEADER_SEARCH_PATHS = LookIO/Source;
 				INFOPLIST_FILE = "Testbed/Resources/Property Lists/Testbed-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
-				OTHER_LDFLAGS = (
-					"-ObjC",
-				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -371,9 +373,7 @@
 				INFOPLIST_FILE = "Testbed/Resources/Property Lists/Testbed-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				OTHER_LDFLAGS = (
-					"-ObjC",
-				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

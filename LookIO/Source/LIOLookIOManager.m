@@ -1506,6 +1506,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
+        if (nil == leaveMessageViewController && nil == emailHistoryViewController)
+            [self showChat];
+        
+        [self rejiggerWindows];
+        /*
         double delayInSeconds = 0.5;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -1525,6 +1530,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [self showChat];
         });
+        */
     }
 }
 
