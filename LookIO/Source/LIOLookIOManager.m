@@ -452,6 +452,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [keyWindow bringSubviewToFront:clickView];
     }
     
+    // If need be, make the lookio window key.
+    if ((chatViewController || emailHistoryViewController || leaveMessageViewController) && lookioWindow != [[UIApplication sharedApplication] keyWindow])
+        [self rejiggerWindows];
+    
     if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
@@ -1108,11 +1112,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
         [alertView show];
         [alertView autorelease];
-        
-        unloadAfterDisconnect = YES;
-        
-        NSLog(@"[CONNECT] Connection failed. Reason: %@", [err localizedDescription]);
     }
+        
+    unloadAfterDisconnect = YES;
+    [self killConnection];
+    
+    NSLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock

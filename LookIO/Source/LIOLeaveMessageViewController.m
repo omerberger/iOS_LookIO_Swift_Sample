@@ -144,12 +144,17 @@
     messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     messageView.text = initialMessage;
     [scrollView addSubview:messageView];
-    
+
+    /*
     UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
     greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
     
     UIImage *grayButtonImage = [UIImage imageNamed:@"LIOGrayButton"];
     grayButtonImage = [grayButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
+     */
+    
+    UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+    glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     aFrame.size.width = 59.0;
@@ -157,7 +162,7 @@
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 - 24.0;
     aFrame.size.height = 27.0;
     sendButton.frame = aFrame;
-    [sendButton setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+    [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
     [sendButton setTitle:@"Send" forState:UIControlStateNormal];
     sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -170,7 +175,7 @@
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 - 24.0;
     aFrame.size.height = 27.0;
     cancelButton.frame = aFrame;
-    [cancelButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
+    [cancelButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
     cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
