@@ -261,20 +261,39 @@
         inputField.frame = aFrame;
         
         aFrame = inputFieldBackground.frame;
-        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0 + settingsSpacing;
+        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 + settingsSpacing;
         aFrame.size.height = singleLineHeight * calculatedNumLines + 12.0;
         inputFieldBackground.frame = aFrame;
         
         if (settingsSpacing)
         {
             sendButton.frame = CGRectMake(inputFieldBackground.frame.origin.x + inputFieldBackground.frame.size.width + 6.0,
-                                          inputFieldBackground.frame.origin.y + 1.0,
+                                          inputFieldBackground.frame.origin.y + 4.0,
                                           59.0, 27.0);
         }
         
         aFrame = self.frame;
-        aFrame.size.height = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + 10.0;
+        aFrame.size.height = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + 8.0;
         self.frame = aFrame;
+        
+        UIView *blackLine = [[[UIView alloc] init] autorelease];
+        blackLine.backgroundColor = [UIColor blackColor];
+        aFrame = CGRectZero;
+        aFrame.origin.x = 2.0;
+        aFrame.origin.y = inputFieldBackground.frame.origin.y - 6.0;
+        aFrame.size.height = 1.0;
+        aFrame.size.width = self.frame.size.width - 4.0;
+        blackLine.frame = aFrame;
+        blackLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:blackLine];
+        
+        UIView *grayLine = [[[UIView alloc] init] autorelease];
+        grayLine.backgroundColor = [UIColor darkGrayColor];
+        aFrame = blackLine.frame;
+        aFrame.origin.y = aFrame.origin.y + 1.0;
+        grayLine.frame = aFrame;
+        grayLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:grayLine];
     }
 }
 

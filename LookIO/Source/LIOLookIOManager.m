@@ -105,19 +105,23 @@ NSBundle *lookioBundle()
     return bundle;
 }
 
-/*
 UIImage *imageFromBundle(NSString *filename)
 {
     NSBundle *bundle = lookioBundle();
     if (bundle)
     {
+        NSString *path = [bundle pathForResource:filename ofType:nil];
+        NSData *fileData = [NSData dataWithContentsOfFile:path];
+        if (fileData)
+            return [UIImage imageWithData:fileData];
     }
     else
     {
         return [UIImage imageNamed:filename];
     }
+            
+    return nil;
 }
- */
 
 NSString *uniqueIdentifier()
 {
@@ -1502,21 +1506,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        [leaveMessageViewController.view removeFromSuperview];
-        [leaveMessageViewController release];
-        leaveMessageViewController = nil;
-        
-        [emailHistoryViewController.view removeFromSuperview];
-        [emailHistoryViewController release];
-        emailHistoryViewController = nil;
-        
-        [chatViewController.view removeFromSuperview];
-        [chatViewController release];
-        chatViewController = nil;
-        
-        [self rejiggerWindows];
-        
-        [self showChat];
+        double delayInSeconds = 0.5;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [leaveMessageViewController.view removeFromSuperview];
+            [leaveMessageViewController release];
+            leaveMessageViewController = nil;
+            
+            [emailHistoryViewController.view removeFromSuperview];
+            [emailHistoryViewController release];
+            emailHistoryViewController = nil;
+            
+            [chatViewController.view removeFromSuperview];
+            [chatViewController release];
+            chatViewController = nil;
+            
+            [self rejiggerWindows];
+            
+            [self showChat];
+        });
     }
 }
 
