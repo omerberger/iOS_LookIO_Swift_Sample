@@ -452,10 +452,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [keyWindow bringSubviewToFront:clickView];
     }
     
-    // If need be, make the lookio window key.
-    if ((chatViewController || emailHistoryViewController || leaveMessageViewController) && lookioWindow != [[UIApplication sharedApplication] keyWindow])
-        [self rejiggerWindows];
-    
     if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
@@ -1484,6 +1480,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
     }
+    
+    [chatViewController.view removeFromSuperview];
+    [chatViewController release];
+    chatViewController = nil;
+    
+    [emailHistoryViewController.view removeFromSuperview];
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
+    
+    [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    [self rejiggerWindows];
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification
@@ -1507,36 +1517,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [controlSocket writeData:[foregrounded dataUsingEncoding:NSUTF8StringEncoding]
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
-        
-        // We also force the LookIO UI to the foreground here.
-        // This prevents any jank: the user can always go out of the app and come back in
-        // to correct any wackiness that might occur.
-        if (nil == leaveMessageViewController && nil == emailHistoryViewController)
-            [self showChat];
-        
-        [self rejiggerWindows];
-        /*
-        double delayInSeconds = 0.5;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [leaveMessageViewController.view removeFromSuperview];
-            [leaveMessageViewController release];
-            leaveMessageViewController = nil;
-            
-            [emailHistoryViewController.view removeFromSuperview];
-            [emailHistoryViewController release];
-            emailHistoryViewController = nil;
-            
-            [chatViewController.view removeFromSuperview];
-            [chatViewController release];
-            chatViewController = nil;
-            
-            [self rejiggerWindows];
-            
-            [self showChat];
-        });
-        */
     }
+
+    // We also force the LookIO UI to the foreground here.
+    // This prevents any jank: the user can always go out of the app and come back in
+    // to correct any wackiness that might occur.
+    if (nil == leaveMessageViewController && nil == emailHistoryViewController)
+        [self showChat];
 }
 
 - (void)deviceOrientationDidChange:(NSNotification *)aNotification
