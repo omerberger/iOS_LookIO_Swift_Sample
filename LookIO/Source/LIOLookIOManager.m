@@ -24,7 +24,7 @@
 #import "LIOEmailHistoryViewController.h"
 
 // Misc. constants
-#define LIOLookIOManagerVersion @"0.1"
+#define LIOLookIOManagerVersion @"1.0.0"
 
 #define LIOLookIOManagerScreenCaptureInterval   0.33
 
@@ -301,43 +301,35 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                    timeoutInterval:10.0];
         [endpointRequest setValue:[[NSBundle mainBundle] bundleIdentifier] forHTTPHeaderField:@"X-LookIO-BundleID"];
         
-        NSURL *soundURL = [NSURL fileURLWithPath:[lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"]];
-        if (soundURL)
+        NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
+        if ([aPath length])
         {
+            NSURL *soundURL = [NSURL fileURLWithPath:aPath];
             AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-#ifdef DEBUG
-            NSLog(@"[LOOKIO] Loaded sound \"%@\" from LookIO bundle.", soundURL);
-#endif
         }
         else
         {
-            soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
-            if (soundURL)
+            NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"];
+            if ([anotherPath length])
             {
+                NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
                 AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] Loaded sound \"%@\" from main bundle.", soundURL);
-#endif
             }
         }
         
-        soundURL = [NSURL fileURLWithPath:[lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"]];
-        if (soundURL)
+        aPath = [lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"];
+        if ([aPath length])
         {
+            NSURL *soundURL = [NSURL fileURLWithPath:aPath];
             AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-#ifdef DEBUG
-            NSLog(@"[LOOKIO] Loaded sound \"%@\" from LookIO bundle.", soundURL);
-#endif
         }
         else
         {
-            soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
-            if (soundURL)
+            NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"];
+            if ([anotherPath length])
             {
+                NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
                 AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] Loaded sound \"%@\" from main bundle.", soundURL);
-#endif
             }
         }
                 
