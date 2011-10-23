@@ -504,6 +504,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
+    if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        return;
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *screenshotImage = [self captureScreen];
         CGSize screenshotSize = screenshotImage.size;
