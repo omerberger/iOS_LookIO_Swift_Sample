@@ -946,7 +946,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
             NSString *permission = [data objectForKey:@"permission"];
-            if ([permission isEqualToString:@"screenshot"])
+            if ([permission isEqualToString:@"screenshot"] && NO == screenshotsAllowed)
             {
                 if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
                 {
