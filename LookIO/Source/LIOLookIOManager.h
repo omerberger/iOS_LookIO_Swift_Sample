@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+UIImage *lookioImage(NSString *path);
+
 @interface LIOLookIOManager : NSObject
 
 @property(nonatomic, retain) UIImage *touchImage;

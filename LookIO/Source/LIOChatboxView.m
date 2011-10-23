@@ -55,7 +55,8 @@
         
         inputFieldBackground = [[UIImageView alloc] init];
         inputFieldBackground.userInteractionEnabled = YES;
-        inputFieldBackground.image = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+        //inputFieldBackground.image = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+        inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
         aFrame.origin.x = messageView.frame.origin.x + 3.0;
         aFrame.size.width = bubbleView.frame.size.width - 24.0;
         aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
@@ -87,7 +88,8 @@
         greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
          */
         
-        UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+        //UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+        UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
         glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -100,7 +102,7 @@
         [self addSubview:sendButton];
         
         settingsButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        [settingsButton setBackgroundImage:[UIImage imageNamed:@"LIOSettingsButton"] forState:UIControlStateNormal];
+        [settingsButton setBackgroundImage:lookioImage(@"LIOSettingsButton") forState:UIControlStateNormal];
         [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         aFrame = CGRectZero;
         aFrame.size.width = 33.0;
@@ -167,7 +169,7 @@
             topLabel.layer.shadowRadius = 1.0;
             [self addSubview:topLabel];
             
-            UIImageView *logoImageView = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LIOFullLogo"]] autorelease];
+            UIImageView *logoImageView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOFullLogo")] autorelease];
             logoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
             aFrame = logoImageView.frame;
             aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));

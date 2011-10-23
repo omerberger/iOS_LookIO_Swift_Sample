@@ -22,10 +22,11 @@ then
 fi
 
 mkdir $TARGET_DIR
+mkdir $TARGET_DIR/LookIO.bundle
+cp Testbed/Resources/Sounds/* $TARGET_DIR/LookIO.bundle
+cp Testbed/Resources/Images/LIO* $TARGET_DIR/LookIO.bundle
 cp build/Release-universal/libLookIO.a $TARGET_DIR
 cp LookIO/Source/LIOLookIOManager.h $TARGET_DIR
-cp Testbed/Resources/Sounds/* $TARGET_DIR
-cp Testbed/Resources/Images/LIO* $TARGET_DIR
 
 echo Build complete! Find the results in $TARGET_DIR/
 

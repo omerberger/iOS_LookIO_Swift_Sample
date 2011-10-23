@@ -105,21 +105,48 @@ NSBundle *lookioBundle()
     return bundle;
 }
 
-UIImage *imageFromBundle(NSString *filename)
+UIImage *lookioImage(NSString *path)
 {
     NSBundle *bundle = lookioBundle();
     if (bundle)
     {
-        NSString *path = [bundle pathForResource:filename ofType:nil];
-        NSData *fileData = [NSData dataWithContentsOfFile:path];
+        NSString *actualPath = nil;
+        
+        if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
+        {
+            NSString *path2x = [path stringByAppendingString:@"@2x"];
+            actualPath = [bundle pathForResource:path2x ofType:@"png"];
+        }
+        
+        if (0 == [actualPath length])
+            actualPath = [bundle pathForResource:path ofType:@"png"];
+        
+        if (0 == [actualPath length])
+        {
+#ifdef DEBUG
+            NSLog(@"[LOOKIO] Couldn't find normal or @2x file for resource \"%@\" in LookIO bundle!", path);
+#endif
+        }
+        else
+        {
+#ifdef DEBUG
+            NSLog(@"[LOOKIO] Found \"%@\" in bundle as: \"%@\"", path, actualPath);
+#endif
+        }
+        
+        NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
         if (fileData)
             return [UIImage imageWithData:fileData];
     }
     else
     {
-        return [UIImage imageNamed:filename];
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] No LookIO bundle! Loading \"%@\" from main bundle...", path);
+#endif
+        return [UIImage imageNamed:path];
     }
-            
+    
+    // Never reached.
     return nil;
 }
 
@@ -247,7 +274,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
-        self.touchImage = [UIImage imageNamed:@"LIODefaultTouch"];
+        self.touchImage = lookioImage(@"LIODefaultTouch");
         self.controlButtonCenter = CGPointMake(16.0, 36.0);
         self.controlButtonCenterLandscape = CGPointMake(16.0, 36.0);
         self.controlButtonBounds = CGRectMake(0.0, 0.0, 32.0, 32.0);
@@ -255,7 +282,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatHistory = [[NSMutableArray alloc] init];
 
         controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [controlButton setImage:[UIImage imageNamed:@"LIOControlButton"] forState:UIControlStateNormal];
+        [controlButton setImage:lookioImage(@"LIOControlButton") forState:UIControlStateNormal];
         [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         controlButton.bounds = self.controlButtonBounds;
         controlButton.center = self.controlButtonCenter;
@@ -275,15 +302,46 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                    timeoutInterval:10.0];
         [endpointRequest setValue:[[NSBundle mainBundle] bundleIdentifier] forHTTPHeaderField:@"X-LookIO-BundleID"];
         
-        NSURL *soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
+        NSURL *soundURL = [NSURL fileURLWithPath:[lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"]];
         if (soundURL)
+        {
             AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+#ifdef DEBUG
+            NSLog(@"[LOOKIO] Loaded sound \"%@\" from LookIO bundle.", soundURL);
+#endif
+        }
+        else
+        {
+            soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"]];
+            if (soundURL)
+            {
+                AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+#ifdef DEBUG
+                NSLog(@"[LOOKIO] Loaded sound \"%@\" from main bundle.", soundURL);
+#endif
+            }
+        }
         
-        soundURL = nil;
-        soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
+        soundURL = [NSURL fileURLWithPath:[lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"]];
         if (soundURL)
+        {
             AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-        
+#ifdef DEBUG
+            NSLog(@"[LOOKIO] Loaded sound \"%@\" from LookIO bundle.", soundURL);
+#endif
+        }
+        else
+        {
+            soundURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"]];
+            if (soundURL)
+            {
+                AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
+#ifdef DEBUG
+                NSLog(@"[LOOKIO] Loaded sound \"%@\" from main bundle.", soundURL);
+#endif
+            }
+        }
+                
         backgroundTaskId = UIBackgroundTaskInvalid;
         
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -940,7 +998,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (nil == clickView)
         {
-            clickView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"LIOClickIndicator"]];
+            clickView = [[UIImageView alloc] initWithImage:lookioImage(@"LIOClickIndicator")];
             [keyWindow addSubview:clickView];
         }
         
@@ -1517,13 +1575,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [controlSocket writeData:[foregrounded dataUsingEncoding:NSUTF8StringEncoding]
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
+        
+        // We also force the LookIO UI to the foreground here.
+        // This prevents any jank: the user can always go out of the app and come back in
+        // to correct any wackiness that might occur.
+        if (nil == leaveMessageViewController && nil == emailHistoryViewController)
+            [self showChat];
     }
-
-    // We also force the LookIO UI to the foreground here.
-    // This prevents any jank: the user can always go out of the app and come back in
-    // to correct any wackiness that might occur.
-    if (nil == leaveMessageViewController && nil == emailHistoryViewController)
-        [self showChat];
 }
 
 - (void)deviceOrientationDidChange:(NSNotification *)aNotification

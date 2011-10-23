@@ -7,6 +7,7 @@
 //
 
 #import "LIONiceTextField.h"
+#import "LIOLookIOManager.h"
 
 @implementation LIONiceTextField
 
@@ -17,7 +18,7 @@
     if (self)
     {
         self.borderStyle = UITextBorderStyleNone;
-        self.background = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+        self.background = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
         self.backgroundColor = [UIColor clearColor];
     }
     
