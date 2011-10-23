@@ -10,8 +10,14 @@ fi
 
 TARGET_DIR=_LOOKIO_$1_
 LOG_FILE=build_lio_$1.log
+CONFIGURATION=Release
 
-echo Building LookIO v$1, please wait...
+if [ -n "$2" ]
+then
+    CONFIGURATION=$2
+fi
+
+echo "Building LookIO v$1 ($CONFIGURATION), please wait..."
 rm -rf build
 xcodebuild -project LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
 

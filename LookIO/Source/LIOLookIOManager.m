@@ -110,33 +110,32 @@ UIImage *lookioImage(NSString *path)
     NSBundle *bundle = lookioBundle();
     if (bundle)
     {
-        NSString *actualPath = nil;
-        
         if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
         {
             NSString *path2x = [path stringByAppendingString:@"@2x"];
-            actualPath = [bundle pathForResource:path2x ofType:@"png"];
+            NSString *actualPath = [bundle pathForResource:path2x ofType:@"png"];
+            if ([actualPath length])
+            {
+                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+                if (fileData)
+                {
+                    UIImage *newImage = [UIImage imageWithData:fileData];
+                    return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
+                }
+            }
         }
         
-        if (0 == [actualPath length])
-            actualPath = [bundle pathForResource:path ofType:@"png"];
-        
-        if (0 == [actualPath length])
+        NSString *actualPath = [bundle pathForResource:path ofType:@"png"];
+        if ([actualPath length])
         {
+            NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+            if (fileData)
+                return [UIImage imageWithData:fileData];
+        }
+        
 #ifdef DEBUG
             NSLog(@"[LOOKIO] Couldn't find normal or @2x file for resource \"%@\" in LookIO bundle!", path);
 #endif
-        }
-        else
-        {
-#ifdef DEBUG
-            NSLog(@"[LOOKIO] Found \"%@\" in bundle as: \"%@\"", path, actualPath);
-#endif
-        }
-        
-        NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-        if (fileData)
-            return [UIImage imageWithData:fileData];
     }
     else
     {
