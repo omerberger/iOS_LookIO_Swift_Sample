@@ -18,7 +18,7 @@
 @end
 */
 
-@interface LIOAboutViewController : UIViewController
+@interface LIOAboutViewController : UIViewController <UITextFieldDelegate>
 {
     UIScrollView *scrollView;
     UIView *bubbleView;

@@ -30,15 +30,19 @@
     [rootView addSubview:scrollView];
     
     CGFloat xInset = 5.0;
+    CGFloat height = rootView.frame.size.height;
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
         xInset = 100.0;
+        height = 460.0;
+    }
     
     bubbleView = [[UIView alloc] init];
     CGRect aFrame = CGRectZero;
     aFrame.origin.x = xInset;
     aFrame.size.width = rootView.frame.size.width - (xInset * 2.0);
     aFrame.origin.y = 5.0;
-    aFrame.size.height = rootView.frame.size.height - 10.0;
+    aFrame.size.height = height;
     bubbleView.frame = aFrame;
     bubbleView.backgroundColor = [UIColor blackColor];
     bubbleView.alpha = 0.7;
@@ -61,9 +65,12 @@
     poweredByLabel.text = @"Powered by LookIO (www.look.io)";
     [poweredByLabel sizeToFit];
     aFrame = poweredByLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));
+    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
+    aFrame.size.width = bubbleView.frame.size.width - 20.0;
     aFrame.origin.y = bubbleView.frame.origin.y + 10.0;
     poweredByLabel.frame = aFrame;
+    poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    poweredByLabel.textAlignment = UITextAlignmentCenter;
     [scrollView addSubview:poweredByLabel];
     
     UIView *blackLine = [[[UIView alloc] init] autorelease];
@@ -74,6 +81,7 @@
     aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 10.0;
     aFrame.size.height = 1.0;
     blackLine.frame = aFrame;
+    blackLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:blackLine];
     
     UIView *grayLine = [[[UIView alloc] init] autorelease];
@@ -81,6 +89,7 @@
     aFrame = blackLine.frame;
     aFrame.origin.y = aFrame.origin.y + 1.0;
     grayLine.frame = aFrame;
+    grayLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:grayLine];    
     
     areYouDeveloperLabel = [[UILabel alloc] init];
@@ -95,9 +104,12 @@
     areYouDeveloperLabel.text = @"Are you a developer? Join our beta:";
     [areYouDeveloperLabel sizeToFit];
     aFrame = areYouDeveloperLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + ((bubbleView.frame.size.width / 2.0) - (aFrame.size.width / 2.0));
+    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
+    aFrame.size.width = bubbleView.frame.size.width - 20.0;
     aFrame.origin.y = grayLine.frame.origin.y + grayLine.frame.size.height + 10.0;
     areYouDeveloperLabel.frame = aFrame;
+    areYouDeveloperLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    areYouDeveloperLabel.textAlignment = UITextAlignmentCenter;
     [scrollView addSubview:areYouDeveloperLabel];
     
     emailLabel = [[UILabel alloc] init];
@@ -129,6 +141,7 @@
     aFrame.origin.y = emailLabel.frame.origin.y + emailLabel.frame.size.height + 5.0;
     aFrame.size.height = 30.0;
     emailField.frame = aFrame;
+    emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
     
     UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
@@ -144,6 +157,7 @@
     [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    submitButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [scrollView addSubview:submitButton];
     
     cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -156,8 +170,8 @@
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
     cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [scrollView addSubview:cancelButton];
-    
     
     UIView *blackLine2 = [[[UIView alloc] init] autorelease];
     blackLine2.backgroundColor = [UIColor blackColor];
@@ -167,6 +181,7 @@
     aFrame.origin.y = cancelButton.frame.origin.y + cancelButton.frame.size.height + 10.0;
     aFrame.size.height = 1.0;
     blackLine2.frame = aFrame;
+    blackLine2.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:blackLine2];
     
     UIView *grayLine2 = [[[UIView alloc] init] autorelease];
@@ -174,6 +189,7 @@
     aFrame = blackLine2.frame;
     aFrame.origin.y = aFrame.origin.y + 1.0;
     grayLine2.frame = aFrame;
+    grayLine2.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:grayLine2];    
     
     whatIsLabel = [[UILabel alloc] init];
@@ -209,6 +225,7 @@
     aFrame.origin.y = whatIsLabel.frame.origin.y + whatIsLabel.frame.size.height + 5.0;
     aFrame.size.height = 77.0;
     paragraphOne.frame = aFrame;
+    paragraphOne.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:paragraphOne];
     
     canAgentsLabel = [[UILabel alloc] init];
@@ -245,6 +262,7 @@
     aFrame.origin.y = canAgentsLabel.frame.origin.y + canAgentsLabel.frame.size.height + 5.0;
     aFrame.size.height = 90.0;
     paragraphTwo.frame = aFrame;
+    paragraphTwo.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:paragraphTwo];    
     
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
@@ -282,6 +300,19 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)cancelButtonWasTapped
+{
+    [delegate aboutViewControllerWasDismissed:self];
+}
+
+- (void)submitButtonWasTapped
+{
+    [delegate aboutViewController:self wasDismissedWithEmail:emailField.text];
 }
 
 @end

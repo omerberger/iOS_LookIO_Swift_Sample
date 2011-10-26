@@ -89,6 +89,7 @@
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 
 - (void)controlButtonWasTapped;
+- (void)rejiggerWindows;
 
 @end
 
@@ -377,25 +378,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [cursorView release];
     [clickView release];
     [controlButton release];
-    [chatViewController release];
     [chatHistory release];
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
     [targetAgentId release];
-    [lookioWindow release];
     [endpointRequest release];
     [controlEndpoint release];
     [endpointRequestConnection release];
     [endpointRequestData release];
-    [leaveMessageViewController release];
-    [emailHistoryViewController release];
-    [aboutViewController release];
     [pendingFeedbackText release];
     [friendlyName release];
     [supportedOrientations release];
     
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
+    
+    [aboutViewController release];
+    aboutViewController = nil;
+    
+    [chatViewController release];
+    chatViewController = nil;
+    
     AudioServicesDisposeSystemSoundID(soundDing);
     AudioServicesDisposeSystemSoundID(soundYay);
+    
+    [self rejiggerWindows];
+    
+    [lookioWindow release];
     
     NSLog(@"[LOOKIO] Unloaded.");
     
@@ -1797,7 +1809,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [aboutViewController release];
     aboutViewController = nil;
     
-    [self rejiggerWindows];
+    [self showChat];
 }
 
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
@@ -1806,7 +1818,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [aboutViewController release];
     aboutViewController = nil;
     
-    [self rejiggerWindows];
+    if ([anEmail length])
+    {
+        NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:anEmail, @"email", nil];
+        NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                          @"advisory", @"type",
+                                          @"beta_email", @"action",
+                                          aDict, @"data",
+                                          nil];
+        
+        NSString *email = [jsonWriter stringWithObject:emailDict];
+        email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+    
+    [self showChat];
 }
 
 @end
