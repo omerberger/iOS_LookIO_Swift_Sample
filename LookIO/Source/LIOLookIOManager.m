@@ -19,9 +19,9 @@
 #import "LIOChatboxView.h"
 #import "NSData+Base64.h"
 #import "LIOChatViewController.h"
-#import "LIOConnectViewController.h"
 #import "LIOLeaveMessageViewController.h"
 #import "LIOEmailHistoryViewController.h"
+#import "LIOAboutViewController.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.0.0"
@@ -75,9 +75,9 @@
     NSInteger endpointRequestHTTPResponseCode;
     NSInteger numIncomingChatMessages;
     LIOChatViewController *chatViewController;
-    LIOConnectViewController *connectViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
+    LIOAboutViewController *aboutViewController;
     NSString *pendingFeedbackText;
     NSString *friendlyName;
     NSArray *supportedOrientations;
@@ -389,6 +389,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [endpointRequestData release];
     [leaveMessageViewController release];
     [emailHistoryViewController release];
+    [aboutViewController release];
     [pendingFeedbackText release];
     [friendlyName release];
     [supportedOrientations release];
@@ -404,7 +405,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)unload
 {
     [chatViewController.view removeFromSuperview];
-    [connectViewController.view removeFromSuperview];
+    [aboutViewController.view removeFromSuperview];
     [leaveMessageViewController.view removeFromSuperview];
     [emailHistoryViewController.view removeFromSuperview];
     
@@ -423,7 +424,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerWindows
 {
-    if (chatViewController || leaveMessageViewController || emailHistoryViewController)
+    if (chatViewController || leaveMessageViewController || emailHistoryViewController || aboutViewController)
     {
         if (nil == previousKeyWindow)
         {
@@ -501,7 +502,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [keyWindow bringSubviewToFront:clickView];
     }
     
-    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
+    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController || aboutViewController)
         return;
     
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -551,6 +552,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     });
 }
 
+/*
 - (void)showConnectionUI
 {
     if (connectViewController)
@@ -595,6 +597,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         });
     }
 }
+*/
 
 - (void)showChat
 {
@@ -639,6 +642,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     leaveMessageViewController.delegate = self;
     leaveMessageViewController.initialMessage = pendingFeedbackText;
     [lookioWindow addSubview:leaveMessageViewController.view];
+    [self rejiggerWindows];
+}
+
+- (void)showAboutUI
+{
+    if (aboutViewController)
+        return;
+    
+    aboutViewController = [[LIOAboutViewController alloc] initWithNibName:nil bundle:nil];
+    aboutViewController.delegate = self;
+    [lookioWindow addSubview:aboutViewController.view];
     [self rejiggerWindows];
 }
 
@@ -895,7 +909,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #endif
             enqueued = NO;
             
-            [connectViewController hideAnimated:YES];
             controlButtonSpinner.hidden = YES;
             
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -939,10 +952,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 NSNumber *position = [data objectForKey:@"position"];
                 [lastKnownQueuePosition release];
                 lastKnownQueuePosition = [position retain];
-                if ([lastKnownQueuePosition intValue] == 1)
-                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"Waiting for live agent..."];
-                else
-                    connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
             }
         }
         else if ([action isEqualToString:@"permission"])
@@ -1355,6 +1364,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)chatViewControllerDidTapAboutButton:(LIOChatViewController *)aController
+{
+    [chatViewController.view removeFromSuperview];
+    [chatViewController autorelease];
+    chatViewController = nil;
+    
+    [self showAboutUI];
+}
+
 #pragma mark -
 #pragma mark UIAlertViewDelegate methods
 
@@ -1448,6 +1466,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+/*
 #pragma mark -
 #pragma mark LIOConnectViewController delegate methods
 
@@ -1504,6 +1523,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
 }
+*/
 
 #pragma mark -
 #pragma mark Notification handlers
@@ -1545,6 +1565,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
     
+    [aboutViewController.view removeFromSuperview];
+    [aboutViewController release];
+    aboutViewController = nil;
+    
     [self rejiggerWindows];
 }
 
@@ -1573,7 +1597,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        if (nil == leaveMessageViewController && nil == emailHistoryViewController)
+        if (nil == leaveMessageViewController && nil == emailHistoryViewController && nil == aboutViewController)
             [self showChat];
     }
 }
@@ -1762,6 +1786,27 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     emailHistoryViewController = nil;
     
     [self showChat];
+}
+
+#pragma mark -
+#pragma mark LIOAboutViewControllerDelegate methods
+
+- (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController
+{
+    [aboutViewController.view removeFromSuperview];
+    [aboutViewController release];
+    aboutViewController = nil;
+    
+    [self rejiggerWindows];
+}
+
+- (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
+{
+    [aboutViewController.view removeFromSuperview];
+    [aboutViewController release];
+    aboutViewController = nil;
+    
+    [self rejiggerWindows];
 }
 
 @end

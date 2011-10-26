@@ -18,6 +18,7 @@
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
+- (void)chatViewControllerDidTapAboutButton:(LIOChatViewController *)aController;
 @optional
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController;
 - (void)chatViewControllerTypingDidStart:(LIOChatViewController *)aController;

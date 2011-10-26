@@ -202,7 +202,7 @@
     {
         LIOChatboxView *aChatbox = [messageViews objectAtIndex:i];
         BOOL canTakeInput = i == [messageViews count] - 1;
-        aChatbox.delegate = canTakeInput ? self : nil;
+        aChatbox.delegate = canTakeInput || !i ? self : nil;
         
         if (canTakeInput)
         {
@@ -363,6 +363,11 @@
     }
     
     previousTextLength = currentTextLength;
+}
+
+- (void)chatboxViewWasTapped:(LIOChatboxView *)aView
+{
+    [delegate chatViewControllerDidTapAboutButton:self];
 }
 
 #pragma mark -

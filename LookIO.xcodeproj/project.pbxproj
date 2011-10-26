@@ -11,8 +11,6 @@
 		D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIONiceTextField.m */; };
 		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
-		D4743CEE141A9BA10089E9A0 /* LIOTextEntryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4743CEC141A9BA10089E9A0 /* LIOTextEntryViewController.h */; };
-		D4743CEF141A9BA10089E9A0 /* LIOTextEntryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4743CED141A9BA10089E9A0 /* LIOTextEntryViewController.m */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
 		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
 		D48ABF0C1404647300835205 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFA1404647300835205 /* NSData+Base64.h */; };
@@ -43,6 +41,8 @@
 		D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C1987514365136009A71B2 /* LIOTimerProxy.m */; };
 		D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */; };
 		D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */; };
+		D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */; };
+		D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */; };
 		D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */; };
 		D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */; };
 /* End PBXBuildFile section */
@@ -52,8 +52,6 @@
 		D4177D5C1416D950006CDD52 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = LookIO/Source/LIONiceTextField.m; sourceTree = "<group>"; };
 		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
-		D4743CEC141A9BA10089E9A0 /* LIOTextEntryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOTextEntryViewController.h; path = LookIO/Source/LIOTextEntryViewController.h; sourceTree = "<group>"; };
-		D4743CED141A9BA10089E9A0 /* LIOTextEntryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOTextEntryViewController.m; path = LookIO/Source/LIOTextEntryViewController.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D48ABEF31404644B00835205 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -85,6 +83,8 @@
 		D4C1987514365136009A71B2 /* LIOTimerProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOTimerProxy.m; path = LookIO/Source/LIOTimerProxy.m; sourceTree = "<group>"; };
 		D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEmailHistoryViewController.h; path = LookIO/Source/LIOEmailHistoryViewController.h; sourceTree = "<group>"; };
 		D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEmailHistoryViewController.m; path = LookIO/Source/LIOEmailHistoryViewController.m; sourceTree = "<group>"; };
+		D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = LookIO/Source/LIOAboutViewController.h; sourceTree = "<group>"; };
+		D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = LookIO/Source/LIOAboutViewController.m; sourceTree = "<group>"; };
 		D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -185,12 +185,12 @@
 				D4B41D3A140969C400B73C84 /* LIOChatViewController.m */,
 				D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */,
 				D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */,
-				D4743CEC141A9BA10089E9A0 /* LIOTextEntryViewController.h */,
-				D4743CED141A9BA10089E9A0 /* LIOTextEntryViewController.m */,
 				D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */,
 				D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */,
 				D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */,
 				D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */,
+				D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */,
+				D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -226,10 +226,10 @@
 				D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */,
 				D4177D5D1416D950006CDD52 /* LIONiceTextField.h in Headers */,
 				D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */,
-				D4743CEE141A9BA10089E9A0 /* LIOTextEntryViewController.h in Headers */,
 				D4C1987114363E4B009A71B2 /* LIOLeaveMessageViewController.h in Headers */,
 				D4C1987614365136009A71B2 /* LIOTimerProxy.h in Headers */,
 				D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */,
+				D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,10 +313,10 @@
 				D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */,
 				D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */,
 				D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */,
-				D4743CEF141A9BA10089E9A0 /* LIOTextEntryViewController.m in Sources */,
 				D4C1987214363E4B009A71B2 /* LIOLeaveMessageViewController.m in Sources */,
 				D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */,
 				D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */,
+				D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

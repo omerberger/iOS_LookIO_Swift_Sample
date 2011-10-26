@@ -22,6 +22,7 @@
 - (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView;
 @optional
 - (void)chatboxViewDidTypeStuff:(LIOChatboxView *)aView;
+- (void)chatboxViewWasTapped:(LIOChatboxView *)aView;
 @end
 */
 

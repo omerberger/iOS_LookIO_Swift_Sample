@@ -44,7 +44,7 @@
         messageView = [[UILabel alloc] initWithFrame:aFrame];
         messageView.backgroundColor = [UIColor clearColor];
         messageView.textColor = [UIColor whiteColor];
-        messageView.font = [UIFont systemFontOfSize:14.0];
+        messageView.font = [UIFont systemFontOfSize:16.0];
         messageView.clipsToBounds = YES;
         messageView.layer.shadowColor = [UIColor blackColor].CGColor;
         messageView.layer.shadowOpacity = 1.0;
@@ -108,7 +108,7 @@
         aFrame.size.width = 33.0;
         aFrame.size.height = 33.0;
         aFrame.origin.x = self.frame.size.width - aFrame.size.width - 10.0;
-        aFrame.origin.y = 5.0;
+        aFrame.origin.y = 10.0;
         [settingsButton setFrame:aFrame];
         [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
         [self addSubview:(UIView *)settingsButton];
@@ -155,7 +155,7 @@
             UILabel *topLabel = [[[UILabel alloc] init] autorelease];
             topLabel.textColor = [UIColor whiteColor];
             topLabel.backgroundColor = [UIColor clearColor];
-            topLabel.font = [UIFont systemFontOfSize:14.0];
+            topLabel.font = [UIFont systemFontOfSize:16.0];
             topLabel.text = @"Live chat powered by";
             [topLabel sizeToFit];
             aFrame = topLabel.frame;
@@ -224,7 +224,7 @@
                                       inputFieldBackground.frame.origin.y,
                                       59.0, 30.0);
         
-        CGSize maxSize = CGSizeMake(inputField.frame.size.width, FLT_MAX);
+        CGSize maxSize = CGSizeMake([settingsButton frame].origin.x - 10.0, FLT_MAX);
         CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
         messageView.numberOfLines = 0;
         messageView.frame = CGRectMake(10.0, 10.0, boxSize.width, boxSize.height);
@@ -268,7 +268,7 @@
         inputField.frame = aFrame;
         
         aFrame = inputFieldBackground.frame;
-        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 + settingsSpacing;
+        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 20.0 + settingsSpacing;
         aFrame.size.height = singleLineHeight * calculatedNumLines + 12.0;
         inputFieldBackground.frame = aFrame;
         
@@ -280,14 +280,14 @@
         }
         
         aFrame = self.frame;
-        aFrame.size.height = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + 8.0;
+        aFrame.size.height = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + 11.0;
         self.frame = aFrame;
         
         UIView *blackLine = [[[UIView alloc] init] autorelease];
         blackLine.backgroundColor = [UIColor blackColor];
         aFrame = CGRectZero;
         aFrame.origin.x = 2.0;
-        aFrame.origin.y = inputFieldBackground.frame.origin.y - 6.0;
+        aFrame.origin.y = inputFieldBackground.frame.origin.y - 12.0;
         aFrame.size.height = 1.0;
         aFrame.size.width = self.frame.size.width - 4.0;
         blackLine.frame = aFrame;
@@ -370,7 +370,7 @@
 - (void)handleTap:(UITapGestureRecognizer *)aTapper
 {
     if (aTapper.state == UIGestureRecognizerStateEnded)
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://look.io"]];
+        [delegate chatboxViewWasTapped:self];
 }
 
 @end
