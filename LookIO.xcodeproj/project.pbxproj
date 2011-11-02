@@ -45,6 +45,8 @@
 		D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */; };
 		D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */; };
 		D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */; };
+		D4DC04A51460CE3D00EB93DE /* LIOControlButtonView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4DC04A31460CE3D00EB93DE /* LIOControlButtonView.h */; };
+		D4DC04A61460CE3D00EB93DE /* LIOControlButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4DC04A41460CE3D00EB93DE /* LIOControlButtonView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +89,8 @@
 		D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = LookIO/Source/LIOAboutViewController.m; sourceTree = "<group>"; };
 		D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4CF01721417DEF200B0FBD0 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
+		D4DC04A31460CE3D00EB93DE /* LIOControlButtonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOControlButtonView.h; path = LookIO/Source/LIOControlButtonView.h; sourceTree = "<group>"; };
+		D4DC04A41460CE3D00EB93DE /* LIOControlButtonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOControlButtonView.m; path = LookIO/Source/LIOControlButtonView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +195,8 @@
 				D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */,
 				D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */,
 				D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */,
+				D4DC04A31460CE3D00EB93DE /* LIOControlButtonView.h */,
+				D4DC04A41460CE3D00EB93DE /* LIOControlButtonView.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -230,6 +236,7 @@
 				D4C1987614365136009A71B2 /* LIOTimerProxy.h in Headers */,
 				D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */,
 				D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */,
+				D4DC04A51460CE3D00EB93DE /* LIOControlButtonView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,6 +324,7 @@
 				D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */,
 				D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */,
 				D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */,
+				D4DC04A61460CE3D00EB93DE /* LIOControlButtonView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

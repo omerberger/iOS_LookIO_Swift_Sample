@@ -22,6 +22,7 @@
 #import "LIOLeaveMessageViewController.h"
 #import "LIOEmailHistoryViewController.h"
 #import "LIOAboutViewController.h"
+#import "LIOControlButtonView.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.0.0"
@@ -54,10 +55,7 @@
     SBJsonParser_LIO *jsonParser;
     SBJsonWriter_LIO *jsonWriter;
     UIImageView *cursorView, *clickView;
-    UIButton *controlButton;
-    UIActivityIndicatorView *controlButtonSpinner;
-    CGRect controlButtonFrame;
-    CGRect controlButtonFrameLandscape;
+    LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
     BOOL unloadAfterDisconnect, killConnectionAfterChatViewDismissal;
@@ -210,8 +208,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, controlButtonCenter, controlButtonCenterLandscape, controlButtonBounds;
-@synthesize targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations, sessionExtras;
+@synthesize touchImage, targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations, sessionExtras;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -275,28 +272,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
         self.touchImage = lookioImage(@"LIODefaultTouch");
-        self.controlButtonCenter = CGPointMake(16.0, 36.0);
-        self.controlButtonCenterLandscape = CGPointMake(16.0, 36.0);
-        self.controlButtonBounds = CGRectMake(0.0, 0.0, 32.0, 32.0);
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [controlButton setImage:lookioImage(@"LIOControlButton") forState:UIControlStateNormal];
-        [controlButton addTarget:self action:@selector(controlButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        controlButton.bounds = self.controlButtonBounds;
-        controlButton.center = self.controlButtonCenter;
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(116.0, 68.0, 100.0, 24.0)];
+        controlButton.alpha = 0.0;
         controlButton.hidden = YES;
+        controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
-        
-        controlButtonSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        controlButtonSpinner.frame = CGRectMake(0.0, 0.0, controlButton.bounds.size.width * 0.9, controlButton.bounds.size.height * 0.9);
-        controlButtonSpinner.center = CGPointMake(controlButton.bounds.size.width / 2.0, controlButton.bounds.size.height / 2.0);
-        [controlButtonSpinner startAnimating];
-        controlButtonSpinner.hidden = YES;
-        controlButtonSpinner.userInteractionEnabled = NO;
-        [controlButton addSubview:controlButtonSpinner];
-        
+                
         endpointRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerControlEndpointRequestURL]
                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                    timeoutInterval:10.0];
@@ -643,6 +627,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
     }
+    
+    [UIView animateWithDuration:1.0
+                     animations:^{
+                         controlButton.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
+                         controlButton.hidden = YES;
+                     }];
 }
 
 - (void)showLeaveMessageUI
@@ -921,8 +913,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #endif
             enqueued = NO;
             
-            controlButtonSpinner.hidden = YES;
-            
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
             {
                 UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
@@ -1123,23 +1113,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma mark UIControl actions
-
-- (void)controlButtonWasTapped
-{
-    /*
-    if (enqueued && minimized)
-    {
-        controlButton.hidden = YES;
-        [self showConnectionUI];
-        minimized = NO;
-    }
-    else
-     */
-        [self showChat];
-}
-
-#pragma mark -
 #pragma mark AsyncSocketDelegate methods
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port
@@ -1324,6 +1297,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
+    
+    controlButton.alpha = 0.0;
+    controlButton.hidden = NO;
+    
+    [UIView animateWithDuration:1.0
+                     animations:^{
+                         controlButton.alpha = 1.0;
+                     }];
+    
+    [controlButton startFadeTimer];
     
     NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                        @"advisory", @"type",
@@ -1835,6 +1818,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    [self showChat];
+}
+
+#pragma mark -
+#pragma mark LIOControlButtonViewDelegate methods
+
+- (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
+{
     [self showChat];
 }
 
