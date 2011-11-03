@@ -209,6 +209,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations, sessionExtras;
+@dynamic controlButtonOrigin, horizontalControlButton;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -275,7 +276,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(116.0, 68.0, 100.0, 24.0)];
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(0.0, 68.0, 100.0, 24.0)];
         controlButton.alpha = 0.0;
         controlButton.hidden = YES;
         controlButton.delegate = self;
@@ -434,6 +435,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [previousKeyWindow makeKeyAndVisible];
         previousKeyWindow = nil;
+        
+        if (usesControlButton)
+            [controlButton startFadeTimer];
     }
     
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
@@ -628,13 +632,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
-    [UIView animateWithDuration:1.0
-                     animations:^{
-                         controlButton.alpha = 0.0;
-                     }
-                     completion:^(BOOL finished) {
-                         controlButton.hidden = YES;
-                     }];
+    controlButton.hidden = YES;
 }
 
 - (void)showLeaveMessageUI
@@ -1306,8 +1304,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                          controlButton.alpha = 1.0;
                      }];
     
-    [controlButton startFadeTimer];
-    
     NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                        @"advisory", @"type",
                                                        @"chat_down", @"action",
@@ -1827,6 +1823,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
 {
     [self showChat];
+}
+
+#pragma mark -
+#pragma mark Dynamic property accessors
+
+- (CGPoint)controlButtonOrigin
+{
+    return controlButton.frame.origin;
+}
+
+- (void)setControlButtonOrigin:(CGPoint)aPoint
+{
+    CGRect aFrame = controlButton.frame;
+    aFrame.origin = aPoint;
+    controlButton.frame = aFrame;
+}
+
+- (BOOL)horizontalControlButton
+{
+    return controlButton.currentMode == LIOControlButtonViewModeHorizontal;
+}
+
+- (void)setHorizontalControlButton:(BOOL)aBool
+{
+    if (aBool)
+        controlButton.currentMode = LIOControlButtonViewModeHorizontal;
+    else
+        controlButton.currentMode = LIOControlButtonViewModeVertical;
 }
 
 @end

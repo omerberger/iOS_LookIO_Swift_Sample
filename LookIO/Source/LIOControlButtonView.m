@@ -13,7 +13,7 @@
 @implementation LIOControlButtonView
 
 @synthesize textColor, labelText, delegate;
-@dynamic tintColor;
+@dynamic tintColor, currentMode, roundedCornersMode;
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -32,17 +32,6 @@
         label.text = labelText;
         label.textAlignment = UITextAlignmentCenter;
         [self addSubview:label];
-        
-        // Round the corners using a bezier mask.
-        UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.bounds 
-                                                       byRoundingCorners:(UIRectCornerBottomRight | UIRectCornerBottomLeft)
-                                                             cornerRadii:CGSizeMake(5.0, 5.0)];
-        
-        CAShapeLayer *maskLayer = [CAShapeLayer layer];
-        maskLayer.frame = self.bounds;
-        maskLayer.path = maskPath.CGPath;
-        
-        self.layer.mask = maskLayer;
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
@@ -65,6 +54,56 @@
     [super dealloc];
 }
 
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    
+    //CGRectMake(116.0, 68.0, 100.0, 24.0)
+    if (LIOControlButtonViewModeHorizontal == currentMode)
+    {
+        CGRect aFrame = self.frame;
+        aFrame.size.width = 100.0;
+        aFrame.size.height = 24.0;
+        self.frame = aFrame;
+    }
+    else
+    {
+        CGRect aFrame = self.frame;
+        aFrame.size.width = 24.0;
+        aFrame.size.height = 100.0;
+        self.frame = aFrame;
+    }
+    
+    label.frame = self.bounds;
+    
+    UIRectCorner corners;
+    if (LIOControlButtonViewModeHorizontal == currentMode)
+    {
+        if (LIOControlButtonViewRoundedCornersModeDefault == roundedCornersMode)
+            corners = UIRectCornerBottomRight | UIRectCornerBottomLeft;
+        else
+            corners = UIRectCornerTopRight | UIRectCornerTopLeft;
+    }
+    else
+    {
+        if (LIOControlButtonViewRoundedCornersModeDefault == roundedCornersMode)
+            corners = UIRectCornerTopRight | UIRectCornerBottomRight;
+        else
+            corners = UIRectCornerTopLeft | UIRectCornerBottomLeft;
+    }
+    
+    // Round the corners using a bezier mask.
+    UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.bounds 
+                                                   byRoundingCorners:corners
+                                                         cornerRadii:CGSizeMake(5.0, 5.0)];
+    
+    CAShapeLayer *maskLayer = [CAShapeLayer layer];
+    maskLayer.frame = self.bounds;
+    maskLayer.path = maskPath.CGPath;
+    
+    self.layer.mask = maskLayer;
+}
+
 - (void)drawRect:(CGRect)rect
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -73,11 +112,24 @@
     CGContextSetFillColorWithColor(context, [tintColor CGColor]);
     CGContextFillRect(context, rect);
     
-    // ... and then the lower half a bit darker.
-    CGFloat mid = rect.size.height / 2.0;
-    CGRect halfRect = CGRectMake(0.0, mid, rect.size.width, mid);
-    CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
-    CGContextFillRect(context, halfRect);
+    if (LIOControlButtonViewModeHorizontal == currentMode)
+    {
+        // ... and then the lower half a bit darker.
+        CGFloat mid = rect.size.height / 2.0;
+        CGRect halfRect = CGRectMake(0.0, mid, rect.size.width, mid);
+        CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
+        CGContextFillRect(context, halfRect);
+    }
+    else
+    {
+        // ... and then the right half a bit darker.
+        CGFloat mid = rect.size.width / 2.0;
+        CGRect halfRect = CGRectMake(mid, 0.0, mid, rect.size.height);
+        CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
+        CGContextFillRect(context, halfRect);
+    }
+    
+    [super drawRect:rect];
 }
 
 - (void)startFadeTimer
@@ -108,6 +160,30 @@
 - (UIColor *)tintColor
 {
     return tintColor;
+}
+
+- (void)setCurrentMode:(LIOControlButtonViewMode)aMode
+{
+    currentMode = aMode;
+    [self setNeedsLayout];
+    [self setNeedsDisplay];
+}
+
+- (LIOControlButtonViewMode)currentMode
+{
+    return currentMode;
+}
+
+- (void)setRoundedCornersMode:(LIOControlButtonViewRoundedCornersMode)aMode
+{
+    roundedCornersMode = aMode;
+    [self setNeedsLayout];
+    [self setNeedsDisplay];
+}
+
+- (LIOControlButtonViewRoundedCornersMode)roundedCornersMode
+{
+    return roundedCornersMode;
 }
 
 #pragma mark -

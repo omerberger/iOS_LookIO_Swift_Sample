@@ -15,8 +15,9 @@ UIImage *lookioImage(NSString *path);
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, retain) NSArray *supportedOrientations;
-@property(nonatomic, assign) BOOL usesTLS, usesControlButton, usesSounds;
+@property(nonatomic, assign) BOOL usesTLS, usesControlButton, usesSounds, horizontalControlButton;
 @property(nonatomic, retain) NSDictionary *sessionExtras;
+@property(nonatomic, assign) CGPoint controlButtonOrigin;
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)beginSession;
