@@ -112,22 +112,11 @@
     CGContextSetFillColorWithColor(context, [tintColor CGColor]);
     CGContextFillRect(context, rect);
     
-    if (LIOControlButtonViewModeHorizontal == currentMode)
-    {
-        // ... and then the lower half a bit darker.
-        CGFloat mid = rect.size.height / 2.0;
-        CGRect halfRect = CGRectMake(0.0, mid, rect.size.width, mid);
-        CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
-        CGContextFillRect(context, halfRect);
-    }
-    else
-    {
-        // ... and then the right half a bit darker.
-        CGFloat mid = rect.size.width / 2.0;
-        CGRect halfRect = CGRectMake(mid, 0.0, mid, rect.size.height);
-        CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
-        CGContextFillRect(context, halfRect);
-    }
+    // ... and then the lower half a bit darker.
+    CGFloat mid = rect.size.height / 2.0;
+    CGRect halfRect = CGRectMake(0.0, mid, rect.size.width, mid);
+    CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
+    CGContextFillRect(context, halfRect);
     
     [super drawRect:rect];
 }

@@ -23,6 +23,16 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOAboutViewController.h"
 #import "LIOControlButtonView.h"
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <CoreTelephony/CTCarrier.h>
+#import <CoreLocation/CoreLocation.h>
+#import <sys/socket.h>
+#import <netinet/in.h>
+#import <netinet6/in6.h>
+#import <arpa/inet.h>
+#import <ifaddrs.h>
+#import <netdb.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.0.0"
@@ -437,7 +447,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         previousKeyWindow = nil;
         
         if (usesControlButton)
+        {
+            controlButton.hidden = NO;
+            controlButton.alpha = 0.0;
             [controlButton startFadeTimer];
+        }
+        else
+            controlButton.hidden = YES;
     }
     
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
@@ -1093,10 +1109,73 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([targetAgentId length])
         [introDict setObject:targetAgentId forKey:@"agent_id"];
     
+    // Detect some stuff about the client.
+    NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
+    
+    // - Cell carrier, if applicable.
+    CTCarrier *carrier = [[[[CTTelephonyNetworkInfo alloc] init] autorelease] subscriberCellularProvider];
+    NSString *carrierName = [carrier carrierName];
+    if ([carrierName length])
+        [detectedDict setObject:carrierName forKey:@"carrier_name"];
+    
+    // - Bundle version of host app.
+    NSString *bundleVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    if ([bundleVersion length])
+        [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
+    
+    // - Status of location services.
+    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized)
+        [detectedDict setObject:@"enabled" forKey:@"location_services"];
+    else
+        [detectedDict setObject:@"disabled" forKey:@"location_services"];
+    
+    // - WiFi or cell?
+	struct sockaddr_in zeroAddress;
+	bzero(&zeroAddress, sizeof(zeroAddress));
+	zeroAddress.sin_len = sizeof(zeroAddress);
+	zeroAddress.sin_family = AF_INET;
+    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)&zeroAddress);
+	SCNetworkReachabilityFlags flags;
+	if (SCNetworkReachabilityGetFlags(reachability, &flags))
+    {
+        BOOL wifi = NO;
+        
+        if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
+            wifi = YES;
+        
+        if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) ||
+             (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0))
+        {
+			if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0)
+				wifi = YES;
+		}
+        
+        if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
+            wifi = NO;
+        
+        if (wifi)
+            [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+        else
+            [detectedDict setObject:@"cellular" forKey:@"connection_type"];
+    }
+    CFRelease(reachability);
+    
+    NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
     if ([sessionExtras count])
-        [introDict setObject:sessionExtras forKey:@"extras"];
+        [extrasDict setDictionary:sessionExtras];
+    
+    if ([detectedDict count])
+         [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+    
+    if ([extrasDict count])
+        [introDict setObject:extrasDict forKey:@"extras"];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
+    
+#ifdef DEBUG
+    NSLog(@"[INTRO] Intro JSON: %@", intro);
+#endif
+    
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
     waitingForIntroAck = YES;
@@ -1295,15 +1374,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
-    
-    controlButton.alpha = 0.0;
-    controlButton.hidden = NO;
-    
-    [UIView animateWithDuration:1.0
-                     animations:^{
-                         controlButton.alpha = 1.0;
-                     }];
-    
+        
     NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                        @"advisory", @"type",
                                                        @"chat_down", @"action",
@@ -1814,6 +1885,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    [self showChat];
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)controlButtonWasTapped
+{
     [self showChat];
 }
 

@@ -11,6 +11,9 @@
 		CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */; };
 		D416C513141411F600D3509B /* LIOInputBar.png in Resources */ = {isa = PBXBuildFile; fileRef = D416C512141411F600D3509B /* LIOInputBar.png */; };
 		D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D445B38B144E67B700C90F30 /* LIOGlassButton.png */; };
+		D446C4DC14670E44000711B4 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4DB14670E44000711B4 /* SystemConfiguration.framework */; };
+		D446C4DF14670E4A000711B4 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4DE14670E4A000711B4 /* CoreTelephony.framework */; };
+		D446C4E114670E53000711B4 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4E014670E53000711B4 /* CoreLocation.framework */; };
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
 		D44DD7C814044915004374FE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C714044915004374FE /* CoreGraphics.framework */; };
@@ -51,6 +54,9 @@
 		CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOFullLogo@2x.png"; sourceTree = "<group>"; };
 		D416C512141411F600D3509B /* LIOInputBar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOInputBar.png; sourceTree = "<group>"; };
 		D445B38B144E67B700C90F30 /* LIOGlassButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOGlassButton.png; sourceTree = "<group>"; };
+		D446C4DB14670E44000711B4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
+		D446C4DE14670E4A000711B4 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreTelephony.framework; sourceTree = DEVELOPER_DIR; };
+		D446C4E014670E53000711B4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreLocation.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7BF14044915004374FE /* Testbed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testbed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		D44DD7C514044915004374FE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -97,6 +103,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D446C4E114670E53000711B4 /* CoreLocation.framework in Frameworks */,
+				D446C4DF14670E4A000711B4 /* CoreTelephony.framework in Frameworks */,
+				D446C4DC14670E44000711B4 /* SystemConfiguration.framework in Frameworks */,
 				D4797073141D530900950E53 /* MessageUI.framework in Frameworks */,
 				D479706F141D4B5E00950E53 /* AudioToolbox.framework in Frameworks */,
 				D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */,
@@ -122,6 +131,9 @@
 		D44DD7C214044915004374FE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D446C4E014670E53000711B4 /* CoreLocation.framework */,
+				D446C4DE14670E4A000711B4 /* CoreTelephony.framework */,
+				D446C4DB14670E44000711B4 /* SystemConfiguration.framework */,
 				D4797072141D530900950E53 /* MessageUI.framework */,
 				D479706E141D4B5E00950E53 /* AudioToolbox.framework */,
 				D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */,

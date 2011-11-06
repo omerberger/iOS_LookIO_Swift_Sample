@@ -24,7 +24,7 @@
     [self.window addSubview:mainViewController.view];
     
     //[LIOLookIOManager sharedLookIOManager].touchImage = [UIImage imageNamed:@"DefaultTouchOrange"];
-    [LIOLookIOManager sharedLookIOManager].usesControlButton = YES;
+    //[LIOLookIOManager sharedLookIOManager].usesControlButton = YES;
     [LIOLookIOManager sharedLookIOManager].sessionExtras = [NSDictionary dictionaryWithObjectsAndKeys:@"joe@whatever.com", @"email", @"poop", @"wug", nil];
     
     return YES;
