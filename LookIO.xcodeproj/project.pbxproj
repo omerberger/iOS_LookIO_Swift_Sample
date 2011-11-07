@@ -13,8 +13,6 @@
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
 		D446C4C914670377000711B4 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4C814670377000711B4 /* CoreTelephony.framework */; };
 		D446C4CC14670529000711B4 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4CB14670529000711B4 /* CoreLocation.framework */; };
-		D446C4D014670632000711B4 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = D446C4CE14670632000711B4 /* Reachability.h */; };
-		D446C4D114670632000711B4 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = D446C4CF14670632000711B4 /* Reachability.m */; };
 		D446C4D314670645000711B4 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4D214670645000711B4 /* SystemConfiguration.framework */; };
 		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
 		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
@@ -61,8 +59,6 @@
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
 		D446C4C814670377000711B4 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreTelephony.framework; sourceTree = DEVELOPER_DIR; };
 		D446C4CB14670529000711B4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreLocation.framework; sourceTree = DEVELOPER_DIR; };
-		D446C4CE14670632000711B4 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
-		D446C4CF14670632000711B4 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		D446C4D214670645000711B4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -120,15 +116,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D446C4CD14670632000711B4 /* Reachability */ = {
-			isa = PBXGroup;
-			children = (
-				D446C4CE14670632000711B4 /* Reachability.h */,
-				D446C4CF14670632000711B4 /* Reachability.m */,
-			);
-			path = Reachability;
-			sourceTree = "<group>";
-		};
 		D48ABEE51404607500835205 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -153,7 +140,6 @@
 		D48ABEF51404647300835205 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				D446C4CD14670632000711B4 /* Reachability */,
 				D48ABEF61404647300835205 /* CocoaAsyncSocket */,
 				D48ABEF91404647300835205 /* NSData+Base64 */,
 				D48ABEFC1404647300835205 /* SBJSON */,
@@ -263,7 +249,6 @@
 				D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */,
 				D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */,
 				D4DC04A51460CE3D00EB93DE /* LIOControlButtonView.h in Headers */,
-				D446C4D014670632000711B4 /* Reachability.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,7 +337,6 @@
 				D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */,
 				D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */,
 				D4DC04A61460CE3D00EB93DE /* LIOControlButtonView.m in Sources */,
-				D446C4D114670632000711B4 /* Reachability.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
