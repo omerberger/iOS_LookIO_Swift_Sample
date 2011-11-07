@@ -367,12 +367,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [controlSocket disconnect];
     [controlSocket release];
+    controlSocket = nil;
+    
+    [cursorView release];
+    cursorView = nil;
+    
+    [clickView release];
+    clickView = nil;
+    
+    [controlButton release];
+    controlButton = nil;
+    
     [messageSeparatorData release];
     [jsonParser release];
     [jsonWriter release];
-    [cursorView release];
-    [clickView release];
-    [controlButton release];
     [chatHistory release];
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
