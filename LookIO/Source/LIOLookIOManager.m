@@ -9,10 +9,12 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
 #import <sys/sysctl.h>
+#import <netinet/in.h>
 #import "LIOLookIOManager.h"
 #import "AsyncSocket.h"
 #import "SBJSON.h"
@@ -23,16 +25,6 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOAboutViewController.h"
 #import "LIOControlButtonView.h"
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import <CoreTelephony/CTCarrier.h>
-#import <CoreLocation/CoreLocation.h>
-#import <sys/socket.h>
-#import <netinet/in.h>
-#import <netinet6/in6.h>
-#import <arpa/inet.h>
-#import <ifaddrs.h>
-#import <netdb.h>
-#import <SystemConfiguration/SystemConfiguration.h>
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.0.0"
@@ -88,7 +80,6 @@
     LIOAboutViewController *aboutViewController;
     NSString *pendingFeedbackText;
     NSString *friendlyName;
-    NSArray *supportedOrientations;
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
     UIWindow *previousKeyWindow;
@@ -218,7 +209,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, supportedOrientations, sessionExtras;
+@synthesize touchImage, targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, sessionExtras;
 @dynamic controlButtonOrigin, horizontalControlButton;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -239,31 +230,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
-        // Try to get supported orientation information from plist.
-        NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
-        if (plistOrientations)
-        {
-            NSMutableArray *orientationNumbers = [NSMutableArray array];
-            
-            if ([plistOrientations containsObject:@"UIInterfaceOrientationPortrait"])
-                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortrait]];
-            
-            if ([plistOrientations containsObject:@"UIInterfaceOrientationPortraitUpsideDown"])
-                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown]];
-            
-            if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeLeft"])
-                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft]];
-
-            if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeRight"])
-                [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]];
-            
-            supportedOrientations = [orientationNumbers retain];
-        }
-        else
-        {
-            supportedOrientations = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:UIInterfaceOrientationPortrait], [NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], nil];
-        }
-        
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
         lookioWindow.hidden = YES;
@@ -342,8 +308,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                    object:nil];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(deviceOrientationDidChange:)
-                                                     name:UIDeviceOrientationDidChangeNotification
+                                                 selector:@selector(applicationDidChangeStatusBarOrientation:)
+                                                     name:UIApplicationDidChangeStatusBarOrientationNotification
                                                    object:nil];
         
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
@@ -391,7 +357,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [endpointRequestData release];
     [pendingFeedbackText release];
     [friendlyName release];
-    [supportedOrientations release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -1121,10 +1086,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
     
     // - Cell carrier, if applicable.
-    CTCarrier *carrier = [[[[CTTelephonyNetworkInfo alloc] init] autorelease] subscriberCellularProvider];
-    NSString *carrierName = [carrier carrierName];
-    if ([carrierName length])
-        [detectedDict setObject:carrierName forKey:@"carrier_name"];
+    Class $CTTelephonyNetworkInfo = NSClassFromString(@"CTTelephonyNetworkInfo");
+    if ($CTTelephonyNetworkInfo)
+    {
+        id networkInfo = [[[$CTTelephonyNetworkInfo alloc] init] autorelease];
+        id carrier = [networkInfo subscriberCellularProvider];
+        NSString *carrierName = [carrier carrierName];
+        if ([carrierName length])
+            [detectedDict setObject:carrierName forKey:@"carrier_name"];
+    }
     
     // - Bundle version of host app.
     NSString *bundleVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
@@ -1132,10 +1102,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
     
     // - Status of location services.
-    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorized)
-        [detectedDict setObject:@"enabled" forKey:@"location_services"];
-    else
-        [detectedDict setObject:@"disabled" forKey:@"location_services"];
+    Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
+    if ($CLLocationManager && [$CLLocationManager respondsToSelector:@selector(authorizationStatus)])
+    {
+        // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
+        if ([$CLLocationManager authorizationStatus] == 3)
+            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"location_services"];
+        else
+            [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"location_services"];
+    }
     
     // - WiFi or cell?
 	struct sockaddr_in zeroAddress;
@@ -1167,6 +1142,39 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [detectedDict setObject:@"cellular" forKey:@"connection_type"];
     }
     CFRelease(reachability);
+    
+    // - Jailbroken?
+    [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"jailbroken"];
+    NSArray *jailbrokenPaths = [NSArray arrayWithObjects:
+                               @"/Applications/Cydia.app",
+                               @"/Applications/RockApp.app",
+                               @"/Applications/Icy.app",
+                               @"/usr/sbin/sshd",
+                               @"/usr/bin/sshd",
+                               @"/usr/libexec/sftp-server",
+                               @"/Applications/WinterBoard.app",
+                               @"/Applications/SBSettings.app",
+                               @"/Applications/MxTube.app",
+                               @"/Applications/IntelliScreen.app",
+                               @"/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
+                               @"/Applications/FakeCarrier.app",
+                               @"/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
+                               @"/private/var/lib/apt",
+                               @"/Applications/blackra1n.app",
+                               @"/private/var/stash",
+                               @"/private/var/mobile/Library/SBSettings/Themes",
+                               @"/System/Library/LaunchDaemons/com.ikey.bbot.plist",
+                               @"/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist",
+                               @"/private/var/tmp/cydia.log",
+                               @"/private/var/lib/cydia", nil];
+    for (NSString *aPath in jailbrokenPaths)
+    {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:aPath])
+        {
+            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"jailbroken"];
+            break;
+        }
+    }
     
     NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
     if ([sessionExtras count])
@@ -1672,7 +1680,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
-- (void)deviceOrientationDidChange:(NSNotification *)aNotification
+- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
     /*
     //CGSize screenSize = [[UIScreen mainScreen] bounds].size;

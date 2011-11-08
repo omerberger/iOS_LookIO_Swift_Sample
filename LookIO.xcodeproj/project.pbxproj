@@ -11,11 +11,6 @@
 		D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIONiceTextField.m */; };
 		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
 		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
-		D446C4C914670377000711B4 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4C814670377000711B4 /* CoreTelephony.framework */; };
-		D446C4CC14670529000711B4 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4CB14670529000711B4 /* CoreLocation.framework */; };
-		D446C4D314670645000711B4 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D446C4D214670645000711B4 /* SystemConfiguration.framework */; };
-		D48ABEE81404607500835205 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEE71404607500835205 /* Foundation.framework */; };
-		D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABEF31404644B00835205 /* UIKit.framework */; };
 		D48ABF0C1404647300835205 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFA1404647300835205 /* NSData+Base64.h */; };
 		D48ABF0D1404647300835205 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABEFB1404647300835205 /* NSData+Base64.m */; };
 		D48ABF0E1404647300835205 /* JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFD1404647300835205 /* JSON.h */; };
@@ -37,7 +32,6 @@
 		D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF3114046E6B00835205 /* LIOLookIOManager.m */; };
 		D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4B41D39140969C400B73C84 /* LIOChatViewController.h */; };
 		D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3A140969C400B73C84 /* LIOChatViewController.m */; };
-		D4B41D52140ABD2C00B73C84 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		D4C1987114363E4B009A71B2 /* LIOLeaveMessageViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */; };
 		D4C1987214363E4B009A71B2 /* LIOLeaveMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */; };
 		D4C1987614365136009A71B2 /* LIOTimerProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C1987414365136009A71B2 /* LIOTimerProxy.h */; };
@@ -57,12 +51,7 @@
 		D4177D5C1416D950006CDD52 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = LookIO/Source/LIONiceTextField.m; sourceTree = "<group>"; };
 		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
 		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
-		D446C4C814670377000711B4 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreTelephony.framework; sourceTree = DEVELOPER_DIR; };
-		D446C4CB14670529000711B4 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreLocation.framework; sourceTree = DEVELOPER_DIR; };
-		D446C4D214670645000711B4 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D48ABEE71404607500835205 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D48ABEF31404644B00835205 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		D48ABEFA1404647300835205 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
 		D48ABEFB1404647300835205 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
 		D48ABEFD1404647300835205 /* JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSON.h; sourceTree = "<group>"; };
@@ -84,7 +73,6 @@
 		D48ABF3114046E6B00835205 /* LIOLookIOManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLookIOManager.m; path = LookIO/Source/LIOLookIOManager.m; sourceTree = "<group>"; };
 		D4B41D39140969C400B73C84 /* LIOChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChatViewController.h; path = LookIO/Source/LIOChatViewController.h; sourceTree = "<group>"; };
 		D4B41D3A140969C400B73C84 /* LIOChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatViewController.m; path = LookIO/Source/LIOChatViewController.m; sourceTree = "<group>"; };
-		D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLeaveMessageViewController.h; path = LookIO/Source/LIOLeaveMessageViewController.h; sourceTree = "<group>"; };
 		D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLeaveMessageViewController.m; path = LookIO/Source/LIOLeaveMessageViewController.m; sourceTree = "<group>"; };
 		D4C1987414365136009A71B2 /* LIOTimerProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOTimerProxy.h; path = LookIO/Source/LIOTimerProxy.h; sourceTree = "<group>"; };
@@ -104,12 +92,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D446C4D314670645000711B4 /* SystemConfiguration.framework in Frameworks */,
-				D446C4CC14670529000711B4 /* CoreLocation.framework in Frameworks */,
-				D446C4C914670377000711B4 /* CoreTelephony.framework in Frameworks */,
-				D4B41D52140ABD2C00B73C84 /* AudioToolbox.framework in Frameworks */,
-				D48ABEF41404644B00835205 /* UIKit.framework in Frameworks */,
-				D48ABEE81404607500835205 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,12 +109,6 @@
 		D48ABEE61404607500835205 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D446C4D214670645000711B4 /* SystemConfiguration.framework */,
-				D446C4CB14670529000711B4 /* CoreLocation.framework */,
-				D446C4C814670377000711B4 /* CoreTelephony.framework */,
-				D4B41D51140ABD2C00B73C84 /* AudioToolbox.framework */,
-				D48ABEF31404644B00835205 /* UIKit.framework */,
-				D48ABEE71404607500835205 /* Foundation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -365,7 +341,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -388,7 +364,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
