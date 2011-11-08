@@ -1107,9 +1107,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
         if ([$CLLocationManager authorizationStatus] == 3)
-            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"location_services"];
+            [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
         else
-            [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"location_services"];
+            [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
     }
     
     // - WiFi or cell?
