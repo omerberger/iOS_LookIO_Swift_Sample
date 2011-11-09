@@ -252,11 +252,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(0.0, 68.0, 100.0, 24.0)];
-        controlButton.alpha = 0.0;
-        controlButton.hidden = YES;
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(0.0, (keyWindow.frame.size.height / 2.0) - 50.0, 100.0, 24.0)];
+        controlButton.hidden = NO;
         controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
+        [controlButton startFadeTimer];
                 
         endpointRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerControlEndpointRequestURL]
                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
@@ -315,9 +315,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         
         usesTLS = YES;
-        usesControlButton = NO;
         usesSounds = YES;
         numIncomingChatMessages = 0;
+        usesControlButton = YES;
         
         NSLog(@"[LOOKIO] Loaded.");
     }
@@ -1917,7 +1917,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
 {
-    [self showChat];
+    if ([controlSocket isConnected] && introduced)
+        [self showChat];
+    else
+        [self beginSession];
 }
 
 #pragma mark -

@@ -22,7 +22,7 @@
     if (self)
     {
         // Defaults.
-        self.tintColor = [UIColor colorWithWhite:0.33 alpha:1.0];
+        self.tintColor = [UIColor colorWithWhite:0.5 alpha:1.0];
         self.textColor = [UIColor whiteColor];
         self.labelText = @"Chat";
         
@@ -194,7 +194,7 @@
     
     [UIView animateWithDuration:2.0
                      animations:^{
-                         self.alpha = 0.33;
+                         self.alpha = 0.5;
                      }];
 }
 
