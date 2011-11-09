@@ -22,7 +22,7 @@
     if (self)
     {
         // Defaults.
-        self.tintColor = [UIColor colorWithWhite:0.5 alpha:1.0];
+        self.tintColor = [UIColor blackColor];
         self.textColor = [UIColor whiteColor];
         self.labelText = @"Chat";
         
@@ -147,11 +147,10 @@
     [tintColor release];
     tintColor = [aColor retain];
     
-    CGFloat red, green, blue, alpha;
-    [tintColor getRed:&red green:&green blue:&blue alpha:&alpha];
+    const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
     
     [darkTintColor release];
-    darkTintColor = [[UIColor alloc] initWithRed:(red * 0.85) green:(green * 0.85) blue:(blue * 0.85) alpha:alpha];
+    darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
 }
 
 - (UIColor *)tintColor
