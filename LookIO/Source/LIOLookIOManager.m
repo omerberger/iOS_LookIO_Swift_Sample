@@ -209,8 +209,8 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesControlButton, usesSounds, screenshotsAllowed, sessionExtras;
-@dynamic controlButtonOrigin, horizontalControlButton;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
+@dynamic controlButtonOrigin, horizontalControlButton, usesControlButton;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -252,7 +252,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(0.0, (keyWindow.frame.size.height / 2.0) - 50.0, 100.0, 24.0)];
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 24.0, (keyWindow.frame.size.height / 2.0) - 50.0, 100.0, 24.0)];
         controlButton.hidden = NO;
         controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
@@ -1949,6 +1949,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.currentMode = LIOControlButtonViewModeHorizontal;
     else
         controlButton.currentMode = LIOControlButtonViewModeVertical;
+}
+
+- (BOOL)usesControlButton
+{
+    return usesControlButton;
+}
+
+- (void)setUsesControlButton:(BOOL)aBool
+{
+    usesControlButton = aBool;
+    if (NO == usesControlButton)
+        controlButton.hidden = YES;
 }
 
 @end
