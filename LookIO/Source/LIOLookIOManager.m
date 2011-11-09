@@ -676,8 +676,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     // Bypass REST call.
     [controlEndpoint release];
-    //controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
-    controlEndpoint = [[NSString stringWithString:@"192.168.0.80"] retain];
+    controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
     
     if (0 == [controlEndpoint length])
     {
