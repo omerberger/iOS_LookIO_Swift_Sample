@@ -123,7 +123,7 @@
     [scrollView addSubview:messageLabel];
     
     messageViewBackground = [[UIImageView alloc] init];
-    messageViewBackground.image = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    messageViewBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
     aFrame.size.width = bubbleView.frame.size.width - 24.0;
     aFrame.origin.y = messageLabel.frame.origin.y + messageLabel.frame.size.height + 5.0;
@@ -145,15 +145,7 @@
     messageView.text = initialMessage;
     [scrollView addSubview:messageView];
 
-    /*
-    UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
-    greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
-    
-    UIImage *grayButtonImage = [UIImage imageNamed:@"LIOGrayButton"];
-    grayButtonImage = [grayButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
-     */
-    
-    UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+    UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];

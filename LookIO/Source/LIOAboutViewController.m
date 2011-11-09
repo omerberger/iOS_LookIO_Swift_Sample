@@ -8,6 +8,7 @@
 
 #import "LIOAboutViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOLookIOManager.h"
 
 @implementation LIOAboutViewController
 
@@ -144,7 +145,7 @@
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
     
-    UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+    UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];

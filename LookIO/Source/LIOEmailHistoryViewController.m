@@ -100,15 +100,7 @@
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
     
-    /*
-    UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
-    greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
-    
-    UIImage *grayButtonImage = [UIImage imageNamed:@"LIOGrayButton"];
-    grayButtonImage = [grayButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
-     */
-    
-    UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
+    UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     UIButton *sendButton = [UIButton buttonWithType:UIButtonTypeCustom];

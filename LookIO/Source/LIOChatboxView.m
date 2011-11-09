@@ -55,7 +55,6 @@
         
         inputFieldBackground = [[UIImageView alloc] init];
         inputFieldBackground.userInteractionEnabled = YES;
-        //inputFieldBackground.image = [[UIImage imageNamed:@"LIOInputBar"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
         inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
         aFrame.origin.x = messageView.frame.origin.x + 3.0;
         aFrame.size.width = bubbleView.frame.size.width - 24.0;
@@ -83,12 +82,6 @@
         inputField.frame = aFrame;
         [inputFieldBackground addSubview:inputField];
         
-        /*
-        UIImage *greenButtonImage = [UIImage imageNamed:@"LIOGreenButton"];
-        greenButtonImage = [greenButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:13];
-         */
-        
-        //UIImage *glassButtonImage = [UIImage imageNamed:@"LIOGlassButton"];
         UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
         glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
         
