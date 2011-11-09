@@ -525,7 +525,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                  base64Data, @"screenshot",
                                                                  [NSNumber numberWithFloat:screenshotSize.width], @"width",
                                                                  [NSNumber numberWithFloat:screenshotSize.height], @"height",
-                                                                 orientation, @"orientation",
+                                                                 orientationString, @"orientation",
                                                                  nil]];
             
             screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
