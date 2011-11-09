@@ -27,7 +27,7 @@
         self.labelText = @"Chat";
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
-        label.backgroundColor = [UIColor colorWithRed:1.0 green:0. blue:0. alpha:0.7];
+        label.backgroundColor = [UIColor clearColor];
         label.textColor = textColor;
         label.text = labelText;
         label.textAlignment = UITextAlignmentCenter;
