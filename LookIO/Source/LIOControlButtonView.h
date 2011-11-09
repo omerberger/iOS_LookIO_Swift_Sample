@@ -16,6 +16,7 @@ typedef enum
 
 typedef enum
 {
+    LIOControlButtonViewRoundedCornersModeNone,
     LIOControlButtonViewRoundedCornersModeDefault,
     LIOControlButtonViewRoundedCornersModeFlipped
 } LIOControlButtonViewRoundedCornersMode;

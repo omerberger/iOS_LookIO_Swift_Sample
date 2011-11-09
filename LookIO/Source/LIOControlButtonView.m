@@ -22,12 +22,12 @@
     if (self)
     {
         // Defaults.
-        self.tintColor = [UIColor redColor];
+        self.tintColor = [UIColor blackColor];
         self.textColor = [UIColor whiteColor];
         self.labelText = @"Chat";
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
-        label.backgroundColor = [UIColor clearColor];
+        label.backgroundColor = [UIColor colorWithRed:1.0 green:0. blue:0. alpha:0.7];
         label.textColor = textColor;
         label.text = labelText;
         label.textAlignment = UITextAlignmentCenter;
@@ -74,6 +74,9 @@
         self.frame = aFrame;
     }
     
+    label.transform = CGAffineTransformIdentity;
+    if (LIOControlButtonViewModeVertical == currentMode)
+        label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
     label.frame = self.bounds;
     
     UIRectCorner corners;
@@ -93,15 +96,20 @@
     }
     
     // Round the corners using a bezier mask.
-    UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.bounds 
-                                                   byRoundingCorners:corners
-                                                         cornerRadii:CGSizeMake(5.0, 5.0)];
-    
-    CAShapeLayer *maskLayer = [CAShapeLayer layer];
-    maskLayer.frame = self.bounds;
-    maskLayer.path = maskPath.CGPath;
-    
-    self.layer.mask = maskLayer;
+    if (LIOControlButtonViewRoundedCornersModeNone != roundedCornersMode)
+    {
+        UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.bounds 
+                                                       byRoundingCorners:corners
+                                                             cornerRadii:CGSizeMake(5.0, 5.0)];
+        
+        CAShapeLayer *maskLayer = [CAShapeLayer layer];
+        maskLayer.frame = self.bounds;
+        maskLayer.path = maskPath.CGPath;
+        
+        self.layer.mask = maskLayer;
+    }
+    else
+        self.layer.mask = nil;
 }
 
 - (void)drawRect:(CGRect)rect

@@ -315,7 +315,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         
         usesTLS = YES;
-        usesControlButton = NO;
+        //usesControlButton = NO;
         usesSounds = YES;
         numIncomingChatMessages = 0;
         
@@ -508,14 +508,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             NSString *base64Data = base64EncodedStringFromData(screenshotData);
             
-            NSString *orientation = @"portrait";
-            if (UIInterfaceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
-                orientation = @"landscape";
-            /*
-            else if (UIInterfaceOrientationPortraitUpsideDown == [[UIDevice currentDevice] orientation])
-                orientation = @"portrait_ud";
-             */
-            
+            NSString *orientationString = @"boobies";
+            UIInterfaceOrientation orientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+            if (UIInterfaceOrientationPortrait == orientation)
+                orientationString = @"portrait";
+            else if (UIInterfaceOrientationPortraitUpsideDown == orientation)
+                orientationString = @"portrait_upsidedown";
+            else if (UIInterfaceOrientationLandscapeRight == orientation)
+                orientationString = @"landscape";
+            else
+                orientationString = @"landscape_upsidedown";
+                
             NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                                  @"screenshot", @"type",
                                                                  [self nextGUID], @"screenshot_id",
@@ -1176,6 +1179,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
     
+    // - Ad hoc or app store?
+    NSString *profilePath = [[NSBundle mainBundle] pathForResource:@"embedded.mobileprovision" ofType:nil];
+    NSString *profileAsString = [NSString stringWithContentsOfFile:profilePath encoding:NSISOLatin1StringEncoding error:NULL];
+    BOOL isAdHoc = [profileAsString rangeOfString:[[UIDevice currentDevice] uniqueIdentifier] options:NSCaseInsensitiveSearch].length;
+    if (isAdHoc)
+        [detectedDict setObject:@"other" forKey:@"distribution_type"];
+    else
+        [detectedDict setObject:@"app_store" forKey:@"distribution_type"];
+    
     NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
     if ([sessionExtras count])
         [extrasDict setDictionary:sessionExtras];
@@ -1682,54 +1694,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
-    /*
-    //CGSize screenSize = [[UIScreen mainScreen] bounds].size;
-    CGAffineTransform transform;
+    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+    CGAffineTransform transform = CGAffineTransformIdentity;
     
     if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
-    { 
-        transform = CGAffineTransformIdentity;
-        
-        controlButton.bounds = controlButtonBounds;
-        controlButton.center = controlButtonCenter;
-        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
-        connectViewController.targetLogoCenterForHiding = controlButton.center;
+    {
     }
     else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
-        transform = CGAffineTransformMakeRotation(-90.0 / 180.0 * M_PI);
+        transform = CGAffineTransformRotate(transform, -90.0 / 180.0 * M_PI);
         //transform = CGAffineTransformTranslate(transform, -screenSize.height, 0.0);
         
-        controlButton.bounds = controlButtonBounds;
-        controlButton.center = controlButtonCenterLandscape;
-        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
-        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
-        transform = CGAffineTransformMakeRotation(-180.0 / 180.0 * M_PI);
+        transform = CGAffineTransformRotate(transform, -180.0 / 180.0 * M_PI);
         //transform = CGAffineTransformTranslate(transform, -screenSize.width, -screenSize.height);
-        
-        controlButton.bounds = controlButtonBounds;
-        controlButton.center = controlButtonCenter;
-        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
-        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     else // Landscape, home button right
     {
-        transform = CGAffineTransformMakeRotation(-270.0 / 180.0 * M_PI);
+        transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
         //transform = CGAffineTransformTranslate(transform, 0.0, -screenSize.width);
-        
-        controlButton.bounds = controlButtonBounds;
-        controlButton.center = controlButtonCenterLandscape;
-        connectViewController.targetLogoBoundsForHiding = controlButton.bounds;
-        connectViewController.targetLogoCenterForHiding = controlButton.center;
     }
     
     controlButton.transform = transform;
     clickView.transform = transform;
     cursorView.transform = transform;
-    */
 }
 
 #pragma mark -
