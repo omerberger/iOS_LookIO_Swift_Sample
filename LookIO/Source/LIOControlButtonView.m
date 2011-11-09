@@ -22,7 +22,7 @@
     if (self)
     {
         // Defaults.
-        self.tintColor = [UIColor blackColor];
+        self.tintColor = [UIColor colorWithWhite:0.33 alpha:1.0];
         self.textColor = [UIColor whiteColor];
         self.labelText = @"Chat";
         

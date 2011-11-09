@@ -27,7 +27,7 @@
 #import "LIOControlButtonView.h"
 
 // Misc. constants
-#define LIOLookIOManagerVersion @"1.0.0"
+#define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerScreenCaptureInterval   0.33
 
@@ -505,9 +505,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             [lastScreenshotSent release];
             lastScreenshotSent = [screenshotData retain];
-            
-            NSString *base64Data = base64EncodedStringFromData(screenshotData);
-            
+                        
             NSString *orientationString = @"boobies";
             UIInterfaceOrientation orientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
             if (UIInterfaceOrientationPortrait == orientation)
@@ -518,7 +516,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 orientationString = @"landscape";
             else
                 orientationString = @"landscape_upsidedown";
-                
+            
+            // screenshot:orientation:w:h:datalen:[blarghle]
+            NSString *header = [NSString stringWithFormat:@"screenshot:%@:%d:%d:%u:", orientationString, (int)screenshotSize.width, (int)screenshotSize.height, [screenshotData length]];
+            NSData *headerData = [header dataUsingEncoding:NSUTF8StringEncoding];
+            
+            NSMutableData *dataToSend = [NSMutableData data];
+            [dataToSend appendData:headerData];
+            [dataToSend appendData:screenshotData];
+            [dataToSend appendData:messageSeparatorData];
+            
+
+            /*
             NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                                  @"screenshot", @"type",
                                                                  [self nextGUID], @"screenshot_id",
@@ -529,15 +538,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                  nil]];
             
             screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
-            
+            */
+             
             dispatch_async(dispatch_get_main_queue(), ^{
                 waitingForScreenshotAck = YES;
-                [controlSocket writeData:[screenshot dataUsingEncoding:NSUTF8StringEncoding]
+                [controlSocket writeData:dataToSend/*[screenshot dataUsingEncoding:NSUTF8StringEncoding]*/
                              withTimeout:-1
                                      tag:0];
                 
 #ifdef DEBUG
-                NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (base64: %u bytes).", (int)screenshotSize.width, (int)screenshotSize.height, orientation, [base64Data length]);
+                NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length]);
 #endif
             });
         }
@@ -666,7 +676,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     // Bypass REST call.
     [controlEndpoint release];
-    controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
+    //controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
+    controlEndpoint = [[NSString stringWithString:@"192.168.0.80"] retain];
     
     if (0 == [controlEndpoint length])
     {

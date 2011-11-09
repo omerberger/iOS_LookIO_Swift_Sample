@@ -25,6 +25,7 @@
     
     //[LIOLookIOManager sharedLookIOManager].touchImage = [UIImage imageNamed:@"DefaultTouchOrange"];
     [LIOLookIOManager sharedLookIOManager].usesControlButton = YES;
+    [LIOLookIOManager sharedLookIOManager].usesTLS = NO;
     [LIOLookIOManager sharedLookIOManager].sessionExtras = [NSDictionary dictionaryWithObjectsAndKeys:@"joe@whatever.com", @"email", @"poop", @"wug", nil];
     
     return YES;
