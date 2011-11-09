@@ -315,7 +315,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
         
         usesTLS = YES;
-        //usesControlButton = NO;
+        usesControlButton = NO;
         usesSounds = YES;
         numIncomingChatMessages = 0;
         
