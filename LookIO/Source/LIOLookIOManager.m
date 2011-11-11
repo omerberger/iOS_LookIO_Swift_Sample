@@ -76,7 +76,6 @@
     NSString *controlEndpoint;
     NSMutableData *endpointRequestData;
     NSInteger endpointRequestHTTPResponseCode;
-    NSInteger numIncomingChatMessages;
     LIOChatViewController *chatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
@@ -86,6 +85,7 @@
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
     UIWindow *previousKeyWindow;
+    UIInterfaceOrientation actualInterfaceOrientation;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -213,7 +213,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
-@dynamic controlButtonOrigin, horizontalControlButton, usesControlButton;
+@dynamic usesControlButton, controlButtonText;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -241,6 +241,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
         lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
         lookioWindow.hidden = YES;
         lookioWindow.windowLevel = 0.1;
@@ -262,12 +263,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 40.0, (keyWindow.frame.size.height / 2.0) - 60.0, 120.0, 40.0)];
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 40.0, (keyWindow.frame.size.height / 2.0) - 60.0, 0.0, 0.0)];
         controlButton.hidden = NO;
         controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
         [controlButton startFadeTimer];
-                
+        
         endpointRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerControlEndpointRequestURL]
                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                    timeoutInterval:10.0];
@@ -332,7 +333,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         usesTLS = YES;
         usesSounds = YES;
-        numIncomingChatMessages = 0;
         usesControlButton = YES;
         
         // Fire and forget presession info request.
@@ -533,13 +533,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [lastScreenshotSent release];
             lastScreenshotSent = [screenshotData retain];
                         
-            NSString *orientationString = @"boobies";
-            UIInterfaceOrientation orientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
-            if (UIInterfaceOrientationPortrait == orientation)
+            NSString *orientationString = @"???";
+            if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
                 orientationString = @"portrait";
-            else if (UIInterfaceOrientationPortraitUpsideDown == orientation)
+            else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
                 orientationString = @"portrait_upsidedown";
-            else if (UIInterfaceOrientationLandscapeRight == orientation)
+            else if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
                 orientationString = @"landscape";
             else
                 orientationString = @"landscape_upsidedown";
@@ -830,7 +829,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             //[chatViewController scrollToBottom];
         }
         
-        if (numIncomingChatMessages > 0 && UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
             UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
             localNotification.soundName = @"LookIODing.caf";
@@ -838,8 +837,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             localNotification.alertAction = @"Go!";
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
         }
-        
-        numIncomingChatMessages++;
     }
     else if ([type isEqualToString:@"cursor"])
     {
@@ -1658,15 +1655,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
     CGAffineTransform transform = CGAffineTransformIdentity;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
-    if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
     }
-    else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
         transform = CGAffineTransformRotate(transform, -90.0 / 180.0 * M_PI);
     }
-    else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
         transform = CGAffineTransformRotate(transform, -180.0 / 180.0 * M_PI);
     }
@@ -1904,31 +1902,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #pragma mark -
 #pragma mark Dynamic property accessors
 
-- (CGPoint)controlButtonOrigin
-{
-    return controlButton.frame.origin;
-}
-
-- (void)setControlButtonOrigin:(CGPoint)aPoint
-{
-    CGRect aFrame = controlButton.frame;
-    aFrame.origin = aPoint;
-    controlButton.frame = aFrame;
-}
-
-- (BOOL)horizontalControlButton
-{
-    return controlButton.currentMode == LIOControlButtonViewModeHorizontal;
-}
-
-- (void)setHorizontalControlButton:(BOOL)aBool
-{
-    if (aBool)
-        controlButton.currentMode = LIOControlButtonViewModeHorizontal;
-    else
-        controlButton.currentMode = LIOControlButtonViewModeVertical;
-}
-
 - (BOOL)usesControlButton
 {
     return usesControlButton;
@@ -1939,6 +1912,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     usesControlButton = aBool;
     if (NO == usesControlButton)
         controlButton.hidden = YES;
+}
+
+- (NSString *)controlButtonText
+{
+    return controlButton.labelText;
+}
+
+- (void)setControlButtonText:(NSString *)aString
+{
+    controlButton.labelText = aString;
+    [controlButton setNeedsLayout];
+    [controlButton setNeedsDisplay];
 }
 
 @end
