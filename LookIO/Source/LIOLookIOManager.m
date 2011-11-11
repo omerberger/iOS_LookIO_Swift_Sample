@@ -25,6 +25,7 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOAboutViewController.h"
 #import "LIOControlButtonView.h"
+#import "LIOAnalyticsManager.h"
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.1.0"
@@ -36,6 +37,8 @@
 #define LIOLookIOManagerControlEndpointRequestURL   @"http://connect.look.io/api/v1/endpoint"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
+
+#define LIOLookIOManagerPreConnectInfoRequestURL    @"http://connect.look.io/api/v1/presession"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -68,7 +71,7 @@
     NSString *targetAgentId;
     BOOL usesTLS, usesControlButton, usesSounds;
     UIWindow *lookioWindow;
-    NSMutableURLRequest *endpointRequest;
+    NSMutableURLRequest *endpointRequest, *preConnectInfoRequest;
     NSURLConnection *endpointRequestConnection;
     NSString *controlEndpoint;
     NSMutableData *endpointRequestData;
@@ -222,6 +225,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return sharedLookIOManager;
 }
 
+- (NSString *)urlEncodedStringWithString:(NSString *)str
+{
+    static const CFStringRef urlEncodingCharsToEscape = CFSTR(":/?#[]@!$&’()*+,;=");
+    NSString *result = (NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)str, NULL, urlEncodingCharsToEscape, kCFStringEncodingUTF8);
+    return [result autorelease];
+}
+
 - (id)init
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
@@ -252,7 +262,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 24.0, (keyWindow.frame.size.height / 2.0) - 50.0, 100.0, 24.0)];
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 40.0, (keyWindow.frame.size.height / 2.0) - 60.0, 120.0, 40.0)];
         controlButton.hidden = NO;
         controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
@@ -262,6 +272,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                    timeoutInterval:10.0];
         [endpointRequest setValue:[[NSBundle mainBundle] bundleIdentifier] forHTTPHeaderField:@"X-LookIO-BundleID"];
+        
+        preConnectInfoRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerPreConnectInfoRequestURL]
+                                                       cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                   timeoutInterval:10.0];
+        [preConnectInfoRequest setHTTPMethod:@"POST"];
+        [preConnectInfoRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
         
         NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
         if ([aPath length])
@@ -319,6 +335,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         numIncomingChatMessages = 0;
         usesControlButton = YES;
         
+        // Fire and forget presession info request.
+        NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
+        NSString *udid = uniqueIdentifier();
+        NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
+        NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
+        NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
+        NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@", appId, udid, jailbroken, connectionType, distributionType]; 
+        [preConnectInfoRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
+        [NSURLConnection connectionWithRequest:preConnectInfoRequest delegate:nil];
+        
         NSLog(@"[LOOKIO] Loaded.");
     }
     
@@ -357,6 +383,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [endpointRequestData release];
     [pendingFeedbackText release];
     [friendlyName release];
+    [preConnectInfoRequest release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -1098,105 +1125,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Detect some stuff about the client.
     NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
     
-    // - Cell carrier, if applicable.
-    Class $CTTelephonyNetworkInfo = NSClassFromString(@"CTTelephonyNetworkInfo");
-    if ($CTTelephonyNetworkInfo)
-    {
-        id networkInfo = [[[$CTTelephonyNetworkInfo alloc] init] autorelease];
-        id carrier = [networkInfo subscriberCellularProvider];
-        NSString *carrierName = [carrier carrierName];
-        if ([carrierName length])
-            [detectedDict setObject:carrierName forKey:@"carrier_name"];
-    }
+    NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
+    if ([carrierName length])
+        [detectedDict setObject:carrierName forKey:@"carrier_name"];
     
-    // - Bundle version of host app.
-    NSString *bundleVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
     if ([bundleVersion length])
         [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
-    
-    // - Status of location services.
-    Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
-    if ($CLLocationManager && [$CLLocationManager respondsToSelector:@selector(authorizationStatus)])
-    {
-        // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
-        if ([$CLLocationManager authorizationStatus] == 3)
-            [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
-        else
-            [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
-    }
-    
-    // - WiFi or cell?
-	struct sockaddr_in zeroAddress;
-	bzero(&zeroAddress, sizeof(zeroAddress));
-	zeroAddress.sin_len = sizeof(zeroAddress);
-	zeroAddress.sin_family = AF_INET;
-    SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)&zeroAddress);
-	SCNetworkReachabilityFlags flags;
-	if (SCNetworkReachabilityGetFlags(reachability, &flags))
-    {
-        BOOL wifi = NO;
-        
-        if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
-            wifi = YES;
-        
-        if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) ||
-             (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0))
-        {
-			if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0)
-				wifi = YES;
-		}
-        
-        if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
-            wifi = NO;
-        
-        if (wifi)
-            [detectedDict setObject:@"wifi" forKey:@"connection_type"];
-        else
-            [detectedDict setObject:@"cellular" forKey:@"connection_type"];
-    }
-    CFRelease(reachability);
-    
-    // - Jailbroken?
-    [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"jailbroken"];
-    NSArray *jailbrokenPaths = [NSArray arrayWithObjects:
-                               @"/Applications/Cydia.app",
-                               @"/Applications/RockApp.app",
-                               @"/Applications/Icy.app",
-                               @"/usr/sbin/sshd",
-                               @"/usr/bin/sshd",
-                               @"/usr/libexec/sftp-server",
-                               @"/Applications/WinterBoard.app",
-                               @"/Applications/SBSettings.app",
-                               @"/Applications/MxTube.app",
-                               @"/Applications/IntelliScreen.app",
-                               @"/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
-                               @"/Applications/FakeCarrier.app",
-                               @"/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
-                               @"/private/var/lib/apt",
-                               @"/Applications/blackra1n.app",
-                               @"/private/var/stash",
-                               @"/private/var/mobile/Library/SBSettings/Themes",
-                               @"/System/Library/LaunchDaemons/com.ikey.bbot.plist",
-                               @"/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist",
-                               @"/private/var/tmp/cydia.log",
-                               @"/private/var/lib/cydia", nil];
-    for (NSString *aPath in jailbrokenPaths)
-    {
-        if ([[NSFileManager defaultManager] fileExistsAtPath:aPath])
-        {
-            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"jailbroken"];
-            break;
-        }
-    }
-    
-    // - Ad hoc or app store?
-    NSString *profilePath = [[NSBundle mainBundle] pathForResource:@"embedded.mobileprovision" ofType:nil];
-    NSString *profileAsString = [NSString stringWithContentsOfFile:profilePath encoding:NSISOLatin1StringEncoding error:NULL];
-    BOOL isAdHoc = [profileAsString rangeOfString:[[UIDevice currentDevice] uniqueIdentifier] options:NSCaseInsensitiveSearch].length;
-    if (isAdHoc)
-        [detectedDict setObject:@"other" forKey:@"distribution_type"];
+
+    if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
+        [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
     else
-        [detectedDict setObject:@"app_store" forKey:@"distribution_type"];
+        [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
+    
+    if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
+        [detectedDict setObject:@"cellular" forKey:@"connection_type"];
+    else
+        [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+    
+    if ([[LIOAnalyticsManager sharedAnalyticsManager] jailbroken])
+        [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"jailbroken"];
+    else
+        [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"jailbroken"];
+    
+    [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
     
     NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
     if ([sessionExtras count])
@@ -1704,7 +1656,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
-    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+    CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
     CGAffineTransform transform = CGAffineTransformIdentity;
     
     if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
@@ -1713,23 +1665,49 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformRotate(transform, -90.0 / 180.0 * M_PI);
-        //transform = CGAffineTransformTranslate(transform, -screenSize.height, 0.0);
-        
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
     {
         transform = CGAffineTransformRotate(transform, -180.0 / 180.0 * M_PI);
-        //transform = CGAffineTransformTranslate(transform, -screenSize.width, -screenSize.height);
     }
     else // Landscape, home button right
     {
         transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
-        //transform = CGAffineTransformTranslate(transform, 0.0, -screenSize.width);
     }
     
     controlButton.transform = transform;
     clickView.transform = transform;
     cursorView.transform = transform;
+    
+    // Manually position the control button. Ugh.
+    if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.origin.y = (screenSize.height / 2.0) - 60.0;
+        aFrame.origin.x = screenSize.width - 40.0;
+        controlButton.frame = aFrame;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.origin.y = 0.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - 60.0;
+        controlButton.frame = aFrame;
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.origin.y = (screenSize.height / 2.0) - 60.0;
+        aFrame.origin.x = 0.0;
+        controlButton.frame = aFrame;
+    }
+    else // Landscape, home button right
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.origin.y = screenSize.height - 40.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - 60.0;
+        controlButton.frame = aFrame;
+    }
 }
 
 #pragma mark -

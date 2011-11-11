@@ -30,6 +30,8 @@
 		D48ABF3314046E6B00835205 /* LIOChatboxView.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF2F14046E6B00835205 /* LIOChatboxView.m */; };
 		D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABF3014046E6B00835205 /* LIOLookIOManager.h */; };
 		D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABF3114046E6B00835205 /* LIOLookIOManager.m */; };
+		D4A0826B146CD7EC007E5B73 /* LIOAnalyticsManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D4A08269146CD7EC007E5B73 /* LIOAnalyticsManager.h */; };
+		D4A0826C146CD7EC007E5B73 /* LIOAnalyticsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A0826A146CD7EC007E5B73 /* LIOAnalyticsManager.m */; };
 		D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4B41D39140969C400B73C84 /* LIOChatViewController.h */; };
 		D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3A140969C400B73C84 /* LIOChatViewController.m */; };
 		D4C1987114363E4B009A71B2 /* LIOLeaveMessageViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */; };
@@ -71,6 +73,8 @@
 		D48ABF2F14046E6B00835205 /* LIOChatboxView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatboxView.m; path = LookIO/Source/LIOChatboxView.m; sourceTree = "<group>"; };
 		D48ABF3014046E6B00835205 /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = LookIO/Source/LIOLookIOManager.h; sourceTree = "<group>"; };
 		D48ABF3114046E6B00835205 /* LIOLookIOManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLookIOManager.m; path = LookIO/Source/LIOLookIOManager.m; sourceTree = "<group>"; };
+		D4A08269146CD7EC007E5B73 /* LIOAnalyticsManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnalyticsManager.h; path = LookIO/Source/LIOAnalyticsManager.h; sourceTree = "<group>"; };
+		D4A0826A146CD7EC007E5B73 /* LIOAnalyticsManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnalyticsManager.m; path = LookIO/Source/LIOAnalyticsManager.m; sourceTree = "<group>"; };
 		D4B41D39140969C400B73C84 /* LIOChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChatViewController.h; path = LookIO/Source/LIOChatViewController.h; sourceTree = "<group>"; };
 		D4B41D3A140969C400B73C84 /* LIOChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatViewController.m; path = LookIO/Source/LIOChatViewController.m; sourceTree = "<group>"; };
 		D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLeaveMessageViewController.h; path = LookIO/Source/LIOLeaveMessageViewController.h; sourceTree = "<group>"; };
@@ -185,6 +189,8 @@
 				D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */,
 				D4DC04A31460CE3D00EB93DE /* LIOControlButtonView.h */,
 				D4DC04A41460CE3D00EB93DE /* LIOControlButtonView.m */,
+				D4A08269146CD7EC007E5B73 /* LIOAnalyticsManager.h */,
+				D4A0826A146CD7EC007E5B73 /* LIOAnalyticsManager.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -225,6 +231,7 @@
 				D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */,
 				D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */,
 				D4DC04A51460CE3D00EB93DE /* LIOControlButtonView.h in Headers */,
+				D4A0826B146CD7EC007E5B73 /* LIOAnalyticsManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,6 +320,7 @@
 				D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */,
 				D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */,
 				D4DC04A61460CE3D00EB93DE /* LIOControlButtonView.m in Sources */,
+				D4A0826C146CD7EC007E5B73 /* LIOAnalyticsManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

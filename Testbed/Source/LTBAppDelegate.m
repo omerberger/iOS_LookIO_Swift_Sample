@@ -23,7 +23,7 @@
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
     
-    [LIOLookIOManager sharedLookIOManager].usesControlButton = NO;
+    [LIOLookIOManager sharedLookIOManager];
     
     return YES;
 }
