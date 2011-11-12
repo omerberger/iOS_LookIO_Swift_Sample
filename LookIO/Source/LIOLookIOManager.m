@@ -63,7 +63,7 @@
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
-    BOOL unloadAfterDisconnect, killConnectionAfterChatViewDismissal;
+    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal;
     BOOL minimized;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
@@ -263,11 +263,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         chatHistory = [[NSMutableArray alloc] init];
 
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectMake(keyWindow.frame.size.width - 40.0, (keyWindow.frame.size.height / 2.0) - 60.0, 0.0, 0.0)];
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
         controlButton.hidden = NO;
         controlButton.delegate = self;
         [keyWindow addSubview:controlButton];
         [controlButton startFadeTimer];
+        
+        [self applicationDidChangeStatusBarOrientation:nil];
         
         endpointRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerControlEndpointRequestURL]
                                                        cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
@@ -409,24 +411,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [super dealloc];
 }
 
-- (void)unload
+- (void)reset
 {
     [chatViewController.view removeFromSuperview];
     [aboutViewController.view removeFromSuperview];
     [leaveMessageViewController.view removeFromSuperview];
     [emailHistoryViewController.view removeFromSuperview];
+
+    [chatHistory release];
+    chatHistory = [[NSMutableArray alloc] init];
     
     [cursorView removeFromSuperview];
+    [cursorView release];
+    cursorView = nil;
+    
     [clickView removeFromSuperview];
-    [controlButton removeFromSuperview];
+    [clickView release];
+    clickView = nil;
     
-    [controlSocket setDelegate:nil];
+    [lastScreenshotSent release];
+    lastScreenshotSent = nil;
     
-    [screenCaptureTimer invalidate];
-    screenCaptureTimer = nil;
+    [pendingFeedbackText release];
+    pendingFeedbackText = nil;
     
-    [sharedLookIOManager release];
-    sharedLookIOManager = nil;
+    waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
+    resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
+    
+    [self rejiggerWindows];
+    
+    NSLog(@"[LOOKIO] Reset.");
 }
 
 - (void)rejiggerWindows
@@ -1072,11 +1086,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if ([controlSocket isConnected])
         {
-            unloadAfterDisconnect = YES;
+            resetAfterDisconnect = YES;
             [self killConnection];
         }
         else
-            [self unload];
+            [self reset];
         
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
@@ -1220,7 +1234,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [alertView autorelease];
     }
         
-    unloadAfterDisconnect = YES;
+    resetAfterDisconnect = YES;
     [self killConnection];
     
     NSLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
@@ -1230,8 +1244,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSLog(@"[CONNECT] Socket disconnected.");
     
-    if (unloadAfterDisconnect)
-        [self unload];
+    if (resetAfterDisconnect)
+        [self reset];
 }
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -1376,7 +1390,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (killConnectionAfterChatViewDismissal)
     {
-        unloadAfterDisconnect = YES;
+        resetAfterDisconnect = YES;
         [self killConnection];
     }
 }
@@ -1434,7 +1448,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 if (NO == [controlSocket isConnected])
-                    [self unload];
+                    [self reset];
                 else if (chatViewController)
                 {
                     killConnectionAfterChatViewDismissal = YES;
@@ -1442,7 +1456,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 }
                 else
                 {
-                    unloadAfterDisconnect = YES;
+                    resetAfterDisconnect = YES;
                     [self killConnection];
                 }
                 
@@ -1486,7 +1500,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
-                unloadAfterDisconnect = YES;
+                resetAfterDisconnect = YES;
                 [self killConnection];
             }
             
@@ -1496,7 +1510,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
-            unloadAfterDisconnect = YES;
+            resetAfterDisconnect = YES;
             [self killConnection];
         }
             
@@ -1504,12 +1518,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if ([controlSocket isConnected])
             {
-                unloadAfterDisconnect = YES;
+                resetAfterDisconnect = YES;
                 [self killConnection];
             }
             else
             {
-                [self unload];
+                [self reset];
             }
         }
     }
@@ -1657,8 +1671,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     CGAffineTransform transform = CGAffineTransformIdentity;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
+    /*
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
-    {
+    {        
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
@@ -1672,40 +1687,81 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
     }
-    
-    controlButton.transform = transform;
-    clickView.transform = transform;
-    cursorView.transform = transform;
+    */
     
     // Manually position the control button. Ugh.
-    if (UIInterfaceOrientationPortrait == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
+        aFrame.size.width = 40.0;
+        aFrame.size.height = 120.0;
         aFrame.origin.y = (screenSize.height / 2.0) - 60.0;
         aFrame.origin.x = screenSize.width - 40.0;
         controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+        
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
+#endif
     }
-    else if (UIInterfaceOrientationLandscapeLeft == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
+        aFrame.size.width = 120.0;
+        aFrame.size.height = 40.0;
         aFrame.origin.y = 0.0;
         aFrame.origin.x = (screenSize.width / 2.0) - 60.0;
         controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape left\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
+#endif
     }
-    else if (UIInterfaceOrientationPortraitUpsideDown == (UIInterfaceOrientation)[[UIDevice currentDevice] orientation])
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
+        aFrame.size.width = 40.0;
+        aFrame.size.height = 120.0;
         aFrame.origin.y = (screenSize.height / 2.0) - 60.0;
         aFrame.origin.x = 0.0;
         controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+        
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait upsidedown\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
+#endif
     }
     else // Landscape, home button right
     {
         CGRect aFrame = controlButton.frame;
+        aFrame.size.width = 120.0;
+        aFrame.size.height = 40.0;
         aFrame.origin.y = screenSize.height - 40.0;
         aFrame.origin.x = (screenSize.width / 2.0) - 60.0;
         controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+        
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape right\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
+#endif
     }
+    
+    controlButton.transform = transform;
+    clickView.transform = transform;
+    cursorView.transform = transform;
 }
 
 #pragma mark -
@@ -1777,7 +1833,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     [self rejiggerWindows];
     
-    unloadAfterDisconnect = YES;
+    resetAfterDisconnect = YES;
     [self killConnection];
 }
 
@@ -1802,7 +1858,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
     
-    unloadAfterDisconnect = YES;
+    resetAfterDisconnect = YES;
     [self killConnection];
     
 }

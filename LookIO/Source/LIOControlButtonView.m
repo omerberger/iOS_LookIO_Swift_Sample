@@ -12,7 +12,7 @@
 
 @implementation LIOControlButtonView
 
-@synthesize textColor, labelText, delegate;
+@synthesize textColor, labelText, delegate, label;
 @dynamic tintColor, currentMode, roundedCornersMode;
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -24,7 +24,7 @@
         // Defaults.
         self.tintColor = [UIColor colorWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
         self.textColor = [UIColor whiteColor];
-        self.labelText = @"Chat";
+        self.labelText = @"Live Help";
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
         label.font = [UIFont boldSystemFontOfSize:20.0];
@@ -62,8 +62,9 @@
 
 - (void)layoutSubviews
 {
-    [super layoutSubviews];
+    //[super layoutSubviews];
     
+    /*
     if (LIOControlButtonViewModeHorizontal == currentMode)
     {
         CGRect aFrame = self.frame;
@@ -83,6 +84,7 @@
     if (LIOControlButtonViewModeVertical == currentMode)
         label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
     label.frame = self.bounds;
+     */
     
     UIRectCorner corners;
     if (LIOControlButtonViewModeHorizontal == currentMode)
@@ -115,6 +117,10 @@
     }
     else
         self.layer.mask = nil;
+    
+#ifdef DEBUG
+    NSLog(@"[LOOKIO] LIOControlButtonView#layoutSubviews\n    self.frame: %@\n    self.transform: %@\n", [NSValue valueWithCGRect:self.frame], [NSValue valueWithCGAffineTransform:self.transform]);
+#endif
 }
 
 - (void)drawRect:(CGRect)rect

@@ -41,6 +41,7 @@ typedef enum
 
 @property(nonatomic, retain) UIColor *tintColor, *textColor;
 @property(nonatomic, retain) NSString *labelText;
+@property(nonatomic, readonly) UILabel *label;
 @property(nonatomic, assign) LIOControlButtonViewMode currentMode;
 @property(nonatomic, assign) LIOControlButtonViewRoundedCornersMode roundedCornersMode;
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
