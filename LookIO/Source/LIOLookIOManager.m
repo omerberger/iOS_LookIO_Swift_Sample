@@ -414,9 +414,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)reset
 {
     [chatViewController.view removeFromSuperview];
+    [chatViewController release];
+    chatViewController = nil;
+    
     [aboutViewController.view removeFromSuperview];
+    [aboutViewController release];
+    aboutViewController = nil;
+    
     [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
     [emailHistoryViewController.view removeFromSuperview];
+    [emailHistoryViewController release];
+    emailHistoryViewController = nil;
 
     [chatHistory release];
     chatHistory = [[NSMutableArray alloc] init];
@@ -1092,7 +1103,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             [self reset];
         
-        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        //[[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
         /*
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Notice"
