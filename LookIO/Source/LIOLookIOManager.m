@@ -1145,6 +1145,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
+                                      @"UNKNOWN VERSION", @"sdk_version",
                                       LIOLookIOManagerVersion, @"version",
                                       nil];
     if ([targetAgentId length])
