@@ -24,7 +24,7 @@ fi
 
 echo "Building LookIO v$1 ($CONFIGURATION), please wait..."
 
-sed -i "" 's/@\"UNKNOWN VERSION\"/@\"$1\"/g' ./LookIO/Source/LIOLookIOManager.m
+sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/LIOLookIOManager.m
 
 rm -rf build
 /Developer-4.1/usr/bin/xcodebuild -project LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE

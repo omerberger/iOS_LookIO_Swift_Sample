@@ -343,7 +343,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
         NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
         NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
-        NSString *sdkVersion = @"UNKNOWN VERSION";
+        NSString *sdkVersion = @"##UNKNOWN_VERSION##";
         NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@&sdk_version=%@", appId, udid, jailbroken, connectionType, distributionType, sdkVersion];
         [preConnectInfoRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
         [NSURLConnection connectionWithRequest:preConnectInfoRequest delegate:nil];
@@ -1145,7 +1145,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
-                                      @"UNKNOWN VERSION", @"sdk_version",
+                                      @"##UNKNOWN_VERSION##", @"sdk_version",
                                       LIOLookIOManagerVersion, @"version",
                                       nil];
     if ([targetAgentId length])
