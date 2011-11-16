@@ -343,7 +343,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
         NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
         NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
-        NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@", appId, udid, jailbroken, connectionType, distributionType]; 
+        NSString *sdkVersion = @"UNKNOWN VERSION";
+        NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@&sdk_version=%@", appId, udid, jailbroken, connectionType, distributionType, sdkVersion];
         [preConnectInfoRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
         [NSURLConnection connectionWithRequest:preConnectInfoRequest delegate:nil];
         
@@ -979,6 +980,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSNumber *online = [data objectForKey:@"online"];
             if (online && NO == [online boolValue])
             {
+                // not online case
                 pendingLeaveMessage = YES;
                 /*
                 if (chatViewController)
@@ -1000,9 +1002,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
+                pendingLeaveMessage = NO;
+
+                /*
                 NSNumber *position = [data objectForKey:@"position"];
                 [lastKnownQueuePosition release];
                 lastKnownQueuePosition = [position retain];
+                 */
             }
         }
         else if ([action isEqualToString:@"permission"])
