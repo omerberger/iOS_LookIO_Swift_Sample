@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		D4177D5D1416D950006CDD52 /* LIONiceTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4177D5B1416D950006CDD52 /* LIONiceTextField.h */; };
 		D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4177D5C1416D950006CDD52 /* LIONiceTextField.m */; };
-		D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */; };
-		D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */; };
 		D48ABF0C1404647300835205 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFA1404647300835205 /* NSData+Base64.h */; };
 		D48ABF0D1404647300835205 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = D48ABEFB1404647300835205 /* NSData+Base64.m */; };
 		D48ABF0E1404647300835205 /* JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D48ABEFD1404647300835205 /* JSON.h */; };
@@ -51,8 +49,6 @@
 /* Begin PBXFileReference section */
 		D4177D5B1416D950006CDD52 /* LIONiceTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONiceTextField.h; path = LookIO/Source/LIONiceTextField.h; sourceTree = "<group>"; };
 		D4177D5C1416D950006CDD52 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = LookIO/Source/LIONiceTextField.m; sourceTree = "<group>"; };
-		D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOConnectViewController.h; path = LookIO/Source/LIOConnectViewController.h; sourceTree = "<group>"; };
-		D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOConnectViewController.m; path = LookIO/Source/LIOConnectViewController.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D48ABEFA1404647300835205 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
 		D48ABEFB1404647300835205 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
@@ -179,8 +175,6 @@
 				D48ABF3114046E6B00835205 /* LIOLookIOManager.m */,
 				D4B41D39140969C400B73C84 /* LIOChatViewController.h */,
 				D4B41D3A140969C400B73C84 /* LIOChatViewController.m */,
-				D43413BD140D466B00BB0C4F /* LIOConnectViewController.h */,
-				D43413BE140D466B00BB0C4F /* LIOConnectViewController.m */,
 				D4C1986F14363E4B009A71B2 /* LIOLeaveMessageViewController.h */,
 				D4C1987014363E4B009A71B2 /* LIOLeaveMessageViewController.m */,
 				D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */,
@@ -223,7 +217,6 @@
 				D48ABF3214046E6B00835205 /* LIOChatboxView.h in Headers */,
 				D48ABF3414046E6B00835205 /* LIOLookIOManager.h in Headers */,
 				D4B41D3B140969C400B73C84 /* LIOChatViewController.h in Headers */,
-				D43413BF140D466B00BB0C4F /* LIOConnectViewController.h in Headers */,
 				D4177D5D1416D950006CDD52 /* LIONiceTextField.h in Headers */,
 				D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */,
 				D4C1987114363E4B009A71B2 /* LIOLeaveMessageViewController.h in Headers */,
@@ -312,7 +305,6 @@
 				D48ABF3314046E6B00835205 /* LIOChatboxView.m in Sources */,
 				D48ABF3514046E6B00835205 /* LIOLookIOManager.m in Sources */,
 				D4B41D3C140969C400B73C84 /* LIOChatViewController.m in Sources */,
-				D43413C0140D466B00BB0C4F /* LIOConnectViewController.m in Sources */,
 				D4177D5E1416D950006CDD52 /* LIONiceTextField.m in Sources */,
 				D4CF01741417DEF200B0FBD0 /* AsyncSocket.m in Sources */,
 				D4C1987214363E4B009A71B2 /* LIOLeaveMessageViewController.m in Sources */,

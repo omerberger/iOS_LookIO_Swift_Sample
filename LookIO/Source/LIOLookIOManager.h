@@ -10,15 +10,22 @@
 
 UIImage *lookioImage(NSString *path);
 
+@class LIOLookIOManager;
+
+@protocol LIOLookIOManagerDelegate
+- (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
+- (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
+@end
+
 @interface LIOLookIOManager : NSObject
 
 @property(nonatomic, retain) UIImage *touchImage;
-@property(nonatomic, retain) NSString *targetAgentId, *controlButtonText;
-@property(nonatomic, assign) BOOL usesTLS, usesControlButton, usesSounds;
+@property(nonatomic, retain) NSString *targetAgentId;
+@property(nonatomic, assign) BOOL usesTLS, usesSounds;
 @property(nonatomic, retain) NSDictionary *sessionExtras;
 
 + (LIOLookIOManager *)sharedLookIOManager;
-- (void)beginSession;
+- (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
 - (void)recordCurrentUILocation:(NSString *)aLocationString;
 
 @end

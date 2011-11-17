@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 LookIO, Inc. All rights reserved.
 //
 
+#import "AsyncSocket.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
@@ -16,7 +17,6 @@
 #import <sys/sysctl.h>
 #import <netinet/in.h>
 #import "LIOLookIOManager.h"
-#import "AsyncSocket.h"
 #import "SBJSON.h"
 #import "LIOChatboxView.h"
 #import "NSData+Base64.h"
@@ -26,6 +26,11 @@
 #import "LIOAboutViewController.h"
 #import "LIOControlButtonView.h"
 #import "LIOAnalyticsManager.h"
+
+#define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
+                                    green:((c>>8)&0xFF)/255.0 \
+                                     blue:((c)&0xFF)/255.0 \
+                                    alpha:1.0]
 
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.1.0"
@@ -38,7 +43,8 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerPreConnectInfoRequestURL    @"http://connect.look.io/api/v1/presession"
+#define LIOLookIOManagerAppLaunchRequestURL    @"http://connect.look.io/api/v1/app/launch"
+#define LIOLookIOManagerAppResumeRequestURL    @"http://connect.look.io/api/v1/app/resume"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -69,13 +75,13 @@
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
-    BOOL usesTLS, usesControlButton, usesSounds;
+    BOOL usesTLS, usesSounds;
     UIWindow *lookioWindow;
-    NSMutableURLRequest *endpointRequest, *preConnectInfoRequest;
-    NSURLConnection *endpointRequestConnection;
+    NSMutableURLRequest *appLaunchRequest, *appResumeRequest;
+    NSURLConnection *appLaunchRequestConnection, *appResumeRequestConnection;
+    NSMutableData *appLaunchRequestData, *appResumeRequestData;
+    NSInteger appLaunchRequestResponseCode, appResumeRequestResponseCode;
     NSString *controlEndpoint;
-    NSMutableData *endpointRequestData;
-    NSInteger endpointRequestHTTPResponseCode;
     LIOChatViewController *chatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
@@ -86,12 +92,18 @@
     NSDictionary *sessionExtras;
     UIWindow *previousKeyWindow;
     UIInterfaceOrientation actualInterfaceOrientation;
+    NSString *sessionId;
+    NSNumber *lastKnownButtonVisibility;
+    NSString *lastKnownButtonText;
+    UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
+    NSString *lastKnownWelcomeMessage;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 
 - (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
+- (void)refreshControlButtonVisibility;
 
 @end
 
@@ -213,7 +225,6 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
-@dynamic usesControlButton, controlButtonText;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -225,133 +236,132 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return sharedLookIOManager;
 }
 
+- (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
+{
+    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    
+    lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
+    lookioWindow.hidden = YES;
+    lookioWindow.windowLevel = 0.1;
+    
+    controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
+    
+    screenCaptureTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOManagerScreenCaptureInterval
+                                                          target:self
+                                                        selector:@selector(screenCaptureTimerDidFire:)
+                                                        userInfo:nil
+                                                         repeats:YES];
+    
+    messageSeparatorData = [[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding] retain];
+    
+    jsonParser = [[SBJsonParser_LIO alloc] init];
+    jsonWriter = [[SBJsonWriter_LIO alloc] init];
+    
+    self.touchImage = lookioImage(@"LIODefaultTouch");
+    
+    chatHistory = [[NSMutableArray alloc] init];
+    
+    controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
+    controlButton.hidden = YES;
+    controlButton.delegate = self;
+    [keyWindow addSubview:controlButton];
+    
+    [self applicationDidChangeStatusBarOrientation:nil];
+    
+    appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]
+                                                         cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                     timeoutInterval:10.0];
+    [appLaunchRequest setHTTPMethod:@"POST"];
+    [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    appLaunchRequestData = [[NSMutableData alloc] init];
+    appLaunchRequestResponseCode = -1;
+    
+    appResumeRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerAppResumeRequestURL]
+                                                    cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                timeoutInterval:10.0];
+    [appResumeRequest setHTTPMethod:@"POST"];
+    [appResumeRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    appResumeRequestData = [[NSMutableData alloc] init];
+    appResumeRequestResponseCode = -1;
+    
+    NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
+    if ([aPath length])
+    {
+        NSURL *soundURL = [NSURL fileURLWithPath:aPath];
+        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+    }
+    else
+    {
+        NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"];
+        if ([anotherPath length])
+        {
+            NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
+            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
+        }
+    }
+    
+    aPath = [lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"];
+    if ([aPath length])
+    {
+        NSURL *soundURL = [NSURL fileURLWithPath:aPath];
+        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
+    }
+    else
+    {
+        NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"];
+        if ([anotherPath length])
+        {
+            NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
+            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
+        }
+    }
+    
+    backgroundTaskId = UIBackgroundTaskInvalid;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillResignActive:)
+                                                 name:UIApplicationWillResignActiveNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidBecomeActive:)
+                                                 name:UIApplicationDidBecomeActiveNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidChangeStatusBarOrientation:)
+                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
+    
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    
+    usesTLS = YES;
+    usesSounds = YES;
+    
+    // Send off the app launch packet.
+    NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
+    NSString *udid = uniqueIdentifier();
+    NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
+    NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
+    NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
+    NSString *sdkVersion = @"##UNKNOWN_VERSION##";
+    NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@&sdk_version=%@", appId, udid, jailbroken, connectionType, distributionType, sdkVersion];
+    [appLaunchRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
+#ifdef DEBUG
+    NSLog(@"[LOOKIO] <LAUNCH> Request: %@", presessionBody);
+#endif
+    appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
+    
+    NSLog(@"[LOOKIO] Loaded.");    
+}
+
 - (NSString *)urlEncodedStringWithString:(NSString *)str
 {
     static const CFStringRef urlEncodingCharsToEscape = CFSTR(":/?#[]@!$&’()*+,;=");
     NSString *result = (NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)str, NULL, urlEncodingCharsToEscape, kCFStringEncodingUTF8);
     return [result autorelease];
-}
-
-- (id)init
-{
-    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
-    
-    self = [super init];
-    
-    if (self)
-    {
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        
-        lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
-        lookioWindow.hidden = YES;
-        lookioWindow.windowLevel = 0.1;
-        
-        controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
-        
-        screenCaptureTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOManagerScreenCaptureInterval
-                                                              target:self
-                                                            selector:@selector(screenCaptureTimerDidFire:)
-                                                            userInfo:nil
-                                                             repeats:YES];
-        
-        messageSeparatorData = [[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding] retain];
-        
-        jsonParser = [[SBJsonParser_LIO alloc] init];
-        jsonWriter = [[SBJsonWriter_LIO alloc] init];
-        
-        self.touchImage = lookioImage(@"LIODefaultTouch");
-        
-        chatHistory = [[NSMutableArray alloc] init];
-
-        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
-        controlButton.hidden = NO;
-        controlButton.delegate = self;
-        [keyWindow addSubview:controlButton];
-        [controlButton startFadeTimer];
-        
-        [self applicationDidChangeStatusBarOrientation:nil];
-        
-        endpointRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerControlEndpointRequestURL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
-                                                   timeoutInterval:10.0];
-        [endpointRequest setValue:[[NSBundle mainBundle] bundleIdentifier] forHTTPHeaderField:@"X-LookIO-BundleID"];
-        
-        preConnectInfoRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerPreConnectInfoRequestURL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
-                                                   timeoutInterval:10.0];
-        [preConnectInfoRequest setHTTPMethod:@"POST"];
-        [preConnectInfoRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
-        
-        NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
-        if ([aPath length])
-        {
-            NSURL *soundURL = [NSURL fileURLWithPath:aPath];
-            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-        }
-        else
-        {
-            NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"];
-            if ([anotherPath length])
-            {
-                NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
-                AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-            }
-        }
-        
-        aPath = [lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"];
-        if ([aPath length])
-        {
-            NSURL *soundURL = [NSURL fileURLWithPath:aPath];
-            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-        }
-        else
-        {
-            NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"];
-            if ([anotherPath length])
-            {
-                NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
-                AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-            }
-        }
-                
-        backgroundTaskId = UIBackgroundTaskInvalid;
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationWillResignActive:)
-                                                     name:UIApplicationWillResignActiveNotification
-                                                   object:nil];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationDidBecomeActive:)
-                                                     name:UIApplicationDidBecomeActiveNotification
-                                                   object:nil];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationDidChangeStatusBarOrientation:)
-                                                     name:UIApplicationDidChangeStatusBarOrientationNotification
-                                                   object:nil];
-        
-        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-        
-        usesTLS = YES;
-        usesSounds = YES;
-        usesControlButton = YES;
-        
-        // Fire and forget presession info request.
-        NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
-        NSString *udid = uniqueIdentifier();
-        NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
-        NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
-        NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
-        NSString *sdkVersion = @"##UNKNOWN_VERSION##";
-        NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@&sdk_version=%@", appId, udid, jailbroken, connectionType, distributionType, sdkVersion];
-        [preConnectInfoRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
-        [NSURLConnection connectionWithRequest:preConnectInfoRequest delegate:nil];
-        
-        NSLog(@"[LOOKIO] Loaded.");
-    }
-    
-    return self;
 }
 
 - (void)dealloc
@@ -380,13 +390,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
     [targetAgentId release];
-    [endpointRequest release];
     [controlEndpoint release];
-    [endpointRequestConnection release];
-    [endpointRequestData release];
     [pendingFeedbackText release];
     [friendlyName release];
-    [preConnectInfoRequest release];
+    [sessionId release];
+    [appLaunchRequest release];
+    [appResumeRequest release];
+    [appLaunchRequestConnection release];
+    [appResumeRequestConnection release];
+    [appLaunchRequestData release];
+    [appResumeRequestData release];
+    [lastKnownButtonVisibility release];
+    [lastKnownButtonText release];
+    [lastKnownButtonTintColor release];
+    [lastKnownButtonTextColor release];
+    [lastKnownWelcomeMessage release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -430,6 +448,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
 
+    [sessionId release];
+    sessionId = nil;
+    
     [chatHistory release];
     chatHistory = [[NSMutableArray alloc] init];
     
@@ -472,14 +493,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyAndVisible];
         previousKeyWindow = nil;
         
-        if (usesControlButton)
-        {
-            controlButton.hidden = NO;
-            controlButton.alpha = 0.0;
-            [controlButton startFadeTimer];
-        }
-        else
-            controlButton.hidden = YES;
+        [self refreshControlButtonVisibility];
     }
     
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
@@ -714,7 +728,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginSession
 {
-    if (controlSocketConnecting || endpointRequestConnection)
+    if (controlSocketConnecting)
     {
         NSLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
         return;
@@ -729,18 +743,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Bypass REST call.
     [controlEndpoint release];
     controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
-    
-    if (0 == [controlEndpoint length])
-    {
-        if (nil == endpointRequestConnection)
-        {
-            endpointRequestConnection = [[NSURLConnection alloc] initWithRequest:endpointRequest delegate:self startImmediately:YES];
-            return;
-        }
-        else
-            return;
-    }
-     
     
     NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
     if (NO == usesTLS)
@@ -779,7 +781,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     //[self showConnectionUI];
     [chatHistory addObject:LIOChatboxViewAdTextTrigger];
-    [chatHistory addObject:@"Send a message to our live service reps for immediate help."];
+    if ([lastKnownWelcomeMessage length])
+        [chatHistory addObject:lastKnownWelcomeMessage];
+    else
+        [chatHistory addObject:@"Send a message to our live service reps for immediate help."];
+    
     [self showChat];
 }
 
@@ -838,6 +844,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSLog(@"[SCREENSHOT] Screenshot received by remote host.");
 #endif
             waitingForScreenshotAck = NO;
+        }
+    }
+    else if ([type isEqualToString:@"session_info"])
+    {
+        NSDictionary *dataDict = [aPacket objectForKey:@"data"];
+        NSString *sessionIdString = [dataDict objectForKey:@"session_id"];
+        if ([sessionIdString length])
+        {
+            [sessionId release];
+            sessionId = [sessionIdString retain];
         }
     }
     else if ([type isEqualToString:@"chat"])
@@ -1208,6 +1224,98 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                               tag:0];    
 }
 
+- (void)refreshControlButtonVisibility
+{
+    if (lastKnownButtonVisibility)
+    {
+        int val = [lastKnownButtonVisibility intValue];
+        if (0 == val) // never
+        {
+            controlButton.hidden = YES;
+        }
+        else if (1 == val) // always
+        {
+            controlButton.hidden = NO;
+            controlButton.alpha = 0.0;
+            [controlButton startFadeTimer];
+        }
+        else // 3 = only in session
+        {
+            if (introduced)
+            {
+                controlButton.hidden = NO;
+                controlButton.alpha = 0.0;
+                [controlButton startFadeTimer];
+            }
+            else
+                controlButton.hidden = YES;
+        }
+    }
+    else
+    {
+        controlButton.hidden = NO;
+        controlButton.alpha = 0.0;
+        [controlButton startFadeTimer];
+    }
+}
+
+- (void)parseAndSaveClientParams:(NSDictionary *)params
+{
+    NSNumber *buttonVisibility = [params objectForKey:@"buttonVisibility"];
+    if (buttonVisibility)
+    {
+        [lastKnownButtonVisibility release];
+        lastKnownButtonVisibility = [buttonVisibility retain];
+        
+        [self refreshControlButtonVisibility];
+    }
+    
+    NSString *buttonText = [params objectForKey:@"buttonText"];
+    if ([buttonText length])
+    {
+        controlButton.labelText = buttonText;
+        
+        [lastKnownButtonText release];
+        lastKnownButtonText = [buttonText retain];
+    }
+    
+    NSString *welcomeText = [params objectForKey:@"welcomeText"];
+    if ([welcomeText length])
+    {
+        [lastKnownWelcomeMessage release];
+        lastKnownWelcomeMessage = [welcomeText retain];
+    }
+    
+    NSString *buttonTint = [params objectForKey:@"buttonTint"];
+    if ([buttonTint length])
+    {
+        unsigned int colorValue;
+        [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
+        UIColor *color = HEXCOLOR(colorValue);
+        
+        controlButton.tintColor = color;
+        
+        [lastKnownButtonTintColor release];
+        lastKnownButtonTintColor = [color retain];
+    }
+    
+    NSString *buttonTextColor = [params objectForKey:@"buttonTextColor"];
+    if ([buttonTextColor length])
+    {
+        unsigned int colorValue;
+        [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
+        UIColor *color = HEXCOLOR(colorValue);
+        
+        controlButton.textColor = color;
+        
+        [lastKnownButtonTextColor release];
+        lastKnownButtonTextColor = [color retain];
+    }
+    
+    [controlButton setNeedsLayout];
+    [controlButton setNeedsDisplay];
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate methods
 
@@ -1243,13 +1351,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                            message:@"Couldn't connect right now. Please try again later!"
+                                                            message:@"Connection failed. Please try again!"
                                                            delegate:nil
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];
         alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
         [alertView show];
         [alertView autorelease];
+        
+        return;
     }
         
     resetAfterDisconnect = YES;
@@ -1547,65 +1657,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
-/*
-#pragma mark -
-#pragma mark LIOConnectViewController delegate methods
-
-- (void)connectViewControllerDidTapHideButton:(LIOConnectViewController *)aController
-{
-    [connectViewController hideAnimated:YES];
-    minimized = YES;
-}
-
-- (void)connectViewControllerDidTapCancelButton:(LIOConnectViewController *)aController
-{
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
-                                                        message:@"End this session?"
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"No", @"Yes", nil];
-    alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
-    [alertView show];
-    [alertView autorelease];
-}
-
-- (void)connectViewControllerWasHidden:(LIOConnectViewController *)aController
-{
-    if (usesControlButton)
-        controlButton.hidden = NO;
-    
-    controlButtonSpinner.hidden = NO == enqueued;
-    
-    [connectViewController.view removeFromSuperview];
-    [connectViewController release];
-    connectViewController = nil;
-
-    [self rejiggerWindows];
-}
-
-- (void)connectViewController:(LIOConnectViewController *)aController didEnterFriendlyName:(NSString *)aString
-{
-    [friendlyName release];
-    friendlyName = [aString retain];
-    
-    NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:friendlyName, @"name", nil];
-    NSMutableDictionary *nameDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                     @"advisory", @"type",
-                                     @"friendly_name", @"action",
-                                     aDict, @"data",
-                                     nil];
-    
-    NSString *name = [jsonWriter stringWithObject:nameDict];
-    name = [name stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[name dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-}
-*/
-
 #pragma mark -
 #pragma mark Notification handlers
 
@@ -1681,6 +1732,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (nil == leaveMessageViewController && nil == emailHistoryViewController && nil == aboutViewController)
             [self showChat];
     }
+    
+    // Send off the app resume packet.
+    NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
+    NSString *udid = uniqueIdentifier();
+    NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@", appId, udid];
+    [appResumeRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
+#ifdef DEBUG
+    NSLog(@"[LOOKIO] <RESUME> Request: %@", presessionBody);
+#endif
+    appResumeRequestConnection = [[NSURLConnection alloc] initWithRequest:appResumeRequest delegate:self];
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -1788,56 +1849,93 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-    endpointRequestHTTPResponseCode = [httpResponse statusCode];
+    
+    if (appLaunchRequestConnection == connection)
+    {
+        [appLaunchRequestData setData:[NSData data]];
+        appLaunchRequestResponseCode = [httpResponse statusCode];
+    }
+    else if (appResumeRequestConnection == connection)
+    {
+        [appResumeRequestData setData:[NSData data]];
+        appResumeRequestResponseCode = [httpResponse statusCode];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    if (nil == endpointRequestData)
-        endpointRequestData = [[NSMutableData alloc] init];
-    
-    [endpointRequestData appendData:data];
+    if (appLaunchRequestConnection == connection)
+    {
+        [appLaunchRequestData appendData:data];
+    }
+    else if (appResumeRequestConnection == connection)
+    {
+        [appResumeRequestData appendData:data];
+    }
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSString *json = [[[NSString alloc] initWithData:endpointRequestData encoding:NSUTF8StringEncoding] autorelease];
-    NSDictionary *endpointDict = [jsonParser objectWithString:json];
-    NSString *endpoint = [endpointDict objectForKey:@"endpoint"];
-    if ([endpoint length])
+    if (appLaunchRequestConnection == connection)
     {
-        [controlEndpoint release];
-        controlEndpoint = [endpoint retain];
-        
+        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease]];
 #ifdef DEBUG
-        NSLog(@"[CONNECT] Got an endpoint: \"%@\"", controlEndpoint);
+        NSLog(@"[LOOKIO] <LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
 #endif
+        
+        NSDictionary *params = [responseDict objectForKey:@"response"];
+        [self parseAndSaveClientParams:params];
+        
+        [appLaunchRequestConnection release];
+        appLaunchRequestConnection = nil;
+        
+        appLaunchRequestResponseCode = -1;
     }
-    
-    [endpointRequestData release];
-    endpointRequestData = nil;
-    
-    [endpointRequestConnection release];
-    endpointRequestConnection = nil;
-    
-    [self beginSession];
+    else if (appResumeRequestConnection == connection)
+    {
+        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appResumeRequestData encoding:NSUTF8StringEncoding] autorelease]];
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] <RESUME> Success (%d). Response: %@", appResumeRequestResponseCode, responseDict);
+#endif
+        
+        NSDictionary *params = [responseDict objectForKey:@"response"];
+        [self parseAndSaveClientParams:params];
+        
+        [appResumeRequestConnection release];
+        appResumeRequestConnection = nil;
+        
+        appResumeRequestResponseCode = -1;
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    NSLog(@"[CONNECT] Couldn't get an endpoint via HTTP. Reason: %@", [error localizedDescription]);
-    
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-    
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error!"
-                                                        message:@"Could not connect to the look.io service."
-                                                       delegate:nil
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"Dismiss", nil];
-    [alertView show];
-    [alertView autorelease];
-    
-    controlSocketConnecting = NO;
+    if (appLaunchRequestConnection == connection)
+    {
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] <LAUNCH> Failed. Reason: %@", [error localizedDescription]);
+#endif
+        
+        [appLaunchRequestConnection release];
+        appLaunchRequestConnection = nil;
+        
+        appLaunchRequestResponseCode = -1;
+        
+        [self refreshControlButtonVisibility];
+    }
+    else if (appResumeRequestConnection == connection)
+    {
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] <RESUME> Failed. Reason: %@", [error localizedDescription]);
+#endif
+        
+        [appResumeRequestConnection release];
+        appResumeRequestConnection = nil;
+        
+        appResumeRequestResponseCode = -1;
+        
+        [self refreshControlButtonVisibility];
+    }
 }
 
 #pragma mark -
@@ -1971,33 +2069,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self showChat];
     else
         [self beginSession];
-}
-
-#pragma mark -
-#pragma mark Dynamic property accessors
-
-- (BOOL)usesControlButton
-{
-    return usesControlButton;
-}
-
-- (void)setUsesControlButton:(BOOL)aBool
-{
-    usesControlButton = aBool;
-    if (NO == usesControlButton)
-        controlButton.hidden = YES;
-}
-
-- (NSString *)controlButtonText
-{
-    return controlButton.labelText;
-}
-
-- (void)setControlButtonText:(NSString *)aString
-{
-    controlButton.labelText = aString;
-    [controlButton setNeedsLayout];
-    [controlButton setNeedsDisplay];
 }
 
 @end

@@ -86,6 +86,9 @@
     label.frame = self.bounds;
      */
     
+    label.text = labelText;
+    label.textColor = textColor;
+    
     UIRectCorner corners;
     if (LIOControlButtonViewModeHorizontal == currentMode)
     {
@@ -161,7 +164,7 @@
     tintColor = [aColor retain];
     
     const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
-    //NSLog(@"rgba: (%.2f, %.2f, %.2f, %.2f)", rgba[0], rgba[1], rgba[2], rgba[3]);
+    NSLog(@"rgba: (%.2f, %.2f, %.2f, %.2f)", rgba[0], rgba[1], rgba[2], rgba[3]);
     
     [darkTintColor release];
     darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
