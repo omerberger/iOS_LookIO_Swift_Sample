@@ -236,6 +236,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return sharedLookIOManager;
 }
 
+- (id)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        usesTLS = YES;
+        usesSounds = YES;
+    }
+    
+    return self;
+}
+
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
@@ -336,9 +349,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                object:nil];
     
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-    
-    usesTLS = YES;
-    usesSounds = YES;
     
     // Send off the app launch packet.
     NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
