@@ -27,5 +27,6 @@ UIImage *lookioImage(NSString *path);
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
 - (void)recordCurrentUILocation:(NSString *)aLocationString;
+- (void)beginSession;
 
 @end
