@@ -941,6 +941,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.origin.x = [x floatValue];
         aFrame.origin.y = [y floatValue];
         
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] New cursor position: %@x%@ (frame: %@)", x, y, [NSValue valueWithCGRect:aFrame]);
+#endif // DEBUG
+        
         [UIView animateWithDuration:0.25
                               delay:0.0
                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState)
@@ -1128,25 +1132,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSNumber *y = [aPacket objectForKey:@"y"];
         
 #ifdef DEBUG
-        NSLog(@"[CLICK] x: %@, y: %@", x, y);
+        NSLog(@"[LOOKIO] New click: %@x%@", x, y);
 #endif
         
         CGRect aFrame = CGRectZero;
-        aFrame.origin.x = [x floatValue];
-        aFrame.origin.y = [y floatValue];
-        clickView.frame = aFrame;
+        aFrame.size.width = clickView.image.size.width;
+        aFrame.size.height = clickView.image.size.height;
+        clickView.bounds = aFrame;
         clickView.alpha = 0.0;
         
-        aFrame.size.width = clickView.image.size.width * 2.0;
-        aFrame.size.height = clickView.image.size.height * 2.0;
-        aFrame.origin.x = clickView.frame.origin.x - (aFrame.size.width / 2.0);
-        aFrame.origin.y = clickView.frame.origin.y - (aFrame.size.height / 2.0);
+        clickView.center = CGPointMake([x floatValue], [y floatValue]);
+        
+        aFrame = CGRectZero;
+        aFrame.size.width = clickView.image.size.width * 3.0;
+        aFrame.size.height = clickView.image.size.height * 3.0;
         
         [UIView animateWithDuration:0.1
                               delay:0.0
                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
                          animations:^{
-                             clickView.frame = aFrame;
+                             clickView.bounds = aFrame;
                              clickView.alpha = 1.0;
                          }
                          completion:^(BOOL finished) {
@@ -1808,7 +1813,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     CGAffineTransform transform = CGAffineTransformIdentity;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
-    /*
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {        
     }
@@ -1824,7 +1828,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
     }
-    */
+    
+    //clickView.transform = transform;
+    //cursorView.transform = transform;
     
     // Manually position the control button. Ugh.
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
@@ -1895,10 +1901,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape right\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
     }
-    
-    controlButton.transform = transform;
-    clickView.transform = transform;
-    cursorView.transform = transform;
 }
 
 #pragma mark -
