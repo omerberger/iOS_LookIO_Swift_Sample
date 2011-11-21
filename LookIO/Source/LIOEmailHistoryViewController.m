@@ -12,7 +12,7 @@
 
 @implementation LIOEmailHistoryViewController
 
-@synthesize delegate;
+@synthesize delegate, initialEmailAddress;
 
 - (void)loadView
 {
@@ -100,6 +100,9 @@
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
     
+    if ([initialEmailAddress length])
+        emailField.text = initialEmailAddress;
+    
     UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
@@ -160,6 +163,7 @@
     [emailField release];
     [bubbleView release];
     [scrollView release];
+    [initialEmailAddress release];
     
     [super dealloc];
 }
@@ -194,7 +198,7 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return YES;
+    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:interfaceOrientation]];
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration

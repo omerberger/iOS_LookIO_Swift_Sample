@@ -12,7 +12,7 @@
 
 @implementation LIOLeaveMessageViewController
 
-@synthesize delegate, initialMessage;
+@synthesize delegate, initialMessage, initialEmailAddress;
 
 - (void)loadView
 {
@@ -103,6 +103,9 @@
     emailField.frame = aFrame;
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:emailField];
+    
+    if ([initialEmailAddress length])
+        emailField.text = initialEmailAddress;
     
     messageLabel = [[UILabel alloc] init];
     messageLabel.font = [UIFont systemFontOfSize:13.0];
@@ -229,6 +232,7 @@
     [messageLabel release];
     [cancelButton release];
     [sendButton release];
+    [initialEmailAddress release];
     
     [super dealloc];
 }
@@ -270,7 +274,7 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return YES;
+    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:interfaceOrientation]];
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration

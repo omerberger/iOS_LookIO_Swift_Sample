@@ -22,9 +22,11 @@
     UIScrollView *scrollView;
     LIONiceTextField *emailField;
     BOOL keyboardShown;
+    NSString *initialEmailAddress;
     id delegate;
 }
 
 @property(nonatomic, assign) id delegate;
+@property(nonatomic, retain) NSString *initialEmailAddress;
 
 @end

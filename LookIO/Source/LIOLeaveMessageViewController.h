@@ -33,5 +33,6 @@
 
 @property(nonatomic, assign) id delegate;
 @property(nonatomic, retain) NSString *initialMessage;
+@property(nonatomic, retain) NSString *initialEmailAddress;
 
 @end

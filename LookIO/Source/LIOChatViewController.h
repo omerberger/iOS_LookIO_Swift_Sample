@@ -13,7 +13,7 @@
 
 /*
 @protocol LIOChatViewControllerDelegate
-- (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController;
+- (void)chatViewController:(LIOChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
 - (void)chatViewController:(LIOChatViewController *)aController didChatWithText:(NSString *)aString;
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
@@ -39,11 +39,13 @@
     NSUInteger endSessionIndex, endSharingIndex, emailIndex;
     NSUInteger previousTextLength;
     UIActionSheet *settingsActionSheet;
+    NSString *pendingChatText, *initialChatText;
     id delegate;
     id dataSource;
 }
 
 @property(nonatomic, assign) id delegate, dataSource;
+@property(nonatomic, retain) NSString *initialChatText;
 
 - (void)reloadMessages;
 - (void)scrollToBottom;

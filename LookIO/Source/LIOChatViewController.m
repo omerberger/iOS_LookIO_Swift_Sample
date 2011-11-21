@@ -18,7 +18,7 @@
 
 @implementation LIOChatViewController
 
-@synthesize delegate, dataSource;
+@synthesize delegate, dataSource, initialChatText;
 
 - (void)loadView
 {
@@ -97,6 +97,7 @@
     [messageViews release];
     [dismissalButton release];
     [settingsActionSheet release];
+    [pendingChatText release];
     
     [super dealloc];
 }
@@ -209,6 +210,13 @@
             if (savedChat)
                 aChatbox.inputField.text = savedChat;
             
+            if ([initialChatText length])
+            {
+                aChatbox.inputField.text = initialChatText;
+                [initialChatText release];
+                initialChatText = nil;
+            }
+            
             //if (hadFocus)
                 [aChatbox.inputField becomeFirstResponder];
             
@@ -239,7 +247,7 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
 {
-    return YES;
+    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:toInterfaceOrientation]];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -339,6 +347,9 @@
         [delegate chatViewController:self didChatWithText:aString];
     }
     
+    [pendingChatText release];
+    pendingChatText = nil;
+    
     [self.view endEditing:YES];
 }
 
@@ -363,6 +374,9 @@
     }
     
     previousTextLength = currentTextLength;
+    
+    [pendingChatText release];
+    pendingChatText = [aView.inputField.text retain];
 }
 
 - (void)chatboxViewWasTapped:(LIOChatboxView *)aView
@@ -376,7 +390,7 @@
 - (void)dismissalButtonWasTapped
 {
     [self.view endEditing:YES];
-    [delegate chatViewControllerWasDismissed:self];
+    [delegate chatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 /*

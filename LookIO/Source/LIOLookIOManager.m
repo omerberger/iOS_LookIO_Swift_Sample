@@ -87,6 +87,7 @@
     LIOLeaveMessageViewController *leaveMessageViewController;
     LIOAboutViewController *aboutViewController;
     NSString *pendingFeedbackText;
+    NSString *pendingEmailAddress;
     NSString *friendlyName;
     BOOL pendingLeaveMessage;
     NSDictionary *sessionExtras;
@@ -97,6 +98,8 @@
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
+    NSArray *supportedOrientations;
+    NSString *pendingChatText;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -224,7 +227,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras, supportedOrientations;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -252,6 +255,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    // Try to get supported orientation information from plist.
+    NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
+    if (plistOrientations)
+    {
+        NSMutableArray *orientationNumbers = [NSMutableArray array];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationPortrait"])
+            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortrait]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationPortraitUpsideDown"])
+            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeLeft"])
+            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeRight"])
+            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]];
+        
+        supportedOrientations = [orientationNumbers retain];
+    }
+    else
+    {
+        supportedOrientations = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:UIInterfaceOrientationPortrait], [NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], nil];
+    }
     
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
@@ -415,6 +443,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonTintColor release];
     [lastKnownButtonTextColor release];
     [lastKnownWelcomeMessage release];
+    [pendingEmailAddress release];
+    [supportedOrientations release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -568,7 +598,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [keyWindow bringSubviewToFront:clickView];
     }
     
-    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController || aboutViewController)
+    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)
         return;
     
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -686,6 +716,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatViewController.delegate = self;
     chatViewController.dataSource = self;
     chatViewController.view.alpha = 0.0;
+    chatViewController.initialChatText = pendingChatText;
+    [pendingChatText release];
+    pendingChatText = nil;
     [lookioWindow addSubview:chatViewController.view];
     [self rejiggerWindows];
     
@@ -721,6 +754,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
     leaveMessageViewController.delegate = self;
     leaveMessageViewController.initialMessage = pendingFeedbackText;
+    leaveMessageViewController.initialEmailAddress = pendingEmailAddress;
     [lookioWindow addSubview:leaveMessageViewController.view];
     [self rejiggerWindows];
 }
@@ -1213,7 +1247,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
          [extrasDict setObject:detectedDict forKey:@"detected_settings"];
     
     if ([extrasDict count])
+    {
         [introDict setObject:extrasDict forKey:@"extras"];
+        
+        NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
+        if ([emailAddress length])
+        {
+            [pendingEmailAddress release];
+            pendingEmailAddress = [emailAddress retain];
+        }
+    }
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -1422,8 +1465,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #pragma mark -
 #pragma mark LIOChatViewController delegate methods
 
-- (void)chatViewControllerWasDismissed:(LIOChatViewController *)aController
+- (void)chatViewController:(LIOChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString
 {
+    [pendingChatText release];
+    pendingChatText = [aString retain];
+    
     [chatViewController performDismissalAnimation];
 }
 
@@ -1503,6 +1549,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     emailHistoryViewController = [[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil];
     emailHistoryViewController.delegate = self;
+    emailHistoryViewController.initialEmailAddress = pendingEmailAddress;
     [lookioWindow addSubview:emailHistoryViewController.view];
     
     [self rejiggerWindows];
@@ -1586,7 +1633,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 if (NO == [controlSocket isConnected])
+                {
                     [self reset];
+                }
                 else if (chatViewController)
                 {
                     killConnectionAfterChatViewDismissal = YES;
@@ -1597,7 +1646,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     resetAfterDisconnect = YES;
                     [self killConnection];
                 }
-                
             }
             
             break;
