@@ -1416,8 +1416,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
         [alertView show];
         [alertView autorelease];
-        
-        return;
     }
         
     resetAfterDisconnect = YES;
