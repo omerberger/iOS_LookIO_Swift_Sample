@@ -7,7 +7,6 @@
 //
 
 #import "LTBAppDelegate.h"
-#import "LIOLookIOManager.h"
 
 //io.look.${PRODUCT_NAME:rfc1034identifier}
 
@@ -23,8 +22,21 @@
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
     
-    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:nil];
+    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self];
     
+    return YES;
+}
+
+- (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager
+{
+}
+
+- (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager
+{
+}
+
+- (BOOL)lookIOManager:(LIOLookIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
     return YES;
 }
 

@@ -15,6 +15,7 @@ UIImage *lookioImage(NSString *path);
 @protocol LIOLookIOManagerDelegate
 - (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
+- (BOOL)lookIOManager:(LIOLookIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 
 @interface LIOLookIOManager : NSObject
@@ -23,7 +24,6 @@ UIImage *lookioImage(NSString *path);
 @property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, assign) BOOL usesTLS, usesSounds;
 @property(nonatomic, retain) NSDictionary *sessionExtras;
-@property(nonatomic, readonly) NSArray *supportedOrientations;
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;

@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "LTBMainViewController.h"
+#import "LIOLookIOManager.h"
 
-@interface LTBAppDelegate : UIResponder <UIApplicationDelegate>
+@interface LTBAppDelegate : UIResponder <UIApplicationDelegate, LIOLookIOManagerDelegate>
 {
     UIWindow *window;
     LTBMainViewController *mainViewController;

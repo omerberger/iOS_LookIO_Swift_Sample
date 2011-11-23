@@ -15,6 +15,7 @@
 @protocol LIOAboutViewControllerDelegate
 - (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController;
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail;
+- (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 */
 

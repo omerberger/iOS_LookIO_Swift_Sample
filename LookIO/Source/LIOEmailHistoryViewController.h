@@ -13,6 +13,7 @@
  @protocol LIOEmailHistoryViewControllerDelegate
  - (void)emailHistoryViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController;
  - (void)emailHistoryViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail;
+ - (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
  @end
  */
 

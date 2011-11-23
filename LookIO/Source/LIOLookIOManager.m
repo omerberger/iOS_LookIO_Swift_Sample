@@ -100,6 +100,7 @@
     NSString *lastKnownWelcomeMessage;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
+    id<LIOLookIOManagerDelegate> delegate;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -227,7 +228,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras, supportedOrientations;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -256,6 +257,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
     
+    delegate = aDelegate;
+    
     // Try to get supported orientation information from plist.
     NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
     if (plistOrientations)
@@ -278,7 +281,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
-        supportedOrientations = [[NSArray alloc] initWithObjects:[NSNumber numberWithInt:UIInterfaceOrientationPortrait], [NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], nil];
+        supportedOrientations = [[NSArray alloc] init];
     }
     
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
@@ -1315,6 +1318,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.alpha = 0.0;
         [controlButton startFadeTimer];
     }
+    
+    if (controlButton.hidden)
+    {
+        if ([delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
+            [delegate lookIOManagerDidHideControlButton:self];
+    }
+    else
+    {
+        if ([delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
+            [delegate lookIOManagerDidShowControlButton:self];
+    }
 }
 
 - (void)parseAndSaveClientParams:(NSDictionary *)params
@@ -1372,6 +1386,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [controlButton setNeedsLayout];
     [controlButton setNeedsDisplay];
+}
+
+- (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    // First, ask the delegate.
+    if ([delegate respondsToSelector:@selector(lookIOManager:shouldRotateToInterfaceOrientation:)])
+        return [delegate lookIOManager:self shouldRotateToInterfaceOrientation:anOrientation];
+    
+    // Fall back on plist settings.
+    return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
 }
 
 #pragma mark -
@@ -1622,6 +1646,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatViewController = nil;
     
     [self showAboutUI];
+}
+
+- (BOOL)chatViewController:(LIOChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
 #pragma mark -
@@ -2037,6 +2066,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
 }
 
+- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
 #pragma mark -
 #pragma mark LIOEmailHistoryViewControllerDelegate methods
 
@@ -2070,6 +2104,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     emailHistoryViewController = nil;
     
     [self showChat];
+}
+
+- (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
 #pragma mark -
@@ -2108,6 +2147,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [self showChat];
+}
+
+- (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
 #pragma mark -

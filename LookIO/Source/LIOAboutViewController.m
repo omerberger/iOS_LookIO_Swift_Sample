@@ -300,7 +300,7 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return [[LIOLookIOManager sharedLookIOManager].supportedOrientations containsObject:[NSNumber numberWithInt:interfaceOrientation]];
+    return [delegate aboutViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
 #pragma mark -

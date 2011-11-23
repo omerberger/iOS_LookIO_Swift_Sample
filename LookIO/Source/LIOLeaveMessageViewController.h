@@ -13,6 +13,7 @@
 @protocol LIOLeaveMessageViewControllerDelegate
 - (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController;
 - (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail message:(NSString *)aMessage;
+- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 */
 
