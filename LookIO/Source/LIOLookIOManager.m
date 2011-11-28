@@ -55,6 +55,13 @@
 #define LIOLookIOManagerUnprovisionedAlertViewTag           5
 #define LIOLookIOManagerAgentEndedSessionAlertViewTag       6
 
+// User defaults keys
+#define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
+#define LIOLookIOManagerLastKnownButtonTextKey          @"LIOLookIOManagerLastKnownButtonTextKey"
+#define LIOLookIOManagerLastKnownButtonTintColorKey     @"LIOLookIOManagerLastKnownButtonTintColorKey"
+#define LIOLookIOManagerLastKnownButtonTextColorKey     @"LIOLookIOManagerLastKnownButtonTextColorKey"
+#define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
+
 @interface LIOLookIOManager ()
 {
     NSTimer *screenCaptureTimer;
@@ -90,7 +97,7 @@
     NSString *pendingEmailAddress;
     NSString *friendlyName;
     BOOL pendingLeaveMessage;
-    NSDictionary *sessionExtras;
+    NSMutableDictionary *sessionExtras;
     UIWindow *previousKeyWindow;
     UIInterfaceOrientation actualInterfaceOrientation;
     NSString *sessionId;
@@ -100,6 +107,7 @@
     NSString *lastKnownWelcomeMessage;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
+    NSDate *screenSharingStartedDate;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -108,6 +116,8 @@
 - (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
+- (NSDictionary *)buildIntroDictionary;
+- (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 
 @end
 
@@ -228,7 +238,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -307,10 +317,52 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     chatHistory = [[NSMutableArray alloc] init];
     
+    [sessionExtras release];
+    sessionExtras = [[NSMutableDictionary alloc] init];
+    
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
     controlButton.hidden = YES;
     controlButton.delegate = self;
     [keyWindow addSubview:controlButton];
+    
+    // Restore control button settings.
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [lastKnownButtonVisibility release];
+    lastKnownButtonVisibility = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] retain];
+    
+    [lastKnownButtonText release];
+    lastKnownButtonText = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey] retain];
+    controlButton.labelText = lastKnownButtonText;
+    
+    [lastKnownButtonTintColor release];
+    lastKnownButtonTintColor = nil;
+    NSString *tintString = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTintColorKey];
+    if (tintString)
+    {
+        unsigned int colorValue;
+        [[NSScanner scannerWithString:tintString] scanHexInt:&colorValue];
+        UIColor *aColor = HEXCOLOR(colorValue);
+        lastKnownButtonTintColor = [aColor retain];
+        controlButton.tintColor = lastKnownButtonTintColor;
+    }
+    
+    [lastKnownButtonTextColor release];
+    lastKnownButtonTextColor = nil;
+    NSString *textColorString = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextColorKey];
+    if (textColorString)
+    {
+        unsigned int colorValue;
+        [[NSScanner scannerWithString:textColorString] scanHexInt:&colorValue];
+        UIColor *aColor = HEXCOLOR(colorValue);    
+        lastKnownButtonTextColor = [aColor retain];
+        controlButton.textColor = lastKnownButtonTextColor;
+    }
+    
+    [self refreshControlButtonVisibility];
+    
+    // Restore other settings.
+    [lastKnownWelcomeMessage release];
+    lastKnownWelcomeMessage = [[userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey] retain];
     
     [self applicationDidChangeStatusBarOrientation:nil];
     
@@ -382,16 +434,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
     // Send off the app launch packet.
-    NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
-    NSString *udid = uniqueIdentifier();
-    NSString *jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken] ? @"1" : @"0";
-    NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
-    NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
-    NSString *sdkVersion = @"##UNKNOWN_VERSION##";
-    NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@&detected_settings%%91jailbroken%%93=%@&detected_settings%%91connection_type%%93=%@&detected_settings%%91distribution_type%%93=%@&sdk_version=%@", appId, udid, jailbroken, connectionType, distributionType, sdkVersion];
-    [appLaunchRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
+    NSDictionary *introDict = [self buildIntroDictionary];
+    NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
+    [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
 #ifdef DEBUG
-    NSLog(@"[LOOKIO] <LAUNCH> Request: %@", presessionBody);
+    NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
 #endif
     appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
     
@@ -403,6 +450,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     static const CFStringRef urlEncodingCharsToEscape = CFSTR(":/?#[]@!$&’()*+,;=");
     NSString *result = (NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)str, NULL, urlEncodingCharsToEscape, kCFStringEncodingUTF8);
     return [result autorelease];
+}
+
+- (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName
+{
+    NSMutableString *result = [NSMutableString string];
+    for (NSString *aKey in aDictionary)
+    {
+        id anObject = [aDictionary objectForKey:aKey];
+        
+        if ([anObject isKindOfClass:[NSDictionary class]])
+        {
+            NSString *dictString = [self wwwFormEncodedDictionary:anObject withName:aKey];
+            [result appendFormat:@"%@&", dictString];
+        }
+        else
+        {
+            NSString *stringValue = [NSString stringWithFormat:@"%@", anObject];
+            
+            if ([aName length])
+                [result appendFormat:@"%@%%91%@%%93=%@&", [self urlEncodedStringWithString:aName], [self urlEncodedStringWithString:aKey], [self urlEncodedStringWithString:stringValue]];
+            else
+                [result appendFormat:@"%@=%@&", [self urlEncodedStringWithString:aKey], [self urlEncodedStringWithString:stringValue]];
+        }
+    }
+    
+    // Kill the trailing & and we're done!
+    if ([result length] && [result hasSuffix:@"&"])
+        return [result substringToIndex:([result length] - 1)];
+    
+    return result;
 }
 
 - (void)dealloc
@@ -448,6 +525,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownWelcomeMessage release];
     [pendingEmailAddress release];
     [supportedOrientations release];
+    [screenSharingStartedDate release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -513,6 +591,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
+    
+    [screenSharingStartedDate release];
+    screenSharingStartedDate = nil;
     
     [self rejiggerWindows];
     
@@ -626,8 +707,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             else
                 orientationString = @"landscape_upsidedown";
             
+            NSTimeInterval timeSinceSharingStarted = [[NSDate date] timeIntervalSinceDate:screenSharingStartedDate];
+            
             // screenshot:orientation:w:h:datalen:[blarghle]
-            NSString *header = [NSString stringWithFormat:@"screenshot:%@:%d:%d:%u:", orientationString, (int)screenshotSize.width, (int)screenshotSize.height, [screenshotData length]];
+            NSString *header = [NSString stringWithFormat:@"screenshot:2:%f:%@:%d:%d:%u:", timeSinceSharingStarted, orientationString, (int)screenshotSize.width, (int)screenshotSize.height, [screenshotData length]];
             NSData *headerData = [header dataUsingEncoding:NSUTF8StringEncoding];
             
             NSMutableData *dataToSend = [NSMutableData data];
@@ -656,7 +739,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                      tag:0];
                 
 #ifdef DEBUG
-                NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length]);
+                NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
 #endif
             });
         }
@@ -1198,73 +1281,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)performIntroduction
 {
-    size_t size;
-    sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
-    char *machine = malloc(size);
-    sysctlbyname("hw.machine", machine, &size, NULL, 0);  
-    NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
-    free(machine);
     
-    NSString *udid = uniqueIdentifier();
-    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
-    NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      @"intro", @"type",
-                                      udid, @"device_id",
-                                      deviceType, @"device_type",
-                                      bundleId, @"app_id",
-                                      @"Apple iOS", @"platform",
-                                      @"##UNKNOWN_VERSION##", @"sdk_version",
-                                      LIOLookIOManagerVersion, @"version",
-                                      nil];
-    if ([targetAgentId length])
-        [introDict setObject:targetAgentId forKey:@"agent_id"];
-    
-    // Detect some stuff about the client.
-    NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
-    
-    NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
-    if ([carrierName length])
-        [detectedDict setObject:carrierName forKey:@"carrier_name"];
-    
-    NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
-    if ([bundleVersion length])
-        [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
-
-    if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
-        [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
-    else
-        [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
-    
-    if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
-        [detectedDict setObject:@"cellular" forKey:@"connection_type"];
-    else
-        [detectedDict setObject:@"wifi" forKey:@"connection_type"];
-    
-    if ([[LIOAnalyticsManager sharedAnalyticsManager] jailbroken])
-        [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"jailbroken"];
-    else
-        [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"jailbroken"];
-    
-    [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
-    
-    NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
-    if ([sessionExtras count])
-        [extrasDict setDictionary:sessionExtras];
-    
-    if ([detectedDict count])
-         [extrasDict setObject:detectedDict forKey:@"detected_settings"];
-    
-    if ([extrasDict count])
-    {
-        [introDict setObject:extrasDict forKey:@"extras"];
-        
-        NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
-        if ([emailAddress length])
-        {
-            [pendingEmailAddress release];
-            pendingEmailAddress = [emailAddress retain];
-        }
-    }
+    NSDictionary *introDict = [self buildIntroDictionary];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -1333,11 +1351,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)parseAndSaveClientParams:(NSDictionary *)params
 {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
     NSNumber *buttonVisibility = [params objectForKey:@"buttonVisibility"];
     if (buttonVisibility)
     {
         [lastKnownButtonVisibility release];
         lastKnownButtonVisibility = [buttonVisibility retain];
+        
+        [userDefaults setObject:lastKnownButtonVisibility forKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
         
         [self refreshControlButtonVisibility];
     }
@@ -1349,6 +1371,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [lastKnownButtonText release];
         lastKnownButtonText = [buttonText retain];
+        
+        [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
     }
     
     NSString *welcomeText = [params objectForKey:@"welcomeText"];
@@ -1356,11 +1380,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [lastKnownWelcomeMessage release];
         lastKnownWelcomeMessage = [welcomeText retain];
+        
+        [userDefaults setObject:lastKnownWelcomeMessage forKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
     }
     
     NSString *buttonTint = [params objectForKey:@"buttonTint"];
     if ([buttonTint length])
     {
+        [userDefaults setObject:buttonTint forKey:LIOLookIOManagerLastKnownButtonTintColorKey];
+        
         unsigned int colorValue;
         [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
         UIColor *color = HEXCOLOR(colorValue);
@@ -1374,6 +1402,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *buttonTextColor = [params objectForKey:@"buttonTextColor"];
     if ([buttonTextColor length])
     {
+        [userDefaults setObject:buttonTextColor forKey:LIOLookIOManagerLastKnownButtonTextColorKey];
+        
         unsigned int colorValue;
         [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
         UIColor *color = HEXCOLOR(colorValue);
@@ -1396,6 +1426,93 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // Fall back on plist settings.
     return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
+}
+
+- (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey
+{
+    if (anObject)
+        [sessionExtras setObject:anObject forKey:aKey];
+    else
+        [sessionExtras removeObjectForKey:aKey];
+}
+
+- (id)sessionExtraForKey:(NSString *)aKey
+{
+    return [sessionExtras objectForKey:aKey];
+}
+
+- (NSDictionary *)buildIntroDictionary
+{
+    size_t size;
+    sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
+    char *machine = malloc(size);
+    sysctlbyname("hw.machine", machine, &size, NULL, 0);  
+    NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
+    free(machine);
+    
+    NSString *udid = uniqueIdentifier();
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+    NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      @"intro", @"type",
+                                      udid, @"device_id",
+                                      deviceType, @"device_type",
+                                      bundleId, @"app_id",
+                                      @"Apple iOS", @"platform",
+                                      @"##UNKNOWN_VERSION##", @"sdk_version",
+                                      LIOLookIOManagerVersion, @"version",
+                                      nil];
+    if ([targetAgentId length])
+        [introDict setObject:targetAgentId forKey:@"agent_id"];
+    
+    // Detect some stuff about the client.
+    NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
+    
+    NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
+    if ([carrierName length])
+        [detectedDict setObject:carrierName forKey:@"carrier_name"];
+    
+    NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
+    if ([bundleVersion length])
+        [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
+    
+    if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
+        [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
+    else
+        [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
+    
+    if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
+        [detectedDict setObject:@"cellular" forKey:@"connection_type"];
+    else
+        [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+    
+    BOOL jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken];
+    [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
+
+    BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
+    [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
+    
+    [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
+    
+    NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
+    if ([sessionExtras count])
+        [extrasDict setDictionary:sessionExtras];
+    
+    if ([detectedDict count])
+        [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+    
+    if ([extrasDict count])
+    {
+        [introDict setObject:extrasDict forKey:@"extras"];
+        
+        NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
+        if ([emailAddress length])
+        {
+            [pendingEmailAddress release];
+            pendingEmailAddress = [emailAddress retain];
+        }
+    }
+    
+    return introDict;
 }
 
 #pragma mark -
@@ -1565,7 +1682,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[permissionRevoked dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-
+    
+    [screenSharingStartedDate release];
+    screenSharingStartedDate = nil;
 }
 
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController
@@ -1688,6 +1807,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 screenshotsAllowed = YES;
+                
+                screenSharingStartedDate = [[NSDate date] retain];
                 
                 if (chatViewController)
                 {
@@ -1824,12 +1945,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     // Send off the app resume packet.
-    NSString *appId = [[NSBundle mainBundle] bundleIdentifier];
-    NSString *udid = uniqueIdentifier();
-    NSString *presessionBody = [NSString stringWithFormat:@"app_id=%@&platform=Apple%%20iOS&device_id=%@", appId, udid];
-    [appResumeRequest setHTTPBody:[presessionBody dataUsingEncoding:NSUTF8StringEncoding]];
+    NSDictionary *introDict = [self buildIntroDictionary];
+    NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
+    [appResumeRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
 #ifdef DEBUG
-    NSLog(@"[LOOKIO] <RESUME> Request: %@", presessionBody);
+    NSLog(@"[LOOKIO] <RESUME> Request: %@", introDictWwwFormEncoded);
 #endif
     appResumeRequestConnection = [[NSURLConnection alloc] initWithRequest:appResumeRequest delegate:self];
 }

@@ -21,5 +21,6 @@
 - (BOOL)cellularNetworkInUse;
 - (BOOL)jailbroken;
 - (NSString *)distributionType;
+- (BOOL)pushEnabled;
 
 @end

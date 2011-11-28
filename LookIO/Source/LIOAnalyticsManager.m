@@ -144,4 +144,9 @@ LIOAnalyticsManager *sharedAnalyticsManager = nil;
 #endif
 }
 
+- (BOOL)pushEnabled
+{
+    return [[UIApplication sharedApplication] enabledRemoteNotificationTypes] != UIRemoteNotificationTypeNone;
+}
+
 @end

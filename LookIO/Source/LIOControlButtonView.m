@@ -86,8 +86,15 @@
     label.frame = self.bounds;
      */
     
-    label.text = labelText;
-    label.textColor = textColor;
+    if (labelText)
+        label.text = labelText;
+    else
+        label.text = @"Live Chat";
+    
+    if (textColor)
+        label.textColor = textColor;
+    else
+        label.textColor = [UIColor whiteColor];
     
     UIRectCorner corners;
     if (LIOControlButtonViewModeHorizontal == currentMode)
@@ -132,6 +139,9 @@
     
     CGContextRef context = UIGraphicsGetCurrentContext();
     
+    if (nil == tintColor)
+        tintColor = [UIColor blackColor];
+    
     // Paint the entire thing the tint...
     CGContextSetFillColorWithColor(context, [tintColor CGColor]);
     CGContextFillRect(context, rect);
@@ -163,11 +173,14 @@
     [tintColor release];
     tintColor = [aColor retain];
     
-    const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
-    NSLog(@"rgba: (%.2f, %.2f, %.2f, %.2f)", rgba[0], rgba[1], rgba[2], rgba[3]);
-    
     [darkTintColor release];
-    darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
+    darkTintColor = nil;
+    
+    if (aColor)
+    {
+        const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
+        darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
+    }
 }
 
 - (UIColor *)tintColor
