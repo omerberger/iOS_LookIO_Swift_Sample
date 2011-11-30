@@ -1539,29 +1539,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
-    controlSocketConnecting = NO;
-    introduced = NO;
-    waitingForIntroAck = NO;
-    waitingForScreenshotAck = NO;
-    enqueued = NO;
-    
     if (err)
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                            message:@"Connection failed. Please try again!"
-                                                           delegate:nil
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
-        alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
-        [alertView show];
-        [alertView autorelease];
+        if (introduced)
+        {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                                message:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Dismiss", nil];
+            alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+        }
+        else
+        {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                                message:@"Connection failed. Please try again!"
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Dismiss", nil];
+            alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+        }
     }
         
-    resetAfterDisconnect = YES;
-    [self killConnection];
-    
     NSLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
 }
 
@@ -1779,6 +1784,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     switch (alertView.tag)
     {
+        case LIOLookIOManagerDisconnectErrorAlertViewTag:
+        {
+            [self reset];
+            break;
+        }
+            
         case LIOLookIOManagerDisconnectConfirmAlertViewTag:
         {
             if (1 == buttonIndex) // "Yes"

@@ -213,7 +213,8 @@
             if ([initialChatText length])
             {
                 aChatbox.inputField.text = initialChatText;
-                [initialChatText release];
+
+                pendingChatText = initialChatText;
                 initialChatText = nil;
             }
             
