@@ -23,7 +23,6 @@ UIImage *lookioImage(NSString *path);
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, assign) BOOL usesTLS, usesSounds;
-@property(nonatomic, retain) NSMutableDictionary *sessionExtras;
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
@@ -31,5 +30,7 @@ UIImage *lookioImage(NSString *path);
 - (void)beginSession;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey;
 - (id)sessionExtraForKey:(NSString *)aKey;
+- (void)addSessionExtras:(NSDictionary *)aDictionary;
+- (void)clearSessionExtras;
 
 @end

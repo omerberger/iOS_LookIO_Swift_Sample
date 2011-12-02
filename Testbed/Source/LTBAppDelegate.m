@@ -21,8 +21,10 @@
     
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
-    
+
+    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObjectsAndKeys:@"12313123", @"email_address", nil]];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self];
+    
     
     return YES;
 }

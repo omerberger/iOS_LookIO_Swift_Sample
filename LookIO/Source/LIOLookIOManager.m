@@ -116,7 +116,7 @@
 - (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
-- (NSDictionary *)buildIntroDictionary;
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 
 @end
@@ -238,7 +238,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, sessionExtras;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -258,6 +258,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         usesTLS = YES;
         usesSounds = YES;
+        
+        sessionExtras = [[NSMutableDictionary alloc] init];
     }
     
     return self;
@@ -316,10 +318,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.touchImage = lookioImage(@"LIODefaultTouch");
     
     chatHistory = [[NSMutableArray alloc] init];
-    
-    [sessionExtras release];
-    sessionExtras = [[NSMutableDictionary alloc] init];
-    
+        
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
     controlButton.hidden = YES;
     controlButton.delegate = self;
@@ -434,7 +433,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
     // Send off the app launch packet.
-    NSDictionary *introDict = [self buildIntroDictionary];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO];
     NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
     [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
 #ifdef DEBUG
@@ -1281,8 +1280,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)performIntroduction
 {
-    
-    NSDictionary *introDict = [self buildIntroDictionary];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -1441,7 +1439,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [sessionExtras objectForKey:aKey];
 }
 
-- (NSDictionary *)buildIntroDictionary
+- (void)addSessionExtras:(NSDictionary *)aDictionary
+{
+    [sessionExtras addEntriesFromDictionary:aDictionary];
+}
+
+- (void)clearSessionExtras
+{
+    [sessionExtras removeAllObjects];
+}
+
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
@@ -1453,62 +1461,69 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *udid = uniqueIdentifier();
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      @"intro", @"type",
                                       udid, @"device_id",
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
                                       @"##UNKNOWN_VERSION##", @"sdk_version",
-                                      LIOLookIOManagerVersion, @"version",
                                       nil];
-    if ([targetAgentId length])
-        [introDict setObject:targetAgentId forKey:@"agent_id"];
     
-    // Detect some stuff about the client.
-    NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
+    if (includesType)
+        [introDict setObject:@"intro" forKey:@"type"];
     
-    NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
-    if ([carrierName length])
-        [detectedDict setObject:carrierName forKey:@"carrier_name"];
-    
-    NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
-    if ([bundleVersion length])
-        [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
-    
-    if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
-        [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
-    else
-        [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
-    
-    if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
-        [detectedDict setObject:@"cellular" forKey:@"connection_type"];
-    else
-        [detectedDict setObject:@"wifi" forKey:@"connection_type"];
-    
-    BOOL jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken];
-    [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
-
-    BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
-    [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
-    
-    [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
-    
-    NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
-    if ([sessionExtras count])
-        [extrasDict setDictionary:sessionExtras];
-    
-    if ([detectedDict count])
-        [extrasDict setObject:detectedDict forKey:@"detected_settings"];
-    
-    if ([extrasDict count])
+    if (includeExtras)
     {
-        [introDict setObject:extrasDict forKey:@"extras"];
+        if ([targetAgentId length])
+            [introDict setObject:targetAgentId forKey:@"agent_id"];
         
-        NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
-        if ([emailAddress length])
+        [introDict setObject:LIOLookIOManagerVersion forKey:@"version"];
+        
+        // Detect some stuff about the client.
+        NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
+        
+        NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
+        if ([carrierName length])
+            [detectedDict setObject:carrierName forKey:@"carrier_name"];
+        
+        NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
+        if ([bundleVersion length])
+            [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
+        
+        if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
+            [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
+        else
+            [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
+        
+        if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
+            [detectedDict setObject:@"cellular" forKey:@"connection_type"];
+        else
+            [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+        
+        BOOL jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken];
+        [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
+
+        BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
+        [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
+        
+        [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
+        
+        NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
+        if ([sessionExtras count])
+            [extrasDict setDictionary:sessionExtras];
+        
+        if ([detectedDict count])
+            [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        
+        if ([extrasDict count])
         {
-            [pendingEmailAddress release];
-            pendingEmailAddress = [emailAddress retain];
+            [introDict setObject:extrasDict forKey:@"extras"];
+            
+            NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
+            if ([emailAddress length])
+            {
+                [pendingEmailAddress release];
+                pendingEmailAddress = [emailAddress retain];
+            }
         }
     }
     
@@ -1956,7 +1971,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     // Send off the app resume packet.
-    NSDictionary *introDict = [self buildIntroDictionary];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO];
     NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
     [appResumeRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
 #ifdef DEBUG
