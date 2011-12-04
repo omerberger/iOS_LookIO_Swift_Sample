@@ -149,7 +149,7 @@
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    aFrame.size.width = 65.0;
+    aFrame.size.width = 85.0;
     aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - aFrame.size.width - 10.0;
     aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 5.0;
     aFrame.size.height = 27.0;
@@ -162,7 +162,7 @@
     [scrollView addSubview:submitButton];
     
     cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    aFrame.size.width = 65.0;
+    aFrame.size.width = 85.0;
     aFrame.origin.x = submitButton.frame.origin.x - aFrame.size.width - 5.0;
     aFrame.size.height = 27.0;
     aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 5.0;
