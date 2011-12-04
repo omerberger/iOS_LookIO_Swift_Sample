@@ -708,7 +708,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             NSTimeInterval timeSinceSharingStarted = [[NSDate date] timeIntervalSinceDate:screenSharingStartedDate];
             
-            // screenshot:orientation:w:h:datalen:[blarghle]
+            // screenshot:ver:time:orientation:w:h:datalen:[blarghle]
             NSString *header = [NSString stringWithFormat:@"screenshot:2:%f:%@:%d:%d:%u:", timeSinceSharingStarted, orientationString, (int)screenshotSize.width, (int)screenshotSize.height, [screenshotData length]];
             NSData *headerData = [header dataUsingEncoding:NSUTF8StringEncoding];
             
@@ -717,23 +717,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [dataToSend appendData:screenshotData];
             [dataToSend appendData:messageSeparatorData];
             
-
-            /*
-            NSString *screenshot = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                                 @"screenshot", @"type",
-                                                                 [self nextGUID], @"screenshot_id",
-                                                                 base64Data, @"screenshot",
-                                                                 [NSNumber numberWithFloat:screenshotSize.width], @"width",
-                                                                 [NSNumber numberWithFloat:screenshotSize.height], @"height",
-                                                                 orientationString, @"orientation",
-                                                                 nil]];
-            
-            screenshot = [screenshot stringByAppendingString:LIOLookIOManagerMessageSeparator];
-            */
-             
             dispatch_async(dispatch_get_main_queue(), ^{
                 waitingForScreenshotAck = YES;
-                [controlSocket writeData:dataToSend/*[screenshot dataUsingEncoding:NSUTF8StringEncoding]*/
+                [controlSocket writeData:dataToSend
                              withTimeout:-1
                                      tag:0];
                 
@@ -744,53 +730,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     });
 }
-
-/*
-- (void)showConnectionUI
-{
-    if (connectViewController)
-        return;
-    
-    connectViewController = [[LIOConnectViewController alloc] initWithNibName:nil bundle:nil];
-    connectViewController.delegate = self;
-    
-    connectViewController.targetLogoBoundsForHiding = self.controlButtonBounds;
-    if (UIInterfaceOrientationIsLandscape((UIInterfaceOrientation)[[UIDevice currentDevice] orientation]))
-        connectViewController.targetLogoCenterForHiding = self.controlButtonCenterLandscape;
-    else
-        connectViewController.targetLogoCenterForHiding = self.controlButtonCenter;
-    
-    [lookioWindow addSubview:connectViewController.view];
-    [self rejiggerWindows];
-    
-    if (lastKnownQueuePosition)
-    {
-        if ([lastKnownQueuePosition intValue] == 1)
-            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"Waiting for live agent..."];
-        else
-            connectViewController.connectionLabel.text = [NSString stringWithFormat:@"You are number %@ in line.", lastKnownQueuePosition];
-    }
-    else if (controlSocketConnecting)
-    {
-        connectViewController.connectionLabel.text = @"Connecting to a live agent...";
-    }
-    else
-    {
-        connectViewController.connectionLabel.text = @"Not connected.";
-    }
-    
-    [connectViewController showAnimated:YES];
-    
-    if (0 == [friendlyName length])
-    {
-        double delayInSeconds = 1.0;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [connectViewController showNameEntryFieldAnimated:YES];
-        });
-    }
-}
-*/
 
 - (void)showChat
 {
@@ -809,7 +748,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [chatViewController performRevealAnimation];
     
-    [chatViewController reloadMessages];
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [chatViewController reloadMessages];
+    });
+    
     //[chatViewController scrollToBottom];
     
     if (usesSounds)
@@ -992,6 +936,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         if (nil == chatViewController)
         {
+            // First, we have to kill any existing full-screen dealios.
+            [emailHistoryViewController.view removeFromSuperview];
+            [emailHistoryViewController release];
+            emailHistoryViewController = nil;
+            
+            [aboutViewController.view removeFromSuperview];
+            [aboutViewController release];
+            aboutViewController = nil;
+            
             [self showChat];
         }
         else
@@ -1177,11 +1130,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
                 
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Question"
-                                                                    message:@"Allow remote agent to see your screen?"
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Screen Share Permission"
+                                                                    message:@"To better serve you, the support agent would like to view your screen. (Agent can only view this app, and only for this session.)"
                                                                    delegate:self
                                                           cancelButtonTitle:nil
-                                                          otherButtonTitles:@"No", @"Yes", nil];
+                                                          otherButtonTitles:@"Do Not Allow", @"Allow", nil];
                 alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
@@ -1303,45 +1256,73 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)refreshControlButtonVisibility
 {
+    [controlButton stopFadeTimer];
+    [controlButton.layer removeAllAnimations];
+    
+    BOOL willHide = NO, willShow = NO;
+    
     if (lastKnownButtonVisibility)
     {
         int val = [lastKnownButtonVisibility intValue];
         if (0 == val) // never
         {
-            controlButton.hidden = YES;
+            // Want to hide.
+            willHide = NO == controlButton.hidden;
         }
         else if (1 == val) // always
         {
-            controlButton.hidden = NO;
-            controlButton.alpha = 0.0;
-            [controlButton startFadeTimer];
+            // Want to show.
+            willShow = controlButton.hidden;
         }
         else // 3 = only in session
         {
             if (introduced)
             {
-                controlButton.hidden = NO;
-                controlButton.alpha = 0.0;
-                [controlButton startFadeTimer];
+                // Want to show.
+                willShow = controlButton.hidden;
             }
             else
-                controlButton.hidden = YES;
+            {
+                // Want to hide.
+                willHide = NO == controlButton.hidden;
+            }
         }
     }
     else
     {
-        controlButton.hidden = NO;
-        controlButton.alpha = 0.0;
-        [controlButton startFadeTimer];
+        willShow = controlButton.hidden;
     }
     
-    if (controlButton.hidden)
+    // Trump card: If chat is up, button is always hidden.
+    if (chatViewController)
     {
+        willShow = NO;
+        willHide = NO == controlButton.hidden;
+    }
+    
+    if (willHide)
+    {
+        [UIView animateWithDuration:0.5
+                         animations:^{
+                             controlButton.alpha = 0.0;
+                         }
+                         completion:^(BOOL finished) {
+                             controlButton.hidden = YES;
+                         }];
+        
         if ([delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
             [delegate lookIOManagerDidHideControlButton:self];
     }
-    else
+    else if (willShow)
     {
+        controlButton.alpha = 0.0;
+        controlButton.hidden = NO;
+        
+        [UIView animateWithDuration:0.5
+                         animations:^{
+                             controlButton.alpha = 1.0;
+                         }];
+        
         if ([delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
             [delegate lookIOManagerDidShowControlButton:self];
     }
@@ -1412,8 +1393,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lastKnownButtonTextColor = [color retain];
     }
     
-    [controlButton setNeedsLayout];
-    [controlButton setNeedsDisplay];
+     [controlButton setNeedsLayout];
+     [controlButton setNeedsDisplay];
 }
 
 - (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -1966,7 +1947,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        if (nil == leaveMessageViewController && nil == emailHistoryViewController && nil == aboutViewController)
+        if (nil == leaveMessageViewController && nil == emailHistoryViewController && nil == aboutViewController && NO == screenshotsAllowed)
             [self showChat];
     }
     

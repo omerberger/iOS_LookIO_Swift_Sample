@@ -41,6 +41,7 @@
     NSUInteger previousTextLength;
     UIActionSheet *settingsActionSheet;
     NSString *pendingChatText, *initialChatText;
+    UILabel *loadingLabel;
     id delegate;
     id dataSource;
 }

@@ -47,5 +47,6 @@ typedef enum
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
 
 - (void)startFadeTimer;
+- (void)stopFadeTimer;
 
 @end

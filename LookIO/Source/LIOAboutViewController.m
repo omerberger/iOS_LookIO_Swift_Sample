@@ -155,7 +155,7 @@
     aFrame.size.height = 27.0;
     submitButton.frame = aFrame;
     [submitButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    [submitButton setTitle:@"Join Beta" forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
@@ -168,7 +168,7 @@
     aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 5.0;
     cancelButton.frame = aFrame;
     [cancelButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    [cancelButton setTitle:@"Back" forState:UIControlStateNormal];
     cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;

@@ -62,30 +62,6 @@
 
 - (void)layoutSubviews
 {
-    //[super layoutSubviews];
-    
-    /*
-    if (LIOControlButtonViewModeHorizontal == currentMode)
-    {
-        CGRect aFrame = self.frame;
-        aFrame.size.width = 120.0;
-        aFrame.size.height = 40.0;
-        self.frame = aFrame;
-    }
-    else
-    {
-        CGRect aFrame = self.frame;
-        aFrame.size.width = 40.0;
-        aFrame.size.height = 120.0;
-        self.frame = aFrame;
-    }
-    
-    label.transform = CGAffineTransformIdentity;
-    if (LIOControlButtonViewModeVertical == currentMode)
-        label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
-    label.frame = self.bounds;
-     */
-    
     if (labelText)
         label.text = labelText;
     else
@@ -163,6 +139,13 @@
     self.alpha = 1.0;
     
     fadeTimer = [[LIOTimerProxy alloc] initWithTimeInterval:5.0 target:self selector:@selector(fadeTimerDidFire)];
+}
+
+- (void)stopFadeTimer
+{
+    [fadeTimer stopTimer];
+    [fadeTimer release];
+    fadeTimer = nil;
 }
 
 #pragma mark -

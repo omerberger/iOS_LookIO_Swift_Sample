@@ -10,6 +10,7 @@
 #import "LIOChatboxView.h"
 #import "LIONiceTextField.h"
 #import "LIOLookIOManager.h"
+#import <QuartzCore/QuartzCore.h>
 
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
@@ -44,20 +45,21 @@
     dismissalButton.backgroundColor = [UIColor clearColor];
     [scrollView addSubview:dismissalButton];
     
-    /*
-    Class $UIGlassButton = NSClassFromString(@"UIGlassButton");
-    
-    endSessionButton = [[$UIGlassButton alloc] initWithFrame:CGRectZero];
-    [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
-    [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    [endSessionButton sizeToFit];
-    CGRect aFrame = [endSessionButton frame];
-    aFrame.origin.y = rootView.bounds.size.height - aFrame.size.height - 5.0;
-    aFrame.origin.x = (rootView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-    [endSessionButton setFrame:aFrame];
-    [endSessionButton setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin];
-    [rootView addSubview:endSessionButton];
-     */
+    loadingLabel = [[UILabel alloc] init];
+    loadingLabel.text = @"One moment...";
+    loadingLabel.backgroundColor = [UIColor clearColor];
+    loadingLabel.textColor = [UIColor whiteColor];
+    loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    loadingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    loadingLabel.layer.shadowOpacity = 1.0;
+    loadingLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
+    loadingLabel.layer.shadowRadius = 1.0;
+    [loadingLabel sizeToFit];
+    CGRect aFrame = loadingLabel.frame;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = (rootView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    loadingLabel.frame = aFrame;
+    [rootView addSubview:loadingLabel];
 }
 
 - (void)viewDidLoad
@@ -98,6 +100,7 @@
     [dismissalButton release];
     [settingsActionSheet release];
     [pendingChatText release];
+    [loadingLabel release];
     
     [super dealloc];
 }
@@ -114,7 +117,7 @@
 {
     [super viewWillAppear:animated];
     
-    [self reloadMessages];
+    //[self reloadMessages];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -190,6 +193,13 @@
     CGSize contentSize = contentSize = CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height + contentHeight);
     scrollView.contentSize = contentSize;
     
+    if ([messageViews count] >= LIOChatViewControllerMaxHistoryLength)
+    {
+        CGPoint aPoint = scrollView.contentOffset;
+        aPoint.y -= lastChatboxHeight;
+        scrollView.contentOffset = aPoint;
+    }
+    
     [self scrollToBottom];
     
     CGRect buttonFrame = CGRectZero;
@@ -224,17 +234,14 @@
             [aChatbox switchToMode:LIOChatboxViewModeFull];
         }
     }
+    
+    loadingLabel.hidden = YES;
 }
 
 - (void)scrollToBottom
 {
-    /*
-    [scrollView scrollRectToVisible:CGRectMake(0.0, scrollView.contentSize.height - LIOChatViewControllerChatboxMinHeight, scrollView.frame.size.width, 
-     LIOChatViewControllerChatboxMinHeight) animated:YES];
-     */
-
+    // ... why is this here. D:
     static int numScrolls = 0;
-    
     if (numScrolls < 2)
     {
         numScrolls++;
