@@ -240,14 +240,6 @@
 
 - (void)scrollToBottom
 {
-    // ... why is this here. D:
-    static int numScrolls = 0;
-    if (numScrolls < 2)
-    {
-        numScrolls++;
-        return;
-    }
-    
     [UIView animateWithDuration:0.33 animations:^{
         scrollView.contentOffset = CGPointMake(0.0, scrollView.contentSize.height - scrollView.frame.size.height);
     }];
