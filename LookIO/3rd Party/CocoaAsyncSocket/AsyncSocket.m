@@ -641,10 +641,10 @@ static void MyCFWriteStreamCallback(CFWriteStreamRef stream, CFStreamEventType t
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * The AsyncSpecialPacket encompasses special instructions for interruptions in the read/write queues.
+ * The AsyncSpecialPacket_LIO encompasses special instructions for interruptions in the read/write queues.
  * This class my be altered to support more than just TLS in the future.
 **/
-@interface AsyncSpecialPacket : NSObject
+@interface AsyncSpecialPacket_LIO : NSObject
 {
   @public
 	NSDictionary *tlsSettings;
@@ -652,7 +652,7 @@ static void MyCFWriteStreamCallback(CFWriteStreamRef stream, CFStreamEventType t
 - (id)initWithTLSSettings:(NSDictionary *)settings;
 @end
 
-@implementation AsyncSpecialPacket
+@implementation AsyncSpecialPacket_LIO
 
 - (id)initWithTLSSettings:(NSDictionary *)settings
 {
@@ -865,7 +865,7 @@ static void MyCFWriteStreamCallback(CFWriteStreamRef stream, CFStreamEventType t
 #endif
 	
 	// Check to make sure we're actually reading something right now,
-	// and that the read packet isn't an AsyncSpecialPacket (upgrade to TLS).
+	// and that the read packet isn't an AsyncSpecialPacket_LIO (upgrade to TLS).
 	if (!theCurrentRead || ![theCurrentRead isKindOfClass:[AsyncReadPacket_LIO class]])
 	{
 		if (tag != NULL)   *tag = 0;
@@ -899,7 +899,7 @@ static void MyCFWriteStreamCallback(CFWriteStreamRef stream, CFStreamEventType t
 #endif
 	
 	// Check to make sure we're actually writing something right now,
-	// and that the write packet isn't an AsyncSpecialPacket (upgrade to TLS).
+	// and that the write packet isn't an AsyncSpecialPacket_LIO (upgrade to TLS).
 	if (!theCurrentWrite || ![theCurrentWrite isKindOfClass:[AsyncWritePacket_LIO class]])
 	{
 		if (tag != NULL)   *tag = 0;
@@ -2168,7 +2168,7 @@ Failed:
 	if(theCurrentRead != nil)
 	{
 		// We never finished the current read.
-		// Check to see if it's a normal read packet (not AsyncSpecialPacket) and if it had read anything yet.
+		// Check to see if it's a normal read packet (not AsyncSpecialPacket_LIO) and if it had read anything yet.
 		
 		if(([theCurrentRead isKindOfClass:[AsyncReadPacket_LIO class]]) && (theCurrentRead->bytesDone > 0))
 		{
@@ -3466,7 +3466,7 @@ Failed:
 			theCurrentRead = [[theReadQueue objectAtIndex:0] retain];
 			[theReadQueue removeObjectAtIndex:0];
 			
-			if([theCurrentRead isKindOfClass:[AsyncSpecialPacket class]])
+			if([theCurrentRead isKindOfClass:[AsyncSpecialPacket_LIO class]])
 			{
 				// Attempt to start TLS
 				theFlags |= kStartingReadTLS;
@@ -3564,7 +3564,7 @@ Failed:
 		return;
 	}
 	
-	// Note: This method is not called if theCurrentRead is an AsyncSpecialPacket (startTLS packet)
+	// Note: This method is not called if theCurrentRead is an AsyncSpecialPacket_LIO (startTLS packet)
 	
 	NSUInteger totalBytesRead = 0;
 	
@@ -3921,7 +3921,7 @@ Failed:
 			theCurrentWrite = [[theWriteQueue objectAtIndex:0] retain];
 			[theWriteQueue removeObjectAtIndex:0];
 			
-			if([theCurrentWrite isKindOfClass:[AsyncSpecialPacket class]])
+			if([theCurrentWrite isKindOfClass:[AsyncSpecialPacket_LIO class]])
 			{
 				// Attempt to start TLS
 				theFlags |= kStartingWriteTLS;
@@ -3986,7 +3986,7 @@ Failed:
 		return;
 	}
 	
-	// Note: This method is not called if theCurrentWrite is an AsyncSpecialPacket (startTLS packet)
+	// Note: This method is not called if theCurrentWrite is an AsyncSpecialPacket_LIO (startTLS packet)
 	
 	NSUInteger totalBytesWritten = 0;
 	
@@ -4126,7 +4126,7 @@ Failed:
         tlsSettings = [NSDictionary dictionary];
     }
 	
-	AsyncSpecialPacket *packet = [[AsyncSpecialPacket alloc] initWithTLSSettings:tlsSettings];
+	AsyncSpecialPacket_LIO *packet = [[AsyncSpecialPacket_LIO alloc] initWithTLSSettings:tlsSettings];
 	
 	[theReadQueue addObject:packet];
 	[self scheduleDequeueRead];
@@ -4147,7 +4147,7 @@ Failed:
 	
 	if((theFlags & kStartingReadTLS) && (theFlags & kStartingWriteTLS))
 	{
-		AsyncSpecialPacket *tlsPacket = (AsyncSpecialPacket *)theCurrentRead;
+		AsyncSpecialPacket_LIO *tlsPacket = (AsyncSpecialPacket_LIO *)theCurrentRead;
 		
 		BOOL didStartOnReadStream = CFReadStreamSetProperty(theReadStream, kCFStreamPropertySSLSettings,
 														   (CFDictionaryRef)tlsPacket->tlsSettings);
