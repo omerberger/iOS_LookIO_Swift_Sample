@@ -153,8 +153,10 @@
     if (count > LIOChatViewControllerMaxHistoryLength)
         textMessages = [textMessages subarrayWithRange:NSMakeRange(count - LIOChatViewControllerMaxHistoryLength, LIOChatViewControllerMaxHistoryLength)];
     
-    for (NSString *aMessage in textMessages)
+    for (int i=0; i<[textMessages count]; i++)
     {
+        NSString *aMessage = [textMessages objectAtIndex:i];
+        
         CGRect aFrame = CGRectMake(10.0, 0.0, self.view.bounds.size.width - 20.0, LIOChatViewControllerChatboxMinHeight);
         if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         {
@@ -163,7 +165,12 @@
             else
                 aFrame = CGRectMake(100.0, 0.0, 568.0, LIOChatViewControllerChatboxMinHeight);
         }
-        LIOChatboxView *newChatbox = [[[LIOChatboxView alloc] initWithFrame:aFrame] autorelease];
+        
+        LIOChatboxViewMode initialMode = LIOChatboxViewModeMinimal;
+        if (i == [textMessages count] - 1)
+            initialMode = LIOChatboxViewModeFull;
+        
+        LIOChatboxView *newChatbox = [[[LIOChatboxView alloc] initWithFrame:aFrame initialMode:initialMode] autorelease];
         [newChatbox populateMessageViewWithText:aMessage];
         [messageViews addObject:newChatbox];
         [scrollView addSubview:newChatbox];

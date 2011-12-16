@@ -51,6 +51,7 @@ typedef enum
 @property(nonatomic, readonly) id settingsButton;
 @property(nonatomic, assign) id delegate;
 
+- (id)initWithFrame:(CGRect)frame initialMode:(LIOChatboxViewMode)initialMode;
 - (void)populateMessageViewWithText:(NSString *)aString;
 - (void)switchToMode:(LIOChatboxViewMode)aMode;
 - (void)rejiggerLayout;

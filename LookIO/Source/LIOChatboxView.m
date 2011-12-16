@@ -17,12 +17,14 @@
 
 @synthesize delegate, inputField, sendButton, settingsButton;
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame initialMode:(LIOChatboxViewMode)initialMode
 {
     self = [super initWithFrame:frame];
     
     if (self)
     {
+        currentMode = initialMode;
+        
         self.backgroundColor = [UIColor clearColor];
         
         bubbleView = [[UIView alloc] initWithFrame:self.bounds];
@@ -53,58 +55,61 @@
         messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:messageView];
         
-        inputFieldBackground = [[UIImageView alloc] init];
-        inputFieldBackground.userInteractionEnabled = YES;
-        inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
-        aFrame.origin.x = messageView.frame.origin.x + 3.0;
-        aFrame.size.width = bubbleView.frame.size.width - 24.0;
-        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
-        aFrame.size.height = 30.0;
-        inputFieldBackground.frame = aFrame;
-        inputFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        inputFieldBackground.clipsToBounds = YES;
-        [self addSubview:inputFieldBackground];
-        
-        CGSize size = [@"jpqQABTY" sizeWithFont:messageView.font];
-        singleLineHeight = size.height;
-        
-        inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
-        inputField.font = messageView.font;
-        inputField.delegate = self;
-        inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        inputField.returnKeyType = UIReturnKeySend;
-        inputField.hidden = YES;
-        inputField.backgroundColor = [UIColor clearColor];
-        //inputField.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];
-        aFrame = inputField.frame;
-        aFrame.origin.y = -3.0;
-        aFrame.size.height = 4800.0;
-        inputField.frame = aFrame;
-        [inputFieldBackground addSubview:inputField];
-        
-        UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
-        glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
-        
-        sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-        [sendButton setTitle:@"Send" forState:UIControlStateNormal];
-        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-        sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y, 59.0, 30.0);
-        [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        sendButton.hidden = YES;
-        [self addSubview:sendButton];
-        
-        settingsButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        [settingsButton setBackgroundImage:lookioImage(@"LIOSettingsButton") forState:UIControlStateNormal];
-        [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        aFrame = CGRectZero;
-        aFrame.size.width = 33.0;
-        aFrame.size.height = 33.0;
-        aFrame.origin.x = self.frame.size.width - aFrame.size.width - 10.0;
-        aFrame.origin.y = 10.0;
-        [settingsButton setFrame:aFrame];
-        [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
-        [self addSubview:(UIView *)settingsButton];
+        if (LIOChatboxViewModeFull == currentMode)
+        {
+            inputFieldBackground = [[UIImageView alloc] init];
+            inputFieldBackground.userInteractionEnabled = YES;
+            inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+            aFrame.origin.x = messageView.frame.origin.x + 3.0;
+            aFrame.size.width = bubbleView.frame.size.width - 24.0;
+            aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
+            aFrame.size.height = 30.0;
+            inputFieldBackground.frame = aFrame;
+            inputFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            inputFieldBackground.clipsToBounds = YES;
+            [self addSubview:inputFieldBackground];
+            
+            CGSize size = [@"jpqQABTY" sizeWithFont:messageView.font];
+            singleLineHeight = size.height;
+            
+            inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
+            inputField.font = messageView.font;
+            inputField.delegate = self;
+            inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            inputField.returnKeyType = UIReturnKeySend;
+            inputField.hidden = YES;
+            inputField.backgroundColor = [UIColor clearColor];
+            //inputField.backgroundColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:0.5];
+            aFrame = inputField.frame;
+            aFrame.origin.y = -3.0;
+            aFrame.size.height = 4800.0;
+            inputField.frame = aFrame;
+            [inputFieldBackground addSubview:inputField];
+            
+            UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
+            glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
+            
+            sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+            [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
+            [sendButton setTitle:@"Send" forState:UIControlStateNormal];
+            sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+            sendButton.frame = CGRectMake(inputField.frame.origin.x + inputField.frame.size.width + 6.0, inputField.frame.origin.y, 59.0, 30.0);
+            [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+            sendButton.hidden = YES;
+            [self addSubview:sendButton];
+            
+            settingsButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            [settingsButton setBackgroundImage:lookioImage(@"LIOSettingsButton") forState:UIControlStateNormal];
+            [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+            aFrame = CGRectZero;
+            aFrame.size.width = 33.0;
+            aFrame.size.height = 33.0;
+            aFrame.origin.x = self.frame.size.width - aFrame.size.width - 10.0;
+            aFrame.origin.y = 10.0;
+            [settingsButton setFrame:aFrame];
+            [settingsButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
+            [self addSubview:(UIView *)settingsButton];
+        }
     }
     
     return self;
