@@ -613,7 +613,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         lookioWindow.hidden = YES;
         
-        [previousKeyWindow makeKeyAndVisible];
+        [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
         [self refreshControlButtonVisibility];

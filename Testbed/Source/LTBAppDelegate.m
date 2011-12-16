@@ -25,7 +25,6 @@
     [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObjectsAndKeys:@"12313123", @"email_address", nil]];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self];
     
-    
     return YES;
 }
 
