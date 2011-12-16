@@ -34,8 +34,8 @@
         label.textAlignment = UITextAlignmentCenter;
         label.layer.shadowColor = [UIColor blackColor].CGColor;
         label.layer.shadowOpacity = 1.0;
-        label.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-        label.layer.shadowRadius = 1.0;
+        label.layer.shadowOffset = CGSizeMake(1.5, 1.5);
+        label.layer.shadowRadius = 1.5;
         label.userInteractionEnabled = NO;
         [self addSubview:label];
         
@@ -163,6 +163,9 @@
     {
         const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
         darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
+        
+        UIColor *shadowColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.5) green:(rgba[1] * 0.5) blue:(rgba[2] * 0.5) alpha:rgba[3]];
+        label.layer.shadowColor = shadowColor.CGColor;        
     }
 }
 
