@@ -41,4 +41,9 @@
     return YES;
 }
 
+- (UIWindow *)lookIOManagerMainWindowForHostApp:(LIOLookIOManager *)aManager
+{
+    return self.window;
+}
+
 @end

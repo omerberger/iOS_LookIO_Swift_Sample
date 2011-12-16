@@ -608,7 +608,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (nil == previousKeyWindow)
         {
-            previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+            id keyWindow = [[UIApplication sharedApplication] keyWindow];
+            if ([keyWindow isMemberOfClass:[UIWindow class]])
+            {
+                previousKeyWindow = keyWindow;
+                
+#ifdef DEBUG
+                NSLog(@"[LOOKIO] Got key window from UIApplication.");
+#endif // DEBUG
+            }
+            else if ([delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
+            {
+                previousKeyWindow = [delegate lookIOManagerMainWindowForHostApp:self];
+                
+#ifdef DEBUG
+                NSLog(@"[LOOKIO] Got key window from delegate.");
+#endif
+            }
+            else
+            {
+                NSLog(@"[LOOKIO] WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
+            }
+            
             [lookioWindow makeKeyAndVisible];
         }
     }

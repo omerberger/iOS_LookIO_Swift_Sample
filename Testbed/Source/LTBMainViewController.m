@@ -84,10 +84,19 @@
 
 - (void)flightsButtonWasTapped
 {
+    UIAlertView *lol = [[UIAlertView alloc] initWithTitle:@"lol"
+                                                  message:@"lol"
+                                                 delegate:nil
+                                        cancelButtonTitle:@"lol"
+                                        otherButtonTitles:@"lol", nil];
+    [lol show];
+    [lol autorelease];
+    /*
     self.bookFlightsViewController = [[LTBBookFlightsViewController alloc] initWithNibName:nil bundle:nil];
     self.bookFlightsViewController.delegate = self;
     [self presentModalViewController:self.bookFlightsViewController animated:YES];
     //[[[UIApplication sharedApplication] keyWindow] addSubview:self.bookFlightsViewController.view];
+     */
 }
 
 - (void)helpButtonWasTapped
