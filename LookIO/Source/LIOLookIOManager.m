@@ -61,6 +61,7 @@
 #define LIOLookIOManagerLastKnownButtonTintColorKey     @"LIOLookIOManagerLastKnownButtonTintColorKey"
 #define LIOLookIOManagerLastKnownButtonTextColorKey     @"LIOLookIOManagerLastKnownButtonTextColorKey"
 #define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
+#define LIOLookIOManagerLastKnownEnabledStatusKey       @"LIOLookIOManagerLastKnownEnabledStatusKey"
 
 #define LIOLookIOManagerControlButtonHeight 110.0
 #define LIOLookIOManagerControlButtonWidth  35.0
@@ -104,7 +105,7 @@
     UIWindow *previousKeyWindow;
     UIInterfaceOrientation actualInterfaceOrientation;
     NSString *sessionId;
-    NSNumber *lastKnownButtonVisibility;
+    NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
@@ -360,6 +361,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.textColor = lastKnownButtonTextColor;
     }
     
+    [lastKnownEnabledStatus release];
+    lastKnownEnabledStatus = [[userDefaults objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey] retain];
+    
     [self refreshControlButtonVisibility];
     
     // Restore other settings.
@@ -525,6 +529,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonTintColor release];
     [lastKnownButtonTextColor release];
     [lastKnownWelcomeMessage release];
+    [lastKnownEnabledStatus release];
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
@@ -759,6 +764,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (chatViewController)
         return;
+    
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
     chatViewController = [[LIOChatViewController alloc] initWithNibName:nil bundle:nil];
     chatViewController.delegate = self;
@@ -1287,6 +1294,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlButton stopFadeTimer];
     [controlButton.layer removeAllAnimations];
     
+    // Trump card #1: "enabled" from server-side settings.
+    if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])
+    {
+        controlButton.hidden = YES;
+        return;
+    }
+    
     BOOL willHide = NO, willShow = NO;
     
     if (lastKnownButtonVisibility)
@@ -1321,7 +1335,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         willShow = controlButton.hidden;
     }
     
-    // Trump card: If chat is up, button is always hidden.
+    // Trump card #2: If chat is up, button is always hidden.
     if (chatViewController)
     {
         willShow = NO;
@@ -1354,6 +1368,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
             [delegate lookIOManagerDidShowControlButton:self];
     }
+    
+    [controlButton setNeedsLayout];
+    [controlButton setNeedsDisplay];
 }
 
 - (void)parseAndSaveClientParams:(NSDictionary *)params
@@ -1421,8 +1438,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lastKnownButtonTextColor = [color retain];
     }
     
-     [controlButton setNeedsLayout];
-     [controlButton setNeedsDisplay];
+    NSNumber *enabledSetting = [params objectForKey:@"enabled"];
+    if (enabledSetting)
+    {
+        [userDefaults setObject:enabledSetting forKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = [enabledSetting retain];
+    }
+    
+    [self refreshControlButtonVisibility];
 }
 
 - (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -1987,6 +2012,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSLog(@"[LOOKIO] <RESUME> Request: %@", introDictWwwFormEncoded);
 #endif
     appResumeRequestConnection = [[NSURLConnection alloc] initWithRequest:appResumeRequest delegate:self];
+    
+    [self refreshControlButtonVisibility];
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
