@@ -87,7 +87,7 @@
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
     BOOL usesTLS, usesSounds;
-    UIWindow *lookioWindow;
+    UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
     NSMutableURLRequest *appLaunchRequest, *appResumeRequest;
     NSURLConnection *appLaunchRequestConnection, *appResumeRequestConnection;
     NSMutableData *appLaunchRequestData, *appResumeRequestData;
@@ -102,7 +102,6 @@
     NSString *friendlyName;
     BOOL pendingLeaveMessage;
     NSMutableDictionary *sessionExtras;
-    UIWindow *previousKeyWindow;
     UIInterfaceOrientation actualInterfaceOrientation;
     NSString *sessionId;
     NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
@@ -242,7 +241,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -533,6 +532,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
+    [mainWindow release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -613,14 +613,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (nil == previousKeyWindow)
         {
-            id keyWindow = [[UIApplication sharedApplication] keyWindow];
-            if ([keyWindow isMemberOfClass:[UIWindow class]])
+            if (mainWindow)
             {
-                previousKeyWindow = keyWindow;
+                previousKeyWindow = mainWindow;
                 
 #ifdef DEBUG
-                NSLog(@"[LOOKIO] Got key window from UIApplication.");
-#endif // DEBUG
+                NSLog(@"[LOOKIO] Got key window from mainWindow.");
+#endif
             }
             else if ([delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
             {
@@ -629,6 +628,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #ifdef DEBUG
                 NSLog(@"[LOOKIO] Got key window from delegate.");
 #endif
+            }
+            else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
+            {
+                previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+                
+#ifdef DEBUG
+                NSLog(@"[LOOKIO] Got key window from UIApplication.");
+#endif // DEBUG
             }
             else
             {
