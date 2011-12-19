@@ -1445,6 +1445,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = [enabledSetting retain];
+        
+        if ([delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+            [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
     }
     
     [self refreshControlButtonVisibility];
