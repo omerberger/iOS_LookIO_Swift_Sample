@@ -241,7 +241,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow, delegate;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
