@@ -23,7 +23,8 @@
     [self.window addSubview:mainViewController.view];
 
     [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObjectsAndKeys:@"12313123", @"email_address", nil]];
-    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self];
+    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:nil];
+    [LIOLookIOManager sharedLookIOManager].delegate = self;
     
     return YES;
 }

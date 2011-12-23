@@ -80,8 +80,7 @@
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
-    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal;
-    BOOL minimized;
+    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
@@ -598,6 +597,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
+    sessionEnding = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -839,6 +839,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginSession
 {
+    // Prevent a new session from being established if the current one
+    // is ending.
+    if (sessionEnding)
+    {
+#ifdef DEBUG
+        NSLog(@"[beginSession] Ignored: current session is still ending...");
+#endif // DEBUG
+        return;
+    }
+    
     if (controlSocketConnecting)
     {
         NSLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
@@ -1634,7 +1644,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSLog(@"[CONNECT] Socket disconnected.");
     
     if (resetAfterDisconnect)
+    {
+        sessionEnding = YES;
         [self reset];
+    }
 }
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -1853,6 +1866,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (1 == buttonIndex) // "Yes"
             {
+                sessionEnding = YES;
+                
                 if (NO == [controlSocket isConnected])
                 {
                     [self reset];
