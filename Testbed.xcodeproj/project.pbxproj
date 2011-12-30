@@ -10,6 +10,7 @@
 		CDB6AFC214464ED6007BF92D /* LIOFullLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */; };
 		CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */; };
 		D416C513141411F600D3509B /* LIOInputBar.png in Resources */ = {isa = PBXBuildFile; fileRef = D416C512141411F600D3509B /* LIOInputBar.png */; };
+		D421771D14AD461800B4E59E /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D421771C14AD461800B4E59E /* CoreTelephony.framework */; };
 		D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D445B38B144E67B700C90F30 /* LIOGlassButton.png */; };
 		D44DD7C414044915004374FE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C314044915004374FE /* UIKit.framework */; };
 		D44DD7C614044915004374FE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D44DD7C514044915004374FE /* Foundation.framework */; };
@@ -50,6 +51,7 @@
 		CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOFullLogo.png; sourceTree = "<group>"; };
 		CDB6AFC114464ED6007BF92D /* LIOFullLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOFullLogo@2x.png"; sourceTree = "<group>"; };
 		D416C512141411F600D3509B /* LIOInputBar.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOInputBar.png; sourceTree = "<group>"; };
+		D421771C14AD461800B4E59E /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreTelephony.framework; sourceTree = DEVELOPER_DIR; };
 		D445B38B144E67B700C90F30 /* LIOGlassButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOGlassButton.png; sourceTree = "<group>"; };
 		D44DD7BF14044915004374FE /* Testbed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testbed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D44DD7C314044915004374FE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -97,6 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D421771D14AD461800B4E59E /* CoreTelephony.framework in Frameworks */,
 				D4C584D11468A510000D7F26 /* SystemConfiguration.framework in Frameworks */,
 				D479706F141D4B5E00950E53 /* AudioToolbox.framework in Frameworks */,
 				D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */,
@@ -122,6 +125,7 @@
 		D44DD7C214044915004374FE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D421771C14AD461800B4E59E /* CoreTelephony.framework */,
 				D4C584D01468A510000D7F26 /* SystemConfiguration.framework */,
 				D479706E141D4B5E00950E53 /* AudioToolbox.framework */,
 				D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */,

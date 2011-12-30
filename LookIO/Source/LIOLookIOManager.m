@@ -11,6 +11,10 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <CoreTelephony/CTCall.h>
+#import <CoreTelephony/CTCallCenter.h>
+#import <CoreTelephony/CTCarrier.h>
+#import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
@@ -110,6 +114,7 @@
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
+    CTCallCenter *callCenter;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -120,6 +125,7 @@
 - (void)refreshControlButtonVisibility;
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
+- (void)handleCallEvent:(CTCall *)aCall;
 
 @end
 
@@ -241,6 +247,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow, delegate;
+@dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -325,6 +332,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.hidden = YES;
     controlButton.delegate = self;
     [keyWindow addSubview:controlButton];
+    
+    callCenter = [[CTCallCenter alloc] init];
+    callCenter.callEventHandler = ^(CTCall *aCall) {
+        [self handleCallEvent:aCall];
+    };
     
     // Restore control button settings.
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -492,6 +504,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.touchImage = nil;
     
+    [callCenter release];
+    callCenter = nil;
+    
     [controlSocket disconnect];
     [controlSocket release];
     controlSocket = nil;
@@ -575,6 +590,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
 
+    [callCenter release];
+    callCenter = nil;
+    
     [sessionId release];
     sessionId = nil;
     
@@ -1584,6 +1602,42 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return introDict;
 }
 
+- (void)handleCallEvent:(CTCall *)aCall
+{
+    if (CTCallStateConnected == aCall.callState)
+    {
+        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"connected", @"state", nil];
+        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"advisory", @"type",
+                                  @"call", @"action",
+                                  dataDict, @"data",
+                                  nil];
+        
+        NSString *call = [jsonWriter stringWithObject:callDict];
+        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+    else
+    {
+        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"disconnected", @"state", nil];
+        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"advisory", @"type",
+                                  @"call", @"action",
+                                  dataDict, @"data",
+                                  nil];
+        
+        NSString *call = [jsonWriter stringWithObject:callDict];
+        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate methods
 
@@ -2378,6 +2432,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self showChat];
     else
         [self beginSession];
+}
+
+#pragma mark -
+#pragma mark Dynamic property accessors
+
+- (BOOL)enabled
+{
+    return [lastKnownEnabledStatus boolValue];
 }
 
 @end
