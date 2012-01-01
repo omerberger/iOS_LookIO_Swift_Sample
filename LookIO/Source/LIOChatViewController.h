@@ -42,6 +42,7 @@
     UIActionSheet *settingsActionSheet;
     NSString *pendingChatText, *initialChatText;
     UILabel *loadingLabel;
+    int lastScrollId;
     id delegate;
     id dataSource;
 }

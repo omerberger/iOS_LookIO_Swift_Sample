@@ -12,7 +12,8 @@
 #define LIOChatboxViewMaxLinesPortrait      8
 #define LIOChatboxViewMaxLinesLandscape     4
 
-#define LIOChatboxViewAdTextTrigger     @"🈁♨✝ADVERTISEMENT!✝♨🈁"
+#define LIOChatboxViewAdTextTrigger         @"🈁♨✝ADVERTISEMENT!✝♨🈁"
+#define LIOChatboxViewNotificationTrigger   @"🈁♨✝"
 
 @class LIONiceTextField, LIOTextView;
 

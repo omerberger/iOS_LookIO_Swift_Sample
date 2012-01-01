@@ -182,6 +182,12 @@
             UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
             [self addGestureRecognizer:tapper];
         }
+        
+        if ([messageView.text hasPrefix:LIOChatboxViewNotificationTrigger])
+        {
+            messageView.font = [UIFont italicSystemFontOfSize:16.0];
+            
+        }
     }
     else
     {

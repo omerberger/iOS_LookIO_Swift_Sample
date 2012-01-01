@@ -67,7 +67,7 @@
     [super viewDidLoad];
     
     messageViews = [[NSMutableArray alloc] init];
-    
+    lastScrollId = 0;
 }
 
 - (void)viewDidUnload
@@ -247,9 +247,23 @@
 
 - (void)scrollToBottom
 {
-    [UIView animateWithDuration:0.33 animations:^{
-        scrollView.contentOffset = CGPointMake(0.0, scrollView.contentSize.height - scrollView.frame.size.height);
-    }];
+    /*
+    lastScrollId++;
+    int capturedScrollId = lastScrollId;
+    
+    double delayInSeconds = 0.8;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^() {
+        if (capturedScrollId != lastScrollId)
+            return;
+        */
+        [UIView animateWithDuration:0.33 animations:^{
+            scrollView.contentOffset = CGPointMake(0.0, scrollView.contentSize.height - scrollView.frame.size.height);
+        }];
+/*        
+        
+    });
+ */
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

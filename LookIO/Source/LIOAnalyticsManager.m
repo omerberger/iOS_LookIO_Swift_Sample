@@ -7,7 +7,6 @@
 //
 
 #import "LIOAnalyticsManager.h"
-#import <SystemConfiguration/SystemConfiguration.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
@@ -16,7 +15,15 @@
 
 LIOAnalyticsManager *sharedAnalyticsManager = nil;
 
+static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
+{
+    LIOAnalyticsManager *fakeSelf = (LIOAnalyticsManager *)info;
+    [fakeSelf handleReachabilityCallbackWithFlags:flags];
+}
+
 @implementation LIOAnalyticsManager
+
+@synthesize lastKnownReachabilityStatus;
 
 + (LIOAnalyticsManager *)sharedAnalyticsManager
 {
@@ -24,6 +31,76 @@ LIOAnalyticsManager *sharedAnalyticsManager = nil;
         sharedAnalyticsManager = [[LIOAnalyticsManager alloc] init];
     
     return sharedAnalyticsManager;
+}
+
+- (id)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        struct sockaddr_in zeroAddress;
+        bzero(&zeroAddress, sizeof(zeroAddress));
+        zeroAddress.sin_len = sizeof(zeroAddress);
+        zeroAddress.sin_family = AF_INET;
+        
+        reachabilityRef = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)&zeroAddress);
+        SCNetworkReachabilityContext context = {0, self, NULL, NULL, NULL};
+        SCNetworkReachabilitySetCallback(reachabilityRef, reachabilityCallback, &context);
+        SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    }
+    
+    return self;
+}
+
+- (void)dealloc
+{
+    SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    CFRelease(reachabilityRef);
+    
+    [super dealloc];
+}
+
+- (void)pumpReachabilityStatus
+{
+    SCNetworkReachabilityFlags flags;
+    SCNetworkReachabilityGetFlags(reachabilityRef, &flags);
+    [self handleReachabilityCallbackWithFlags:flags];
+}
+
+- (void)handleReachabilityCallbackWithFlags:(SCNetworkReachabilityFlags)flags
+{
+    LIOAnalyticsManagerReachabilityStatus previousStatus = lastKnownReachabilityStatus;
+    
+	if ((flags & kSCNetworkReachabilityFlagsReachable) == 0)
+	{
+        lastKnownReachabilityStatus = LIOAnalyticsManagerReachabilityStatusDisconnected;
+	}
+    else
+    {
+        lastKnownReachabilityStatus = LIOAnalyticsManagerReachabilityStatusDisconnected;
+        
+        if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
+            lastKnownReachabilityStatus = LIOAnalyticsManagerReachabilityStatusConnected;
+        
+        if ((((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) ||
+             (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0))
+        {
+            if ((flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0)
+                lastKnownReachabilityStatus = LIOAnalyticsManagerReachabilityStatusConnected;
+        }
+        
+        if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
+        {
+            lastKnownReachabilityStatus = LIOAnalyticsManagerReachabilityStatusConnected;
+        }
+    }
+    
+    if (previousStatus != lastKnownReachabilityStatus)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:LIOAnalyticsManagerReachabilityDidChangeNotification
+                                                            object:self];
+    }
 }
 
 - (NSString *)cellularCarrierName

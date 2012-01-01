@@ -22,7 +22,11 @@
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
 
-    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObjectsAndKeys:@"12313123", @"email_address", nil]];
+    NSMutableArray *emailAddresses = [NSMutableArray array];
+    [emailAddresses addObject:@"lol@wot.com"];
+    [emailAddresses addObject:@"wug@wugwug.wug"];
+    [emailAddresses addObject:@"argh@arghle.lol"];
+    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObjectsAndKeys:emailAddresses, @"email_addresses", nil]];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:nil];
     [LIOLookIOManager sharedLookIOManager].delegate = self;
     
