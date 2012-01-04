@@ -11,6 +11,7 @@
 #import "LIONiceTextField.h"
 #import "LIOLookIOManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOAboutViewController.h"
 
 #define LIOChatViewControllerChatboxMinHeight  100.0
 #define LIOChatViewControllerChatboxPadding     10.0
@@ -101,6 +102,7 @@
     [settingsActionSheet release];
     [pendingChatText release];
     [loadingLabel release];
+    [aboutViewController release];
     
     [super dealloc];
 }
@@ -402,7 +404,9 @@
 
 - (void)chatboxViewWasTapped:(LIOChatboxView *)aView
 {
-    [delegate chatViewControllerDidTapAboutButton:self];
+    aboutViewController = [[LIOAboutViewController alloc] initWithNibName:nil bundle:nil];
+    aboutViewController.delegate = self;
+    [self presentModalViewController:aboutViewController animated:YES];
 }
 
 #pragma mark -
@@ -441,6 +445,30 @@
     
     [settingsActionSheet autorelease];
     settingsActionSheet = nil;
+}
+
+#pragma mark -
+#pragma mark LIOAboutViewControllerDelegate methods
+
+- (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController
+{
+    [self dismissModalViewControllerAnimated:YES];
+    
+    [aboutViewController release];
+    aboutViewController = nil;
+}
+
+- (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
+{
+    [self dismissModalViewControllerAnimated:YES];
+    
+    [aboutViewController release];
+    aboutViewController = nil;
+}
+
+- (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [delegate chatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
 @end

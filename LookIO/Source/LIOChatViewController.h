@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LIOTimerProxy.h"
 
-@class LIOChatboxView, LIOChatViewController;
+@class LIOChatboxView, LIOChatViewController, LIOAboutViewController;
 
 /*
 @protocol LIOChatViewControllerDelegate
@@ -18,7 +18,6 @@
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
-- (void)chatViewControllerDidTapAboutButton:(LIOChatViewController *)aController;
 - (BOOL)chatViewController:(LIOChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @optional
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController;
@@ -43,6 +42,7 @@
     NSString *pendingChatText, *initialChatText;
     UILabel *loadingLabel;
     int lastScrollId;
+    LIOAboutViewController *aboutViewController;
     id delegate;
     id dataSource;
 }

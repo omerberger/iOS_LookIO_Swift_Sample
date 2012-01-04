@@ -11,10 +11,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <SystemConfiguration/SystemConfiguration.h>
-#import <CoreTelephony/CTCall.h>
-#import <CoreTelephony/CTCallCenter.h>
-#import <CoreTelephony/CTCarrier.h>
-#import <CoreTelephony/CTTelephonyNetworkInfo.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
@@ -27,7 +23,6 @@
 #import "LIOChatViewController.h"
 #import "LIOLeaveMessageViewController.h"
 #import "LIOEmailHistoryViewController.h"
-#import "LIOAboutViewController.h"
 #import "LIOControlButtonView.h"
 #import "LIOAnalyticsManager.h"
 
@@ -71,6 +66,8 @@
 #define LIOLookIOManagerControlButtonHeight 110.0
 #define LIOLookIOManagerControlButtonWidth  35.0
 
+@class CTCall, CTCallCenter;
+
 @interface LIOLookIOManager ()
 {
     NSTimer *screenCaptureTimer;
@@ -100,7 +97,6 @@
     LIOChatViewController *chatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
-    LIOAboutViewController *aboutViewController;
     NSString *pendingFeedbackText;
     NSString *pendingEmailAddress;
     NSString *friendlyName;
@@ -117,6 +113,7 @@
     CTCallCenter *callCenter;
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
+    BOOL agentsAvailable;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -350,10 +347,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.delegate = self;
     [keyWindow addSubview:controlButton];
     
-    callCenter = [[CTCallCenter alloc] init];
-    callCenter.callEventHandler = ^(CTCall *aCall) {
-        [self handleCallEvent:aCall];
-    };
+    Class $CTCallCenter = NSClassFromString(@"CTCallCenter");
+    if ($CTCallCenter)
+    {
+        callCenter = [[$CTCallCenter alloc] init];
+        [callCenter setCallEventHandler:^(CTCall *aCall) {
+            [self handleCallEvent:aCall];
+        }];
+    }
     
     // Restore control button settings.
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -594,9 +595,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
     
-    [aboutViewController release];
-    aboutViewController = nil;
-    
     [chatViewController release];
     chatViewController = nil;
     
@@ -617,10 +615,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
-    
-    [aboutViewController.view removeFromSuperview];
-    [aboutViewController release];
-    aboutViewController = nil;
     
     [leaveMessageViewController.view removeFromSuperview];
     [leaveMessageViewController release];
@@ -669,7 +663,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerWindows
 {
-    if (chatViewController || leaveMessageViewController || emailHistoryViewController || aboutViewController)
+    if (chatViewController || leaveMessageViewController || emailHistoryViewController)
     {
         if (nil == previousKeyWindow)
         {
@@ -886,17 +880,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
 }
 
-- (void)showAboutUI
-{
-    if (aboutViewController)
-        return;
-    
-    aboutViewController = [[LIOAboutViewController alloc] initWithNibName:nil bundle:nil];
-    aboutViewController.delegate = self;
-    [lookioWindow addSubview:aboutViewController.view];
-    [self rejiggerWindows];
-}
-
 - (void)beginSession
 {
     // Prevent a new session from being established if the current one
@@ -1053,10 +1036,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [emailHistoryViewController release];
             emailHistoryViewController = nil;
             
-            [aboutViewController.view removeFromSuperview];
-            [aboutViewController release];
-            aboutViewController = nil;
-            
             [self showChat];
         }
         else
@@ -1195,10 +1174,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (online && NO == [online boolValue])
             {
                 // not online case
+                agentsAvailable = NO;
             }
             else
             {
                 // online
+                agentsAvailable = YES;
             }
         }
         else if ([action isEqualToString:@"permission"])
@@ -1633,7 +1614,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)handleCallEvent:(CTCall *)aCall
 {
-    if (CTCallStateConnected == aCall.callState)
+    if ([[aCall callState] isEqualToString:@"CTCallStateConnected"])
     {
         NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"connected", @"state", nil];
         NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -1789,6 +1770,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingFeedbackText release];
     pendingFeedbackText = [aString retain];
     
+    // No agents available? Show leave message thingy.
+    if (NO == agentsAvailable)
+    {
+        [chatViewController.view removeFromSuperview];
+        [chatViewController release];
+        chatViewController = nil;
+        
+        [self showLeaveMessageUI];
+        
+        return;
+    }
+    
     NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"chat", @"type",
                                                     aString, @"text",
@@ -1914,15 +1907,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
     }
-}
-
-- (void)chatViewControllerDidTapAboutButton:(LIOChatViewController *)aController
-{
-    [chatViewController.view removeFromSuperview];
-    [chatViewController autorelease];
-    chatViewController = nil;
-    
-    [self showAboutUI];
 }
 
 - (BOOL)chatViewController:(LIOChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -2075,10 +2059,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
     
-    [aboutViewController.view removeFromSuperview];
-    [aboutViewController release];
-    aboutViewController = nil;
-    
     [self rejiggerWindows];
 }
 
@@ -2107,7 +2087,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        if (nil == leaveMessageViewController && nil == emailHistoryViewController && nil == aboutViewController && NO == screenshotsAllowed)
+        if (nil == leaveMessageViewController && nil == emailHistoryViewController && NO == screenshotsAllowed)
             [self showChat];
     }
     
@@ -2438,6 +2418,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
+/*
 #pragma mark -
 #pragma mark LIOAboutViewControllerDelegate methods
 
@@ -2480,6 +2461,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
+*/
 
 #pragma mark -
 #pragma mark UIControl actions
