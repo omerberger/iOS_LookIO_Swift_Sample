@@ -18,6 +18,7 @@
 - (void)chatViewControllerDidTapEndSessionButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEndScreenshotsButton:(LIOChatViewController *)aController;
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController;
+- (void)chatViewController:(LIOChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail;
 - (BOOL)chatViewController:(LIOChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @optional
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController;

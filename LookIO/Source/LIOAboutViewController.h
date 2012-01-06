@@ -11,25 +11,24 @@
 
 @class LIOAboutViewController;
 
-/*
 @protocol LIOAboutViewControllerDelegate
 - (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController;
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail;
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
-*/
 
 @interface LIOAboutViewController : UIViewController <UITextFieldDelegate>
 {
+    UILabel *textsplosion01, *textsplosion02, *header01, *header02;
+    UIImageView *fieldBackground;
     UIScrollView *scrollView;
-    UIView *bubbleView;
-    UIButton *cancelButton, *submitButton;
-    UILabel *poweredByLabel, *areYouDeveloperLabel, *emailLabel, *whatIsLabel, *canAgentsLabel;
-    UILabel *paragraphOne, *paragraphTwo;
-    LIONiceTextField *emailField;
-    id delegate;
+    UITextField *inputField;
+    UIView *p1Container, *p2Container;
+    UIButton *submitButton;
+    BOOL keyboardShown;
+    id<LIOAboutViewControllerDelegate> delegate;
 }
 
-@property(nonatomic, assign) id delegate;
+@property(nonatomic, assign) id<LIOAboutViewControllerDelegate> delegate;
 
 @end

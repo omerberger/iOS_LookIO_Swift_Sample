@@ -39,6 +39,18 @@
 		D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536A1446791900B218AA /* LIOControlButton@2x.png */; };
 		D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536B1446791900B218AA /* LIODefaultTouch.png */; };
 		D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */; };
+		D49A63F514B648AB00313998 /* LIOAboutLookingGlass.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63EB14B648AB00313998 /* LIOAboutLookingGlass.png */; };
+		D49A63F614B648AB00313998 /* LIOAboutLookingGlass@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63EC14B648AB00313998 /* LIOAboutLookingGlass@2x.png */; };
+		D49A63F714B648AB00313998 /* LIOAboutPlusBubble.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63ED14B648AB00313998 /* LIOAboutPlusBubble.png */; };
+		D49A63F814B648AB00313998 /* LIOAboutPlusBubble@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63EE14B648AB00313998 /* LIOAboutPlusBubble@2x.png */; };
+		D49A63F914B648AB00313998 /* LIOAboutStretchableField.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63EF14B648AB00313998 /* LIOAboutStretchableField.png */; };
+		D49A63FB14B648AB00313998 /* LIOAboutStretchableGreenButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63F114B648AB00313998 /* LIOAboutStretchableGreenButton.png */; };
+		D49A63FD14B648AB00313998 /* LIOAboutTitle.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63F314B648AB00313998 /* LIOAboutTitle.png */; };
+		D49A63FE14B648AB00313998 /* LIOAboutTitle@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63F414B648AB00313998 /* LIOAboutTitle@2x.png */; };
+		D49A640114B6612600313998 /* LIOAboutBackground.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D49A640014B6612600313998 /* LIOAboutBackground.jpg */; };
+		D49A640314B6674100313998 /* LIOAboutStretchableSeparator.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A640214B6674100313998 /* LIOAboutStretchableSeparator.png */; };
+		D49A640614B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D49A640414B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg */; };
+		D49A640714B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D49A640514B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg */; };
 		D4B41D3314086D1D00B73C84 /* LTBBookFlightsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */; };
 		D4B41D371408774800B73C84 /* TravelocityFlightDetail.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */; };
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
@@ -85,6 +97,18 @@
 		D49A536A1446791900B218AA /* LIOControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOControlButton@2x.png"; sourceTree = "<group>"; };
 		D49A536B1446791900B218AA /* LIODefaultTouch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIODefaultTouch.png; sourceTree = "<group>"; };
 		D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIODefaultTouch@2x.png"; sourceTree = "<group>"; };
+		D49A63EB14B648AB00313998 /* LIOAboutLookingGlass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutLookingGlass.png; sourceTree = "<group>"; };
+		D49A63EC14B648AB00313998 /* LIOAboutLookingGlass@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOAboutLookingGlass@2x.png"; sourceTree = "<group>"; };
+		D49A63ED14B648AB00313998 /* LIOAboutPlusBubble.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutPlusBubble.png; sourceTree = "<group>"; };
+		D49A63EE14B648AB00313998 /* LIOAboutPlusBubble@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOAboutPlusBubble@2x.png"; sourceTree = "<group>"; };
+		D49A63EF14B648AB00313998 /* LIOAboutStretchableField.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutStretchableField.png; sourceTree = "<group>"; };
+		D49A63F114B648AB00313998 /* LIOAboutStretchableGreenButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutStretchableGreenButton.png; sourceTree = "<group>"; };
+		D49A63F314B648AB00313998 /* LIOAboutTitle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutTitle.png; sourceTree = "<group>"; };
+		D49A63F414B648AB00313998 /* LIOAboutTitle@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOAboutTitle@2x.png"; sourceTree = "<group>"; };
+		D49A640014B6612600313998 /* LIOAboutBackground.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = LIOAboutBackground.jpg; sourceTree = "<group>"; };
+		D49A640214B6674100313998 /* LIOAboutStretchableSeparator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutStretchableSeparator.png; sourceTree = "<group>"; };
+		D49A640414B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = LIOAboutBackgroundForiPhone.jpg; sourceTree = "<group>"; };
+		D49A640514B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "LIOAboutBackgroundForiPhone@2x.jpg"; sourceTree = "<group>"; };
 		D4B41D3114086D1D00B73C84 /* LTBBookFlightsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LTBBookFlightsViewController.h; sourceTree = "<group>"; };
 		D4B41D3214086D1D00B73C84 /* LTBBookFlightsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LTBBookFlightsViewController.m; sourceTree = "<group>"; };
 		D4B41D351408774800B73C84 /* TravelocityFlightDetail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TravelocityFlightDetail.png; sourceTree = "<group>"; };
@@ -152,6 +176,18 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D49A640414B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg */,
+				D49A640514B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg */,
+				D49A640214B6674100313998 /* LIOAboutStretchableSeparator.png */,
+				D49A640014B6612600313998 /* LIOAboutBackground.jpg */,
+				D49A63EB14B648AB00313998 /* LIOAboutLookingGlass.png */,
+				D49A63EC14B648AB00313998 /* LIOAboutLookingGlass@2x.png */,
+				D49A63ED14B648AB00313998 /* LIOAboutPlusBubble.png */,
+				D49A63EE14B648AB00313998 /* LIOAboutPlusBubble@2x.png */,
+				D49A63EF14B648AB00313998 /* LIOAboutStretchableField.png */,
+				D49A63F114B648AB00313998 /* LIOAboutStretchableGreenButton.png */,
+				D49A63F314B648AB00313998 /* LIOAboutTitle.png */,
+				D49A63F414B648AB00313998 /* LIOAboutTitle@2x.png */,
 				D445B38B144E67B700C90F30 /* LIOGlassButton.png */,
 				D49A53671446791900B218AA /* LIOClickIndicator.png */,
 				D49A53681446791900B218AA /* LIOClickIndicator@2x.png */,
@@ -296,6 +332,18 @@
 				D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */,
 				D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */,
 				D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */,
+				D49A63F514B648AB00313998 /* LIOAboutLookingGlass.png in Resources */,
+				D49A63F614B648AB00313998 /* LIOAboutLookingGlass@2x.png in Resources */,
+				D49A63F714B648AB00313998 /* LIOAboutPlusBubble.png in Resources */,
+				D49A63F814B648AB00313998 /* LIOAboutPlusBubble@2x.png in Resources */,
+				D49A63F914B648AB00313998 /* LIOAboutStretchableField.png in Resources */,
+				D49A63FB14B648AB00313998 /* LIOAboutStretchableGreenButton.png in Resources */,
+				D49A63FD14B648AB00313998 /* LIOAboutTitle.png in Resources */,
+				D49A63FE14B648AB00313998 /* LIOAboutTitle@2x.png in Resources */,
+				D49A640114B6612600313998 /* LIOAboutBackground.jpg in Resources */,
+				D49A640314B6674100313998 /* LIOAboutStretchableSeparator.png in Resources */,
+				D49A640614B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg in Resources */,
+				D49A640714B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -146,13 +146,26 @@ UIImage *lookioImage(NSString *path)
     NSBundle *bundle = lookioBundle();
     if (bundle)
     {
+        path = [path stringByDeletingPathExtension];
+        
         if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
         {
             NSString *path2x = [path stringByAppendingString:@"@2x"];
+            
             NSString *actualPath = [bundle pathForResource:path2x ofType:@"png"];
             if ([actualPath length])
             {
+                // Try @2xPNG...
                 NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+                if (fileData)
+                {
+                    UIImage *newImage = [UIImage imageWithData:fileData];
+                    return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
+                }
+                
+                // Try @2xJPG...
+                actualPath = [bundle pathForResource:path2x ofType:@"jpg"];
+                fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
                 {
                     UIImage *newImage = [UIImage imageWithData:fileData];
@@ -164,7 +177,14 @@ UIImage *lookioImage(NSString *path)
         NSString *actualPath = [bundle pathForResource:path ofType:@"png"];
         if ([actualPath length])
         {
+            // Try PNG...
             NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+            if (fileData)
+                return [UIImage imageWithData:fileData];
+            
+            // Try JPG...
+            actualPath = [bundle pathForResource:path ofType:@"jpg"];
+            fileData = [NSData dataWithContentsOfFile:actualPath];
             if (fileData)
                 return [UIImage imageWithData:fileData];
         }
@@ -1852,6 +1872,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
 }
 
+- (void)chatViewController:(LIOChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail
+{
+    if ([anEmail length])
+    {
+        NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:anEmail, @"email", nil];
+        NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                          @"advisory", @"type",
+                                          @"beta_email", @"action",
+                                          aDict, @"data",
+                                          nil];
+        
+        NSString *email = [jsonWriter stringWithObject:emailDict];
+        email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController
 {
     [chatViewController.view removeFromSuperview];
@@ -2418,50 +2458,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
-/*
-#pragma mark -
-#pragma mark LIOAboutViewControllerDelegate methods
-
-- (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController
-{
-    [aboutViewController.view removeFromSuperview];
-    [aboutViewController release];
-    aboutViewController = nil;
-    
-    [self showChat];
-}
-
-- (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
-{
-    [aboutViewController.view removeFromSuperview];
-    [aboutViewController release];
-    aboutViewController = nil;
-    
-    if ([anEmail length])
-    {
-        NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:anEmail, @"email", nil];
-        NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                          @"advisory", @"type",
-                                          @"beta_email", @"action",
-                                          aDict, @"data",
-                                          nil];
-        
-        NSString *email = [jsonWriter stringWithObject:emailDict];
-        email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
-    }
-    
-    [self showChat];
-}
-
-- (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
-{
-    return [self shouldRotateToInterfaceOrientation:anOrientation];
-}
-*/
 
 #pragma mark -
 #pragma mark UIControl actions

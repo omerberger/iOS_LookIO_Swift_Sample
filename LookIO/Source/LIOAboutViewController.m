@@ -10,6 +10,10 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLookIOManager.h"
 
+@interface LIOAboutViewController ()
+- (void)rejiggerInterface;
+@end
+
 @implementation LIOAboutViewController
 
 @synthesize delegate;
@@ -19,254 +23,384 @@
     [super loadView];
     UIView *rootView = self.view;
     
-    UIView *backgroundView = [[[UIView alloc] initWithFrame:rootView.bounds] autorelease];
-    backgroundView.backgroundColor = [UIColor blackColor];
-    backgroundView.alpha = 0.33;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [rootView addSubview:backgroundView];
+    UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
-    scrollView = [[UIScrollView alloc] init];
-    scrollView.frame = rootView.bounds;
-    scrollView.autoresizingMask = backgroundView.autoresizingMask;
-    [rootView addSubview:scrollView];
-    
-    CGFloat xInset = 5.0;
-    CGFloat height = rootView.frame.size.height;
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
     {
-        xInset = 100.0;
-        height = 460.0;
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutBackground.jpg")] autorelease];
+        CGRect aFrame = backgroundView.frame;
+        aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
+        backgroundView.frame = aFrame;
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        [rootView addSubview:backgroundView];
     }
+    else
+    {
+        UIImage *backgroundImage = lookioImage(@"LIOAboutBackgroundForiPhone.jpg");
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [rootView addSubview:backgroundView];
+    }
+        
+    scrollView = [[UIScrollView alloc] init];
+    scrollView.frame = rootView.bounds;
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [rootView addSubview:scrollView];
     
-    bubbleView = [[UIView alloc] init];
-    CGRect aFrame = CGRectZero;
-    aFrame.origin.x = xInset;
-    aFrame.size.width = rootView.frame.size.width - (xInset * 2.0);
-    aFrame.origin.y = 5.0;
-    aFrame.size.height = height;
-    bubbleView.frame = aFrame;
-    bubbleView.backgroundColor = [UIColor blackColor];
-    bubbleView.alpha = 0.7;
-    bubbleView.layer.masksToBounds = YES;
-    bubbleView.layer.cornerRadius = 12.0;
-    bubbleView.layer.borderColor = [UIColor whiteColor].CGColor;
-    bubbleView.layer.borderWidth = 2.0;
-    bubbleView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:bubbleView];
+    UINavigationBar *navBar = [[[UINavigationBar alloc] init] autorelease];
+    navBar.barStyle = UIBarStyleBlackOpaque;
+    CGRect aFrame = navBar.frame;
+    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.height = 44.0;
+    navBar.frame = aFrame;
+    navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"About LookIO"] autorelease];
+    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
+    anItem.leftBarButtonItem = closeItem;
+    [navBar pushNavigationItem:anItem animated:NO];
+    navBar.delegate = self;
+    [rootView addSubview:navBar];
     
-    poweredByLabel = [[UILabel alloc] init];
-    poweredByLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    poweredByLabel.backgroundColor = [UIColor clearColor];
-    poweredByLabel.textColor = [UIColor whiteColor];
-    poweredByLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    poweredByLabel.layer.shadowOpacity = 1.0;
-    poweredByLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    poweredByLabel.layer.shadowRadius = 1.0;
-    poweredByLabel.numberOfLines = 1;
-    poweredByLabel.text = @"Powered by LookIO (www.look.io)";
-    [poweredByLabel sizeToFit];
-    aFrame = poweredByLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.size.width = bubbleView.frame.size.width - 20.0;
-    aFrame.origin.y = bubbleView.frame.origin.y + 10.0;
-    poweredByLabel.frame = aFrame;
-    poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    poweredByLabel.textAlignment = UITextAlignmentCenter;
-    [scrollView addSubview:poweredByLabel];
+    UIImageView *logoView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutTitle")] autorelease];
+    aFrame = logoView.frame;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = navBar.frame.size.height + 5.0;
+    logoView.frame = aFrame;
+    logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:logoView];
     
-    UIView *blackLine = [[[UIView alloc] init] autorelease];
-    blackLine.backgroundColor = [UIColor blackColor];
-    aFrame = CGRectZero;
-    aFrame.origin.x = bubbleView.frame.origin.x + 2.0;
-    aFrame.size.width = bubbleView.frame.size.width - 4.0;
-    aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 10.0;
-    aFrame.size.height = 1.0;
-    blackLine.frame = aFrame;
-    blackLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:blackLine];
+    UIImage *separatorImage = lookioImage(@"LIOAboutStretchableSeparator");
+    UIImage *stretchableSeparatorImage = [separatorImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    UIView *grayLine = [[[UIView alloc] init] autorelease];
-    grayLine.backgroundColor = [UIColor darkGrayColor];
-    aFrame = blackLine.frame;
-    aFrame.origin.y = aFrame.origin.y + 1.0;
-    grayLine.frame = aFrame;
-    grayLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:grayLine];    
+    UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
+    aFrame = topSeparator.frame;
+    aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 8.0;
+    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.height = 3.0;
+    topSeparator.frame = aFrame;
+    topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:topSeparator];
     
-    areYouDeveloperLabel = [[UILabel alloc] init];
-    areYouDeveloperLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    areYouDeveloperLabel.backgroundColor = [UIColor clearColor];
-    areYouDeveloperLabel.textColor = [UIColor whiteColor];
-    areYouDeveloperLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    areYouDeveloperLabel.layer.shadowOpacity = 1.0;
-    areYouDeveloperLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    areYouDeveloperLabel.layer.shadowRadius = 1.0;
-    areYouDeveloperLabel.numberOfLines = 1;
-    areYouDeveloperLabel.text = @"Are you a developer? Join our beta:";
-    [areYouDeveloperLabel sizeToFit];
-    aFrame = areYouDeveloperLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.size.width = bubbleView.frame.size.width - 20.0;
-    aFrame.origin.y = grayLine.frame.origin.y + grayLine.frame.size.height + 10.0;
-    areYouDeveloperLabel.frame = aFrame;
-    areYouDeveloperLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    areYouDeveloperLabel.textAlignment = UITextAlignmentCenter;
-    [scrollView addSubview:areYouDeveloperLabel];
+    UILabel *label01 = [[[UILabel alloc] init] autorelease];
+    label01.text = @"Are you a developer? Join our beta:";
+    label01.textColor = [UIColor whiteColor];
+    label01.backgroundColor = [UIColor clearColor];
+    label01.layer.shadowColor = [UIColor blackColor].CGColor;
+    label01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    label01.layer.shadowOpacity = 0.5;
+    label01.layer.shadowRadius = 1.0;
+    label01.font = [UIFont boldSystemFontOfSize:14.0];
+    [label01 sizeToFit];
+    aFrame = label01.frame;
+    aFrame.origin.y = topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
+    label01.frame = aFrame;
+    label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:label01];
     
-    emailLabel = [[UILabel alloc] init];
-    emailLabel.font = [UIFont systemFontOfSize:14.0];
-    emailLabel.backgroundColor = [UIColor clearColor];
-    emailLabel.textColor = [UIColor whiteColor];
-    emailLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    emailLabel.layer.shadowOpacity = 1.0;
-    emailLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    emailLabel.layer.shadowRadius = 1.0;
-    emailLabel.numberOfLines = 1;
-    emailLabel.text = @"Your Email Address:";
-    [emailLabel sizeToFit];
-    aFrame = emailLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.origin.y = areYouDeveloperLabel.frame.origin.y + areYouDeveloperLabel.frame.size.height + 5.0;
-    emailLabel.frame = aFrame;
-    [scrollView addSubview:emailLabel];
+    UILabel *label02 = [[[UILabel alloc] init] autorelease];
+    label02.text = @"Your Email Address:";
+    label02.textColor = altBlue;
+    label02.backgroundColor = [UIColor clearColor];
+    label02.layer.shadowColor = [UIColor blackColor].CGColor;
+    label02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    label02.layer.shadowOpacity = 0.5;
+    label02.layer.shadowRadius = 1.0;
+    label02.font = [UIFont systemFontOfSize:12.0];
+    [label02 sizeToFit];
+    aFrame = label02.frame;
+    aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
+    label02.frame = aFrame;
+    label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:label02];
     
-    emailField = [[LIONiceTextField alloc] init];
-    emailField.font = [UIFont systemFontOfSize:14.0];
-    emailField.delegate = self;
-    emailField.placeholder = @"name@example.com";
-    emailField.keyboardType = UIKeyboardTypeEmailAddress;
-    emailField.autocorrectionType = UITextAutocorrectionTypeNo;
-    emailField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.size.width = bubbleView.frame.size.width - 20.0;
-    aFrame.origin.y = emailLabel.frame.origin.y + emailLabel.frame.size.height + 5.0;
-    aFrame.size.height = 30.0;
-    emailField.frame = aFrame;
-    emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:emailField];
+    UIImage *fieldImage = lookioImage(@"LIOAboutStretchableField");
+    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
+
+    fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
+    fieldBackground.userInteractionEnabled = YES;
+    aFrame = fieldBackground.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 48.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    fieldBackground.frame = aFrame;
+    fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:fieldBackground];
     
-    UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
-    glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
+    inputField = [[UITextField alloc] init];
+    inputField.backgroundColor = [UIColor clearColor];
+    aFrame.origin.x = 10.0;
+    aFrame.origin.y = 14.0;
+    aFrame.size.width = 269.0;
+    aFrame.size.height = 28.0;
+    inputField.frame = aFrame;
+    inputField.font = [UIFont systemFontOfSize:14.0];
+    inputField.keyboardType = UIKeyboardTypeEmailAddress;
+    inputField.autocorrectionType = UITextAutocorrectionTypeNo;
+    inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [fieldBackground addSubview:inputField];
+    
+    UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
+    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    aFrame.size.width = 85.0;
-    aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - aFrame.size.width - 10.0;
-    aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 5.0;
-    aFrame.size.height = 27.0;
-    submitButton.frame = aFrame;
-    [submitButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Join Beta" forState:UIControlStateNormal];
-    submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    submitButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
+    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    submitButton.titleLabel.layer.shadowOpacity = 0.5;
+    submitButton.titleLabel.layer.shadowRadius = 1.0;
+    submitButton.bounds = fieldBackground.bounds;
+    aFrame = submitButton.frame;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
+    submitButton.frame = aFrame;
+    submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    aFrame.size.width = 85.0;
-    aFrame.origin.x = submitButton.frame.origin.x - aFrame.size.width - 5.0;
-    aFrame.size.height = 27.0;
-    aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 5.0;
-    cancelButton.frame = aFrame;
-    [cancelButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [cancelButton setTitle:@"Back" forState:UIControlStateNormal];
-    cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [scrollView addSubview:cancelButton];
+    UIImageView *bottomSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
+    aFrame = bottomSeparator.frame;
+    aFrame.origin.y = submitButton.frame.origin.y + submitButton.frame.size.height + 8.0;
+    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.height = 3.0;
+    bottomSeparator.frame = aFrame;
+    bottomSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:bottomSeparator];
     
-    UIView *blackLine2 = [[[UIView alloc] init] autorelease];
-    blackLine2.backgroundColor = [UIColor blackColor];
-    aFrame = CGRectZero;
-    aFrame.origin.x = bubbleView.frame.origin.x + 2.0;
-    aFrame.size.width = bubbleView.frame.size.width - 4.0;
-    aFrame.origin.y = cancelButton.frame.origin.y + cancelButton.frame.size.height + 10.0;
-    aFrame.size.height = 1.0;
-    blackLine2.frame = aFrame;
-    blackLine2.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:blackLine2];
+    p1Container = [[UIView alloc] init];
+    p1Container.backgroundColor = [UIColor clearColor];
+    aFrame = p1Container.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 84.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = bottomSeparator.frame.origin.y + bottomSeparator.frame.size.height + 8.0;
+    p1Container.frame = aFrame;
+    p1Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:p1Container];
     
-    UIView *grayLine2 = [[[UIView alloc] init] autorelease];
-    grayLine2.backgroundColor = [UIColor darkGrayColor];
-    aFrame = blackLine2.frame;
-    aFrame.origin.y = aFrame.origin.y + 1.0;
-    grayLine2.frame = aFrame;
-    grayLine2.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:grayLine2];    
+    UIImageView *bubbleIcon = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutPlusBubble")] autorelease];
+    [p1Container addSubview:bubbleIcon];
     
-    whatIsLabel = [[UILabel alloc] init];
-    whatIsLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    whatIsLabel.backgroundColor = [UIColor clearColor];
-    whatIsLabel.textColor = [UIColor whiteColor];
-    whatIsLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    whatIsLabel.layer.shadowOpacity = 1.0;
-    whatIsLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    whatIsLabel.layer.shadowRadius = 1.0;
-    whatIsLabel.numberOfLines = 1;
-    whatIsLabel.text = @"What is LookIO?";
-    [whatIsLabel sizeToFit];
-    aFrame = whatIsLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.origin.y = grayLine2.frame.origin.y + grayLine2.frame.size.height + 10.0;
-    whatIsLabel.frame = aFrame;
-    [scrollView addSubview:whatIsLabel];
+    header01 = [[UILabel alloc] init];
+    header01.text = @"About LookIO";
+    header01.textColor = [UIColor whiteColor];
+    header01.backgroundColor = [UIColor clearColor];
+    header01.layer.shadowColor = [UIColor blackColor].CGColor;
+    header01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    header01.layer.shadowOpacity = 0.5;
+    header01.layer.shadowRadius = 1.0;
+    header01.font = [UIFont boldSystemFontOfSize:14.0];
+    [header01 sizeToFit];
+    aFrame = header01.frame;
+    aFrame.origin.x = bubbleIcon.frame.origin.x + bubbleIcon.frame.size.width + 10.0;
+    header01.frame = aFrame;
+    [p1Container addSubview:header01];
     
-    paragraphOne = [[UILabel alloc] init];
-    paragraphOne.font = [UIFont systemFontOfSize:14.0];
-    paragraphOne.backgroundColor = [UIColor clearColor];
-    paragraphOne.textColor = [UIColor whiteColor];
-    paragraphOne.layer.shadowColor = [UIColor blackColor].CGColor;
-    paragraphOne.layer.shadowOpacity = 1.0;
-    paragraphOne.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    paragraphOne.layer.shadowRadius = 1.0;
-    paragraphOne.numberOfLines = 0;
-    paragraphOne.text = @"LookIO enables developers to easily integrate live chat with visual feedback into any mobile application. It's all done with a simple SDK and one line of code.";
-    aFrame = paragraphOne.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.size.width = bubbleView.frame.size.width - 20.0;
-    aFrame.origin.y = whatIsLabel.frame.origin.y + whatIsLabel.frame.size.height + 5.0;
-    aFrame.size.height = 77.0;
-    paragraphOne.frame = aFrame;
-    paragraphOne.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:paragraphOne];
+    textsplosion01 = [[UILabel alloc] init];
+    textsplosion01.text = @"LookIO enables developers to easily integrate live chat with visual feedback into any mobile application. It is all done with a simple SDK and one line of code.";
+    textsplosion01.textColor = altBlue;
+    textsplosion01.backgroundColor = [UIColor clearColor];
+    textsplosion01.layer.shadowColor = [UIColor blackColor].CGColor;
+    textsplosion01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    textsplosion01.layer.shadowOpacity = 0.5;
+    textsplosion01.layer.shadowRadius = 1.0;
+    textsplosion01.font = [UIFont systemFontOfSize:12.0];
+    CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame = textsplosion01.frame;
+    aFrame.size = restrictedSize;
+    aFrame.origin.x = header01.frame.origin.x;
+    aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+    textsplosion01.frame = aFrame;
+    textsplosion01.numberOfLines = 0;
+    [p1Container addSubview:textsplosion01];
     
-    canAgentsLabel = [[UILabel alloc] init];
-    canAgentsLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    canAgentsLabel.backgroundColor = [UIColor clearColor];
-    canAgentsLabel.textColor = [UIColor whiteColor];
-    canAgentsLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    canAgentsLabel.layer.shadowOpacity = 1.0;
-    canAgentsLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    canAgentsLabel.layer.shadowRadius = 1.0;
-    canAgentsLabel.numberOfLines = 1;
-    canAgentsLabel.text = @"Can agents control my phone?";
-    [canAgentsLabel sizeToFit];
-    aFrame = canAgentsLabel.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.origin.y = paragraphOne.frame.origin.y + paragraphOne.frame.size.height + 10.0;
-    canAgentsLabel.frame = aFrame;
-    [scrollView addSubview:canAgentsLabel];
+    p2Container = [[UIView alloc] init];
+    p2Container.backgroundColor = [UIColor clearColor];
+    aFrame = p2Container.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 84.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+    p2Container.frame = aFrame;
+    p2Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:p2Container];
     
-    paragraphTwo = [[UILabel alloc] init];
-    paragraphTwo.font = [UIFont systemFontOfSize:14.0];
-    paragraphTwo.backgroundColor = [UIColor clearColor];
-    paragraphTwo.textColor = [UIColor whiteColor];
-    paragraphTwo.layer.shadowColor = [UIColor blackColor].CGColor;
-    paragraphTwo.layer.shadowOpacity = 1.0;
-    paragraphTwo.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    paragraphTwo.layer.shadowRadius = 1.0;
-    paragraphTwo.numberOfLines = 0;
-    paragraphTwo.text = @"LookIO agents are only able to interact with the application that you're in & only if you accept or initiate a help session. Ending the session ends the access the agent has to your application.";
-    [paragraphTwo sizeToFit];
-    aFrame = paragraphTwo.frame;
-    aFrame.origin.x = bubbleView.frame.origin.x + 10.0;
-    aFrame.size.width = bubbleView.frame.size.width - 20.0;
-    aFrame.origin.y = canAgentsLabel.frame.origin.y + canAgentsLabel.frame.size.height + 5.0;
-    aFrame.size.height = 90.0;
-    paragraphTwo.frame = aFrame;
-    paragraphTwo.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:paragraphTwo];    
+    UIImageView *compassIcon = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutLookingGlass")] autorelease];
+    [p2Container addSubview:compassIcon];
     
-    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
+    header02 = [[UILabel alloc] init];
+    header02.text = @"Can agents control my device?";
+    header02.textColor = [UIColor whiteColor];
+    header02.backgroundColor = [UIColor clearColor];
+    header02.layer.shadowColor = [UIColor blackColor].CGColor;
+    header02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    header02.layer.shadowOpacity = 0.5;
+    header02.layer.shadowRadius = 1.0;
+    header02.font = [UIFont boldSystemFontOfSize:14.0];
+    [header02 sizeToFit];
+    aFrame = header02.frame;
+    aFrame.origin.x = header01.frame.origin.x;
+    header02.frame = aFrame;
+    [p2Container addSubview:header02];
+    
+    textsplosion02 = [[UILabel alloc] init];
+    textsplosion02.text = @"LookIO agents are only able to interact with the app that you're in & only if you accept or initiate a help session. Ending the session ends the access the agent has to your app.";
+    textsplosion02.textColor = altBlue;
+    textsplosion02.backgroundColor = [UIColor clearColor];
+    textsplosion02.layer.shadowColor = [UIColor blackColor].CGColor;
+    textsplosion02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    textsplosion02.layer.shadowOpacity = 0.5;
+    textsplosion02.layer.shadowRadius = 1.0;
+    textsplosion02.font = [UIFont systemFontOfSize:12.0];
+    restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame = textsplosion02.frame;
+    aFrame.size = restrictedSize;
+    aFrame.origin.x = header02.frame.origin.x;
+    aFrame.origin.y = header02.frame.origin.y + header02.frame.size.height + 3.0;
+    textsplosion02.frame = aFrame;
+    textsplosion02.numberOfLines = 0;
+    [p2Container addSubview:textsplosion02];
+}
+
+- (void)rejiggerInterface
+{
+    if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
+        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        {
+            CGRect aFrame = fieldBackground.frame;
+            aFrame.size.width = 290.0;
+            aFrame.size.height = 48.0;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            fieldBackground.frame = aFrame;
+            
+            submitButton.bounds = fieldBackground.bounds;
+            aFrame = submitButton.frame;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            submitButton.frame = aFrame;
+            
+            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion01.frame;
+            aFrame.size = restrictedSize;
+            aFrame.origin.x = header01.frame.origin.x;
+            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+            textsplosion01.frame = aFrame;
+            
+            aFrame = p1Container.frame;
+            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
+            p1Container.frame = aFrame;
+            
+            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion02.frame;
+            aFrame.size = restrictedSize;
+            textsplosion02.frame = aFrame;
+            
+            aFrame = p2Container.frame;
+            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
+            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+            p2Container.frame = aFrame;
+        }
+        else
+        {
+            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            CGRect aFrame = textsplosion01.frame;
+            aFrame.size = restrictedSize;
+            aFrame.origin.x = header01.frame.origin.x;
+            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+            textsplosion01.frame = aFrame;
+            
+            aFrame = p1Container.frame;
+            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
+            p1Container.frame = aFrame;
+            
+            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion02.frame;
+            aFrame.size = restrictedSize;
+            textsplosion02.frame = aFrame;
+            
+            aFrame = p2Container.frame;
+            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
+            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+            p2Container.frame = aFrame;
+        }
+    }
+    else
+    {
+        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        {
+            CGRect aFrame = fieldBackground.frame;
+            aFrame.size.width = 407.0;
+            aFrame.size.height = 48.0;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            fieldBackground.frame = aFrame;
+            
+            submitButton.bounds = fieldBackground.bounds;
+            aFrame = submitButton.frame;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            submitButton.frame = aFrame;
+            
+            aFrame = p1Container.frame;
+            aFrame.size.width = fieldBackground.frame.size.width;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            p1Container.frame = aFrame;
+            
+            aFrame = p2Container.frame;
+            aFrame.size.width = fieldBackground.frame.size.width;
+            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            p2Container.frame = aFrame;
+            
+            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion01.frame;
+            aFrame.size = restrictedSize;
+            aFrame.origin.x = header01.frame.origin.x;
+            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+            textsplosion01.frame = aFrame;
+            
+            aFrame = p1Container.frame;
+            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
+            p1Container.frame = aFrame;
+            
+            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion02.frame;
+            aFrame.size = restrictedSize;
+            textsplosion02.frame = aFrame;
+            
+            aFrame = p2Container.frame;
+            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
+            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+            p2Container.frame = aFrame;            
+        }
+        else
+        {
+            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            CGRect aFrame = textsplosion01.frame;
+            aFrame.size = restrictedSize;
+            aFrame.origin.x = header01.frame.origin.x;
+            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+            textsplosion01.frame = aFrame;
+            
+            aFrame = p1Container.frame;
+            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
+            p1Container.frame = aFrame;
+            
+            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+            aFrame = textsplosion02.frame;
+            aFrame.size = restrictedSize;
+            textsplosion02.frame = aFrame;
+            
+            aFrame = p2Container.frame;
+            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
+            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+            p2Container.frame = aFrame;
+        }
+    }
+    
+    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height);
 }
 
 - (void)viewDidLoad
@@ -277,23 +411,77 @@
 - (void)viewDidUnload
 {
     [super viewDidUnload];
+    
+    [scrollView release];
+    scrollView = nil;
+    
+    [inputField release];
+    inputField = nil;
+    
+    [p2Container release];
+    p2Container = nil;
+    
+    [fieldBackground release];
+    fieldBackground = nil;
+    
+    [submitButton release];
+    submitButton = nil;
+    
+    [p1Container release];
+    p1Container = nil;
+    
+    [textsplosion01 release];
+    textsplosion01 = nil;
+    
+    [textsplosion02 release];
+    textsplosion02 = nil;
+    
+    [header01 release];
+    header01 = nil;
+    
+    [header02 release];
+    header02 = nil;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidHide:)
+                                                 name:UIKeyboardDidHideNotification
+                                               object:nil];
+    
+    [self rejiggerInterface];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [scrollView release];
-    [bubbleView release];
-    [cancelButton release];
+    [inputField release];
+    [p2Container release];
+    [fieldBackground release];
     [submitButton release];
-    [poweredByLabel release];
-    [areYouDeveloperLabel release];
-    [emailLabel release];
-    [whatIsLabel release];
-    [canAgentsLabel release];
-    [paragraphOne release];
-    [paragraphTwo release];
-    [emailField release];
-
+    [p1Container release];
+    [textsplosion01 release];
+    [textsplosion02 release];
+    [header01 release];
+    [header02 release];
     
     [super dealloc];
 }
@@ -303,17 +491,89 @@
     return [delegate aboutViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
-#pragma mark -
-#pragma mark UIControl actions
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+}
 
-- (void)cancelButtonWasTapped
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [self.view endEditing:YES];
+    
+    [self rejiggerInterface];
+    
+    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height);
+}
+
+#pragma mark -
+#pragma mark Control actions
+
+- (void)closeButtonWasTapped
 {
     [delegate aboutViewControllerWasDismissed:self];
 }
 
 - (void)submitButtonWasTapped
 {
-    [delegate aboutViewController:self wasDismissedWithEmail:emailField.text];
+    [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)keyboardDidShow:(NSNotification *)aNotification
+{
+    if (keyboardShown)
+        return;
+    
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    
+    CGFloat keyboardHeight = keyboardBounds.size.height;
+    
+    CGRect aFrame = scrollView.frame;
+    aFrame.size.height -= keyboardHeight;
+    scrollView.frame = aFrame;
+    
+    [scrollView scrollRectToVisible:fieldBackground.frame animated:YES];
+    
+    keyboardShown = YES;
+}
+
+- (void)keyboardDidHide:(NSNotification *)aNotification
+{
+    if (NO == keyboardShown)
+        return;
+    
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    
+    CGFloat keyboardHeight = keyboardBounds.size.height;
+    
+    CGRect aFrame = scrollView.frame;
+    aFrame.size.height += keyboardHeight;
+    scrollView.frame = aFrame;
+    
+    keyboardShown = NO;
 }
 
 @end

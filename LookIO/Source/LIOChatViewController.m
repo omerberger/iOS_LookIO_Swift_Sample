@@ -404,6 +404,8 @@
 
 - (void)chatboxViewWasTapped:(LIOChatboxView *)aView
 {
+    [self.view endEditing:YES];
+    
     aboutViewController = [[LIOAboutViewController alloc] initWithNibName:nil bundle:nil];
     aboutViewController.delegate = self;
     [self presentModalViewController:aboutViewController animated:YES];
@@ -461,6 +463,9 @@
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
 {
     [self dismissModalViewControllerAnimated:YES];
+    
+    if ([anEmail length])
+        [delegate chatViewController:self didEnterBetaEmail:anEmail];
     
     [aboutViewController release];
     aboutViewController = nil;
