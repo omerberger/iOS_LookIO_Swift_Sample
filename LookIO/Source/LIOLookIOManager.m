@@ -146,42 +146,33 @@ UIImage *lookioImage(NSString *path)
     NSBundle *bundle = lookioBundle();
     if (bundle)
     {
-        NSLog(@"[LOOKIO] <<<BUNDLE>>>: Original path: %@", path);
         path = [path stringByDeletingPathExtension];
-        NSLog(@"[LOOKIO] <<<BUNDLE>>>: FIXT path: %@", path);
         
         if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
         {
             NSString *path2x = [path stringByAppendingString:@"@2x"];
-            
-            NSLog(@"[LOOKIO] <<<BUNDLE>>>: 2X screen. Thus: %@", path2x);
-            
+
+            // Try @2xPNG...
             NSString *actualPath = [bundle pathForResource:path2x ofType:@"png"];
             if ([actualPath length])
             {
-                // Try @2xPNG...
                 NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
                 {
                     UIImage *newImage = [UIImage imageWithData:fileData];
                     return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
                 }
-                else
-                {
-                    NSLog(@"[LOOKIO] <<<BUNDLE>>>: Failed to load: %@", actualPath);
-                }
+            }
                 
-                // Try @2xJPG...
-                actualPath = [bundle pathForResource:path2x ofType:@"jpg"];
+            // Try @2xJPG...
+            actualPath = [bundle pathForResource:path2x ofType:@"jpg"];
+            if ([actualPath length])
+            {
                 fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
                 {
                     UIImage *newImage = [UIImage imageWithData:fileData];
                     return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
-                }
-                else
-                {
-                    NSLog(@"[LOOKIO] <<<BUNDLE>>>: Failed to load: %@", actualPath);
                 }
             }
         }
@@ -193,25 +184,16 @@ UIImage *lookioImage(NSString *path)
                 // Try PNG...
                 NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
-                {
                     return [UIImage imageWithData:fileData];
-                }
-                else
-                {
-                    NSLog(@"[LOOKIO] <<<BUNDLE>>>: Failed to load: %@", actualPath);
-                }
+            }
                 
-                // Try JPG...
-                actualPath = [bundle pathForResource:path ofType:@"jpg"];
+            // Try JPG...
+            actualPath = [bundle pathForResource:path ofType:@"jpg"];
+            if ([actualPath length])
+            {
                 fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
-                {
                     return [UIImage imageWithData:fileData];
-                }
-                else
-                {
-                    NSLog(@"[LOOKIO] <<<BUNDLE>>>: Failed to load: %@", actualPath);
-                }
             }
         }
         
