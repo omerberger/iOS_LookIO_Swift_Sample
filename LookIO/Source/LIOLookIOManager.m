@@ -168,7 +168,7 @@ UIImage *lookioImage(NSString *path)
             actualPath = [bundle pathForResource:path2x ofType:@"jpg"];
             if ([actualPath length])
             {
-                fileData = [NSData dataWithContentsOfFile:actualPath];
+                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
                 {
                     UIImage *newImage = [UIImage imageWithData:fileData];
@@ -191,7 +191,7 @@ UIImage *lookioImage(NSString *path)
             actualPath = [bundle pathForResource:path ofType:@"jpg"];
             if ([actualPath length])
             {
-                fileData = [NSData dataWithContentsOfFile:actualPath];
+                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
                 if (fileData)
                     return [UIImage imageWithData:fileData];
             }
