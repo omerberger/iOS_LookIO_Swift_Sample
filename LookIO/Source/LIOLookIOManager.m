@@ -176,25 +176,23 @@ UIImage *lookioImage(NSString *path)
                 }
             }
         }
-        else
+        
+        NSString *actualPath = [bundle pathForResource:path ofType:@"png"];
+        if ([actualPath length])
         {
-            NSString *actualPath = [bundle pathForResource:path ofType:@"png"];
-            if ([actualPath length])
-            {
-                // Try PNG...
-                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-                if (fileData)
-                    return [UIImage imageWithData:fileData];
-            }
-                
-            // Try JPG...
-            actualPath = [bundle pathForResource:path ofType:@"jpg"];
-            if ([actualPath length])
-            {
-                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-                if (fileData)
-                    return [UIImage imageWithData:fileData];
-            }
+            // Try PNG...
+            NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+            if (fileData)
+                return [UIImage imageWithData:fileData];
+        }
+            
+        // Try JPG...
+        actualPath = [bundle pathForResource:path ofType:@"jpg"];
+        if ([actualPath length])
+        {
+            NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
+            if (fileData)
+                return [UIImage imageWithData:fileData];
         }
         
 #ifdef DEBUG
