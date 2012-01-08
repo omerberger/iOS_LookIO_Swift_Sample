@@ -1361,6 +1361,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [controlButton stopFadeTimer];
     [controlButton.layer removeAllAnimations];
+
+    // Trump card #-1: If the session is ending, button is hidden.
+    if (sessionEnding)
+    {
+        controlButton.hidden = YES;
+        return;
+    }
+    
+    // Trump card #0: If we have no visibility information, button is hidden.
+    if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
+        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey])
+    {
+        controlButton.hidden = YES;
+        return;
+    }
     
     // Trump card #1: "enabled" from server-side settings.
     if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])

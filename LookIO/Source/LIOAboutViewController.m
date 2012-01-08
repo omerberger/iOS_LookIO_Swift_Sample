@@ -514,7 +514,20 @@
 
 - (void)submitButtonWasTapped
 {
-    [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
+    if ([inputField.text length])
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                                            message:@"Your request has been received."
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        [alertView show];
+        [alertView autorelease];
+    }
+    else
+    {
+        [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
+    }
 }
 
 #pragma mark -
@@ -574,6 +587,14 @@
     scrollView.frame = aFrame;
     
     keyboardShown = NO;
+}
+
+#pragma mark -
+#pragma mark UIAlertViewDelegate methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
 }
 
 @end

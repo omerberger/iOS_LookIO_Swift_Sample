@@ -56,6 +56,8 @@
 		D4B41D381408774800B73C84 /* TravelocityFlightDetail@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */; };
 		D4B41D57140AC2B900B73C84 /* LookIOConnect.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */; };
 		D4B41D58140AC2B900B73C84 /* LookIODing.caf in Resources */ = {isa = PBXBuildFile; fileRef = D4B41D56140AC2B800B73C84 /* LookIODing.caf */; };
+		D4BC197C14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4BC197A14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png */; };
+		D4BC197D14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4BC197B14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png */; };
 		D4C584D11468A510000D7F26 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4C584D01468A510000D7F26 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
@@ -115,6 +117,8 @@
 		D4B41D361408774800B73C84 /* TravelocityFlightDetail@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TravelocityFlightDetail@2x.png"; sourceTree = "<group>"; };
 		D4B41D55140AC2B800B73C84 /* LookIOConnect.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIOConnect.caf; sourceTree = "<group>"; };
 		D4B41D56140AC2B800B73C84 /* LookIODing.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = LookIODing.caf; sourceTree = "<group>"; };
+		D4BC197A14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOAboutStretchableField@2x.png"; sourceTree = "<group>"; };
+		D4BC197B14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOAboutStretchableGreenButton@2x.png"; sourceTree = "<group>"; };
 		D4C584D01468A510000D7F26 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
@@ -176,6 +180,8 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D4BC197A14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png */,
+				D4BC197B14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png */,
 				D49A640414B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg */,
 				D49A640514B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg */,
 				D49A640214B6674100313998 /* LIOAboutStretchableSeparator.png */,
@@ -344,6 +350,8 @@
 				D49A640314B6674100313998 /* LIOAboutStretchableSeparator.png in Resources */,
 				D49A640614B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg in Resources */,
 				D49A640714B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg in Resources */,
+				D4BC197C14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png in Resources */,
+				D4BC197D14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

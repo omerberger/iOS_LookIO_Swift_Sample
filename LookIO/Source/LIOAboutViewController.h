@@ -17,7 +17,7 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 
-@interface LIOAboutViewController : UIViewController <UITextFieldDelegate>
+@interface LIOAboutViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 {
     UILabel *textsplosion01, *textsplosion02, *header01, *header02;
     UIImageView *fieldBackground;
