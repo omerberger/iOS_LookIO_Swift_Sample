@@ -17,7 +17,7 @@
 @end
 */
 
-@interface LIOLeaveMessageViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate>
+@interface LIOLeaveMessageViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate, UIAlertViewDelegate>
 {
     UIView *bubbleView;
     UIScrollView *scrollView;

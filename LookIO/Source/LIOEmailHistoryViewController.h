@@ -17,7 +17,7 @@
  @end
  */
 
-@interface LIOEmailHistoryViewController : UIViewController <UITextFieldDelegate>
+@interface LIOEmailHistoryViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 {
     UIView *bubbleView;
     UIScrollView *scrollView;

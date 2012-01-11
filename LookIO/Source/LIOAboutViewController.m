@@ -412,6 +412,8 @@
 {
     [super viewDidUnload];
     
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [scrollView release];
     scrollView = nil;
     
@@ -443,6 +445,13 @@
     header02 = nil;
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    [self rejiggerInterface];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -456,8 +465,6 @@
                                              selector:@selector(keyboardDidHide:)
                                                  name:UIKeyboardDidHideNotification
                                                object:nil];
-    
-    [self rejiggerInterface];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -517,7 +524,7 @@
     if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"Your request has been received."
+                                                            message:@"We just sent you an e-mail with some additional information."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];

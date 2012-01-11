@@ -638,6 +638,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)reset
 {
+    [chatViewController dismissModalViewControllerAnimated:NO];
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
@@ -1307,6 +1308,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"outro"])
     {
+        sessionEnding = YES;
+        
         if ([controlSocket isConnected])
         {
             resetAfterDisconnect = YES;
@@ -1814,6 +1817,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // No agents available? Show leave message thingy.
     if (NO == agentsAvailable)
     {
+        [chatViewController dismissModalViewControllerAnimated:NO];
         [chatViewController.view removeFromSuperview];
         [chatViewController release];
         chatViewController = nil;
@@ -1881,6 +1885,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewControllerDidTapEmailButton:(LIOChatViewController *)aController
 {
+    [chatViewController dismissModalViewControllerAnimated:NO];
     [chatViewController.view removeFromSuperview];
     [chatViewController autorelease];
     chatViewController = nil;
@@ -1915,6 +1920,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)chatViewControllerDidFinishDismissalAnimation:(LIOChatViewController *)aController
 {
+    [chatViewController dismissModalViewControllerAnimated:NO];
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
@@ -2024,6 +2030,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 if (chatViewController)
                 {
+                    [chatViewController dismissModalViewControllerAnimated:NO];
                     [chatViewController.view removeFromSuperview];
                     [chatViewController release];
                     chatViewController = nil;
@@ -2108,6 +2115,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    [chatViewController dismissModalViewControllerAnimated:NO];
     [chatViewController.view removeFromSuperview];
     [chatViewController release];
     chatViewController = nil;
@@ -2401,6 +2409,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
 
+    sessionEnding = YES;
+    
     [self rejiggerWindows];
     
     resetAfterDisconnect = YES;
@@ -2413,6 +2423,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
 
+    sessionEnding = YES;
+    
     [self rejiggerWindows];
     
     NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:

@@ -280,7 +280,29 @@
 
 - (void)sendButtonWasTapped
 {
+    if ([emailField.text length])
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                                            message:@"A transcript of this session has been e-mailed to you."
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        [alertView show];
+        [alertView autorelease];
+    }
+    else
+    {
+        [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:emailField.text];
+    }
+}
+
+#pragma mark -
+#pragma mark UIAlertViewDelegate methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
     [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:emailField.text];
 }
+
 
 @end

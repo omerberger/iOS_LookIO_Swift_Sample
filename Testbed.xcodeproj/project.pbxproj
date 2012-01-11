@@ -35,8 +35,6 @@
 		D48ABF1E1404698400835205 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1C1404698400835205 /* CFNetwork.framework */; };
 		D49A536D1446791900B218AA /* LIOClickIndicator.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53671446791900B218AA /* LIOClickIndicator.png */; };
 		D49A536E1446791900B218AA /* LIOClickIndicator@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53681446791900B218AA /* LIOClickIndicator@2x.png */; };
-		D49A536F1446791900B218AA /* LIOControlButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A53691446791900B218AA /* LIOControlButton.png */; };
-		D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536A1446791900B218AA /* LIOControlButton@2x.png */; };
 		D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536B1446791900B218AA /* LIODefaultTouch.png */; };
 		D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */; };
 		D49A63F514B648AB00313998 /* LIOAboutLookingGlass.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A63EB14B648AB00313998 /* LIOAboutLookingGlass.png */; };
@@ -95,8 +93,6 @@
 		D48ABF1C1404698400835205 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/CFNetwork.framework; sourceTree = DEVELOPER_DIR; };
 		D49A53671446791900B218AA /* LIOClickIndicator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOClickIndicator.png; sourceTree = "<group>"; };
 		D49A53681446791900B218AA /* LIOClickIndicator@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOClickIndicator@2x.png"; sourceTree = "<group>"; };
-		D49A53691446791900B218AA /* LIOControlButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOControlButton.png; sourceTree = "<group>"; };
-		D49A536A1446791900B218AA /* LIOControlButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOControlButton@2x.png"; sourceTree = "<group>"; };
 		D49A536B1446791900B218AA /* LIODefaultTouch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIODefaultTouch.png; sourceTree = "<group>"; };
 		D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIODefaultTouch@2x.png"; sourceTree = "<group>"; };
 		D49A63EB14B648AB00313998 /* LIOAboutLookingGlass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOAboutLookingGlass.png; sourceTree = "<group>"; };
@@ -197,8 +193,6 @@
 				D445B38B144E67B700C90F30 /* LIOGlassButton.png */,
 				D49A53671446791900B218AA /* LIOClickIndicator.png */,
 				D49A53681446791900B218AA /* LIOClickIndicator@2x.png */,
-				D49A53691446791900B218AA /* LIOControlButton.png */,
-				D49A536A1446791900B218AA /* LIOControlButton@2x.png */,
 				D49A536B1446791900B218AA /* LIODefaultTouch.png */,
 				D49A536C1446791900B218AA /* LIODefaultTouch@2x.png */,
 				CDB6AFC014464ED6007BF92D /* LIOFullLogo.png */,
@@ -333,8 +327,6 @@
 				CDB6AFC314464ED6007BF92D /* LIOFullLogo@2x.png in Resources */,
 				D49A536D1446791900B218AA /* LIOClickIndicator.png in Resources */,
 				D49A536E1446791900B218AA /* LIOClickIndicator@2x.png in Resources */,
-				D49A536F1446791900B218AA /* LIOControlButton.png in Resources */,
-				D49A53701446791900B218AA /* LIOControlButton@2x.png in Resources */,
 				D49A53711446791900B218AA /* LIODefaultTouch.png in Resources */,
 				D49A53721446791900B218AA /* LIODefaultTouch@2x.png in Resources */,
 				D445B38C144E67B700C90F30 /* LIOGlassButton.png in Resources */,

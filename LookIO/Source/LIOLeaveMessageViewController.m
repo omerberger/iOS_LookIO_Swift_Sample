@@ -359,8 +359,21 @@
 
 - (void)sendButtonWasTapped
 {
-    [self.view endEditing:YES];
-    [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
+    if ([messageView.text length])
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                                            message:@"Your message has been received."
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        [alertView show];
+        [alertView autorelease];
+    }
+    else
+    {
+        [self.view endEditing:YES];
+        [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
+    }
 }
 
 #pragma mark -
@@ -372,9 +385,13 @@
     return YES;
 }
 
+
 #pragma mark -
-#pragma mark UITextViewDelegate methods
+#pragma mark UIAlertViewDelegate methods
 
-
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
+}
 
 @end
