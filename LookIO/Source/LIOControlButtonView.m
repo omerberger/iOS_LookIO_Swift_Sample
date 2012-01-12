@@ -13,7 +13,7 @@
 @implementation LIOControlButtonView
 
 @synthesize textColor, labelText, delegate, label;
-@dynamic tintColor, currentMode, roundedCornersMode;
+@dynamic tintColor;
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -27,7 +27,7 @@
         self.labelText = @"Live Help";
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
-        label.font = [UIFont boldSystemFontOfSize:20.0];
+        label.font = [UIFont systemFontOfSize:17.0];
         label.backgroundColor = [UIColor clearColor];
         label.textColor = textColor;
         label.text = labelText;
@@ -38,6 +38,13 @@
         label.layer.shadowRadius = 1.5;
         label.userInteractionEnabled = NO;
         [self addSubview:label];
+        
+        self.layer.shadowColor = [UIColor blackColor].CGColor;
+        self.layer.shadowOffset = CGSizeZero;
+        self.layer.shadowOpacity = 1.0;
+        self.layer.shadowRadius = 4.0;
+        
+        self.opaque = NO;
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
@@ -52,7 +59,8 @@
     [label release];
     [labelText release];
     [textColor release];
-    [darkTintColor release];
+    [fillColor release];
+    [shadowColor release];
     
     [fadeTimer stopTimer];
     [fadeTimer release];
@@ -71,64 +79,39 @@
         label.textColor = textColor;
     else
         label.textColor = [UIColor whiteColor];
-    
-    UIRectCorner corners;
-    if (LIOControlButtonViewModeHorizontal == currentMode)
-    {
-        if (LIOControlButtonViewRoundedCornersModeDefault == roundedCornersMode)
-            corners = UIRectCornerBottomRight | UIRectCornerBottomLeft;
-        else
-            corners = UIRectCornerTopRight | UIRectCornerTopLeft;
-    }
-    else
-    {
-        if (LIOControlButtonViewRoundedCornersModeDefault == roundedCornersMode)
-            corners = UIRectCornerTopRight | UIRectCornerBottomRight;
-        else
-            corners = UIRectCornerTopLeft | UIRectCornerBottomLeft;
-    }
-    
-    // Round the corners using a bezier mask.
-    if (LIOControlButtonViewRoundedCornersModeNone != roundedCornersMode)
-    {
-        UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.bounds 
-                                                       byRoundingCorners:corners
-                                                             cornerRadii:CGSizeMake(5.0, 5.0)];
-        
-        CAShapeLayer *maskLayer = [CAShapeLayer layer];
-        maskLayer.frame = self.bounds;
-        maskLayer.path = maskPath.CGPath;
-        
-        self.layer.mask = maskLayer;
-    }
-    else
-        self.layer.mask = nil;
-    
-#ifdef DEBUG
-    NSLog(@"[LOOKIO] LIOControlButtonView#layoutSubviews\n    self.frame: %@\n    self.transform: %@\n", [NSValue valueWithCGRect:self.frame], [NSValue valueWithCGAffineTransform:self.transform]);
-#endif
 }
 
 - (void)drawRect:(CGRect)rect
 {
-    [super drawRect:rect];
-    
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     if (nil == tintColor)
         tintColor = [UIColor blackColor];
     
-    // Paint the entire thing the tint...
-    CGContextSetFillColorWithColor(context, [tintColor CGColor]);
-    CGContextFillRect(context, rect);
+    CGContextClearRect(context, rect);
     
-    // ... and then the lower half a bit darker.
-    /*
-    CGFloat mid = rect.size.height / 2.0;
-    CGRect halfRect = CGRectMake(0.0, mid, rect.size.width, mid);
-    CGContextSetFillColorWithColor(context, [darkTintColor CGColor]);
-    CGContextFillRect(context, halfRect);
-     */
+    CGRect smallerRect = CGRectMake(rect.origin.x + 0.5, rect.origin.y + 0.5, rect.size.width, rect.size.height - 1.0);
+    
+    CGContextSetFillColorWithColor(context, fillColor.CGColor);
+    UIBezierPath *innerPath = [UIBezierPath bezierPathWithRoundedRect:smallerRect
+                                                    byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+                                                          cornerRadii:CGSizeMake(8.0, 8.0)];
+    [innerPath fill];
+    
+    CGRect smallestRect = CGRectMake(rect.origin.x + 1.5, rect.origin.y + 1.0, rect.size.width, rect.size.height - 2.0);
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithWhite:1.0 alpha:0.42].CGColor);
+    UIBezierPath *innerShadowPath = [UIBezierPath bezierPathWithRoundedRect:smallestRect
+                                                          byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+                                                                cornerRadii:CGSizeMake(8.0, 8.0)];
+    innerShadowPath.lineWidth = 2.0;
+    [innerShadowPath stroke];
+    
+    CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
+    UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width + 5.0, rect.size.height)
+                                                    byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+                                                          cornerRadii:CGSizeMake(10.0, 10.0)];
+    outerPath.lineWidth = 2.0;
+    [outerPath stroke];
 }
 
 - (void)startFadeTimer
@@ -156,46 +139,28 @@
     [tintColor release];
     tintColor = [aColor retain];
     
-    [darkTintColor release];
-    darkTintColor = nil;
+    [fillColor release];
+    fillColor = nil;
+    
+    [shadowColor release];
+    shadowColor = nil;
     
     if (aColor)
     {
         const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
-        darkTintColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.6) green:(rgba[1] * 0.6) blue:(rgba[2] * 0.6) alpha:rgba[3]];
         
-        UIColor *shadowColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.5) green:(rgba[1] * 0.5) blue:(rgba[2] * 0.5) alpha:rgba[3]];
-        label.layer.shadowColor = shadowColor.CGColor;        
+        // Shadow color is used for text shadow and outer line.
+        shadowColor = [[UIColor alloc] initWithRed:(rgba[0] * 0.5) green:(rgba[1] * 0.5) blue:(rgba[2] * 0.5) alpha:rgba[3]];
+        label.layer.shadowColor = shadowColor.CGColor;
+        
+        // The "fill color" is the color we actually paint inside the control button.
+        fillColor = [[UIColor alloc] initWithRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:0.66];
     }
 }
 
 - (UIColor *)tintColor
 {
     return tintColor;
-}
-
-- (void)setCurrentMode:(LIOControlButtonViewMode)aMode
-{
-    currentMode = aMode;
-    [self setNeedsLayout];
-    [self setNeedsDisplay];
-}
-
-- (LIOControlButtonViewMode)currentMode
-{
-    return currentMode;
-}
-
-- (void)setRoundedCornersMode:(LIOControlButtonViewRoundedCornersMode)aMode
-{
-    roundedCornersMode = aMode;
-    [self setNeedsLayout];
-    [self setNeedsDisplay];
-}
-
-- (LIOControlButtonViewRoundedCornersMode)roundedCornersMode
-{
-    return roundedCornersMode;
 }
 
 #pragma mark -

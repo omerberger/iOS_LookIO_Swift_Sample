@@ -8,19 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum
-{
-    LIOControlButtonViewModeVertical,
-    LIOControlButtonViewModeHorizontal
-} LIOControlButtonViewMode;
-
-typedef enum
-{
-    LIOControlButtonViewRoundedCornersModeNone,
-    LIOControlButtonViewRoundedCornersModeDefault,
-    LIOControlButtonViewRoundedCornersModeFlipped
-} LIOControlButtonViewRoundedCornersMode;
-
 @class LIOControlButtonView, LIOTimerProxy;
 
 @protocol LIOControlButtonViewDelegate
@@ -30,11 +17,9 @@ typedef enum
 @interface LIOControlButtonView : UIView
 {
     UILabel *label;
-    UIColor *tintColor, *darkTintColor, *textColor;
+    UIColor *tintColor, *textColor, *fillColor, *shadowColor;
     NSString *labelText;
     LIOTimerProxy *fadeTimer;
-    LIOControlButtonViewMode currentMode;
-    LIOControlButtonViewRoundedCornersMode roundedCornersMode;
     
     id<LIOControlButtonViewDelegate> delegate;
 }
@@ -42,8 +27,6 @@ typedef enum
 @property(nonatomic, retain) UIColor *tintColor, *textColor;
 @property(nonatomic, retain) NSString *labelText;
 @property(nonatomic, readonly) UILabel *label;
-@property(nonatomic, assign) LIOControlButtonViewMode currentMode;
-@property(nonatomic, assign) LIOControlButtonViewRoundedCornersMode roundedCornersMode;
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
 
 - (void)startFadeTimer;
