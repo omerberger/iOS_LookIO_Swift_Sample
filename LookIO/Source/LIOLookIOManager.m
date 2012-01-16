@@ -82,7 +82,7 @@
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
-    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding;
+    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
@@ -114,6 +114,7 @@
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
     BOOL agentsAvailable;
+    NSDateFormatter *chatDateFormatter;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -298,6 +299,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+        
+        chatDateFormatter = [[NSDateFormatter alloc] init];
+        chatDateFormatter.dateStyle = NSDateFormatterNoStyle;
+        chatDateFormatter.timeStyle = NSDateFormatterShortStyle;
         
         queuedLaunchReportDates = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLaunchReportQueueKey];
         if (nil == queuedLaunchReportDates)
@@ -614,6 +619,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [mainWindow release];
     [queuedLaunchReportDates release];
     [dateFormatter release];
+    [chatDateFormatter release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -676,7 +682,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
-    sessionEnding = NO, userWantsSessionTermination = NO;
+    sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1054,7 +1060,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"chat"])
     {
         NSString *text = [aPacket objectForKey:@"text"];
-        [chatHistory addObject:[NSString stringWithFormat:@"Agent: %@", text]];
+        
+        NSString *timestamp = [chatDateFormatter stringFromDate:[NSDate date]];
+        
+        NSString *senderName = [aPacket objectForKey:@"sender_name"];
+        if ([senderName length])
+            [chatHistory addObject:[NSString stringWithFormat:@"[%@] %@: %@", timestamp, senderName, text]];
+        else
+            [chatHistory addObject:[NSString stringWithFormat:@"[%@] Agent: %@", timestamp, text]];
 
         if (nil == chatViewController)
         {
@@ -1111,7 +1124,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSString *action = [aPacket objectForKey:@"action"];
         
-        if ([action isEqualToString:@"cursor_start"])
+        if ([action isEqualToString:@"typing_start"])
+        {
+            chatViewController.agentTyping = YES;
+        }
+        else if ([action isEqualToString:@"typing_stop"])
+        {
+            chatViewController.agentTyping = NO;
+        }
+        else if ([action isEqualToString:@"cursor_start"])
         {
             UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
             
@@ -1309,6 +1330,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"outro"])
     {
         sessionEnding = YES;
+        outroReceived = YES;
         
         if ([controlSocket isConnected])
         {
@@ -1552,7 +1574,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey
 {
     if (anObject)
-        [sessionExtras setObject:anObject forKey:aKey];
+    {
+        // We only allow JSONable objects.
+        NSString *test = [jsonWriter stringWithObject:anObject];
+        if ([test length])
+            [sessionExtras setObject:anObject forKey:aKey];
+        else
+            NSLog(@"[LOOKIO] Can't add object of class \"%@\" to session extras!", NSStringFromClass([anObject class]));
+    }
     else
         [sessionExtras removeObjectForKey:aKey];
 }
@@ -1562,6 +1591,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [sessionExtras objectForKey:aKey];
 }
 
+// This is poentially unsafe. No class checking is done.
 - (void)addSessionExtras:(NSDictionary *)aDictionary
 {
     [sessionExtras addEntriesFromDictionary:aDictionary];
@@ -1717,13 +1747,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
     // We don't show error boxes if the user specifically requested a termination.
-    if (err && NO == userWantsSessionTermination)
+    if ((err && NO == userWantsSessionTermination) || NO == outroReceived)
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
         if (introduced)
         {
-            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again. (%@)", [err localizedDescription]];
+            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
                                                                 message:message
@@ -1736,7 +1766,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again. (%@)", [err localizedDescription]];
+            NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
                                                                 message:message
@@ -1842,7 +1872,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                       withTimeout:-1
                               tag:0];
     
-    [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
+    NSString *timestamp = [chatDateFormatter stringFromDate:[NSDate date]];
+    [chatHistory addObject:[NSString stringWithFormat:@"[%@] Me: %@", timestamp, aString]];
     [chatViewController reloadMessages];
     //[chatViewController scrollToBottom];
 }

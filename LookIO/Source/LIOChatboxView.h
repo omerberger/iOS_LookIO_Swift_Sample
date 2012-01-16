@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOChatboxViewMaxTextLength         400
+#define LIOChatboxViewMaxTextLength         200
 #define LIOChatboxViewMaxLinesPortrait      8
 #define LIOChatboxViewMaxLinesLandscape     4
 
@@ -37,7 +37,7 @@ typedef enum
 {
     UIView *bubbleView;
     UITextView *inputField;
-    UILabel *messageView;
+    UILabel *messageView, *inputFieldPlaceholder, *agentTypingLabel;
     UIButton *sendButton;
     UIImageView *inputFieldBackground;
     id settingsButton;
@@ -50,6 +50,7 @@ typedef enum
 @property(nonatomic, readonly) UITextView *inputField;
 @property(nonatomic, readonly) UIButton *sendButton;
 @property(nonatomic, readonly) id settingsButton;
+@property(nonatomic, readonly) UILabel *agentTypingLabel;
 @property(nonatomic, assign) id delegate;
 
 - (id)initWithFrame:(CGRect)frame initialMode:(LIOChatboxViewMode)initialMode;

@@ -21,6 +21,7 @@
 @implementation LIOChatViewController
 
 @synthesize delegate, dataSource, initialChatText;
+@dynamic agentTyping;
 
 - (void)loadView
 {
@@ -241,6 +242,8 @@
                 [aChatbox.inputField becomeFirstResponder];
             
             [aChatbox switchToMode:LIOChatboxViewModeFull];
+            aChatbox.agentTypingLabel.hidden = NO == agentTyping;
+            currentChatboxWithField = aChatbox;
         }
     }
     
@@ -474,6 +477,20 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [delegate chatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark Dynamic property accessors
+
+- (BOOL)agentTyping
+{
+    return agentTyping;
+}
+
+- (void)setAgentTyping:(BOOL)aBool
+{
+    agentTyping = aBool;
+    currentChatboxWithField.agentTypingLabel.hidden = NO == agentTyping;
 }
 
 @end
