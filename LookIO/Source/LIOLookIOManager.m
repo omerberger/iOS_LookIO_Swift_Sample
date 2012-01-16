@@ -115,6 +115,7 @@
     NSDateFormatter *dateFormatter;
     BOOL agentsAvailable;
     NSDateFormatter *chatDateFormatter;
+    NSDate *backgroundedTime;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -319,6 +320,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return self;
 }
 
+- (void)sendLaunchReport
+{
+    // Send off the app launch packet, if connected.
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
+        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
+        [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
+#endif
+        appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
+    }
+    else
+    {
+        // Queue this launch packet.
+        [queuedLaunchReportDates addObject:[NSDate date]];
+        [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
+        
+        // Delete LIOLookIOManagerLastKnownEnabledStatusKey. This should force
+        // the lib to report "disabled" back to the host app.
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = nil;
+        
+        [self refreshControlButtonVisibility];
+    }
+}
+
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
@@ -498,24 +529,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
-    // Send off the app launch packet, if connected.
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
-        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-        [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-    #ifdef DEBUG
-        NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
-    #endif
-        appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
-    }
-    else
-    {
-        // Queue this launch packet.
-        [queuedLaunchReportDates addObject:[NSDate date]];
-        [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
-    }
+    [self sendLaunchReport];
     
     NSLog(@"[LOOKIO] Loaded.");    
 }
@@ -679,6 +693,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [pendingFeedbackText release];
     pendingFeedbackText = nil;
+    
+    [backgroundedTime release];
+    backgroundedTime = nil;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
@@ -1747,7 +1764,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
     // We don't show error boxes if the user specifically requested a termination.
-    if ((err && NO == userWantsSessionTermination) || NO == outroReceived)
+    if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
@@ -2129,6 +2146,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
             backgroundTaskId = UIBackgroundTaskInvalid;
         }];
+        
+        [backgroundedTime release];
+        backgroundedTime = [[NSDate date] retain];
     }
     
     if ([controlSocket isConnected])
@@ -2168,6 +2188,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
         backgroundTaskId = UIBackgroundTaskInvalid;
+        
+        if ([backgroundedTime timeIntervalSinceNow] <= -1800.0)
+        {
+            // It's been 30 minutes! Send a launch packet.
+            [self sendLaunchReport];
+        }
+        
+        [backgroundedTime release];
+        backgroundedTime = nil;
     }
     
     if ([controlSocket isConnected])
@@ -2191,6 +2220,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self showChat];
     }
     
+    /*
     // Send off the app resume packet.
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
     NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
@@ -2199,6 +2229,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSLog(@"[LOOKIO] <RESUME> Request: %@", introDictWwwFormEncoded);
 #endif
     appResumeRequestConnection = [[NSURLConnection alloc] initWithRequest:appResumeRequest delegate:self];
+     */
     
     [self refreshControlButtonVisibility];
 }
@@ -2413,6 +2444,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appLaunchRequestConnection = nil;
         
         appLaunchRequestResponseCode = -1;
+        
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = nil;
         
         [self refreshControlButtonVisibility];
     }
