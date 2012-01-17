@@ -141,6 +141,9 @@
     inputField.autocorrectionType = UITextAutocorrectionTypeNo;
     inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    inputField.returnKeyType = UIReturnKeySend;
+    if ([[[LIOLookIOManager sharedLookIOManager] pendingEmailAddress] length])
+        inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
     UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
@@ -524,7 +527,7 @@
     if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"We just sent you an e-mail with some additional information."
+                                                            message:@"We just sent you an email with some additional information."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];

@@ -59,7 +59,7 @@
     instructionsLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
     instructionsLabel.layer.shadowRadius = 1.0;
     instructionsLabel.numberOfLines = 2;
-    instructionsLabel.text = @"Just enter your e-mail address and we'll send you a copy of this chat history.";
+    instructionsLabel.text = @"Just enter your email address and we'll send you a copy of this chat history.";
     instructionsLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
     aFrame.size.width = bubbleView.frame.size.width - 24.0;
@@ -283,7 +283,7 @@
     if ([emailField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"A transcript of this session has been e-mailed to you."
+                                                            message:@"A transcript of this session has been emailed to you."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];

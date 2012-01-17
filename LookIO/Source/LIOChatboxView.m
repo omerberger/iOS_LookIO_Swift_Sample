@@ -59,7 +59,7 @@
         agentTypingLabel = [[UILabel alloc] init];
         agentTypingLabel.backgroundColor = [UIColor clearColor];
         agentTypingLabel.textColor = [UIColor lightGrayColor];
-        agentTypingLabel.font = [UIFont systemFontOfSize:10.0];
+        agentTypingLabel.font = [UIFont italicSystemFontOfSize:12.0];
         agentTypingLabel.text = @"Agent is typing...";
         [agentTypingLabel sizeToFit];
         aFrame = agentTypingLabel.frame;
@@ -249,7 +249,7 @@
         
         aFrame = agentTypingLabel.frame;
         aFrame.origin.x = messageView.frame.origin.x;
-        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 3.0;
+        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
         agentTypingLabel.frame = aFrame;
         
         UIInterfaceOrientation currentInterfaceOrientation = [[UIDevice currentDevice] orientation];
