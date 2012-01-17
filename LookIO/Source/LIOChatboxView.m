@@ -59,8 +59,8 @@
         agentTypingLabel = [[UILabel alloc] init];
         agentTypingLabel.backgroundColor = [UIColor clearColor];
         agentTypingLabel.textColor = [UIColor lightGrayColor];
-        agentTypingLabel.font = [UIFont italicSystemFontOfSize:12.0];
-        agentTypingLabel.text = @"Agent is typing...";
+        agentTypingLabel.font = [UIFont italicSystemFontOfSize:13.0];
+        agentTypingLabel.text = @"... agent is typing";
         [agentTypingLabel sizeToFit];
         aFrame = agentTypingLabel.frame;
         aFrame.origin.x = messageView.frame.origin.x;
@@ -294,6 +294,10 @@
             sendButton.frame = CGRectMake(inputFieldBackground.frame.origin.x + inputFieldBackground.frame.size.width + 6.0,
                                           inputFieldBackground.frame.origin.y + 2.0,
                                           59.0, 30.0);
+            
+            aFrame = agentTypingLabel.frame;
+            aFrame.origin.y += 14.0;
+            agentTypingLabel.frame = aFrame;
         }
         
         aFrame = self.frame;

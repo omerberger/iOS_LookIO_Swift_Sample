@@ -12,6 +12,7 @@
 
 @interface LIOAboutViewController ()
 - (void)rejiggerInterface;
+- (void)submitButtonWasTapped;
 @end
 
 @implementation LIOAboutViewController
@@ -130,6 +131,7 @@
     [scrollView addSubview:fieldBackground];
     
     inputField = [[UITextField alloc] init];
+    inputField.delegate = self;
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 14.0;
@@ -512,6 +514,16 @@
     [self rejiggerInterface];
     
     scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height);
+}
+
+#pragma mark -
+#pragma mark UITextFieldDelegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.view endEditing:YES];
+    [self submitButtonWasTapped];
+    return YES;
 }
 
 #pragma mark -

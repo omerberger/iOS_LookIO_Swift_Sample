@@ -42,7 +42,7 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL    @"http://connect.look.io/api/v1/app/launch"
+#define LIOLookIOManagerAppLaunchRequestURL    @"https://connect.look.io/api/v1/app/launch"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -2446,6 +2446,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self rejiggerWindows];
     
+    userWantsSessionTermination = YES;
     resetAfterDisconnect = YES;
     [self killConnection];
 }
