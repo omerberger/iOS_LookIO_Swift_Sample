@@ -15,7 +15,7 @@
 
 @implementation LIOChatboxView
 
-@synthesize delegate, inputField, sendButton, settingsButton;
+@synthesize delegate, inputField, sendButton, settingsButton, agentTypingLabel;
 
 - (id)initWithFrame:(CGRect)frame initialMode:(LIOChatboxViewMode)initialMode
 {
@@ -53,7 +53,20 @@
         messageView.layer.shadowOffset = CGSizeMake(2.0, 2.0);
         messageView.layer.shadowRadius = 1.0;
         messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        messageView.userInteractionEnabled = YES;
         [self addSubview:messageView];
+        
+        agentTypingLabel = [[UILabel alloc] init];
+        agentTypingLabel.backgroundColor = [UIColor clearColor];
+        agentTypingLabel.textColor = [UIColor lightGrayColor];
+        agentTypingLabel.font = [UIFont italicSystemFontOfSize:13.0];
+        agentTypingLabel.text = @"... agent is typing";
+        [agentTypingLabel sizeToFit];
+        aFrame = agentTypingLabel.frame;
+        aFrame.origin.x = messageView.frame.origin.x;
+        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height;
+        agentTypingLabel.frame = aFrame;
+        [self addSubview:agentTypingLabel];
         
         if (LIOChatboxViewModeFull == currentMode)
         {
@@ -85,6 +98,17 @@
             aFrame.size.height = 4800.0;
             inputField.frame = aFrame;
             [inputFieldBackground addSubview:inputField];
+            
+            inputFieldPlaceholder = [[UILabel alloc] init];
+            inputFieldPlaceholder.backgroundColor = [UIColor clearColor];
+            inputFieldPlaceholder.text = @"Send a message";
+            inputFieldPlaceholder.textColor = [UIColor lightGrayColor];
+            [inputFieldPlaceholder sizeToFit];
+            aFrame = inputFieldPlaceholder.frame;
+            aFrame.origin.x = 7.0;
+            aFrame.origin.y = 8.0;
+            inputFieldPlaceholder.frame = aFrame;
+            [inputField addSubview:inputFieldPlaceholder];
             
             UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
             glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
@@ -123,6 +147,8 @@
     [sendButton release];
     [settingsButton release];
     [inputFieldBackground release];
+    [inputFieldPlaceholder release];
+    [agentTypingLabel release];
     
     [super dealloc];
 }
@@ -136,6 +162,7 @@
         inputFieldBackground.hidden = YES;
         [settingsButton setHidden:YES];
         messageView.hidden = NO;
+        agentTypingLabel.hidden = YES;
         
         CGSize maxSize = CGSizeMake(bubbleView.frame.size.width - bubbleView.frame.origin.x - 20.0, FLT_MAX);
         CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
@@ -220,6 +247,11 @@
             settingsSpacing = ([settingsButton frame].origin.y + [settingsButton frame].size.height) - (messageView.frame.origin.y + messageView.frame.size.height);
         }
         
+        aFrame = agentTypingLabel.frame;
+        aFrame.origin.x = messageView.frame.origin.x;
+        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
+        agentTypingLabel.frame = aFrame;
+        
         UIInterfaceOrientation currentInterfaceOrientation = [[UIDevice currentDevice] orientation];
         BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
         NSInteger maxLines = LIOChatboxViewMaxLinesPortrait;
@@ -253,7 +285,7 @@
         inputField.frame = aFrame;
         
         aFrame = inputFieldBackground.frame;
-        aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 20.0 + settingsSpacing;
+        aFrame.origin.y = agentTypingLabel.frame.origin.y + agentTypingLabel.frame.size.height + 20.0 + settingsSpacing;
         aFrame.size.height = singleLineHeight * calculatedNumLines + 12.0;
         inputFieldBackground.frame = aFrame;
         
@@ -262,6 +294,10 @@
             sendButton.frame = CGRectMake(inputFieldBackground.frame.origin.x + inputFieldBackground.frame.size.width + 6.0,
                                           inputFieldBackground.frame.origin.y + 2.0,
                                           59.0, 30.0);
+            
+            aFrame = agentTypingLabel.frame;
+            aFrame.origin.y += 14.0;
+            agentTypingLabel.frame = aFrame;
         }
         
         aFrame = self.frame;
@@ -286,6 +322,8 @@
         grayLine.frame = aFrame;
         grayLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:grayLine];
+        
+        [self bringSubviewToFront:messageView];
     }
 }
 
@@ -303,7 +341,9 @@
 
 - (void)layoutSubviews
 {
-    [self rejiggerLayout];    
+    [self rejiggerLayout];
+    
+    inputFieldPlaceholder.hidden = 0 < [inputField.text length];
 }
 
 #pragma mark -
@@ -335,6 +375,8 @@
 
 - (void)textViewDidChange:(UITextView *)aTextView
 {
+    inputFieldPlaceholder.hidden = 0 < [aTextView.text length];
+    
     // Clamp the length.
     NSUInteger newLen = [aTextView.text length];
     if (newLen > LIOChatboxViewMaxTextLength)

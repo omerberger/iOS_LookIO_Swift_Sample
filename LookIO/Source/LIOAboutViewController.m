@@ -12,6 +12,7 @@
 
 @interface LIOAboutViewController ()
 - (void)rejiggerInterface;
+- (void)submitButtonWasTapped;
 @end
 
 @implementation LIOAboutViewController
@@ -130,6 +131,7 @@
     [scrollView addSubview:fieldBackground];
     
     inputField = [[UITextField alloc] init];
+    inputField.delegate = self;
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 14.0;
@@ -141,6 +143,9 @@
     inputField.autocorrectionType = UITextAutocorrectionTypeNo;
     inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    inputField.returnKeyType = UIReturnKeySend;
+    if ([[[LIOLookIOManager sharedLookIOManager] pendingEmailAddress] length])
+        inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
     UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
@@ -512,6 +517,16 @@
 }
 
 #pragma mark -
+#pragma mark UITextFieldDelegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.view endEditing:YES];
+    [self submitButtonWasTapped];
+    return YES;
+}
+
+#pragma mark -
 #pragma mark Control actions
 
 - (void)closeButtonWasTapped
@@ -524,7 +539,7 @@
     if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"We just sent you an e-mail with some additional information."
+                                                            message:@"We just sent you an email with some additional information."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];

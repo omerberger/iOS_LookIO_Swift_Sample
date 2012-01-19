@@ -42,8 +42,7 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL    @"http://connect.look.io/api/v1/app/launch"
-#define LIOLookIOManagerAppResumeRequestURL    @"http://connect.look.io/api/v1/app/resume"
+#define LIOLookIOManagerAppLaunchRequestURL    @"https://connect.look.io/api/v1/app/launch"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -82,17 +81,17 @@
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
     SystemSoundID soundYay, soundDing;
-    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding;
+    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
     BOOL usesTLS, usesSounds, userWantsSessionTermination;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
-    NSMutableURLRequest *appLaunchRequest, *appResumeRequest;
-    NSURLConnection *appLaunchRequestConnection, *appResumeRequestConnection;
-    NSMutableData *appLaunchRequestData, *appResumeRequestData;
-    NSInteger appLaunchRequestResponseCode, appResumeRequestResponseCode;
+    NSMutableURLRequest *appLaunchRequest;
+    NSURLConnection *appLaunchRequestConnection;
+    NSMutableData *appLaunchRequestData;
+    NSInteger appLaunchRequestResponseCode;
     NSString *controlEndpoint;
     LIOChatViewController *chatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
@@ -114,10 +113,13 @@
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
     BOOL agentsAvailable;
+    NSDateFormatter *chatDateFormatter;
+    NSDate *backgroundedTime;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
+@property(nonatomic, readonly) NSString *pendingEmailAddress;
 
 - (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
@@ -271,7 +273,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow, delegate;
+@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -299,9 +301,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
+        chatDateFormatter = [[NSDateFormatter alloc] init];
+        chatDateFormatter.dateStyle = NSDateFormatterNoStyle;
+        chatDateFormatter.timeStyle = NSDateFormatterShortStyle;
+        
         queuedLaunchReportDates = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLaunchReportQueueKey];
         if (nil == queuedLaunchReportDates)
             queuedLaunchReportDates = [[NSMutableArray alloc] init];
+        
+        jsonParser = [[SBJsonParser_LIO alloc] init];
+        jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
         // Start the reachability monitor.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -312,6 +321,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     return self;
+}
+
+- (void)sendLaunchReport
+{
+    // Send off the app launch packet, if connected.
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
+        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
+        [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
+#endif
+        appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
+    }
+    else
+    {
+        // Queue this launch packet.
+        [queuedLaunchReportDates addObject:[NSDate date]];
+        [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
+        
+        // Delete LIOLookIOManagerLastKnownEnabledStatusKey. This should force
+        // the lib to report "disabled" back to the host app.
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = nil;
+        
+        [self refreshControlButtonVisibility];
+    }
 }
 
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
@@ -360,9 +399,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                          repeats:YES];
     
     messageSeparatorData = [[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding] retain];
-    
-    jsonParser = [[SBJsonParser_LIO alloc] init];
-    jsonWriter = [[SBJsonWriter_LIO alloc] init];
     
     self.touchImage = lookioImage(@"LIODefaultTouch");
     
@@ -433,15 +469,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     appLaunchRequestData = [[NSMutableData alloc] init];
     appLaunchRequestResponseCode = -1;
-    
-    appResumeRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerAppResumeRequestURL]
-                                                    cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
-                                                timeoutInterval:10.0];
-    [appResumeRequest setHTTPMethod:@"POST"];
-    [appResumeRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
-    appResumeRequestData = [[NSMutableData alloc] init];
-    appResumeRequestResponseCode = -1;
-    
+        
     NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
     if ([aPath length])
     {
@@ -493,24 +521,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
-    // Send off the app launch packet, if connected.
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
-        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-        [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-    #ifdef DEBUG
-        NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
-    #endif
-        appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
-    }
-    else
-    {
-        // Queue this launch packet.
-        [queuedLaunchReportDates addObject:[NSDate date]];
-        [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
-    }
+    [self sendLaunchReport];
     
     NSLog(@"[LOOKIO] Loaded.");    
 }
@@ -597,11 +608,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [friendlyName release];
     [sessionId release];
     [appLaunchRequest release];
-    [appResumeRequest release];
     [appLaunchRequestConnection release];
-    [appResumeRequestConnection release];
     [appLaunchRequestData release];
-    [appResumeRequestData release];
     [lastKnownButtonVisibility release];
     [lastKnownButtonText release];
     [lastKnownButtonTintColor release];
@@ -614,6 +622,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [mainWindow release];
     [queuedLaunchReportDates release];
     [dateFormatter release];
+    [chatDateFormatter release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -674,9 +683,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingFeedbackText release];
     pendingFeedbackText = nil;
     
+    [backgroundedTime release];
+    backgroundedTime = nil;
+    
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
-    sessionEnding = NO, userWantsSessionTermination = NO;
+    sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1054,7 +1066,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"chat"])
     {
         NSString *text = [aPacket objectForKey:@"text"];
-        [chatHistory addObject:[NSString stringWithFormat:@"Agent: %@", text]];
+        
+        NSString *timestamp = [chatDateFormatter stringFromDate:[NSDate date]];
+        
+        NSString *senderName = [aPacket objectForKey:@"sender_name"];
+        if ([senderName length])
+        {
+            //[chatHistory addObject:[NSString stringWithFormat:@"[%@] %@: %@", timestamp, senderName, text]];
+            [chatHistory addObject:[NSString stringWithFormat:@"%@: %@", senderName, text]];
+        }
+        else
+        {
+            //[chatHistory addObject:[NSString stringWithFormat:@"[%@] Agent: %@", timestamp, text]];
+            [chatHistory addObject:[NSString stringWithFormat:@"Agent: %@", text]];
+        }
 
         if (nil == chatViewController)
         {
@@ -1111,7 +1136,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSString *action = [aPacket objectForKey:@"action"];
         
-        if ([action isEqualToString:@"cursor_start"])
+        if ([action isEqualToString:@"typing_start"])
+        {
+            chatViewController.agentTyping = YES;
+        }
+        else if ([action isEqualToString:@"typing_stop"])
+        {
+            chatViewController.agentTyping = NO;
+        }
+        else if ([action isEqualToString:@"cursor_start"])
         {
             UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
             
@@ -1309,6 +1342,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"outro"])
     {
         sessionEnding = YES;
+        outroReceived = YES;
         
         if ([controlSocket isConnected])
         {
@@ -1552,7 +1586,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey
 {
     if (anObject)
-        [sessionExtras setObject:anObject forKey:aKey];
+    {
+        // We only allow JSONable objects.
+        NSString *test = [jsonWriter stringWithObject:[NSArray arrayWithObject:anObject]];
+        if ([test length])
+            [sessionExtras setObject:anObject forKey:aKey];
+        else
+            NSLog(@"[LOOKIO] Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+    }
     else
         [sessionExtras removeObjectForKey:aKey];
 }
@@ -1564,7 +1605,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)addSessionExtras:(NSDictionary *)aDictionary
 {
-    [sessionExtras addEntriesFromDictionary:aDictionary];
+    // We only allow JSONable objects.
+    NSString *test = [jsonWriter stringWithObject:aDictionary];
+    if ([test length])
+        [sessionExtras addEntriesFromDictionary:aDictionary];
+    else
+        NSLog(@"[LOOKIO] Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
 }
 
 - (void)clearSessionExtras
@@ -1717,13 +1763,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
     // We don't show error boxes if the user specifically requested a termination.
-    if (err && NO == userWantsSessionTermination)
+    if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
         if (introduced)
         {
-            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again. (%@)", [err localizedDescription]];
+            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
                                                                 message:message
@@ -1736,7 +1782,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again. (%@)", [err localizedDescription]];
+            NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
                                                                 message:message
@@ -1747,6 +1793,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
         }
+    }
+    
+    // Wacky special case: server terminates session.
+    else if (NO == userWantsSessionTermination && err == nil)
+    {
+        NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                            message:message
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+        [alertView show];
+        [alertView autorelease];
     }
     
     userWantsSessionTermination = NO;
@@ -1842,6 +1903,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                       withTimeout:-1
                               tag:0];
     
+    NSString *timestamp = [chatDateFormatter stringFromDate:[NSDate date]];
+    //[chatHistory addObject:[NSString stringWithFormat:@"[%@] Me: %@", timestamp, aString]];
     [chatHistory addObject:[NSString stringWithFormat:@"Me: %@", aString]];
     [chatViewController reloadMessages];
     //[chatViewController scrollToBottom];
@@ -2098,6 +2161,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
             backgroundTaskId = UIBackgroundTaskInvalid;
         }];
+        
+        [backgroundedTime release];
+        backgroundedTime = [[NSDate date] retain];
     }
     
     if ([controlSocket isConnected])
@@ -2137,6 +2203,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
         backgroundTaskId = UIBackgroundTaskInvalid;
+        
+        if ([backgroundedTime timeIntervalSinceNow] <= -1800.0)
+        {
+            // It's been 30 minutes! Send a launch packet.
+            [self sendLaunchReport];
+        }
+        
+        [backgroundedTime release];
+        backgroundedTime = nil;
     }
     
     if ([controlSocket isConnected])
@@ -2159,16 +2234,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (nil == leaveMessageViewController && nil == emailHistoryViewController && NO == screenshotsAllowed)
             [self showChat];
     }
-    
-    // Send off the app resume packet.
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
-    NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-    [appResumeRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-#ifdef DEBUG
-    NSLog(@"[LOOKIO] <RESUME> Request: %@", introDictWwwFormEncoded);
-#endif
-    appResumeRequestConnection = [[NSURLConnection alloc] initWithRequest:appResumeRequest delegate:self];
-    
+
     [self refreshControlButtonVisibility];
 }
 
@@ -2317,11 +2383,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [appLaunchRequestData setData:[NSData data]];
         appLaunchRequestResponseCode = [httpResponse statusCode];
     }
-    else if (appResumeRequestConnection == connection)
-    {
-        [appResumeRequestData setData:[NSData data]];
-        appResumeRequestResponseCode = [httpResponse statusCode];
-    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -2329,10 +2390,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appLaunchRequestConnection == connection)
     {
         [appLaunchRequestData appendData:data];
-    }
-    else if (appResumeRequestConnection == connection)
-    {
-        [appResumeRequestData appendData:data];
     }
 }
 
@@ -2353,21 +2410,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         appLaunchRequestResponseCode = -1;
     }
-    else if (appResumeRequestConnection == connection)
-    {
-        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appResumeRequestData encoding:NSUTF8StringEncoding] autorelease]];
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] <RESUME> Success (%d). Response: %@", appResumeRequestResponseCode, responseDict);
-#endif
-        
-        NSDictionary *params = [responseDict objectForKey:@"response"];
-        [self parseAndSaveClientParams:params];
-        
-        [appResumeRequestConnection release];
-        appResumeRequestConnection = nil;
-        
-        appResumeRequestResponseCode = -1;
-    }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
@@ -2383,18 +2425,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         appLaunchRequestResponseCode = -1;
         
-        [self refreshControlButtonVisibility];
-    }
-    else if (appResumeRequestConnection == connection)
-    {
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] <RESUME> Failed. Reason: %@", [error localizedDescription]);
-#endif
-        
-        [appResumeRequestConnection release];
-        appResumeRequestConnection = nil;
-        
-        appResumeRequestResponseCode = -1;
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = nil;
         
         [self refreshControlButtonVisibility];
     }
@@ -2413,6 +2446,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self rejiggerWindows];
     
+    userWantsSessionTermination = YES;
     resetAfterDisconnect = YES;
     [self killConnection];
 }

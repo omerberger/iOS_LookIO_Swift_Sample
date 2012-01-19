@@ -44,12 +44,15 @@
     UILabel *loadingLabel;
     int lastScrollId;
     LIOAboutViewController *aboutViewController;
+    LIOChatboxView *currentChatboxWithField;
+    BOOL agentTyping;
     id delegate;
     id dataSource;
 }
 
 @property(nonatomic, assign) id delegate, dataSource;
 @property(nonatomic, retain) NSString *initialChatText;
+@property(nonatomic, assign) BOOL agentTyping;
 
 - (void)reloadMessages;
 - (void)scrollToBottom;
