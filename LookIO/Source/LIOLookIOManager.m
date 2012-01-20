@@ -2270,7 +2270,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.width = LIOLookIOManagerControlButtonWidth;
         aFrame.size.height = LIOLookIOManagerControlButtonHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
-        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonWidth;
+        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonWidth + 2.0;
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
         
@@ -2286,7 +2286,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         CGRect aFrame = controlButton.frame;
         aFrame.size.width = LIOLookIOManagerControlButtonHeight;
         aFrame.size.height = LIOLookIOManagerControlButtonWidth;
-        aFrame.origin.y = 0.0;
+        aFrame.origin.y = -2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
@@ -2304,7 +2304,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.width = LIOLookIOManagerControlButtonWidth;
         aFrame.size.height = LIOLookIOManagerControlButtonHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
-        aFrame.origin.x = 0.0;
+        aFrame.origin.x = -2.0;
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
         
@@ -2320,7 +2320,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         CGRect aFrame = controlButton.frame;
         aFrame.size.width = LIOLookIOManagerControlButtonHeight;
         aFrame.size.height = LIOLookIOManagerControlButtonWidth;
-        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonWidth;
+        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonWidth + 2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
@@ -2332,6 +2332,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape right\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
     }
+    
+    [controlButton setNeedsLayout];
+    [controlButton setNeedsDisplay];
 }
 
 - (void)reachabilityDidChange:(NSNotification *)aNotification

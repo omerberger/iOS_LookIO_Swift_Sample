@@ -29,6 +29,8 @@
 		D450A01F14B3B34300809B59 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D421771C14AD461800B4E59E /* CoreTelephony.framework */; };
 		D462A3F3140DB4CA006BEDD3 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */; };
 		D479706F141D4B5E00950E53 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D479706E141D4B5E00950E53 /* AudioToolbox.framework */; };
+		D47C98A514C7F7F000E1223F /* LIOTabInnerShadow.png in Resources */ = {isa = PBXBuildFile; fileRef = D47C98A314C7F7F000E1223F /* LIOTabInnerShadow.png */; };
+		D47C98A614C7F7F000E1223F /* LIOTabInnerShadow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47C98A414C7F7F000E1223F /* LIOTabInnerShadow@2x.png */; };
 		D47CD781142FB0E20024C677 /* LIOSettingsButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */; };
 		D47CD782142FB0E20024C677 /* LIOSettingsButton@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */; };
 		D48ABF1D1404698400835205 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D48ABF1B1404698400835205 /* libLookIO.a */; };
@@ -87,6 +89,8 @@
 		D44DD81214044966004374FE /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D462A3F2140DB4CA006BEDD3 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		D479706E141D4B5E00950E53 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
+		D47C98A314C7F7F000E1223F /* LIOTabInnerShadow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOTabInnerShadow.png; sourceTree = "<group>"; };
+		D47C98A414C7F7F000E1223F /* LIOTabInnerShadow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOTabInnerShadow@2x.png"; sourceTree = "<group>"; };
 		D47CD77D142FB0E20024C677 /* LIOSettingsButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LIOSettingsButton.png; sourceTree = "<group>"; };
 		D47CD77E142FB0E20024C677 /* LIOSettingsButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LIOSettingsButton@2x.png"; sourceTree = "<group>"; };
 		D48ABF1B1404698400835205 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = "build/Release-iphoneos/libLookIO.a"; sourceTree = "<group>"; };
@@ -176,6 +180,8 @@
 		D44DD7F814044966004374FE /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				D47C98A314C7F7F000E1223F /* LIOTabInnerShadow.png */,
+				D47C98A414C7F7F000E1223F /* LIOTabInnerShadow@2x.png */,
 				D4BC197A14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png */,
 				D4BC197B14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png */,
 				D49A640414B66B2B00313998 /* LIOAboutBackgroundForiPhone.jpg */,
@@ -344,6 +350,8 @@
 				D49A640714B66B2B00313998 /* LIOAboutBackgroundForiPhone@2x.jpg in Resources */,
 				D4BC197C14BA383C00E62AF5 /* LIOAboutStretchableField@2x.png in Resources */,
 				D4BC197D14BA383C00E62AF5 /* LIOAboutStretchableGreenButton@2x.png in Resources */,
+				D47C98A514C7F7F000E1223F /* LIOTabInnerShadow.png in Resources */,
+				D47C98A614C7F7F000E1223F /* LIOTabInnerShadow@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

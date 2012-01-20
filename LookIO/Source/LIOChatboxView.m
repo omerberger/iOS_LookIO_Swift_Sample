@@ -35,6 +35,7 @@
         bubbleView.layer.borderColor = [UIColor whiteColor].CGColor;
         bubbleView.layer.borderWidth = 2.0;
         bubbleView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        bubbleView.userInteractionEnabled = YES;
         [self addSubview:bubbleView];
         
         CGRect aFrame = bubbleView.bounds;

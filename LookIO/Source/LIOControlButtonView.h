@@ -20,6 +20,7 @@
     UIColor *tintColor, *textColor, *fillColor, *shadowColor;
     NSString *labelText;
     LIOTimerProxy *fadeTimer;
+    UIImageView *innerShadow;
     
     id<LIOControlButtonViewDelegate> delegate;
 }

@@ -9,6 +9,7 @@
 #import "LIOControlButtonView.h"
 #import <QuartzCore/QuartzCore.h>
 #import "LIOTimerProxy.h"
+#import "LIOLookIOManager.h"
 
 @implementation LIOControlButtonView
 
@@ -48,6 +49,9 @@
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
+        
+        innerShadow = [[UIImageView alloc] initWithImage:lookioImage(@"LIOTabInnerShadow")];
+        [self addSubview:innerShadow];
     }
     
     return self;
@@ -61,6 +65,7 @@
     [textColor release];
     [fillColor release];
     [shadowColor release];
+    [innerShadow release];
     
     [fadeTimer stopTimer];
     [fadeTimer release];
@@ -79,6 +84,27 @@
         label.textColor = textColor;
     else
         label.textColor = [UIColor whiteColor];
+    
+    if (UIInterfaceOrientationPortrait == [UIApplication sharedApplication].statusBarOrientation)
+    {
+        innerShadow.transform = CGAffineTransformIdentity;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == [UIApplication sharedApplication].statusBarOrientation)
+    {
+        CGAffineTransform rotate = CGAffineTransformMakeRotation((3.0*M_PI)/2.0);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(37.0, 37.0);
+        innerShadow.transform = CGAffineTransformConcat(translate, rotate);
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == [UIApplication sharedApplication].statusBarOrientation)
+    {
+        innerShadow.transform = CGAffineTransformMakeScale(-1.0, -1.0);
+    }
+    else if (UIInterfaceOrientationLandscapeRight == [UIApplication sharedApplication].statusBarOrientation)
+    {
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(-37.0, -37.0);
+        CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2.0);
+        innerShadow.transform = CGAffineTransformConcat(translate, rotate);
+    }
 }
 
 - (void)drawRect:(CGRect)rect
@@ -88,27 +114,37 @@
     if (nil == tintColor)
         tintColor = [UIColor blackColor];
     
+    UIRectCorner corners = UIRectCornerTopLeft | UIRectCornerBottomLeft;
+    if (UIInterfaceOrientationLandscapeLeft == [UIApplication sharedApplication].statusBarOrientation)
+        corners = UIRectCornerBottomLeft | UIRectCornerBottomRight;
+    else if (UIInterfaceOrientationPortraitUpsideDown == [UIApplication sharedApplication].statusBarOrientation)
+        corners = UIRectCornerTopRight | UIRectCornerBottomRight;
+    else if (UIInterfaceOrientationLandscapeRight == [UIApplication sharedApplication].statusBarOrientation)
+        corners = UIRectCornerTopLeft | UIRectCornerTopRight;
+    
     CGContextClearRect(context, rect);
     
     CGRect smallerRect = CGRectMake(rect.origin.x + 0.5, rect.origin.y + 0.5, rect.size.width, rect.size.height - 1.0);
     
     CGContextSetFillColorWithColor(context, fillColor.CGColor);
     UIBezierPath *innerPath = [UIBezierPath bezierPathWithRoundedRect:smallerRect
-                                                    byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+                                                    byRoundingCorners:corners
                                                           cornerRadii:CGSizeMake(8.0, 8.0)];
     [innerPath fill];
     
+    /*
     CGRect smallestRect = CGRectMake(rect.origin.x + 1.5, rect.origin.y + 1.0, rect.size.width, rect.size.height - 2.0);
     CGContextSetStrokeColorWithColor(context, [UIColor colorWithWhite:1.0 alpha:0.42].CGColor);
     UIBezierPath *innerShadowPath = [UIBezierPath bezierPathWithRoundedRect:smallestRect
-                                                          byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+                                                          byRoundingCorners:corners
                                                                 cornerRadii:CGSizeMake(8.0, 8.0)];
     innerShadowPath.lineWidth = 2.0;
     [innerShadowPath stroke];
+    */
     
     CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
-    UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width + 5.0, rect.size.height)
-                                                    byRoundingCorners:(UIRectCornerTopLeft | UIRectCornerBottomLeft)
+    UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width/* + 5.0*/, rect.size.height)
+                                                    byRoundingCorners:corners
                                                           cornerRadii:CGSizeMake(10.0, 10.0)];
     outerPath.lineWidth = 2.0;
     [outerPath stroke];
