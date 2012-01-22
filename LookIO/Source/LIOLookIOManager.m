@@ -62,8 +62,8 @@
 #define LIOLookIOManagerLastKnownEnabledStatusKey       @"LIOLookIOManagerLastKnownEnabledStatusKey"
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 
-#define LIOLookIOManagerControlButtonHeight 110.0
-#define LIOLookIOManagerControlButtonWidth  35.0
+#define LIOLookIOManagerControlButtonMinHeight 110.0
+#define LIOLookIOManagerControlButtonMinWidth  35.0
 
 @class CTCall, CTCallCenter;
 
@@ -1571,6 +1571,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [self refreshControlButtonVisibility];
+    [self applicationDidChangeStatusBarOrientation:nil];
 }
 
 - (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -2263,14 +2264,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     //clickView.transform = transform;
     //cursorView.transform = transform;
     
+    CGSize textSize = [lastKnownButtonText sizeWithFont:controlButton.label.font];
+    textSize.width += 20.0; // 10px padding on each side
+    CGFloat extraHeight = 0.0;
+    if (textSize.width > LIOLookIOManagerControlButtonMinHeight)
+        extraHeight = textSize.width - LIOLookIOManagerControlButtonMinHeight;
+    
+    CGFloat actualHeight = LIOLookIOManagerControlButtonMinHeight + extraHeight;
+    
     // Manually position the control button. Ugh.
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonWidth;
-        aFrame.size.height = LIOLookIOManagerControlButtonHeight;
-        aFrame.origin.y = (screenSize.height / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
-        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonWidth + 2.0;
+        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.size.height = actualHeight;
+        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
+        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonMinWidth + 2.0;
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
         
@@ -2284,10 +2293,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonHeight;
-        aFrame.size.height = LIOLookIOManagerControlButtonWidth;
+        aFrame.size.width = actualHeight;
+        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
         aFrame.origin.y = -2.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
+        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
         
@@ -2301,9 +2310,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
         CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonWidth;
-        aFrame.size.height = LIOLookIOManagerControlButtonHeight;
-        aFrame.origin.y = (screenSize.height / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
+        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.size.height = actualHeight;
+        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
         aFrame.origin.x = -2.0;
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
@@ -2318,10 +2327,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else // Landscape, home button right
     {
         CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonHeight;
-        aFrame.size.height = LIOLookIOManagerControlButtonWidth;
-        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonWidth + 2.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (LIOLookIOManagerControlButtonHeight / 2.0);
+        aFrame.size.width = actualHeight;
+        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
         controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
         

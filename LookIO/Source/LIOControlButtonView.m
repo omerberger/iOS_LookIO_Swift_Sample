@@ -85,6 +85,8 @@
     else
         label.textColor = [UIColor whiteColor];
     
+    //innerShadow.transform = CGAffineTransformIdentity;
+    
     if (UIInterfaceOrientationPortrait == [UIApplication sharedApplication].statusBarOrientation)
     {
         innerShadow.transform = CGAffineTransformIdentity;
@@ -105,6 +107,8 @@
         CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2.0);
         innerShadow.transform = CGAffineTransformConcat(translate, rotate);
     }
+    
+    innerShadow.frame = self.bounds;
 }
 
 - (void)drawRect:(CGRect)rect
