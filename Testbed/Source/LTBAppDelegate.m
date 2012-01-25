@@ -7,6 +7,7 @@
 //
 
 #import "LTBAppDelegate.h"
+#import <CoreLocation/CoreLocation.h>
 
 //io.look.${PRODUCT_NAME:rfc1034identifier}
 
@@ -22,6 +23,10 @@
     self.mainViewController = [[LTBMainViewController alloc] initWithNibName:nil bundle:nil];
     [self.window addSubview:mainViewController.view];
 
+    CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+    [locationManager startUpdatingLocation];
+    [locationManager stopUpdatingLocation];
+    
     [[LIOLookIOManager sharedLookIOManager] setSessionExtra:@"lol@clownpenis.fart" forKey:@"email_address"];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:nil];
     [LIOLookIOManager sharedLookIOManager].delegate = self;
