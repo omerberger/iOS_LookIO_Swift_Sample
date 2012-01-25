@@ -11,6 +11,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <CoreLocation/CoreLocation.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
@@ -115,6 +116,7 @@
     BOOL agentsAvailable;
     NSDateFormatter *chatDateFormatter;
     NSDate *backgroundedTime;
+    CLLocation *lastKnownLocation;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -318,6 +320,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  selector:@selector(reachabilityDidChange:)
                                                      name:LIOAnalyticsManagerReachabilityDidChangeNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        
+        // Start the location monitor thingy.
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(locationWasDetermined:)
+                                                     name:LIOAnalyticsManagerLocationWasDeterminedNotification
+                                                   object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        [[LIOAnalyticsManager sharedAnalyticsManager] beginLocationCheck];
     }
     
     return self;
@@ -1680,6 +1689,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
         
+        if (lastKnownLocation)
+        {
+            CLLocationDegrees lat = lastKnownLocation.coordinate.latitude;
+            CLLocationDegrees lon = lastKnownLocation.coordinate.longitude;
+            NSArray *location = [NSArray arrayWithObjects:[NSNumber numberWithDouble:lat], [NSNumber numberWithDouble:lon], nil];
+            [detectedDict setObject:location forKey:@"location"];
+        }
+        
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
         if ([sessionExtras count])
             [extrasDict setDictionary:sessionExtras];
@@ -2381,6 +2398,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
         }
     }
+}
+
+- (void)locationWasDetermined:(NSNotification *)aNotification
+{
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    [lastKnownLocation release];
+    lastKnownLocation = [[userInfo objectForKey:LIOAnalyticsManagerLocationObjectKey] retain];
 }
 
 #pragma mark -

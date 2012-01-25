@@ -8,8 +8,12 @@
 
 #import <UIKit/UIKit.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <CoreLocation/CoreLocation.h>
 
-#define LIOAnalyticsManagerReachabilityDidChangeNotification @"LIOAnalyticsManagerReachabilityDidChangeNotification"
+#define LIOAnalyticsManagerReachabilityDidChangeNotification    @"LIOAnalyticsManagerReachabilityDidChangeNotification"
+#define LIOAnalyticsManagerLocationWasDeterminedNotification    @"LIOAnalyticsManagerLocationWasDeterminedNotification"
+
+#define LIOAnalyticsManagerLocationObjectKey  @"LIOAnalyticsManagerLocationKey"
 
 typedef enum
 {
@@ -20,10 +24,11 @@ typedef enum
 
 @class LIOAnalyticsManager;
 
-@interface LIOAnalyticsManager : NSObject
+@interface LIOAnalyticsManager : NSObject <CLLocationManagerDelegate>
 {
     LIOAnalyticsManagerReachabilityStatus lastKnownReachabilityStatus;
     SCNetworkReachabilityRef reachabilityRef;
+    id locationManager;
 }
 
 @property(nonatomic, readonly) LIOAnalyticsManagerReachabilityStatus lastKnownReachabilityStatus;
@@ -37,5 +42,6 @@ typedef enum
 - (NSString *)distributionType;
 - (BOOL)pushEnabled;
 - (void)pumpReachabilityStatus;
+- (void)beginLocationCheck;
 
 @end

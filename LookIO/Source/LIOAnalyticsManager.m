@@ -58,6 +58,9 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     SCNetworkReachabilityUnscheduleFromRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     CFRelease(reachabilityRef);
     
+    [locationManager release];
+    locationManager = nil;
+    
     [super dealloc];
 }
 
@@ -129,7 +132,11 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     if ($CLLocationManager && [$CLLocationManager respondsToSelector:@selector(authorizationStatus)])
     {
         // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
-        return [$CLLocationManager authorizationStatus] == 3;
+        int status = [$CLLocationManager authorizationStatus];
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Location services authorization status: %d", status);
+#endif
+        return status == 3;
     }
     
     return NO;
@@ -224,6 +231,35 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 - (BOOL)pushEnabled
 {
     return [[UIApplication sharedApplication] enabledRemoteNotificationTypes] != UIRemoteNotificationTypeNone;
+}
+
+- (void)beginLocationCheck
+{
+    if (NO == [self locationServicesEnabled])
+        return;
+    
+    if (locationManager)
+        [locationManager release];
+
+    Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
+    locationManager = [[$CLLocationManager alloc] init];
+    [locationManager setDelegate:self];
+    [locationManager startUpdatingLocation];
+}
+
+#pragma mark -
+#pragma mark CLLocationManagerDelegate methods
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+{
+    NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:newLocation, LIOAnalyticsManagerLocationObjectKey, nil];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:LIOAnalyticsManagerLocationWasDeterminedNotification
+                                                        object:self
+                                                      userInfo:userInfo];
+    
+    [locationManager release];
+    locationManager = nil;
 }
 
 @end
