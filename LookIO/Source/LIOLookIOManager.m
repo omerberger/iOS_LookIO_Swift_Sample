@@ -1691,9 +1691,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (lastKnownLocation)
         {
-            CLLocationDegrees lat = lastKnownLocation.coordinate.latitude;
-            CLLocationDegrees lon = lastKnownLocation.coordinate.longitude;
-            NSArray *location = [NSArray arrayWithObjects:[NSNumber numberWithDouble:lat], [NSNumber numberWithDouble:lon], nil];
+            NSNumber *lat = [NSNumber numberWithDouble:lastKnownLocation.coordinate.latitude];
+            NSNumber *lon = [NSNumber numberWithDouble:lastKnownLocation.coordinate.longitude];
+            NSArray *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
             [detectedDict setObject:location forKey:@"location"];
         }
         
