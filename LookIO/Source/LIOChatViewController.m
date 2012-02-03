@@ -128,6 +128,8 @@
     [super viewWillDisappear:animated];
     
     [settingsActionSheet dismissWithClickedButtonIndex:2742 animated:NO];
+    
+    [self.view endEditing:YES];
 }
 
 - (void)reloadMessages

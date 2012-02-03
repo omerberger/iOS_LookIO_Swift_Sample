@@ -9,7 +9,6 @@
 #import "AsyncSocket.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <QuartzCore/QuartzCore.h>
-#import <AudioToolbox/AudioToolbox.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <CoreLocation/CoreLocation.h>
 #import <sys/socket.h>
@@ -39,11 +38,12 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerControlEndpointRequestURL   @"http://connect.look.io/api/v1/endpoint"
+#define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL    @"https://connect.look.io/api/v1/app/launch"
+#define LIOLookIOManagerAppLaunchRequestURL     @"http://connect.look.io/api/v1/app/launch"
+#define LIOLookIOManagerAppLaunchRequestURL_TLS @"https://connect.look.io/api/v1/app/launch"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -81,19 +81,17 @@
     UIImageView *cursorView, *clickView;
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
-    SystemSoundID soundYay, soundDing;
     BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived;
     NSNumber *lastKnownQueuePosition;
     BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
-    BOOL usesTLS, usesSounds, userWantsSessionTermination;
+    BOOL usesTLS, userWantsSessionTermination;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
     NSMutableURLRequest *appLaunchRequest;
     NSURLConnection *appLaunchRequestConnection;
     NSMutableData *appLaunchRequestData;
     NSInteger appLaunchRequestResponseCode;
-    NSString *controlEndpoint;
     LIOChatViewController *chatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
@@ -117,6 +115,8 @@
     NSDateFormatter *chatDateFormatter;
     NSDate *backgroundedTime;
     CLLocation *lastKnownLocation;
+    NSString *overriddenEndpoint;
+    BOOL appLaunchRequestIgnoringLocationHeader;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -275,7 +275,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, usesSounds, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
+@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -295,7 +295,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         usesTLS = YES;
-        usesSounds = YES;
         
         sessionExtras = [[NSMutableDictionary alloc] init];
         
@@ -334,6 +333,27 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendLaunchReport
 {
+    if ([overriddenEndpoint length])
+    {
+        if (usesTLS)
+        {
+            NSString *urlString = [NSString stringWithFormat:@"https://%@", overriddenEndpoint];
+            [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
+        }
+        else
+        {
+            NSString *urlString = [NSString stringWithFormat:@"http://%@", overriddenEndpoint];
+            [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
+        }
+    }
+    else
+    {
+        if (usesTLS)
+            [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
+        else
+            [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
+    }
+    
     // Send off the app launch packet, if connected.
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
@@ -471,45 +491,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self applicationDidChangeStatusBarOrientation:nil];
     
-    appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]
+    appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
                                                          cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                      timeoutInterval:10.0];
     [appLaunchRequest setHTTPMethod:@"POST"];
     [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     appLaunchRequestData = [[NSMutableData alloc] init];
     appLaunchRequestResponseCode = -1;
-        
-    NSString *aPath = [lookioBundle() pathForResource:@"LookIODing" ofType:@"caf"];
-    if ([aPath length])
-    {
-        NSURL *soundURL = [NSURL fileURLWithPath:aPath];
-        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-    }
-    else
-    {
-        NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIODing" ofType:@"caf"];
-        if ([anotherPath length])
-        {
-            NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
-            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundDing);
-        }
-    }
     
-    aPath = [lookioBundle() pathForResource:@"LookIOConnect" ofType:@"caf"];
-    if ([aPath length])
-    {
-        NSURL *soundURL = [NSURL fileURLWithPath:aPath];
-        AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-    }
+    if (usesTLS)
+        [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
     else
-    {
-        NSString *anotherPath = [[NSBundle mainBundle] pathForResource:@"LookIOConnect" ofType:@"caf"];
-        if ([anotherPath length])
-        {
-            NSURL *soundURL = [NSURL fileURLWithPath:anotherPath];
-            AudioServicesCreateSystemSoundID((CFURLRef)soundURL, &soundYay);
-        }
-    }
+        [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
     
     backgroundTaskId = UIBackgroundTaskInvalid;
     
@@ -612,7 +605,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastScreenshotSent release];
     [lastKnownQueuePosition release];
     [targetAgentId release];
-    [controlEndpoint release];
     [pendingFeedbackText release];
     [friendlyName release];
     [sessionId release];
@@ -632,6 +624,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates release];
     [dateFormatter release];
     [chatDateFormatter release];
+    [overriddenEndpoint release];
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -641,9 +634,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [chatViewController release];
     chatViewController = nil;
-    
-    AudioServicesDisposeSystemSoundID(soundDing);
-    AudioServicesDisposeSystemSoundID(soundYay);
     
     [self rejiggerWindows];
     
@@ -896,9 +886,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     //[chatViewController scrollToBottom];
     
-    if (usesSounds)
-        AudioServicesPlaySystemSound(soundYay);
-    
     if (introduced)
     {
         NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -952,16 +939,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
 
-    // Bypass REST call.
-    [controlEndpoint release];
-    controlEndpoint = [[NSString stringWithString:@"connect.look.io"] retain];
-    
     NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
     if (NO == usesTLS)
         chosenPort = LIOLookIOManagerControlEndpointPort;
     
+    NSString *chosenEndpoint = LIOLookIOManagerDefaultControlEndpoint;
+    if ([overriddenEndpoint length])
+        chosenEndpoint = overriddenEndpoint;
+    
     NSError *connectError = nil;
-    BOOL connectResult = [controlSocket connectToHost:controlEndpoint
+    BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
                                                onPort:chosenPort
                                                 error:&connectError];
     if (NO == connectResult)
@@ -982,11 +969,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    if (usesSounds)
-        AudioServicesPlaySystemSound(soundDing);
-    
 #ifdef DEBUG
-    NSLog(@"[CONNECT] Trying \"%@:%u\"...", controlEndpoint, chosenPort);
+    NSLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
 #endif
     
     controlSocketConnecting = YES;
@@ -1644,6 +1628,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
+                                      [[UIDevice currentDevice] systemVersion], @"platform_version",
                                       @"##UNKNOWN_VERSION##", @"sdk_version",
                                       nil];
     
@@ -2372,11 +2357,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Fire and forget a launch packet for each queued launch event.
             for (NSDate *aDate in queuedLaunchReportDates)
             {
-                NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]
+                NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:nil
                                                                             cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                                         timeoutInterval:10.0];
                 [request setHTTPMethod:@"POST"];
                 [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+                
+                if (usesTLS)
+                    [request setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
+                else
+                    [request setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
                 
                 NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate];
                 NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
@@ -2419,6 +2409,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [appLaunchRequestData setData:[NSData data]];
         appLaunchRequestResponseCode = [httpResponse statusCode];
+    
+        // If there's a Location header, cancel this request and start a new one with
+        // the overridden endpoint thingermadoo.
+        NSString *location = [[httpResponse allHeaderFields] objectForKey:@"Location"];
+        if ([location length])
+        {
+            [overriddenEndpoint release];
+            overriddenEndpoint = [location retain];
+            
+            [connection cancel];
+            
+            appLaunchRequestIgnoringLocationHeader = YES;
+            
+#ifdef DEBUG
+            NSLog(@"\n\n[LOOKIO] <<< REDIRECT >>>\n[LOOKIO] <<< REDIRECT >>> Location: %@\n[LOOKIO] <<< REDIRECT >>>\n\n", overriddenEndpoint);
+#endif // DEBUG
+            
+            [self sendLaunchReport];
+        }
+        else
+        {
+            // We don't want the app/launch call that follows an endpoint override to
+            // blow away the endpoint override that was just set!
+            if (appLaunchRequestIgnoringLocationHeader)
+                appLaunchRequestIgnoringLocationHeader = NO;
+            else
+            {
+                [overriddenEndpoint release];
+                overriddenEndpoint = nil;
+            }
+        }
     }
 }
 
