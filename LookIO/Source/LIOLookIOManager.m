@@ -2543,6 +2543,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
+- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
+{
+    NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                         @"feedback", @"type",
+                                         anEmail, @"email_address",
+                                         aMessage, @"message",
+                                         nil];
+    
+    NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+    feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+}
+
 #pragma mark -
 #pragma mark LIOEmailHistoryViewControllerDelegate methods
 

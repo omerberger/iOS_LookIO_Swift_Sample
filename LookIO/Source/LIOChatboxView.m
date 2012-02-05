@@ -10,6 +10,7 @@
 #import "LIOChatboxView.h"
 #import "LIONiceTextField.h"
 #import "LIOLookIOManager.h"
+#import "JTextView.h"
 
 #define LIOChatboxViewMinHeight 100.0
 
@@ -44,7 +45,8 @@
         aFrame.origin.y = 5.0;
         aFrame.size.height = aFrame.size.height - 10.0;
         
-        messageView = [[UILabel alloc] initWithFrame:aFrame];
+        messageView = [[JTextView alloc] initWithFrame:aFrame];
+        messageView.dataDetectorTypes = UIDataDetectorTypeAll;
         messageView.backgroundColor = [UIColor clearColor];
         messageView.textColor = [UIColor whiteColor];
         messageView.font = [UIFont systemFontOfSize:16.0];
@@ -54,7 +56,7 @@
         messageView.layer.shadowOffset = CGSizeMake(2.0, 2.0);
         messageView.layer.shadowRadius = 1.0;
         messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        messageView.userInteractionEnabled = YES;
+        messageView.editable = NO;
         [self addSubview:messageView];
         
         agentTypingLabel = [[UILabel alloc] init];
@@ -156,6 +158,13 @@
 
 - (void)rejiggerLayout
 {
+    // In case messageView.attributedText points to an NSString instead. D:
+    NSString *messageText = nil;
+    if ([messageView.attributedText respondsToSelector:@selector(string)])
+        messageText = [messageView.attributedText string];
+    else
+        messageText = (NSString *)messageView.attributedText;
+    
     if (LIOChatboxViewModeMinimal == currentMode)
     {
         sendButton.hidden = YES;
@@ -166,15 +175,14 @@
         agentTypingLabel.hidden = YES;
         
         CGSize maxSize = CGSizeMake(bubbleView.frame.size.width - bubbleView.frame.origin.x - 20.0, FLT_MAX);
-        CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
-        messageView.numberOfLines = 0;
+        CGSize boxSize = [messageText sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
         messageView.frame = CGRectMake(10.0, 10.0, boxSize.width, boxSize.height);
         
         CGRect aFrame = self.frame;
         aFrame.size.height = boxSize.height + 20.0;
         self.frame = aFrame;
         
-        if ([messageView.text isEqualToString:LIOChatboxViewAdTextTrigger])
+        if ([messageText isEqualToString:LIOChatboxViewAdTextTrigger])
         {
             messageView.hidden = YES;
             
@@ -211,10 +219,9 @@
             [self addGestureRecognizer:tapper];
         }
         
-        if ([messageView.text hasPrefix:LIOChatboxViewNotificationTrigger])
+        if ([messageText hasPrefix:LIOChatboxViewNotificationTrigger])
         {
             messageView.font = [UIFont italicSystemFontOfSize:16.0];
-            
         }
     }
     else
@@ -238,8 +245,7 @@
                                       59.0, 30.0);
         
         CGSize maxSize = CGSizeMake([settingsButton frame].origin.x - 12.0, FLT_MAX);
-        CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
-        messageView.numberOfLines = 0;
+        CGSize boxSize = [messageText sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
         messageView.frame = CGRectMake(10.0, 10.0, boxSize.width, boxSize.height);
         
         CGFloat settingsSpacing = 0.0;
@@ -253,7 +259,7 @@
         aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 5.0;
         agentTypingLabel.frame = aFrame;
         
-        UIInterfaceOrientation currentInterfaceOrientation = [[UIDevice currentDevice] orientation];
+        UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
         BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
         NSInteger maxLines = LIOChatboxViewMaxLinesPortrait;
         if (landscape)
@@ -330,7 +336,15 @@
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
-    messageView.text = aString;
+    NSMutableAttributedString *attribString = [[NSMutableAttributedString alloc] initWithString:aString];
+    
+    // Make the whole string white.
+    [attribString addAttribute:(NSString *)kCTForegroundColorAttributeName
+                         value:(id)[UIColor whiteColor].CGColor
+                         range:NSMakeRange(0, [aString length])];
+
+    messageView.attributedText = attribString;
+    
     [self rejiggerLayout];
 }
 

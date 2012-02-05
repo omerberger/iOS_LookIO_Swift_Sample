@@ -38,6 +38,14 @@
 		D4C1987714365136009A71B2 /* LIOTimerProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C1987514365136009A71B2 /* LIOTimerProxy.m */; };
 		D4C1987A1436556C009A71B2 /* LIOEmailHistoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */; };
 		D4C1987B1436556C009A71B2 /* LIOEmailHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */; };
+		D4CBDEEC14DF23470053656E /* JTextCaret.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CBDEE414DF23470053656E /* JTextCaret.h */; };
+		D4CBDEED14DF23470053656E /* JTextCaret.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CBDEE514DF23470053656E /* JTextCaret.m */; };
+		D4CBDEEE14DF23470053656E /* JTextPosition.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CBDEE614DF23470053656E /* JTextPosition.h */; };
+		D4CBDEEF14DF23470053656E /* JTextPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CBDEE714DF23470053656E /* JTextPosition.m */; };
+		D4CBDEF014DF23470053656E /* JTextRange.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CBDEE814DF23470053656E /* JTextRange.h */; };
+		D4CBDEF114DF23470053656E /* JTextRange.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CBDEE914DF23470053656E /* JTextRange.m */; };
+		D4CBDEF214DF23470053656E /* JTextView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CBDEEA14DF23470053656E /* JTextView.h */; };
+		D4CBDEF314DF23470053656E /* JTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CBDEEB14DF23470053656E /* JTextView.m */; };
 		D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */; };
 		D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */; };
 		D4CF01731417DEF200B0FBD0 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */; };
@@ -79,6 +87,14 @@
 		D4C1987514365136009A71B2 /* LIOTimerProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOTimerProxy.m; path = LookIO/Source/LIOTimerProxy.m; sourceTree = "<group>"; };
 		D4C198781436556C009A71B2 /* LIOEmailHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEmailHistoryViewController.h; path = LookIO/Source/LIOEmailHistoryViewController.h; sourceTree = "<group>"; };
 		D4C198791436556C009A71B2 /* LIOEmailHistoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEmailHistoryViewController.m; path = LookIO/Source/LIOEmailHistoryViewController.m; sourceTree = "<group>"; };
+		D4CBDEE414DF23470053656E /* JTextCaret.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JTextCaret.h; sourceTree = "<group>"; };
+		D4CBDEE514DF23470053656E /* JTextCaret.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JTextCaret.m; sourceTree = "<group>"; };
+		D4CBDEE614DF23470053656E /* JTextPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JTextPosition.h; sourceTree = "<group>"; };
+		D4CBDEE714DF23470053656E /* JTextPosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JTextPosition.m; sourceTree = "<group>"; };
+		D4CBDEE814DF23470053656E /* JTextRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JTextRange.h; sourceTree = "<group>"; };
+		D4CBDEE914DF23470053656E /* JTextRange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JTextRange.m; sourceTree = "<group>"; };
+		D4CBDEEA14DF23470053656E /* JTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JTextView.h; sourceTree = "<group>"; };
+		D4CBDEEB14DF23470053656E /* JTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JTextView.m; sourceTree = "<group>"; };
 		D4CDD7DA14579CD600D02211 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = LookIO/Source/LIOAboutViewController.h; sourceTree = "<group>"; };
 		D4CDD7DB14579CD600D02211 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = LookIO/Source/LIOAboutViewController.m; sourceTree = "<group>"; };
 		D4CF01711417DEF200B0FBD0 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
@@ -116,6 +132,7 @@
 		D48ABEF51404647300835205 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				D4CBDEE314DF23470053656E /* JTextView */,
 				D48ABEF61404647300835205 /* CocoaAsyncSocket */,
 				D48ABEF91404647300835205 /* NSData+Base64 */,
 				D48ABEFC1404647300835205 /* SBJSON */,
@@ -199,6 +216,21 @@
 			);
 			sourceTree = "<group>";
 		};
+		D4CBDEE314DF23470053656E /* JTextView */ = {
+			isa = PBXGroup;
+			children = (
+				D4CBDEE414DF23470053656E /* JTextCaret.h */,
+				D4CBDEE514DF23470053656E /* JTextCaret.m */,
+				D4CBDEE614DF23470053656E /* JTextPosition.h */,
+				D4CBDEE714DF23470053656E /* JTextPosition.m */,
+				D4CBDEE814DF23470053656E /* JTextRange.h */,
+				D4CBDEE914DF23470053656E /* JTextRange.m */,
+				D4CBDEEA14DF23470053656E /* JTextView.h */,
+				D4CBDEEB14DF23470053656E /* JTextView.m */,
+			);
+			path = JTextView;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -225,6 +257,10 @@
 				D4CDD7DC14579CD600D02211 /* LIOAboutViewController.h in Headers */,
 				D4DC04A51460CE3D00EB93DE /* LIOControlButtonView.h in Headers */,
 				D4A0826B146CD7EC007E5B73 /* LIOAnalyticsManager.h in Headers */,
+				D4CBDEEC14DF23470053656E /* JTextCaret.h in Headers */,
+				D4CBDEEE14DF23470053656E /* JTextPosition.h in Headers */,
+				D4CBDEF014DF23470053656E /* JTextRange.h in Headers */,
+				D4CBDEF214DF23470053656E /* JTextView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,6 +349,10 @@
 				D4CDD7DD14579CD600D02211 /* LIOAboutViewController.m in Sources */,
 				D4DC04A61460CE3D00EB93DE /* LIOControlButtonView.m in Sources */,
 				D4A0826C146CD7EC007E5B73 /* LIOAnalyticsManager.m in Sources */,
+				D4CBDEED14DF23470053656E /* JTextCaret.m in Sources */,
+				D4CBDEEF14DF23470053656E /* JTextPosition.m in Sources */,
+				D4CBDEF114DF23470053656E /* JTextRange.m in Sources */,
+				D4CBDEF314DF23470053656E /* JTextView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

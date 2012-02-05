@@ -15,7 +15,7 @@
 #define LIOChatboxViewAdTextTrigger         @"🈁♨✝ADVERTISEMENT!✝♨🈁"
 #define LIOChatboxViewNotificationTrigger   @"🈁♨✝"
 
-@class LIONiceTextField, LIOTextView;
+@class LIONiceTextField, LIOTextView, JTextView;
 
 /*
 @protocol LIOChatboxViewDelegate
@@ -37,7 +37,8 @@ typedef enum
 {
     UIView *bubbleView;
     UITextView *inputField;
-    UILabel *messageView, *inputFieldPlaceholder, *agentTypingLabel;
+    UILabel *inputFieldPlaceholder, *agentTypingLabel;
+    JTextView *messageView;
     UIButton *sendButton;
     UIImageView *inputFieldBackground;
     id settingsButton;

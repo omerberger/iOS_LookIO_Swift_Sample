@@ -361,6 +361,8 @@
 {
     if ([messageView.text length])
     {
+        [delegate leaveMessageViewController:self didSubmitEmailAddress:emailField.text withMessage:messageView.text];
+
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
                                                             message:@"Your message has been received."
                                                            delegate:self
@@ -372,7 +374,7 @@
     else
     {
         [self.view endEditing:YES];
-        [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
+        [delegate leaveMessageViewControllerWasDismissed:self];
     }
 }
 
@@ -391,7 +393,7 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate leaveMessageViewController:self wasDismissedWithEmailAddress:emailField.text message:messageView.text];
+    [delegate leaveMessageViewControllerWasDismissed:self];
 }
 
 @end
