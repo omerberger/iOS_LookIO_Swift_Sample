@@ -801,12 +801,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
 {
+    static int bl0rk = 0;
+    bl0rk++;
+    
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     if (keyWindow != lookioWindow)
     {
         [keyWindow bringSubviewToFront:controlButton];
         [keyWindow bringSubviewToFront:cursorView];
         [keyWindow bringSubviewToFront:clickView];
+    }
+    else if (bl0rk >= 4)
+    {
+        bl0rk = 0;
+        [lookioWindow makeKeyAndVisible];
     }
     
     if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || chatViewController)

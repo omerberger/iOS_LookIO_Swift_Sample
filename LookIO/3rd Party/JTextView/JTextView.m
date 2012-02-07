@@ -59,7 +59,9 @@ static NSString* const kJTextViewDataDetectorAddressKey = @"kJTextViewDataDetect
 
 - (void)dealloc
 {
-	CFRelease(textFrame);
+    if (textFrame)
+        CFRelease(textFrame);
+    
 	[_font release];
 	[caret release];
 	[_textStore release];
@@ -110,6 +112,10 @@ static NSString* const kJTextViewDataDetectorAddressKey = @"kJTextViewDataDetect
 	UIBezierPath* path = [UIBezierPath bezierPathWithRect:CGRectMake(kJTextViewPaddingSize, -(kJTextViewPaddingSize - 1), width, textSize.height)];
 	
 	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)self.attributedText);
+    
+    if (textFrame)
+        CFRelease(textFrame);
+    
 	textFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path.CGPath, NULL);
 	CFRelease(framesetter);
 	CTFrameDraw(textFrame, context);
