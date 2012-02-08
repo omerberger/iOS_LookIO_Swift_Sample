@@ -336,7 +336,7 @@
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
-    NSMutableAttributedString *attribString = [[NSMutableAttributedString alloc] initWithString:aString];
+    NSMutableAttributedString *attribString = [[[NSMutableAttributedString alloc] initWithString:aString] autorelease];
     
     // Make the whole string white.
     [attribString addAttribute:(NSString *)kCTForegroundColorAttributeName
@@ -367,7 +367,7 @@
 - (void)sendButtonWasTapped
 {
     [inputField resignFirstResponder];
-    NSString *text = inputField.text;
+    NSString *text = [[inputField.text copy] autorelease];
     inputField.text = [NSString string];
     [delegate chatboxView:self didReturnWithText:text];
 }

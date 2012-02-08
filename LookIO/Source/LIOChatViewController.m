@@ -236,7 +236,8 @@
             {
                 aChatbox.inputField.text = initialChatText;
 
-                pendingChatText = initialChatText;
+                [pendingChatText release];
+                pendingChatText = [initialChatText retain];
                 initialChatText = nil;
             }
             
@@ -369,16 +370,16 @@
 
 - (void)chatboxView:(LIOChatboxView *)aView didReturnWithText:(NSString *)aString
 {
+    [pendingChatText release];
+    pendingChatText = nil;
+    
+    [self.view endEditing:YES];
+    
     if ([aString length])
     {
         [delegate chatViewControllerTypingDidStop:self];
         [delegate chatViewController:self didChatWithText:aString];
     }
-    
-    [pendingChatText release];
-    pendingChatText = nil;
-    
-    [self.view endEditing:YES];
 }
 
 - (void)chatboxViewDidTapSettingsButton:(LIOChatboxView *)aView

@@ -2380,6 +2380,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
                 [request setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
+                [request autorelease];
 #ifdef DEBUG
                 NSLog(@"[LOOKIO] <QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
 #endif
