@@ -1,0 +1,343 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		490E957414C3E25E007BFD8C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957314C3E25E007BFD8C /* UIKit.framework */; };
+		490E957614C3E25E007BFD8C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957514C3E25E007BFD8C /* Foundation.framework */; };
+		490E957814C3E25E007BFD8C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957714C3E25E007BFD8C /* CoreGraphics.framework */; };
+		490E957E14C3E25E007BFD8C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 490E957C14C3E25E007BFD8C /* InfoPlist.strings */; };
+		490E958014C3E25E007BFD8C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E957F14C3E25E007BFD8C /* main.m */; };
+		490E958414C3E25E007BFD8C /* SampleAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958314C3E25E007BFD8C /* SampleAppDelegate.m */; };
+		490E958714C3E25F007BFD8C /* SampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958614C3E25F007BFD8C /* SampleViewController.m */; };
+		490E958A14C3E25F007BFD8C /* SampleViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490E958814C3E25F007BFD8C /* SampleViewController_iPhone.xib */; };
+		490E958D14C3E25F007BFD8C /* SampleViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490E958B14C3E25F007BFD8C /* SampleViewController_iPad.xib */; };
+		490E959714C3E371007BFD8C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959314C3E371007BFD8C /* AudioToolbox.framework */; };
+		490E959814C3E371007BFD8C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959414C3E371007BFD8C /* CFNetwork.framework */; };
+		490E959914C3E371007BFD8C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959514C3E371007BFD8C /* QuartzCore.framework */; };
+		490E959A14C3E371007BFD8C /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959614C3E371007BFD8C /* SystemConfiguration.framework */; };
+		D4D5B77614F454F100FC4E4C /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4D5B77314F454F100FC4E4C /* libLookIO.a */; };
+		D4D5B77714F454F100FC4E4C /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D4D5B77514F454F100FC4E4C /* LookIO.bundle */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		490E956F14C3E25E007BFD8C /* LookIO Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LookIO Sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		490E957314C3E25E007BFD8C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		490E957514C3E25E007BFD8C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		490E957714C3E25E007BFD8C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		490E957B14C3E25E007BFD8C /* LookIO Sample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LookIO Sample-Info.plist"; sourceTree = "<group>"; };
+		490E957D14C3E25E007BFD8C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		490E957F14C3E25E007BFD8C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		490E958114C3E25E007BFD8C /* LookIO Sample-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LookIO Sample-Prefix.pch"; sourceTree = "<group>"; };
+		490E958214C3E25E007BFD8C /* SampleAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleAppDelegate.h; sourceTree = "<group>"; };
+		490E958314C3E25E007BFD8C /* SampleAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleAppDelegate.m; sourceTree = "<group>"; };
+		490E958514C3E25E007BFD8C /* SampleViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleViewController.h; sourceTree = "<group>"; };
+		490E958614C3E25F007BFD8C /* SampleViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleViewController.m; sourceTree = "<group>"; };
+		490E958914C3E25F007BFD8C /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SampleViewController_iPhone.xib; sourceTree = "<group>"; };
+		490E958C14C3E25F007BFD8C /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SampleViewController_iPad.xib; sourceTree = "<group>"; };
+		490E959314C3E371007BFD8C /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		490E959414C3E371007BFD8C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		490E959514C3E371007BFD8C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		490E959614C3E371007BFD8C /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		D4D5B77314F454F100FC4E4C /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libLookIO.a; sourceTree = "<group>"; };
+		D4D5B77414F454F100FC4E4C /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOLookIOManager.h; sourceTree = "<group>"; };
+		D4D5B77514F454F100FC4E4C /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = LookIO.bundle; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		490E956C14C3E25E007BFD8C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490E959714C3E371007BFD8C /* AudioToolbox.framework in Frameworks */,
+				490E959814C3E371007BFD8C /* CFNetwork.framework in Frameworks */,
+				490E959914C3E371007BFD8C /* QuartzCore.framework in Frameworks */,
+				490E959A14C3E371007BFD8C /* SystemConfiguration.framework in Frameworks */,
+				490E957414C3E25E007BFD8C /* UIKit.framework in Frameworks */,
+				490E957614C3E25E007BFD8C /* Foundation.framework in Frameworks */,
+				490E957814C3E25E007BFD8C /* CoreGraphics.framework in Frameworks */,
+				D4D5B77614F454F100FC4E4C /* libLookIO.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		490E956414C3E25E007BFD8C = {
+			isa = PBXGroup;
+			children = (
+				D4D5B77214F454F100FC4E4C /* libLookIO_dist */,
+				490E957914C3E25E007BFD8C /* LookIO Sample */,
+				490E957214C3E25E007BFD8C /* Frameworks */,
+				490E957014C3E25E007BFD8C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		490E957014C3E25E007BFD8C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				490E956F14C3E25E007BFD8C /* LookIO Sample.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		490E957214C3E25E007BFD8C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				490E959314C3E371007BFD8C /* AudioToolbox.framework */,
+				490E959414C3E371007BFD8C /* CFNetwork.framework */,
+				490E959514C3E371007BFD8C /* QuartzCore.framework */,
+				490E959614C3E371007BFD8C /* SystemConfiguration.framework */,
+				490E957314C3E25E007BFD8C /* UIKit.framework */,
+				490E957514C3E25E007BFD8C /* Foundation.framework */,
+				490E957714C3E25E007BFD8C /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		490E957914C3E25E007BFD8C /* LookIO Sample */ = {
+			isa = PBXGroup;
+			children = (
+				490E958214C3E25E007BFD8C /* SampleAppDelegate.h */,
+				490E958314C3E25E007BFD8C /* SampleAppDelegate.m */,
+				490E958514C3E25E007BFD8C /* SampleViewController.h */,
+				490E958614C3E25F007BFD8C /* SampleViewController.m */,
+				490E958814C3E25F007BFD8C /* SampleViewController_iPhone.xib */,
+				490E958B14C3E25F007BFD8C /* SampleViewController_iPad.xib */,
+				490E957A14C3E25E007BFD8C /* Supporting Files */,
+			);
+			path = "LookIO Sample";
+			sourceTree = "<group>";
+		};
+		490E957A14C3E25E007BFD8C /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				490E957B14C3E25E007BFD8C /* LookIO Sample-Info.plist */,
+				490E957C14C3E25E007BFD8C /* InfoPlist.strings */,
+				490E957F14C3E25E007BFD8C /* main.m */,
+				490E958114C3E25E007BFD8C /* LookIO Sample-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		D4D5B77214F454F100FC4E4C /* libLookIO_dist */ = {
+			isa = PBXGroup;
+			children = (
+				D4D5B77314F454F100FC4E4C /* libLookIO.a */,
+				D4D5B77414F454F100FC4E4C /* LIOLookIOManager.h */,
+				D4D5B77514F454F100FC4E4C /* LookIO.bundle */,
+			);
+			path = libLookIO_dist;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		490E956E14C3E25E007BFD8C /* LookIO Sample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 490E959014C3E25F007BFD8C /* Build configuration list for PBXNativeTarget "LookIO Sample" */;
+			buildPhases = (
+				490E956B14C3E25E007BFD8C /* Sources */,
+				490E956C14C3E25E007BFD8C /* Frameworks */,
+				490E956D14C3E25E007BFD8C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "LookIO Sample";
+			productName = "LookIO Sample";
+			productReference = 490E956F14C3E25E007BFD8C /* LookIO Sample.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		490E956614C3E25E007BFD8C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+				ORGANIZATIONNAME = Look.IO;
+			};
+			buildConfigurationList = 490E956914C3E25E007BFD8C /* Build configuration list for PBXProject "LookIO Sample" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 490E956414C3E25E007BFD8C;
+			productRefGroup = 490E957014C3E25E007BFD8C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				490E956E14C3E25E007BFD8C /* LookIO Sample */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		490E956D14C3E25E007BFD8C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490E957E14C3E25E007BFD8C /* InfoPlist.strings in Resources */,
+				490E958A14C3E25F007BFD8C /* SampleViewController_iPhone.xib in Resources */,
+				490E958D14C3E25F007BFD8C /* SampleViewController_iPad.xib in Resources */,
+				D4D5B77714F454F100FC4E4C /* LookIO.bundle in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		490E956B14C3E25E007BFD8C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490E958014C3E25E007BFD8C /* main.m in Sources */,
+				490E958414C3E25E007BFD8C /* SampleAppDelegate.m in Sources */,
+				490E958714C3E25F007BFD8C /* SampleViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		490E957C14C3E25E007BFD8C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				490E957D14C3E25E007BFD8C /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		490E958814C3E25F007BFD8C /* SampleViewController_iPhone.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				490E958914C3E25F007BFD8C /* en */,
+			);
+			name = SampleViewController_iPhone.xib;
+			sourceTree = "<group>";
+		};
+		490E958B14C3E25F007BFD8C /* SampleViewController_iPad.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				490E958C14C3E25F007BFD8C /* en */,
+			);
+			name = SampleViewController_iPad.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		490E958E14C3E25F007BFD8C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		490E958F14C3E25F007BFD8C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		490E959114C3E25F007BFD8C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/libLookIO_dist\"";
+				INFOPLIST_FILE = "LookIO Sample/LookIO Sample-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/libLookIO_dist\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		490E959214C3E25F007BFD8C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/libLookIO_dist\"";
+				INFOPLIST_FILE = "LookIO Sample/LookIO Sample-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/libLookIO_dist\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		490E956914C3E25E007BFD8C /* Build configuration list for PBXProject "LookIO Sample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490E958E14C3E25F007BFD8C /* Debug */,
+				490E958F14C3E25F007BFD8C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		490E959014C3E25F007BFD8C /* Build configuration list for PBXNativeTarget "LookIO Sample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490E959114C3E25F007BFD8C /* Debug */,
+				490E959214C3E25F007BFD8C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 490E956614C3E25E007BFD8C /* Project object */;
+}
