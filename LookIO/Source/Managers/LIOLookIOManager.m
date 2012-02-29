@@ -431,6 +431,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
     controlButton.hidden = YES;
     controlButton.delegate = self;
+    controlButton.accessibilityLabel = @"LIOTab";
     [keyWindow addSubview:controlButton];
     
     Class $CTCallCenter = NSClassFromString(@"CTCallCenter");
@@ -741,7 +742,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self refreshControlButtonVisibility];
     }
     
-    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    for (UIWindow *window in [[UIApplication sharedApplication] windows])
+        [window endEditing:YES];
 }
 
 - (UIImage *)captureScreen
@@ -1984,7 +1986,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
-        
+    
     NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                        @"advisory", @"type",
                                                        @"chat_down", @"action",

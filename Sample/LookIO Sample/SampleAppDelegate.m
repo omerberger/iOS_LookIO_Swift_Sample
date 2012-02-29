@@ -7,8 +7,11 @@
 //
 
 #import "SampleAppDelegate.h"
-
 #import "SampleViewController.h"
+
+#if RUN_KIF_TESTS
+    #import "LIOTestController.h"
+#endif
 
 @implementation SampleAppDelegate
 
@@ -37,6 +40,13 @@
     [[LIOLookIOManager sharedLookIOManager]setUsesTLS:NO];
     [[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
     [[LIOLookIOManager sharedLookIOManager]performSetupWithDelegate:self.viewController];
+    
+#if RUN_KIF_TESTS
+    [[LIOTestController sharedInstance] startTestingWithCompletionBlock:^{
+        // Exit after the tests complete so that CI knows we're done
+        exit([[LIOTestController sharedInstance] failureCount]);
+    }];
+#endif    
     
     return YES;
 }

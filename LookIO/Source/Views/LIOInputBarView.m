@@ -31,6 +31,7 @@
         glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        sendButton.accessibilityLabel = @"LIOSendButton";
         [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:@"Send" forState:UIControlStateNormal];
         sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
@@ -40,6 +41,7 @@
         [self addSubview:sendButton];
         
         settingsButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        settingsButton.accessibilityLabel = @"LIOSettingsButton";
         [settingsButton setBackgroundImage:lookioImage(@"LIOSettingsButton") forState:UIControlStateNormal];
         settingsButton.frame = CGRectMake(5.0, (self.bounds.size.height / 2.0) - 16.5, 33.0, 33.0);
         [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -59,16 +61,17 @@
         [self addSubview:inputFieldBackground];
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
+        inputField.accessibilityLabel = @"LIOInputField";
         inputField.font = [UIFont systemFontOfSize:14.0];
         inputField.delegate = self;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputField.returnKeyType = UIReturnKeySend;
         inputField.backgroundColor = [UIColor clearColor];
-        aFrame = inputField.frame;
-        aFrame.origin.y = -3.0;
+        aFrame = inputFieldBackground.frame;
+        aFrame.origin.y -= 3.0;
         aFrame.size.height = 4800.0;
         inputField.frame = aFrame;
-        [inputFieldBackground addSubview:inputField];
+        [self addSubview:inputField];
         
         CGSize size = [@"jpqQABTY" sizeWithFont:[UIFont systemFontOfSize:14.0]];
         singleLineHeight = size.height;
@@ -98,6 +101,10 @@
         aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 20.0;
         inputFieldBackground.frame = aFrame;
         
+        aFrame = inputField.frame;
+        aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
+        inputField.frame = aFrame;
+        
         settingsButton.hidden = YES;
     }
     else
@@ -106,6 +113,10 @@
         aFrame.origin.x = settingsButton.bounds.size.width + 10.0;
         aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - settingsButton.frame.size.width - 20.0;
         inputFieldBackground.frame = aFrame;
+        
+        aFrame = inputField.frame;
+        aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
+        inputField.frame = aFrame;
         
         settingsButton.hidden = NO;
     }

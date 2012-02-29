@@ -152,6 +152,7 @@
     glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
     
     sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    sendButton.accessibilityLabel = @"LIOLeaveMessageSendButton";
     aFrame.size.width = 59.0;
     aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - 59.0 - 12.0;
     aFrame.origin.y = messageView.frame.origin.y + messageView.frame.size.height + 8.0 - 24.0;

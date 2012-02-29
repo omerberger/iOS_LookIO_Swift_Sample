@@ -20,6 +20,25 @@
 		490E959814C3E371007BFD8C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959414C3E371007BFD8C /* CFNetwork.framework */; };
 		490E959914C3E371007BFD8C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959514C3E371007BFD8C /* QuartzCore.framework */; };
 		490E959A14C3E371007BFD8C /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959614C3E371007BFD8C /* SystemConfiguration.framework */; };
+		D4B07E6614F45D19000B1622 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E957F14C3E25E007BFD8C /* main.m */; };
+		D4B07E6714F45D19000B1622 /* SampleAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958314C3E25E007BFD8C /* SampleAppDelegate.m */; };
+		D4B07E6814F45D19000B1622 /* SampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958614C3E25F007BFD8C /* SampleViewController.m */; };
+		D4B07E6A14F45D19000B1622 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959314C3E371007BFD8C /* AudioToolbox.framework */; };
+		D4B07E6B14F45D19000B1622 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959414C3E371007BFD8C /* CFNetwork.framework */; };
+		D4B07E6C14F45D19000B1622 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959514C3E371007BFD8C /* QuartzCore.framework */; };
+		D4B07E6D14F45D19000B1622 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959614C3E371007BFD8C /* SystemConfiguration.framework */; };
+		D4B07E6E14F45D19000B1622 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957314C3E25E007BFD8C /* UIKit.framework */; };
+		D4B07E6F14F45D19000B1622 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957514C3E25E007BFD8C /* Foundation.framework */; };
+		D4B07E7014F45D19000B1622 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E957714C3E25E007BFD8C /* CoreGraphics.framework */; };
+		D4B07E7114F45D19000B1622 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4D5B77314F454F100FC4E4C /* libLookIO.a */; };
+		D4B07E7314F45D19000B1622 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 490E957C14C3E25E007BFD8C /* InfoPlist.strings */; };
+		D4B07E7414F45D19000B1622 /* SampleViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490E958814C3E25F007BFD8C /* SampleViewController_iPhone.xib */; };
+		D4B07E7514F45D19000B1622 /* SampleViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490E958B14C3E25F007BFD8C /* SampleViewController_iPad.xib */; };
+		D4B07E7614F45D19000B1622 /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D4D5B77514F454F100FC4E4C /* LookIO.bundle */; };
+		D4B07E7F14F45DCB000B1622 /* libKIF.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4B07E7E14F45DCB000B1622 /* libKIF.a */; };
+		D4B07E8214F4608C000B1622 /* LIOTestController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B07E8114F4608C000B1622 /* LIOTestController.m */; };
+		D4B07E8514F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B07E8414F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m */; };
+		D4B07E8814F5CB93000B1622 /* KIFTestScenario+LIOChat.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B07E8714F5CB92000B1622 /* KIFTestScenario+LIOChat.m */; };
 		D4D5B77614F454F100FC4E4C /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4D5B77314F454F100FC4E4C /* libLookIO.a */; };
 		D4D5B77714F454F100FC4E4C /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D4D5B77514F454F100FC4E4C /* LookIO.bundle */; };
 /* End PBXBuildFile section */
@@ -43,6 +62,15 @@
 		490E959414C3E371007BFD8C /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		490E959514C3E371007BFD8C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		490E959614C3E371007BFD8C /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		D4B07E7A14F45D19000B1622 /* LookIO TEST.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LookIO TEST.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4B07E7C14F45D19000B1622 /* LookIO Sample copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "LookIO Sample copy-Info.plist"; path = "/Users/jtoscano42/Development/look.io.ios/Sample/LookIO Sample copy-Info.plist"; sourceTree = "<absolute>"; };
+		D4B07E7E14F45DCB000B1622 /* libKIF.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = libKIF.a; path = "../KIF/build/Release-iphoneos/libKIF.a"; sourceTree = "<group>"; };
+		D4B07E8014F4608C000B1622 /* LIOTestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOTestController.h; sourceTree = "<group>"; };
+		D4B07E8114F4608C000B1622 /* LIOTestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOTestController.m; sourceTree = "<group>"; };
+		D4B07E8314F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "KIFTestScenario+LIOChatNoAgents.h"; sourceTree = "<group>"; };
+		D4B07E8414F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "KIFTestScenario+LIOChatNoAgents.m"; sourceTree = "<group>"; };
+		D4B07E8614F5CB92000B1622 /* KIFTestScenario+LIOChat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "KIFTestScenario+LIOChat.h"; sourceTree = "<group>"; };
+		D4B07E8714F5CB92000B1622 /* KIFTestScenario+LIOChat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "KIFTestScenario+LIOChat.m"; sourceTree = "<group>"; };
 		D4D5B77314F454F100FC4E4C /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libLookIO.a; sourceTree = "<group>"; };
 		D4D5B77414F454F100FC4E4C /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOLookIOManager.h; sourceTree = "<group>"; };
 		D4D5B77514F454F100FC4E4C /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = LookIO.bundle; sourceTree = "<group>"; };
@@ -64,16 +92,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D4B07E6914F45D19000B1622 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4B07E7F14F45DCB000B1622 /* libKIF.a in Frameworks */,
+				D4B07E6A14F45D19000B1622 /* AudioToolbox.framework in Frameworks */,
+				D4B07E6B14F45D19000B1622 /* CFNetwork.framework in Frameworks */,
+				D4B07E6C14F45D19000B1622 /* QuartzCore.framework in Frameworks */,
+				D4B07E6D14F45D19000B1622 /* SystemConfiguration.framework in Frameworks */,
+				D4B07E6E14F45D19000B1622 /* UIKit.framework in Frameworks */,
+				D4B07E6F14F45D19000B1622 /* Foundation.framework in Frameworks */,
+				D4B07E7014F45D19000B1622 /* CoreGraphics.framework in Frameworks */,
+				D4B07E7114F45D19000B1622 /* libLookIO.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		490E956414C3E25E007BFD8C = {
 			isa = PBXGroup;
 			children = (
+				D4B07E8614F5CB92000B1622 /* KIFTestScenario+LIOChat.h */,
+				D4B07E8714F5CB92000B1622 /* KIFTestScenario+LIOChat.m */,
+				D4B07E8314F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.h */,
+				D4B07E8414F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m */,
+				D4B07E8014F4608C000B1622 /* LIOTestController.h */,
+				D4B07E8114F4608C000B1622 /* LIOTestController.m */,
 				D4D5B77214F454F100FC4E4C /* libLookIO_dist */,
 				490E957914C3E25E007BFD8C /* LookIO Sample */,
 				490E957214C3E25E007BFD8C /* Frameworks */,
 				490E957014C3E25E007BFD8C /* Products */,
+				D4B07E7C14F45D19000B1622 /* LookIO Sample copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				490E956F14C3E25E007BFD8C /* LookIO Sample.app */,
+				D4B07E7A14F45D19000B1622 /* LookIO TEST.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,6 +140,7 @@
 		490E957214C3E25E007BFD8C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4B07E7E14F45DCB000B1622 /* libKIF.a */,
 				490E959314C3E371007BFD8C /* AudioToolbox.framework */,
 				490E959414C3E371007BFD8C /* CFNetwork.framework */,
 				490E959514C3E371007BFD8C /* QuartzCore.framework */,
@@ -154,6 +207,23 @@
 			productReference = 490E956F14C3E25E007BFD8C /* LookIO Sample.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D4B07E6414F45D19000B1622 /* LookIO Sample TEST */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4B07E7714F45D19000B1622 /* Build configuration list for PBXNativeTarget "LookIO Sample TEST" */;
+			buildPhases = (
+				D4B07E6514F45D19000B1622 /* Sources */,
+				D4B07E6914F45D19000B1622 /* Frameworks */,
+				D4B07E7214F45D19000B1622 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "LookIO Sample TEST";
+			productName = "LookIO Sample";
+			productReference = D4B07E7A14F45D19000B1622 /* LookIO TEST.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -176,6 +246,7 @@
 			projectRoot = "";
 			targets = (
 				490E956E14C3E25E007BFD8C /* LookIO Sample */,
+				D4B07E6414F45D19000B1622 /* LookIO Sample TEST */,
 			);
 		};
 /* End PBXProject section */
@@ -192,6 +263,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D4B07E7214F45D19000B1622 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4B07E7314F45D19000B1622 /* InfoPlist.strings in Resources */,
+				D4B07E7414F45D19000B1622 /* SampleViewController_iPhone.xib in Resources */,
+				D4B07E7514F45D19000B1622 /* SampleViewController_iPad.xib in Resources */,
+				D4B07E7614F45D19000B1622 /* LookIO.bundle in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -202,6 +284,19 @@
 				490E958014C3E25E007BFD8C /* main.m in Sources */,
 				490E958414C3E25E007BFD8C /* SampleAppDelegate.m in Sources */,
 				490E958714C3E25F007BFD8C /* SampleViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4B07E6514F45D19000B1622 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4B07E6614F45D19000B1622 /* main.m in Sources */,
+				D4B07E6714F45D19000B1622 /* SampleAppDelegate.m in Sources */,
+				D4B07E6814F45D19000B1622 /* SampleViewController.m in Sources */,
+				D4B07E8214F4608C000B1622 /* LIOTestController.m in Sources */,
+				D4B07E8514F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m in Sources */,
+				D4B07E8814F5CB93000B1622 /* KIFTestScenario+LIOChat.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,6 +411,61 @@
 			};
 			name = Release;
 		};
+		D4B07E7814F45D19000B1622 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"RUN_KIF_TESTS=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/libLookIO_dist\"",
+					"\"$(SRCROOT)/../KIF/**\"",
+				);
+				INFOPLIST_FILE = "LookIO Sample copy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/libLookIO_dist\"",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_NAME = "LookIO TEST";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		D4B07E7914F45D19000B1622 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = "RUN_KIF_TESTS=1";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/libLookIO_dist\"",
+					"\"$(SRCROOT)/../KIF/**\"",
+				);
+				INFOPLIST_FILE = "LookIO Sample copy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/libLookIO_dist\"",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_NAME = "LookIO TEST";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -333,6 +483,15 @@
 			buildConfigurations = (
 				490E959114C3E25F007BFD8C /* Debug */,
 				490E959214C3E25F007BFD8C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D4B07E7714F45D19000B1622 /* Build configuration list for PBXNativeTarget "LookIO Sample TEST" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D4B07E7814F45D19000B1622 /* Debug */,
+				D4B07E7914F45D19000B1622 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

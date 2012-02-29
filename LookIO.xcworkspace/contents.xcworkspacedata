@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:KIF/KIF.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:LookIO/LookIO.xcodeproj">
    </FileRef>
    <FileRef

@@ -51,6 +51,9 @@
     ((UIScrollView *)tableView).delegate = self;
     [self.view addSubview:tableView];
     
+    UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
+    [tableView addGestureRecognizer:tapper];
+    
     CGRect aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 40.0;
@@ -58,7 +61,7 @@
     
     inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
     inputBar.delegate = self;
-    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:inputBar];
     
     aFrame = CGRectZero;
@@ -100,13 +103,17 @@
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [background release];
     [tableView release];
     [pendingChatText release];
     [initialChatText release];
     [messages release];
-    [inputBar release];
     [headerBar release];
+    
+    inputBar.delegate = nil;
+    [inputBar release];
     
     [super dealloc];
 }
@@ -114,6 +121,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [self reloadMessages];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -125,7 +134,8 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    [self reloadMessages];
+    // Can't do this. Breaks stuff on 4.3 :(
+    //[inputBar.inputField becomeFirstResponder];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -147,13 +157,13 @@
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
-    [self.view endEditing:YES];
-}
-
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+    [self.view endEditing:YES];
+    
+//    id firstResponder = [[[UIApplication sharedApplication] keyWindow] firstResponder];
+//    NSLog(@"\n\nfirstResponder: %@", firstResponder);
+    
     [headerBar rejiggerLayout];
     [self reloadMessages];
     [tableView reloadData];
@@ -237,6 +247,7 @@
         emailIndex = 1;
     
     settingsActionSheet = [[UIActionSheet alloc] init];
+    settingsActionSheet.accessibilityLabel = @"LIOSettingsActionSheet";
     [settingsActionSheet addButtonWithTitle:@"End Session"];
     
     if (endSharingIndex != NSNotFound)
@@ -338,7 +349,6 @@
     return self.view.bounds.size.height - heightOfLastBubble - 10.0;
 }
 
-// FIXME: Inefficient. Grotesquely so!
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
 {
     UIView *footer = [[[UIView alloc] init] autorelease];
@@ -346,41 +356,12 @@
     return footer;
 }
 
-/*
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-{
-    UIView *header = [[[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, backgroundView.bounds.size.width, 30.0)] autorelease];
-    header.backgroundColor = [UIColor blackColor];
-    
-    UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
-    poweredByLabel.backgroundColor = [UIColor clearColor];
-    poweredByLabel.textColor = [UIColor whiteColor];
-    poweredByLabel.text = @"Powered by LookIO >";
-    [poweredByLabel sizeToFit];
-    CGRect aFrame = poweredByLabel.frame;
-    aFrame.origin.x = (backgroundView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = 15.0 - (aFrame.size.height / 2.0);
-    poweredByLabel.frame = aFrame;
-    [header addSubview:poweredByLabel];
-
-    UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerWasTapped:)] autorelease];
-    [header addGestureRecognizer:tapper];
-    
-    return header;
-}
-
-- (CGFloat)tableView:(UITableView *)aTableView heightForHeaderInSection:(NSInteger)section
-{
-    return 30.0;
-}
-*/
-
 #pragma mark -
 #pragma mark UIControl actions
 
 
 #pragma mark -
-#pragma mark Notification handlers
+#pragma mark Notification handlers  
 
 - (void)keyboardWillShow:(NSNotification *)aNotification
 {
@@ -588,6 +569,14 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark Gesture handlers
+
+- (void)handleTap:(UITapGestureRecognizer *)aTapper
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 @end
