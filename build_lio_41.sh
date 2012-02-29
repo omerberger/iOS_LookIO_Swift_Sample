@@ -40,7 +40,7 @@ fi
 mkdir -p $TARGET_DIR_SHIP
 mkdir -p $TARGET_DIR_SHIP/LookIO.bundle
 cp LookIO/Resources/Images/LIO* $TARGET_DIR_SHIP/LookIO.bundle
-cp build/Release-universal/libLookIO.a $TARGET_DIR_SHIP
+cp LookIO/build/Release-universal/libLookIO.a $TARGET_DIR_SHIP
 cp LookIO/Source/Managers/LIOLookIOManager.h $TARGET_DIR_SHIP
 
 #Convert the manager file to use 10.1.1.1
