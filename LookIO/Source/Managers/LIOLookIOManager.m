@@ -691,11 +691,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self rejiggerWindows];
     
-    NSLog(@"[LOOKIO] Reset.");
+    NSLog(@"[LOOKIO] Reset. Key window: 0x%08X", [[UIApplication sharedApplication] keyWindow]);
 }
 
 - (void)rejiggerWindows
 {
+    for (UIWindow *window in [[UIApplication sharedApplication] windows])
+        [window endEditing:YES];
+    
     if (altChatViewController || leaveMessageViewController || emailHistoryViewController)
     {
         if (nil == previousKeyWindow)
@@ -713,7 +716,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 previousKeyWindow = [delegate lookIOManagerMainWindowForHostApp:self];
                 
 #ifdef DEBUG
-                NSLog(@"[LOOKIO] Got key window from delegate.");
+                NSLog(@"[LOOKIO] Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
 #endif
             }
             else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
@@ -721,7 +724,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
                 
 #ifdef DEBUG
-                NSLog(@"[LOOKIO] Got key window from UIApplication.");
+                NSLog(@"[LOOKIO] Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
 #endif // DEBUG
             }
             else
@@ -729,11 +732,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 NSLog(@"[LOOKIO] WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
             }
             
+#ifdef DEBUG
+            NSLog(@"[LOOKIO] Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
+#endif // DEBUG
             [lookioWindow makeKeyAndVisible];
         }
     }
     else
     {
+#ifdef DEBUG
+        NSLog(@"[LOOKIO] Hiding LookIO window: 0x%08X", (unsigned int)lookioWindow);
+        NSLog(@"[LOOKIO] Restoring host app's window: 0x%08X", (unsigned int)previousKeyWindow);
+#endif // DEBUG
+        
         lookioWindow.hidden = YES;
         
         [previousKeyWindow makeKeyWindow];
@@ -741,9 +752,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self refreshControlButtonVisibility];
     }
-    
-    for (UIWindow *window in [[UIApplication sharedApplication] windows])
-        [window endEditing:YES];
 }
 
 - (UIImage *)captureScreen
@@ -1327,6 +1335,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sessionEnding = YES;
         outroReceived = YES;
         
+        /*
         if ([controlSocket isConnected])
         {
             resetAfterDisconnect = YES;
@@ -1334,19 +1343,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
             [self reset];
-        
-        //[[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-        
-        /*
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Notice"
-                                                            message:@"The remote agent ended the session."
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
-        alertView.tag = LIOLookIOManagerAgentEndedSessionAlertViewTag;
-        [alertView show];
-        [alertView autorelease];
-        */
+         */
     }
     
     [controlSocket readDataToData:messageSeparatorData
@@ -2131,6 +2128,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerAgentEndedSessionAlertViewTag:
         {
+            /*
             if ([controlSocket isConnected])
             {
                 resetAfterDisconnect = YES;
@@ -2140,6 +2138,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 [self reset];
             }
+            */
         }
     }
 }
