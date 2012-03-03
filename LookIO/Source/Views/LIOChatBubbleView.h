@@ -13,25 +13,17 @@
 
 typedef enum
 {
-    LIOChatBubbleViewTailDirectionLeft,
-    LIOChatBubbleViewTailDirectionRight
-} LIOChatBubbleViewTailDirection;
-
-typedef enum
-{
     LIOChatBubbleViewFormattingModeRemote,
     LIOChatBubbleViewFormattingModeLocal
 } LIOChatBubbleViewFormattingMode;
 
 @interface LIOChatBubbleView : UIView
 {
-    LIOChatBubbleViewTailDirection tailDirection;
     LIOChatBubbleViewFormattingMode formattingMode;
     UILabel *messageView;
     UIImageView *backgroundImage;
 }
 
-@property(nonatomic, assign) LIOChatBubbleViewTailDirection tailDirection;
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
 
 - (void)populateMessageViewWithText:(NSString *)aString;

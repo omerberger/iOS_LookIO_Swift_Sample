@@ -49,6 +49,7 @@
     BOOL agentTyping;
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
+    UITableViewCell *functionHeader;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

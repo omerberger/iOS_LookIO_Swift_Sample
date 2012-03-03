@@ -12,7 +12,6 @@
 
 @protocol LIOInputBarViewDelegate
 - (void)inputBarView:(LIOInputBarView *)aView didChangeNumberOfLines:(NSInteger)numLinesDelta;
-- (void)inputBarViewDidTapSettingsButton:(LIOInputBarView *)aView;
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString;
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView;
 @end
@@ -24,7 +23,7 @@
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
-    UIButton *sendButton, *settingsButton;
+    UIButton *sendButton;
     UIView *dividerLine;
     UITextView *inputField;
     UIImageView *inputFieldBackground;
@@ -35,7 +34,6 @@
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;
-@property(nonatomic, readonly) UIButton *settingsButton;
 @property(nonatomic, readonly) UITextView *inputField;
 
 @end

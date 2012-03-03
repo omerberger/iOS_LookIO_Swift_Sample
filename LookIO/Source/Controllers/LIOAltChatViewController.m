@@ -51,9 +51,6 @@
     ((UIScrollView *)tableView).delegate = self;
     [self.view addSubview:tableView];
     
-    UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
-    [tableView addGestureRecognizer:tapper];
-    
     CGRect aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 40.0;
@@ -71,6 +68,60 @@
     headerBar.delegate = self;
     headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:headerBar];
+    
+    UIImage *grayStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonGray") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    UIImage *redStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonRed") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    
+    UIButton *dismissChatButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [dismissChatButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    dismissChatButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    dismissChatButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    dismissChatButton.titleLabel.layer.shadowOpacity = 0.8;
+    dismissChatButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [dismissChatButton setTitle:@"Dismiss Chat" forState:UIControlStateNormal];
+    [dismissChatButton addTarget:self action:@selector(dismissChatButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = dismissChatButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = 15.0;
+    aFrame.origin.y = 16.0;
+    dismissChatButton.frame = aFrame;
+    
+    UIButton *emailConvoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
+    emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [emailConvoButton setTitle:@"Email Convo" forState:UIControlStateNormal];
+    [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = emailConvoButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = dismissChatButton.frame.origin.x + dismissChatButton.frame.size.width + 5.0;
+    aFrame.origin.y = 16.0;
+    emailConvoButton.frame = aFrame;
+
+    UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
+    endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
+    endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
+    [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = endSessionButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = emailConvoButton.frame.origin.x + emailConvoButton.frame.size.width + 5.0;
+    aFrame.origin.y = 16.0;
+    endSessionButton.frame = aFrame;
+    
+    functionHeader = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    functionHeader.selectionStyle = UITableViewCellSelectionStyleNone;
+    [functionHeader.contentView addSubview:dismissChatButton];
+    [functionHeader.contentView addSubview:emailConvoButton];
+    [functionHeader.contentView addSubview:endSessionButton];
 }
 
 - (void)viewDidLoad
@@ -99,6 +150,9 @@
     
     [headerBar release];
     headerBar = nil;
+    
+    [functionHeader release];
+    functionHeader = nil;
 }
 
 - (void)dealloc
@@ -111,9 +165,8 @@
     [initialChatText release];
     [messages release];
     [headerBar release];
-    
-    inputBar.delegate = nil;
     [inputBar release];
+    [functionHeader release];
     
     [super dealloc];
 }
@@ -160,9 +213,6 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     [self.view endEditing:YES];
-    
-//    id firstResponder = [[[UIApplication sharedApplication] keyWindow] firstResponder];
-//    NSLog(@"\n\nfirstResponder: %@", firstResponder);
     
     [headerBar rejiggerLayout];
     [self reloadMessages];
@@ -224,11 +274,12 @@
     double delayInSeconds = 0.75;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([messages count] - 1) inSection:0];
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     });
 }
 
+/*
 - (void)showSettingsMenu
 {
     [self.view endEditing:YES];
@@ -275,17 +326,21 @@
     else
         [settingsActionSheet showInView:self.view];
 }
+*/
 
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [messages count];
+    return [messages count] + 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (0 == indexPath.row)
+        return functionHeader;
+    
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
     LIOChatBubbleView *aBubble = (LIOChatBubbleView *)[aCell viewWithTag:LIOAltChatViewControllerTableViewCellBubbleViewTag];
     if (nil == aCell)
@@ -300,16 +355,14 @@
         aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
     }
     
-    LIOChatMessage *aMessage = [messages objectAtIndex:indexPath.row];
+    LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-        aBubble.tailDirection = LIOChatBubbleViewTailDirectionRight;
     }
     else
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
-        aBubble.tailDirection = LIOChatBubbleViewTailDirectionLeft;
     }
     
     [aBubble populateMessageViewWithText:aMessage.text];
@@ -331,7 +384,10 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LIOChatMessage *aMessage = [messages objectAtIndex:indexPath.row];
+    if (0 == indexPath.row)
+        return 64.0;
+    
+    LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
     
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
     CGSize boxSize = [aMessage.text sizeWithFont:[UIFont systemFontOfSize:18.0] constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
@@ -344,7 +400,7 @@
 
 - (CGFloat)tableView:(UITableView *)aTableView heightForFooterInSection:(NSInteger)section
 {
-    CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 1) inSection:section]];
+    CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:section]];
     
     return self.view.bounds.size.height - heightOfLastBubble - 10.0;
 }
@@ -358,6 +414,21 @@
 
 #pragma mark -
 #pragma mark UIControl actions
+
+- (void)dismissChatButtonWasTapped
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+}
+
+- (void)emailConvoButtonWasTapped
+{
+    [delegate altChatViewControllerDidTapEmailButton:self];
+}
+
+- (void)endSessionButtonWasTapped
+{
+    [delegate altChatViewControllerDidTapEndSessionButton:self];
+}
 
 
 #pragma mark -
@@ -470,11 +541,7 @@
     [self reloadMessages];
 }
 
-- (void)inputBarViewDidTapSettingsButton:(LIOInputBarView *)aView
-{
-    [self showSettingsMenu];
-}
-
+/*
 #pragma mark -
 #pragma mark UIActionSheetDelegate methods
 
@@ -496,6 +563,7 @@
     [settingsActionSheet autorelease];
     settingsActionSheet = nil;
 }
+*/
 
 #pragma mark -
 #pragma mark UIScrollViewDelegate methods
@@ -569,14 +637,6 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
-}
-
-#pragma mark -
-#pragma mark Gesture handlers
-
-- (void)handleTap:(UITapGestureRecognizer *)aTapper
-{
-    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 @end

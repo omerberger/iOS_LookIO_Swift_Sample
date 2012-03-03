@@ -12,7 +12,7 @@
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, settingsButton, inputField;
+@synthesize delegate, singleLineHeight, inputField;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -40,19 +40,11 @@
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:sendButton];
         
-        settingsButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        settingsButton.accessibilityLabel = @"LIOSettingsButton";
-        [settingsButton setBackgroundImage:lookioImage(@"LIOSettingsButton") forState:UIControlStateNormal];
-        settingsButton.frame = CGRectMake(5.0, (self.bounds.size.height / 2.0) - 16.5, 33.0, 33.0);
-        [settingsButton addTarget:self action:@selector(settingsButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:settingsButton];
-        
         inputFieldBackground = [[UIImageView alloc] init];
         inputFieldBackground.userInteractionEnabled = YES;
         inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
         CGRect aFrame = CGRectZero;
-        aFrame.origin.x = settingsButton.bounds.size.width + 10.0;
-        aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - settingsButton.frame.size.width - 20.0;
+        aFrame.size.width = self.frame.size.width;
         aFrame.origin.y = (self.frame.size.height / 2.0) - 15.0;
         aFrame.size.height = 30.0;
         inputFieldBackground.frame = aFrame;
@@ -94,34 +86,16 @@
 
 - (void)layoutSubviews
 {
-    if ([inputField isFirstResponder])
-    {
-        CGRect aFrame = inputFieldBackground.frame;
-        aFrame.origin.x = 10.0;
-        aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 20.0;
-        inputFieldBackground.frame = aFrame;
-        
-        aFrame = inputField.frame;
-        aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
-        inputField.frame = aFrame;
-        
-        settingsButton.hidden = YES;
-    }
-    else
-    {
-        CGRect aFrame = inputFieldBackground.frame;
-        aFrame.origin.x = settingsButton.bounds.size.width + 10.0;
-        aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - settingsButton.frame.size.width - 20.0;
-        inputFieldBackground.frame = aFrame;
-        
-        aFrame = inputField.frame;
-        aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
-        inputField.frame = aFrame;
-        
-        settingsButton.hidden = NO;
-    }
+    CGRect aFrame = inputFieldBackground.frame;
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 20.0;
+    inputFieldBackground.frame = aFrame;
     
-    CGRect aFrame = inputField.frame;
+    aFrame = inputField.frame;
+    aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
+    inputField.frame = aFrame;
+    
+    aFrame = inputField.frame;
     aFrame.size.width = inputFieldBackground.frame.size.width;
     inputField.frame = aFrame;
     
@@ -181,11 +155,6 @@
     NSString *text = inputField.text;
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];
-}
-
-- (void)settingsButtonWasTapped
-{
-    [delegate inputBarViewDidTapSettingsButton:self];
 }
 
 #pragma mark -

@@ -33,8 +33,6 @@
 		D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C514F322B500713F29 /* LIOInputBarView.m */; };
 		D4ADC7D414F322B500713F29 /* LIONiceTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C614F322B500713F29 /* LIONiceTextField.h */; };
 		D4ADC7D514F322B500713F29 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C714F322B500713F29 /* LIONiceTextField.m */; };
-		D4ADC7D614F322B500713F29 /* LIOThickBubble.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C814F322B500713F29 /* LIOThickBubble.h */; };
-		D4ADC7D714F322B500713F29 /* LIOThickBubble.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C914F322B500713F29 /* LIOThickBubble.m */; };
 		D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DA14F322C300713F29 /* AsyncSocket.h */; };
 		D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7DB14F322C300713F29 /* AsyncSocket.m */; };
 		D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DD14F322C300713F29 /* NSData+Base64.h */; };
@@ -82,8 +80,6 @@
 		D4ADC7C514F322B500713F29 /* LIOInputBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInputBarView.m; path = Source/Views/LIOInputBarView.m; sourceTree = "<group>"; };
 		D4ADC7C614F322B500713F29 /* LIONiceTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONiceTextField.h; path = Source/Views/LIONiceTextField.h; sourceTree = "<group>"; };
 		D4ADC7C714F322B500713F29 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = Source/Views/LIONiceTextField.m; sourceTree = "<group>"; };
-		D4ADC7C814F322B500713F29 /* LIOThickBubble.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOThickBubble.h; path = Source/Views/LIOThickBubble.h; sourceTree = "<group>"; };
-		D4ADC7C914F322B500713F29 /* LIOThickBubble.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOThickBubble.m; path = Source/Views/LIOThickBubble.m; sourceTree = "<group>"; };
 		D4ADC7DA14F322C300713F29 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4ADC7DB14F322C300713F29 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D4ADC7DD14F322C300713F29 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
@@ -153,8 +149,6 @@
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
 				D4ADC7C614F322B500713F29 /* LIONiceTextField.h */,
 				D4ADC7C714F322B500713F29 /* LIONiceTextField.m */,
-				D4ADC7C814F322B500713F29 /* LIOThickBubble.h */,
-				D4ADC7C914F322B500713F29 /* LIOThickBubble.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -266,7 +260,6 @@
 				D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */,
 				D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */,
 				D4ADC7D414F322B500713F29 /* LIONiceTextField.h in Headers */,
-				D4ADC7D614F322B500713F29 /* LIOThickBubble.h in Headers */,
 				D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */,
 				D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */,
 				D4ADC7F114F322C300713F29 /* JSON.h in Headers */,
@@ -359,7 +352,6 @@
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
 				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,
 				D4ADC7D514F322B500713F29 /* LIONiceTextField.m in Sources */,
-				D4ADC7D714F322B500713F29 /* LIOThickBubble.m in Sources */,
 				D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */,
 				D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */,
 				D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */,
