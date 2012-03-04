@@ -367,11 +367,10 @@
     
     [aBubble populateMessageViewWithText:aMessage.text];
     
-    // Size of bubbles in mockup: 306x67
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
-        aBubble.frame = CGRectMake(0.0, 0.0, 306.0, 67.0);
+        aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
     else
-        aBubble.frame = CGRectMake(aCell.contentView.frame.size.width - 306.0, 0.0, 306.0, 67.0);
+        aBubble.frame = CGRectMake(aCell.contentView.frame.size.width - 290.0, 0.0, 290.0, 0.0);
     
     [aBubble setNeedsLayout];
     [aBubble setNeedsDisplay];
@@ -390,9 +389,9 @@
     LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
     
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
-    CGSize boxSize = [aMessage.text sizeWithFont:[UIFont systemFontOfSize:18.0] constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
+    CGSize boxSize = [aMessage.text sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
     
-    CGFloat height = boxSize.height;
+    CGFloat height = boxSize.height + 25.0;
     if (height < LIOChatBubbleViewMinTextHeight) height = LIOChatBubbleViewMinTextHeight;
     
     return height + 10.0;

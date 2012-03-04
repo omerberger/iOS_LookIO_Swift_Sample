@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOChatBubbleViewMaxTextWidth   267.0
+#define LIOChatBubbleViewMaxTextWidth   250.0
 #define LIOChatBubbleViewMinTextHeight  67.0
 
 typedef enum
@@ -19,6 +19,7 @@ typedef enum
 
 @interface LIOChatBubbleView : UIView
 {
+    UILabel *copiedLabel;
     LIOChatBubbleViewFormattingMode formattingMode;
     UILabel *messageView;
     UIImageView *backgroundImage;
