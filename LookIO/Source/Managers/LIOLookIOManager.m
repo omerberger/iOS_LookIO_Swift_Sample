@@ -885,6 +885,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lookioWindow addSubview:altChatViewController.view];
     [self rejiggerWindows];
     
+    [altChatViewController performRevealAnimation];
+    
     [pendingChatText release];
     pendingChatText = nil;
     

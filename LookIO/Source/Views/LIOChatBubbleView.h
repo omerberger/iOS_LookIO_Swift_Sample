@@ -26,7 +26,9 @@ typedef enum
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
+@property(nonatomic, readonly) UILabel *messageView;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
+- (void)performCopy;
 
 @end

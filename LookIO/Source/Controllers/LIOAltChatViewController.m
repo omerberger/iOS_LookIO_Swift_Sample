@@ -34,13 +34,18 @@
 {
     [super loadView];
     
+    topmostContainer = [[UIView alloc] initWithFrame:self.view.bounds];
+    topmostContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    topmostContainer.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:topmostContainer];
+    
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPad")];
     else
         background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPhone")];
     
     background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [self.view addSubview:background];
+    [topmostContainer addSubview:background];
     
     tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
     tableView.delegate = self;
@@ -49,7 +54,7 @@
     tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     ((UIScrollView *)tableView).delegate = self;
-    [self.view addSubview:tableView];
+    [topmostContainer addSubview:tableView];
     
     CGRect aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
@@ -59,7 +64,7 @@
     inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
     inputBar.delegate = self;
     inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self.view addSubview:inputBar];
+    [topmostContainer addSubview:inputBar];
     
     aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
@@ -67,7 +72,7 @@
     headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
     headerBar.delegate = self;
     headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self.view addSubview:headerBar];
+    [topmostContainer addSubview:headerBar];
     
     UIImage *grayStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonGray") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonRed") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
@@ -153,6 +158,9 @@
     
     [functionHeader release];
     functionHeader = nil;
+    
+    [topmostContainer release];
+    topmostContainer = nil;
 }
 
 - (void)dealloc
@@ -167,6 +175,7 @@
     [headerBar release];
     [inputBar release];
     [functionHeader release];
+    [topmostContainer release];
     
     [super dealloc];
 }
@@ -219,34 +228,33 @@
     [tableView reloadData];
 }
 
-/*
 - (void)performRevealAnimation
 {
-    CGRect targetFrame = backgroundView.frame;
-    targetFrame.origin.x = self.view.bounds.size.width - backgroundView.frame.size.width - 10.0; // overshoot by 10
-    targetFrame.size.width += 10.0;
+    topmostContainer.transform = CGAffineTransformMakeScale(0.1, 0.1);
     
-    CGRect finalFrame = targetFrame;
-    finalFrame.origin.x += 10.0;
-    finalFrame.size.width -= 10.0;
     
-    [UIView animateWithDuration:0.33
+    [UIView animateWithDuration:0.333
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         backgroundView.frame = targetFrame;
+                         topmostContainer.transform = CGAffineTransformIdentity;
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
-                                               delay:0.0
-                                             options:UIViewAnimationOptionCurveEaseIn
-                                          animations:^{
-                                              backgroundView.frame = finalFrame;
-                                          }
-                                          completion:nil];
+                     }];
+    
+    topmostContainer.alpha = 0.0;
+    
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:0
+                     animations:^{
+                         topmostContainer.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {
                      }];
 }
 
+/*
 - (void)performDismissalAnimation
 {
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
@@ -351,7 +359,8 @@
         
         aBubble = [[LIOChatBubbleView alloc] initWithFrame:CGRectZero];
         aBubble.backgroundColor = [UIColor clearColor];
-        [aCell addSubview:aBubble];
+        aBubble.userInteractionEnabled = NO;
+        [aCell.contentView addSubview:aBubble];
         aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
     }
     
@@ -409,6 +418,27 @@
     UIView *footer = [[[UIView alloc] init] autorelease];
     footer.backgroundColor = [UIColor clearColor];
     return footer;
+}
+
+- (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self.view endEditing:YES];
+    
+    return indexPath.row > 0;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
+{
+    return action == @selector(copy:);
+}
+
+- (void)tableView:(UITableView *)tableView performAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
+{
+    if (action == @selector(copy:))
+    {
+        LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
+        [UIPasteboard generalPasteboard].string = aMessage.text;
+    }
 }
 
 #pragma mark -

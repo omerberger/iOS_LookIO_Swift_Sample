@@ -39,6 +39,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate>
 {
+    UIView *topmostContainer;
     UIImageView *background;
     UITableView *tableView;
     NSArray *messages;
@@ -60,5 +61,6 @@
 @property(nonatomic, assign) BOOL agentTyping;
 
 - (void)reloadMessages;
+- (void)performRevealAnimation;
 
 @end

@@ -12,6 +12,7 @@
 
 @implementation LIOChatBubbleView
 
+@synthesize messageView;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -44,9 +45,6 @@
         copiedLabel.layer.cornerRadius = 3.0;
         copiedLabel.clipsToBounds = YES;
         [self addSubview:copiedLabel];
-        
-        UILongPressGestureRecognizer *longPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
-        [self addGestureRecognizer:longPresser];
     }
     
     return self;
@@ -106,11 +104,8 @@
 #pragma mark -
 #pragma mark Gesture handlers
 
-- (void)handleLongPress:(UILongPressGestureRecognizer *)aLongPresser
+- (void)performCopy
 {
-    if (aLongPresser.state != UIGestureRecognizerStateBegan)
-        return;
-    
     copiedLabel.alpha = 0.0;
     copiedLabel.hidden = NO;
     
