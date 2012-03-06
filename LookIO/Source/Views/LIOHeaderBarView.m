@@ -19,13 +19,17 @@
     self = [super initWithFrame:frame];
     
     if (self)
-    {
-        fullBackground = [[UIImageView alloc] initWithImage:lookioImage(@"LIOHeaderBarViewFullBackgroundForiPhone")];
-        fullBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        
-        minimalBackground = [[UIImageView alloc] initWithImage:lookioImage(@"LIOHeaderBarViewMinimalBackgroundForiPhone")];
-        minimalBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        
+    {        
+        separator = [[UIView alloc] init];
+        separator.backgroundColor = [UIColor colorWithPatternImage:lookioImage(@"LIORepeatableBlendedSeparatorTop")];
+        CGRect aFrame = separator.frame;
+        aFrame.size.height = 15.0;
+        aFrame.size.width = self.frame.size.width;
+        aFrame.origin.y = self.frame.size.height;
+        separator.frame = aFrame;
+        separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:separator];
+                
         adLabel = [[UILabel alloc] init];
         adLabel.backgroundColor = [UIColor clearColor];
         adLabel.font = [UIFont boldSystemFontOfSize:12.0];
@@ -52,9 +56,23 @@
         moreButton.frame = buttonFrame;
         [self addSubview:moreButton];
         
+        plusButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [plusButton setBackgroundImage:lookioImage(@"LIOHeaderPlusIcon") forState:UIControlStateNormal];
+        [plusButton sizeToFit];
+        aFrame = plusButton.frame;
+        aFrame.size.height = 15.0;
+        aFrame.origin.y = 8.0;
+        plusButton.frame = aFrame;
+        [self addSubview:plusButton];
+        
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
-        [fullBackground addGestureRecognizer:tapper];
-        [minimalBackground addGestureRecognizer:tapper];
+        [self addGestureRecognizer:tapper];
+        
+        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
+        tappableBackground.backgroundColor = [UIColor clearColor];
+        [tappableBackground addGestureRecognizer:tapper];
+        [self addSubview:tappableBackground];
     }
     
     return self;
@@ -64,8 +82,9 @@
 {
     [tinyLogo release];
     [adLabel release];
-    [fullBackground release];
-    [minimalBackground release];
+    [separator release];
+    [plusButton release];
+    [tappableBackground release];
     
     [super dealloc];
 }
@@ -88,18 +107,22 @@
         logoFrame.origin.x = labelFrame.origin.x + labelFrame.size.width + 3.0;
         logoFrame.origin.y = 16.0 - (logoFrame.size.height / 2.0);
         
-        minimalBackground.frame = self.bounds;
+        CGRect plusFrame = plusButton.frame;
+        plusFrame.origin.x = logoFrame.origin.x + logoFrame.size.width + 5.0;
+        plusButton.frame = plusFrame;
         
         // Bar portion minus shadow is 32.0px
         CGRect aFrame = self.frame;
         aFrame.size.height = 40.0;
         
+        CGRect sepFrame = separator.frame;
+        sepFrame.origin.y = aFrame.size.height - 14.0;
+        
         if (NO == animated)
         {
-            [fullBackground removeFromSuperview];
-            [self addSubview:minimalBackground];
             self.frame = aFrame;
             
+            separator.frame = sepFrame;
             adLabel.frame = labelFrame;
             tinyLogo.frame = logoFrame;
             
@@ -108,12 +131,10 @@
             [self bringSubviewToFront:moreButton];
             
             moreButton.alpha = 0.0;
+            plusButton.alpha = 1.0;
         }
         else
         {
-            [self insertSubview:minimalBackground belowSubview:fullBackground];
-            minimalBackground.alpha = 1.0;
-            
             [self bringSubviewToFront:adLabel];
             [self bringSubviewToFront:tinyLogo];
             [self bringSubviewToFront:moreButton];
@@ -122,14 +143,14 @@
                                   delay:0.0
                                 options:UIViewAnimationOptionCurveEaseOut
                              animations:^{
-                                 fullBackground.alpha = 0.0;
                                  moreButton.alpha = 0.0;
+                                 plusButton.alpha = 1.0;
                                  adLabel.frame = labelFrame;
                                  tinyLogo.frame = logoFrame;
+                                 separator.frame = sepFrame;
                                  self.frame = aFrame;
                              }
                              completion:^(BOOL finished) {
-                                 [fullBackground removeFromSuperview];
                                  moreButton.hidden = YES;
                              }];
         }
@@ -151,21 +172,21 @@
         buttonFrame.origin.x = self.bounds.size.width - 100.0 - 8.0;
         buttonFrame.origin.y = (49.0 / 2.0) - (buttonFrame.size.height / 2.0);
         
-        fullBackground.frame = self.bounds;
-        
         // Bar portion: 49.0px
         CGRect aFrame = self.frame;
         aFrame.size.height = 57.0;
         
+        CGRect sepFrame = separator.frame;
+        sepFrame.origin.y = aFrame.size.height - 14.0;
+        
         if (NO == animated)
         {
-            [minimalBackground removeFromSuperview];
-            [self addSubview:fullBackground];
             self.frame = aFrame;
             
             adLabel.frame = labelFrame;
             tinyLogo.frame = logoFrame;
             moreButton.frame = buttonFrame;
+            separator.frame = sepFrame;
             
             [self bringSubviewToFront:adLabel];
             [self bringSubviewToFront:tinyLogo];
@@ -173,12 +194,11 @@
             
             moreButton.hidden = NO;
             moreButton.alpha = 1.0;
+            
+            plusButton.alpha = 0.0;
         }
         else
         {
-            [self addSubview:fullBackground];
-            fullBackground.alpha = 0.0;
-            
             [self bringSubviewToFront:adLabel];
             [self bringSubviewToFront:tinyLogo];
             [self bringSubviewToFront:moreButton];
@@ -190,19 +210,22 @@
                                   delay:0.0
                                 options:UIViewAnimationOptionCurveEaseOut
                              animations:^{
-                                 fullBackground.alpha = 1.0;
                                  moreButton.alpha = 1.0;
+                                 plusButton.alpha = 0.0;
                                  
                                  self.frame = aFrame;
                                  
                                  adLabel.frame = labelFrame;
                                  tinyLogo.frame = logoFrame;
                                  moreButton.frame = buttonFrame;
+                                 separator.frame = sepFrame;
                              }
                              completion:^(BOOL finished) {
-                                 [minimalBackground removeFromSuperview];
                              }];
         }
+        
+        tappableBackground.frame = self.bounds;
+        [self sendSubviewToBack:tappableBackground];
     }
 }
 
@@ -221,12 +244,17 @@
     [delegate headerBarViewAboutButtonWasTapped:self];
 }
 
+- (void)plusButtonWasTapped
+{
+    [delegate headerBarViewPlusButtonWasTapped:self];
+}
+
 #pragma mark -
 #pragma mark Gesture handlers
 
 - (void)handleTap:(UITapGestureRecognizer *)aTapper
 {
-    [delegate headerBarViewWasTapped:self];
+    [delegate headerBarViewPlusButtonWasTapped:self];
 }
 
 @end

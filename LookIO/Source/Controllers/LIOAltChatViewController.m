@@ -615,6 +615,11 @@
         aFrame.origin.y = 32.0;
         tableView.frame = aFrame;
     }
+    
+    if (previousScrollHeight - scrollView.contentOffset.y > 3.0)
+        [self.view endEditing:YES];
+    
+    previousScrollHeight = scrollView.contentOffset.y;
 }
 
 #pragma mark -
@@ -627,7 +632,7 @@
     [self presentModalViewController:aController animated:YES];
 }
 
-- (void)headerBarViewWasTapped:(LIOHeaderBarView *)aView
+- (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView
 {
     if (headerBar.mode != LIOHeaderBarViewModeFull)
     {
@@ -645,6 +650,13 @@
         aFrame.origin.y = 32.0;
         tableView.frame = aFrame;
     }
+
+    [UIView animateWithDuration:0.33
+                     animations:^{
+                         tableView.contentOffset = CGPointZero;
+                     }];
+    
+    [self.view endEditing:YES];
 }
 
 #pragma mark -

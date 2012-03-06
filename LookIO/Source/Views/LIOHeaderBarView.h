@@ -12,7 +12,7 @@
 
 @protocol LIOHeaderBarViewDelegate
 - (void)headerBarViewAboutButtonWasTapped:(LIOHeaderBarView *)aView;
-- (void)headerBarViewWasTapped:(LIOHeaderBarView *)aView;
+- (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
 @end
 
 typedef enum
@@ -24,9 +24,10 @@ typedef enum
 
 @interface LIOHeaderBarView : UIView
 {
-    UIImageView *fullBackground, *minimalBackground;
+    UIView *tappableBackground;
+    UIView *separator;
     LIOHeaderBarViewMode mode;
-    UIButton *moreButton;
+    UIButton *moreButton, *plusButton;
     UILabel *adLabel;
     UIImageView *tinyLogo;
     id<LIOHeaderBarViewDelegate> delegate;

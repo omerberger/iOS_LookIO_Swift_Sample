@@ -39,6 +39,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate>
 {
+    CGFloat previousScrollHeight;
     UIView *topmostContainer;
     UIImageView *background;
     UITableView *tableView;
