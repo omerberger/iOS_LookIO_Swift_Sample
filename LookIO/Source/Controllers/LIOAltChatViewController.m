@@ -14,6 +14,7 @@
 #import "LIOInputBarView.h"
 #import "LIOHeaderBarView.h"
 #import "LIOAboutViewController.h"
+#import "LIODismissalBarView.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -33,30 +34,30 @@
 - (void)loadView
 {
     [super loadView];
-    
-    topmostContainer = [[UIView alloc] initWithFrame:self.view.bounds];
-    topmostContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    topmostContainer.backgroundColor = [UIColor clearColor];
-    [self.view addSubview:topmostContainer];
-    
+        
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPad")];
     else
         background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPhone")];
     
     background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [topmostContainer addSubview:background];
+    [self.view addSubview:background];
     
-    tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
+    CGRect aFrame = self.view.bounds;
+    aFrame.size.height -= 107.0;
+    
+    tableView = [[UITableView alloc] initWithFrame:aFrame style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
     tableView.backgroundColor = [UIColor clearColor];
     tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    tableView.showsVerticalScrollIndicator = NO;
+    tableView.showsHorizontalScrollIndicator = NO;
     ((UIScrollView *)tableView).delegate = self;
-    [topmostContainer addSubview:tableView];
+    [self.view addSubview:tableView];
     
-    CGRect aFrame = CGRectZero;
+    aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 40.0;
     aFrame.origin.y = self.view.bounds.size.height - 40.0;
@@ -64,7 +65,17 @@
     inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
     inputBar.delegate = self;
     inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [topmostContainer addSubview:inputBar];
+    [self.view addSubview:inputBar];
+    
+    dismissalBar = [[LIODismissalBarView alloc] init];
+    aFrame = dismissalBar.frame;
+    aFrame.size.width = self.view.frame.size.width;
+    aFrame.size.height = 35.0;
+    aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
+    dismissalBar.frame = aFrame;
+    dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    dismissalBar.delegate = self;
+    [self.view addSubview:dismissalBar];
     
     aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
@@ -72,7 +83,7 @@
     headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
     headerBar.delegate = self;
     headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [topmostContainer addSubview:headerBar];
+    [self.view addSubview:headerBar];
     
     UIImage *grayStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonGray") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonRed") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
@@ -158,9 +169,6 @@
     
     [functionHeader release];
     functionHeader = nil;
-    
-    [topmostContainer release];
-    topmostContainer = nil;
 }
 
 - (void)dealloc
@@ -175,7 +183,6 @@
     [headerBar release];
     [inputBar release];
     [functionHeader release];
-    [topmostContainer release];
     
     [super dealloc];
 }
@@ -230,27 +237,40 @@
 
 - (void)performRevealAnimation
 {
-    topmostContainer.transform = CGAffineTransformMakeScale(0.1, 0.1);
+    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([messages count] - 1) inSection:0];
+    [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:NO];
     
+    background.alpha = 0.0;
     
-    [UIView animateWithDuration:0.333
+    [UIView animateWithDuration:0.4
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         topmostContainer.transform = CGAffineTransformIdentity;
+                         background.alpha = 1.0;
                      }
                      completion:^(BOOL finished) {
+                         background.alpha = 1.0;
                      }];
     
-    topmostContainer.alpha = 0.0;
+    tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+    headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+    inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
+    dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
     
-    [UIView animateWithDuration:0.5
-                          delay:0.0
-                        options:0
+    [UIView animateWithDuration:0.3
+                          delay:0.1
+                        options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         topmostContainer.alpha = 1.0;
+                         tableView.transform = CGAffineTransformIdentity;
+                         inputBar.transform = CGAffineTransformIdentity;
+                         headerBar.transform = CGAffineTransformIdentity;
+                         dismissalBar.transform = CGAffineTransformIdentity;
                      }
                      completion:^(BOOL finished) {
+                         tableView.transform = CGAffineTransformIdentity;
+                         inputBar.transform = CGAffineTransformIdentity;
+                         headerBar.transform = CGAffineTransformIdentity;
+                         dismissalBar.transform = CGAffineTransformIdentity;
                      }];
 }
 
@@ -410,7 +430,7 @@
 {
     CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:section]];
     
-    return self.view.bounds.size.height - heightOfLastBubble - 10.0;
+    return tableView.bounds.size.height - heightOfLastBubble - 10.0;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
@@ -678,6 +698,14 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark LIODismissalBarViewDelegate methods
+
+- (void)dismissalBarViewButtonWasTapped:(LIODismissalBarView *)aView
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 @end

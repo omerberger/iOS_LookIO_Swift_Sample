@@ -22,6 +22,7 @@
     {        
         separator = [[UIView alloc] init];
         separator.backgroundColor = [UIColor colorWithPatternImage:lookioImage(@"LIORepeatableBlendedSeparatorTop")];
+        separator.opaque = NO;
         CGRect aFrame = separator.frame;
         aFrame.size.height = 15.0;
         aFrame.size.width = self.frame.size.width;
@@ -41,7 +42,15 @@
         tinyLogo = [[UIImageView alloc] initWithImage:lookioImage(@"LIOHeaderBarTinyLogo")];
         [self addSubview:tinyLogo];
         
-        UIImage *buttonImage = [lookioImage(@"LIOHeaderBarViewStretchableButton") stretchableImageWithLeftCapWidth:10 topCapHeight:0];
+        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
+        [self addGestureRecognizer:tapper];
+        
+        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
+        tappableBackground.backgroundColor = [UIColor clearColor];
+        [tappableBackground addGestureRecognizer:tapper];
+        [self addSubview:tappableBackground];
+        
+        UIImage *buttonImage = [lookioImage(@"LIOHeaderBarViewStretchableButton") stretchableImageWithLeftCapWidth:10 topCapHeight:0];        
         
         moreButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         [moreButton addTarget:self action:@selector(moreButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -65,14 +74,6 @@
         aFrame.origin.y = 8.0;
         plusButton.frame = aFrame;
         [self addSubview:plusButton];
-        
-        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
-        [self addGestureRecognizer:tapper];
-        
-        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
-        tappableBackground.backgroundColor = [UIColor clearColor];
-        [tappableBackground addGestureRecognizer:tapper];
-        [self addSubview:tappableBackground];
     }
     
     return self;
@@ -141,7 +142,7 @@
             
             [UIView animateWithDuration:0.5
                                   delay:0.0
-                                options:UIViewAnimationOptionCurveEaseOut
+                                options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState
                              animations:^{
                                  moreButton.alpha = 0.0;
                                  plusButton.alpha = 1.0;
@@ -208,7 +209,7 @@
             
             [UIView animateWithDuration:0.5
                                   delay:0.0
-                                options:UIViewAnimationOptionCurveEaseOut
+                                options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState
                              animations:^{
                                  moreButton.alpha = 1.0;
                                  plusButton.alpha = 0.0;
@@ -221,6 +222,8 @@
                                  separator.frame = sepFrame;
                              }
                              completion:^(BOOL finished) {
+                                 moreButton.alpha = 1.0;
+                                 moreButton.hidden = NO;
                              }];
         }
         

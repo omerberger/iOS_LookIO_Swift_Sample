@@ -8,13 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView;
 
 @protocol LIOInputBarViewDelegate;
-
 @protocol LIOHeaderBarViewDelegate;
-
 @protocol LIOAboutViewControllerDelegate;
+@protocol LIODismissalBarViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -37,10 +36,9 @@
 
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
-     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate>
+     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate>
 {
     CGFloat previousScrollHeight;
-    UIView *topmostContainer;
     UIImageView *background;
     UITableView *tableView;
     NSArray *messages;
@@ -52,6 +50,7 @@
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;
+    LIODismissalBarView *dismissalBar;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

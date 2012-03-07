@@ -53,6 +53,7 @@
         [self addSubview:inputFieldBackground];
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
+        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputField";
         inputField.font = [UIFont systemFontOfSize:14.0];
         inputField.delegate = self;
