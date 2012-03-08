@@ -24,7 +24,6 @@
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
     UIButton *sendButton;
-    UIView *dividerLine;
     UITextView *inputField;
     UIImageView *inputFieldBackground;
     CGFloat singleLineHeight;

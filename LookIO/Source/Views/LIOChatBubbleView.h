@@ -19,7 +19,6 @@ typedef enum
 
 @interface LIOChatBubbleView : UIView
 {
-    UILabel *copiedLabel;
     LIOChatBubbleViewFormattingMode formattingMode;
     UILabel *messageView;
     UIImageView *backgroundImage;
@@ -29,6 +28,5 @@ typedef enum
 @property(nonatomic, readonly) UILabel *messageView;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
-- (void)performCopy;
 
 @end

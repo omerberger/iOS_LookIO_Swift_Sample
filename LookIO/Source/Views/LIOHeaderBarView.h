@@ -11,32 +11,19 @@
 @class LIOHeaderBarView;
 
 @protocol LIOHeaderBarViewDelegate
-- (void)headerBarViewAboutButtonWasTapped:(LIOHeaderBarView *)aView;
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
 @end
-
-typedef enum
-{
-    LIOHeaderBarViewModeNone,
-    LIOHeaderBarViewModeMinimal,
-    LIOHeaderBarViewModeFull
-} LIOHeaderBarViewMode;
 
 @interface LIOHeaderBarView : UIView
 {
     UIView *tappableBackground;
     UIView *separator;
-    LIOHeaderBarViewMode mode;
-    UIButton *moreButton, *plusButton;
+    UIButton *plusButton;
     UILabel *adLabel;
     UIImageView *tinyLogo;
     id<LIOHeaderBarViewDelegate> delegate;
 }
 
-@property(nonatomic, readonly) LIOHeaderBarViewMode mode;
 @property(nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
-
-- (void)switchToMode:(LIOHeaderBarViewMode)aMode animated:(BOOL)animated;
-- (void)rejiggerLayout;
 
 @end

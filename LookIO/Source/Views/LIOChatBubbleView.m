@@ -24,7 +24,7 @@
         UIImage *stretchableBubble = [lookioImage(@"LIOStretchableChatBubble") stretchableImageWithLeftCapWidth:16 topCapHeight:36];
         backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
         [self addSubview:backgroundImage];
-                                      
+        
         messageView = [[UILabel alloc] initWithFrame:self.bounds];
         messageView.font = [UIFont systemFontOfSize:16.0];
         messageView.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -35,16 +35,8 @@
         messageView.textColor = [UIColor whiteColor];
         [self addSubview:messageView];
         
-        copiedLabel = [[UILabel alloc] init];
-        copiedLabel.backgroundColor = [UIColor whiteColor];
-        copiedLabel.textColor = [UIColor blackColor];
-        copiedLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        copiedLabel.text = @"Copied!";
-        [copiedLabel sizeToFit];
-        copiedLabel.hidden = YES;
-        copiedLabel.layer.cornerRadius = 3.0;
-        copiedLabel.clipsToBounds = YES;
-        [self addSubview:copiedLabel];
+        UILongPressGestureRecognizer *aLongPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
+        [self addGestureRecognizer:aLongPresser];
     }
     
     return self;
@@ -74,17 +66,27 @@
     self.frame = aFrame;
     
     backgroundImage.frame = self.bounds;
-    
-    aFrame = copiedLabel.frame;
-    aFrame.origin.x = (self.frame.size.width / 2.0) - (copiedLabel.frame.size.width / 2.0);
-    aFrame.origin.y = (self.frame.size.height / 2.0) - (copiedLabel.frame.size.height / 2.0);
-    copiedLabel.frame = aFrame;
 }
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
     messageView.text = aString;
     [self layoutSubviews];
+}
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+    return action == @selector(copy:);
+}
+
+- (void)copy:(id)sender
+{
+    [UIPasteboard generalPasteboard].string = messageView.text;
 }
 
 #pragma mark -
@@ -101,45 +103,52 @@
     [self setNeedsLayout];
 }
 
-#pragma mark -
-#pragma mark Gesture handlers
-
-- (void)performCopy
+- (void)performBounceAnimation
 {
-    copiedLabel.alpha = 0.0;
-    copiedLabel.hidden = NO;
-    
-    [UIView animateWithDuration:0.2
+    [UIView animateWithDuration:0.15
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         self.transform = CGAffineTransformMakeScale(1.5, 1.5);
-                         copiedLabel.alpha = 1.0;
-                         messageView.alpha = 0.5;
+                         self.transform = CGAffineTransformMakeScale(1.2, 1.2);
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.3
+                         [UIView animateWithDuration:0.25
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseInOut
                                           animations:^{
-                                              self.transform = CGAffineTransformMakeScale(0.9, 0.9);
+                                              self.transform = CGAffineTransformMakeScale(0.97, 0.97);
                                           }
                                           completion:^(BOOL finished) {
-                                              [UIView animateWithDuration:0.2
+                                              [UIView animateWithDuration:0.15
                                                                     delay:0.0
                                                                   options:UIViewAnimationOptionCurveEaseIn
                                                                animations:^{
                                                                    self.transform = CGAffineTransformIdentity;
-                                                                   copiedLabel.alpha = 0.0;
-                                                                   messageView.alpha = 1.0;
                                                                }
                                                                completion:^(BOOL finished) {
-                                                                   copiedLabel.hidden = YES;
                                                                }];
                                           }];
                      }];
+}
 
-    [UIPasteboard generalPasteboard].string = messageView.text;
+#pragma mark -
+#pragma mark Gesture handlers
+
+- (void)handleLongPress:(UILongPressGestureRecognizer *)aLongPresser
+{
+    if (aLongPresser.state == UIGestureRecognizerStateBegan)
+    {
+        CGRect targetFrame = CGRectMake(self.frame.size.width / 2.0, self.frame.size.height / 2.0, 0.0, 0.0);
+        
+        [self becomeFirstResponder];
+        
+        [self performBounceAnimation];
+        
+        UIMenuController *menu = [UIMenuController sharedMenuController];
+        menu.arrowDirection = UIMenuControllerArrowUp;
+        [menu setTargetRect:targetFrame inView:self];
+        [menu setMenuVisible:YES animated:YES];
+    }
 }
 
 @end

@@ -12,7 +12,7 @@
 
 @implementation LIOHeaderBarView
 
-@synthesize mode, delegate;
+@synthesize delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -49,22 +49,7 @@
         tappableBackground.backgroundColor = [UIColor clearColor];
         [tappableBackground addGestureRecognizer:tapper];
         [self addSubview:tappableBackground];
-        
-        UIImage *buttonImage = [lookioImage(@"LIOHeaderBarViewStretchableButton") stretchableImageWithLeftCapWidth:10 topCapHeight:0];        
-        
-        moreButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [moreButton addTarget:self action:@selector(moreButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        moreButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-        [moreButton setTitle:@"Learn More  >" forState:UIControlStateNormal];
-        [moreButton setBackgroundImage:buttonImage forState:UIControlStateNormal];
-        CGRect buttonFrame = moreButton.frame;
-        buttonFrame.size.width = 100.0;
-        buttonFrame.size.height = 29.0;
-        buttonFrame.origin.x = self.bounds.size.width - 100.0 - 8.0;
-        buttonFrame.origin.y = (57.0 / 2.0) - (buttonFrame.size.height / 2.0);
-        moreButton.frame = buttonFrame;
-        [self addSubview:moreButton];
-        
+                
         plusButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         [plusButton setBackgroundImage:lookioImage(@"LIOHeaderPlusIcon") forState:UIControlStateNormal];
@@ -90,6 +75,7 @@
     [super dealloc];
 }
 
+/*
 - (void)switchToMode:(LIOHeaderBarViewMode)aMode animated:(BOOL)animated
 {
     if (aMode == mode)
@@ -238,14 +224,43 @@
     [self switchToMode:LIOHeaderBarViewModeNone animated:NO];
     [self switchToMode:savedMode animated:NO];
 }
+*/
+
+- (void)layoutSubviews
+{
+    [adLabel sizeToFit];
+    CGRect labelFrame = adLabel.frame;
+    labelFrame.origin.x = (self.frame.size.width / 2.0) - ((labelFrame.size.width + tinyLogo.frame.size.width + 3.0) / 2.0);
+    labelFrame.origin.y = 16.0 - (labelFrame.size.height / 2.0);
+    
+    CGRect logoFrame = tinyLogo.frame;
+    logoFrame.origin.x = labelFrame.origin.x + labelFrame.size.width + 3.0;
+    logoFrame.origin.y = 16.0 - (logoFrame.size.height / 2.0);
+    
+    CGRect plusFrame = plusButton.frame;
+    plusFrame.origin.x = logoFrame.origin.x + logoFrame.size.width + 5.0;
+    plusButton.frame = plusFrame;
+    
+    // Bar portion minus shadow is 32.0px
+    CGRect aFrame = self.frame;
+    aFrame.size.height = 40.0;
+    
+    CGRect sepFrame = separator.frame;
+    sepFrame.origin.y = aFrame.size.height - 14.0;
+    
+    self.frame = aFrame;
+    
+    separator.frame = sepFrame;
+    adLabel.frame = labelFrame;
+    tinyLogo.frame = logoFrame;
+    
+    [self bringSubviewToFront:adLabel];
+    [self bringSubviewToFront:tinyLogo];
+    plusButton.alpha = 1.0;
+}
 
 #pragma mark -
 #pragma mark UIControl actions
-
-- (void)moreButtonWasTapped
-{
-    [delegate headerBarViewAboutButtonWasTapped:self];
-}
 
 - (void)plusButtonWasTapped
 {

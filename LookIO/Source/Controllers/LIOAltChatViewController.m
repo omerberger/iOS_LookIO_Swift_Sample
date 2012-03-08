@@ -60,7 +60,7 @@
     aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 40.0;
-    aFrame.origin.y = self.view.bounds.size.height - 40.0;
+    aFrame.origin.y = self.view.bounds.size.height - 44.0;
     
     inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
     inputBar.delegate = self;
@@ -88,20 +88,20 @@
     UIImage *grayStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonGray") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonRed") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-    UIButton *dismissChatButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dismissChatButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-    dismissChatButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    dismissChatButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    dismissChatButton.titleLabel.layer.shadowOpacity = 0.8;
-    dismissChatButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [dismissChatButton setTitle:@"Dismiss Chat" forState:UIControlStateNormal];
-    [dismissChatButton addTarget:self action:@selector(dismissChatButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    aFrame = dismissChatButton.frame;
+    UIButton *aboutButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [aboutButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    aboutButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    aboutButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    aboutButton.titleLabel.layer.shadowOpacity = 0.8;
+    aboutButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [aboutButton setTitle:@"About LookIO" forState:UIControlStateNormal];
+    [aboutButton addTarget:self action:@selector(aboutButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = aboutButton.frame;
     aFrame.size.width = 92.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = 15.0;
     aFrame.origin.y = 16.0;
-    dismissChatButton.frame = aFrame;
+    aboutButton.frame = aFrame;
     
     UIButton *emailConvoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
@@ -114,7 +114,7 @@
     aFrame = emailConvoButton.frame;
     aFrame.size.width = 92.0;
     aFrame.size.height = 32.0;
-    aFrame.origin.x = dismissChatButton.frame.origin.x + dismissChatButton.frame.size.width + 5.0;
+    aFrame.origin.x = aboutButton.frame.origin.x + aboutButton.frame.size.width + 5.0;
     aFrame.origin.y = 16.0;
     emailConvoButton.frame = aFrame;
 
@@ -135,7 +135,7 @@
     
     functionHeader = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeader.selectionStyle = UITableViewCellSelectionStyleNone;
-    [functionHeader.contentView addSubview:dismissChatButton];
+    [functionHeader.contentView addSubview:aboutButton];
     [functionHeader.contentView addSubview:emailConvoButton];
     [functionHeader.contentView addSubview:endSessionButton];
 }
@@ -143,8 +143,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    [headerBar switchToMode:LIOHeaderBarViewModeMinimal animated:NO];
     
     CGRect aFrame = tableView.frame;
     aFrame.origin.y = 32.0;
@@ -230,7 +228,6 @@
 {
     [self.view endEditing:YES];
     
-    [headerBar rejiggerLayout];
     [self reloadMessages];
     [tableView reloadData];
 }
@@ -303,7 +300,7 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
-        [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     });
 }
 
@@ -361,13 +358,20 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [messages count] + 1;
+    return [messages count] + 2;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (0 == indexPath.row)
         return functionHeader;
+    
+    if ([messages count] + 1 == indexPath.row)
+    {
+        UITableViewCell *expandingFooter = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
+        expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
+        return expandingFooter;
+    }
     
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
     LIOChatBubbleView *aBubble = (LIOChatBubbleView *)[aCell viewWithTag:LIOAltChatViewControllerTableViewCellBubbleViewTag];
@@ -379,7 +383,6 @@
         
         aBubble = [[LIOChatBubbleView alloc] initWithFrame:CGRectZero];
         aBubble.backgroundColor = [UIColor clearColor];
-        aBubble.userInteractionEnabled = NO;
         [aCell.contentView addSubview:aBubble];
         aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
     }
@@ -410,10 +413,16 @@
 #pragma mark -
 #pragma mark UITableViewDelegate methods
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+- (CGFloat)tableView:(UITableView *)aTableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (0 == indexPath.row)
         return 64.0;
+    
+    if ([messages count] + 1 == indexPath.row)
+    {
+        CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+        return tableView.bounds.size.height - heightOfLastBubble - 10.0;
+    }
     
     LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
     
@@ -426,25 +435,23 @@
     return height + 10.0;
 }
 
-- (CGFloat)tableView:(UITableView *)aTableView heightForFooterInSection:(NSInteger)section
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:section]];
-    
-    return tableView.bounds.size.height - heightOfLastBubble - 10.0;
+    if (indexPath.row == [messages count] + 1)
+        [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
-- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
-{
-    UIView *footer = [[[UIView alloc] init] autorelease];
-    footer.backgroundColor = [UIColor clearColor];
-    return footer;
-}
-
+/*
 - (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [self.view endEditing:YES];
+    if (indexPath.row > 0 && indexPath.row < [messages count] + 1)
+    {
+        [self.view endEditing:YES];
+        
+        return YES;
+    }
     
-    return indexPath.row > 0;
+    return NO;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
@@ -460,13 +467,16 @@
         [UIPasteboard generalPasteboard].string = aMessage.text;
     }
 }
+*/
 
 #pragma mark -
 #pragma mark UIControl actions
 
-- (void)dismissChatButtonWasTapped
+- (void)aboutButtonWasTapped
 {
-    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+    LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    aController.delegate = self;
+    [self presentModalViewController:aController animated:YES];
 }
 
 - (void)emailConvoButtonWasTapped
@@ -619,6 +629,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+    /*
     if (scrollView.contentOffset.y < 0 && headerBar.mode != LIOHeaderBarViewModeFull)
     {
         [headerBar switchToMode:LIOHeaderBarViewModeFull animated:YES];
@@ -635,6 +646,7 @@
         aFrame.origin.y = 32.0;
         tableView.frame = aFrame;
     }
+    */
     
     if (previousScrollHeight - scrollView.contentOffset.y > 3.0)
         [self.view endEditing:YES];
@@ -645,15 +657,9 @@
 #pragma mark -
 #pragma mark LIOHeaderBarViewDelegate methods
 
-- (void)headerBarViewAboutButtonWasTapped:(LIOHeaderBarView *)aView
-{
-    LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-    aController.delegate = self;
-    [self presentModalViewController:aController animated:YES];
-}
-
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView
 {
+    /*
     if (headerBar.mode != LIOHeaderBarViewModeFull)
     {
         [headerBar switchToMode:LIOHeaderBarViewModeFull animated:YES];
@@ -670,11 +676,16 @@
         aFrame.origin.y = 32.0;
         tableView.frame = aFrame;
     }
+    */
 
-    [UIView animateWithDuration:0.33
-                     animations:^{
-                         tableView.contentOffset = CGPointZero;
-                     }];
+    if (tableView.contentOffset.y > 0)
+    {
+        [UIView animateWithDuration:0.5
+                         animations:^{
+                             tableView.contentOffset = CGPointZero;
+                         }];
+    }
+    
     
     [self.view endEditing:YES];
 }

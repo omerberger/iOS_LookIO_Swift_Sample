@@ -20,33 +20,28 @@
     
     if (self)
     {
-        self.backgroundColor = [UIColor colorWithWhite:0.2 alpha:0.7];
-        
-        dividerLine = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.bounds.size.width, 1.0)];
-        dividerLine.backgroundColor = [UIColor blackColor];
-        dividerLine.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:dividerLine];
-        
-        UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
-        glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
+        self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
+                
+        UIImage *sendButtonImage = lookioImage(@"LIOStretchableSendButton");
+        sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         sendButton.accessibilityLabel = @"LIOSendButton";
-        [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
+        [sendButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:@"Send" forState:UIControlStateNormal];
-        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-        sendButton.frame = CGRectMake(self.bounds.size.width - 59.0 - 5.0, (self.bounds.size.height / 2.0) - 15.0, 59.0, 30.0);
+        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        sendButton.frame = CGRectMake(self.bounds.size.width - 59.0 - 5.0, (self.bounds.size.height / 2.0) - 14.0, 59.0, 31.0);
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:sendButton];
         
         inputFieldBackground = [[UIImageView alloc] init];
         inputFieldBackground.userInteractionEnabled = YES;
-        inputFieldBackground.image = [lookioImage(@"LIOInputBar") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+        inputFieldBackground.image = [lookioImage(@"LIOStretchableInputBar") stretchableImageWithLeftCapWidth:8 topCapHeight:8];
         CGRect aFrame = CGRectZero;
         aFrame.size.width = self.frame.size.width;
-        aFrame.origin.y = (self.frame.size.height / 2.0) - 15.0;
-        aFrame.size.height = 30.0;
+        aFrame.size.height = 37.0;
+        aFrame.origin.y = (self.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 4.0;
         inputFieldBackground.frame = aFrame;
         inputFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputFieldBackground.clipsToBounds = YES;
@@ -77,7 +72,6 @@
 
 - (void)dealloc
 {
-    [dividerLine release];
     [sendButton release];
     [inputField release];
     [inputFieldBackground release];
@@ -88,8 +82,8 @@
 - (void)layoutSubviews
 {
     CGRect aFrame = inputFieldBackground.frame;
-    aFrame.origin.x = 10.0;
-    aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 20.0;
+    aFrame.origin.x = 5.0;
+    aFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 15.0;
     inputFieldBackground.frame = aFrame;
     
     aFrame = inputField.frame;
