@@ -1087,6 +1087,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
         {
             [altChatViewController reloadMessages];
+            [altChatViewController scrollToBottom];
         }
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -1906,6 +1907,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatHistory addObject:newMessage];
     
     [altChatViewController reloadMessages];
+    [altChatViewController scrollToBottom];
 }
 
 - (void)altChatViewControllerDidTapEndSessionButton:(LIOAltChatViewController *)aController
@@ -2279,10 +2281,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-        
+
+/*
 #ifdef DEBUG
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
+*/
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
@@ -2297,9 +2301,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
 
+/*
 #ifdef DEBUG
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape left\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
+*/
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
@@ -2313,10 +2319,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-        
+
+/*        
 #ifdef DEBUG
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait upsidedown\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
+*/
     }
     else // Landscape, home button right
     {
@@ -2330,10 +2338,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-        
+
+/*
 #ifdef DEBUG
         NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape right\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
 #endif
+*/
     }
     
     [controlButton setNeedsLayout];

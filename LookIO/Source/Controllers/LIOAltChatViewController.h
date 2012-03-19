@@ -42,11 +42,9 @@
     UIImageView *background;
     UITableView *tableView;
     NSArray *messages;
-    UIActionSheet *settingsActionSheet;
-    NSUInteger endSessionIndex, endSharingIndex, emailIndex;
     NSUInteger previousTextLength;
     NSString *pendingChatText, *initialChatText;
-    BOOL agentTyping;
+    BOOL agentTyping, keyboardShowing;
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;
@@ -61,6 +59,7 @@
 @property(nonatomic, assign) BOOL agentTyping;
 
 - (void)reloadMessages;
+- (void)scrollToBottom;
 - (void)performRevealAnimation;
 
 @end

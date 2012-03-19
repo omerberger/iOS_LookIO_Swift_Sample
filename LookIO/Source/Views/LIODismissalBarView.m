@@ -19,8 +19,6 @@
     
     if (self)
     {
-        self.backgroundColor = [UIColor clearColor];
-        
         separator = [[UIView alloc] init];
         separator.backgroundColor = [UIColor colorWithPatternImage:lookioImage(@"LIORepeatableBlendedSeparatorBottom")];
         separator.opaque = NO;
@@ -28,7 +26,7 @@
         aFrame.size.height = 15.0;
         aFrame.size.width = self.frame.size.width;
         separator.frame = aFrame;
-        separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        separator.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
         [self addSubview:separator];
         
         dismissLabel = [[UILabel alloc] init];
@@ -36,8 +34,9 @@
         dismissLabel.font = [UIFont boldSystemFontOfSize:14.0];
         dismissLabel.alpha = 0.75;
         dismissLabel.textColor = [UIColor whiteColor];
-        dismissLabel.text = @"Dismiss Chat";
+        dismissLabel.text = @"Back to App";
         [dismissLabel sizeToFit];
+        dismissLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self addSubview:dismissLabel];
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
@@ -58,7 +57,7 @@
 - (void)layoutSubviews
 {
     CGRect aFrame = separator.frame;
-    aFrame.origin.y -= 9.0;
+    aFrame.origin.y = -9.0;
     aFrame.size.height = 15.0;
     aFrame.size.width = self.frame.size.width;
     separator.frame = aFrame;

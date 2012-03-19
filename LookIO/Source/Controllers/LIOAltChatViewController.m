@@ -23,13 +23,20 @@
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
 
-@interface LIOAltChatViewController ()
-- (void)reloadMessages;
-@end
-
 @implementation LIOAltChatViewController
 
 @synthesize delegate, dataSource, initialChatText, agentTyping;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    
+    if (self)
+    {
+    }
+    
+    return self;
+}
 
 - (void)loadView
 {
@@ -44,17 +51,18 @@
     [self.view addSubview:background];
     
     CGRect aFrame = self.view.bounds;
-    aFrame.size.height -= 107.0;
+    aFrame.origin.y = 32.0;
+    aFrame.size.height -= 112.0;
     
     tableView = [[UITableView alloc] initWithFrame:aFrame style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
+    //tableView.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
     tableView.backgroundColor = [UIColor clearColor];
     tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     tableView.showsVerticalScrollIndicator = NO;
     tableView.showsHorizontalScrollIndicator = NO;
-    ((UIScrollView *)tableView).delegate = self;
+    tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:tableView];
     
     aFrame = CGRectZero;
@@ -64,23 +72,27 @@
     
     inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
     inputBar.delegate = self;
-    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:inputBar];
     
     dismissalBar = [[LIODismissalBarView alloc] init];
+    //dismissalBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+    dismissalBar.backgroundColor = [UIColor clearColor];
     aFrame = dismissalBar.frame;
     aFrame.size.width = self.view.frame.size.width;
     aFrame.size.height = 35.0;
     aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
     dismissalBar.frame = aFrame;
-    dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     dismissalBar.delegate = self;
-    [self.view addSubview:dismissalBar];
+    [self.view insertSubview:dismissalBar belowSubview:inputBar];
     
     aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
     
     headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
+    //headerBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+    headerBar.backgroundColor = [UIColor clearColor];
     headerBar.delegate = self;
     headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:headerBar];
@@ -102,6 +114,7 @@
     aFrame.origin.x = 15.0;
     aFrame.origin.y = 16.0;
     aboutButton.frame = aFrame;
+    aboutButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
     
     UIButton *emailConvoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
@@ -117,6 +130,7 @@
     aFrame.origin.x = aboutButton.frame.origin.x + aboutButton.frame.size.width + 5.0;
     aFrame.origin.y = 16.0;
     emailConvoButton.frame = aFrame;
+    emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
 
     UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
@@ -132,6 +146,7 @@
     aFrame.origin.x = emailConvoButton.frame.origin.x + emailConvoButton.frame.size.width + 5.0;
     aFrame.origin.y = 16.0;
     endSessionButton.frame = aFrame;
+    endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
     
     functionHeader = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeader.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -143,10 +158,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    CGRect aFrame = tableView.frame;
-    aFrame.origin.y = 32.0;
-    tableView.frame = aFrame;
 }
 
 - (void)viewDidUnload
@@ -173,8 +184,8 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [background release];
     [tableView release];
+    [background release];
     [pendingChatText release];
     [initialChatText release];
     [messages release];
@@ -191,6 +202,13 @@
     
     [self reloadMessages];
     
+    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
+    [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
+    
+    [self scrollToBottom];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification
@@ -200,9 +218,6 @@
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
-    
-    // Can't do this. Breaks stuff on 4.3 :(
-    //[inputBar.inputField becomeFirstResponder];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -215,8 +230,6 @@
     [super viewWillDisappear:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [settingsActionSheet dismissWithClickedButtonIndex:2742 animated:NO];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -226,17 +239,12 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [self.view endEditing:YES];
-    
     [self reloadMessages];
-    [tableView reloadData];
+    [self scrollToBottom];
 }
 
 - (void)performRevealAnimation
 {
-    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([messages count] - 1) inSection:0];
-    [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionBottom animated:NO];
-    
     background.alpha = 0.0;
     
     [UIView animateWithDuration:0.4
@@ -271,9 +279,9 @@
                      }];
 }
 
-/*
 - (void)performDismissalAnimation
 {
+    /*
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     
     CGRect targetFrame = backgroundView.frame;
@@ -286,16 +294,11 @@
                      completion:^(BOOL finished) {
                          [delegate altChatViewControllerDidFinishDismissalAnimation:self];
                      }];
+     */
 }
-*/
 
-- (void)reloadMessages
+- (void)scrollToBottom
 {
-    [messages release];
-    messages = [[dataSource altChatViewControllerChatMessages:self] retain];
-    
-    [tableView reloadData];
-    
     double delayInSeconds = 0.75;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -304,54 +307,13 @@
     });
 }
 
-/*
-- (void)showSettingsMenu
+- (void)reloadMessages
 {
-    [self.view endEditing:YES];
+    [messages release];
+    messages = [[dataSource altChatViewControllerChatMessages:self] retain];
     
-    endSessionIndex = 0;
-    endSharingIndex = NSNotFound;
-    emailIndex = NSNotFound;
-    NSUInteger cancelIndex = 1;
-    
-    if ([[LIOLookIOManager sharedLookIOManager] screenshotsAllowed])
-        endSharingIndex = 1;
-    
-    if (endSharingIndex != NSNotFound)
-        emailIndex = 2;
-    else
-        emailIndex = 1;
-    
-    settingsActionSheet = [[UIActionSheet alloc] init];
-    settingsActionSheet.accessibilityLabel = @"LIOSettingsActionSheet";
-    [settingsActionSheet addButtonWithTitle:@"End Session"];
-    
-    if (endSharingIndex != NSNotFound)
-    {
-        [settingsActionSheet addButtonWithTitle:@"End Screen Sharing"];
-        cancelIndex++;
-    }
-    
-    if (emailIndex != NSNotFound)
-    {
-        [settingsActionSheet addButtonWithTitle:@"Email Chat History"];
-        cancelIndex++;
-    }
-    
-    [settingsActionSheet addButtonWithTitle:@"Cancel"];
-    
-    [settingsActionSheet setDestructiveButtonIndex:endSessionIndex];
-    settingsActionSheet.cancelButtonIndex = cancelIndex;
-    [settingsActionSheet setDelegate:self];
-    
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        [settingsActionSheet showFromRect:inputBar.settingsButton.frame inView:inputBar animated:YES];
-    }
-    else
-        [settingsActionSheet showInView:self.view];
+    [tableView reloadData];
 }
-*/
 
 #pragma mark -
 #pragma mark UITableViewDataSource methods
@@ -360,6 +322,13 @@
 {
     return [messages count] + 2;
 }
+
+/*
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    cell.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+}
+*/
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -402,7 +371,7 @@
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
     else
-        aBubble.frame = CGRectMake(aCell.contentView.frame.size.width - 290.0, 0.0, 290.0, 0.0);
+        aBubble.frame = CGRectMake(self.view.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
     
     [aBubble setNeedsLayout];
     [aBubble setNeedsDisplay];
@@ -441,34 +410,6 @@
         [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
-/*
-- (BOOL)tableView:(UITableView *)tableView shouldShowMenuForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (indexPath.row > 0 && indexPath.row < [messages count] + 1)
-    {
-        [self.view endEditing:YES];
-        
-        return YES;
-    }
-    
-    return NO;
-}
-
-- (BOOL)tableView:(UITableView *)tableView canPerformAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
-{
-    return action == @selector(copy:);
-}
-
-- (void)tableView:(UITableView *)tableView performAction:(SEL)action forRowAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender
-{
-    if (action == @selector(copy:))
-    {
-        LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
-        [UIPasteboard generalPasteboard].string = aMessage.text;
-    }
-}
-*/
-
 #pragma mark -
 #pragma mark UIControl actions
 
@@ -489,12 +430,18 @@
     [delegate altChatViewControllerDidTapEndSessionButton:self];
 }
 
-
 #pragma mark -
 #pragma mark Notification handlers  
 
 - (void)keyboardWillShow:(NSNotification *)aNotification
 {
+    if (keyboardShowing)
+        return;
+    
+    keyboardShowing = YES;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
     NSDictionary *userInfo = [aNotification userInfo];
     
     NSTimeInterval animationDuration;
@@ -506,24 +453,54 @@
     [animationCurveValue getValue:&animationCurve];
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [self.view.window convertRect:[keyboardBoundsValue CGRectValue] toView:self.view];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue]; //[self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
     
-    CGRect aFrame = inputBar.frame;
-    aFrame.origin.y -= keyboardHeight;
+    CGRect inputBarFrame = inputBar.frame;
+    inputBarFrame.origin.y -= keyboardHeight;
+    
+    CGRect dismissalBarFrame = dismissalBar.frame;
+    dismissalBarFrame.origin.y -= keyboardHeight - 15.0; // 15.0 is the difference in dismissal bar height
+    dismissalBarFrame.size.height = 20.0;
+    
+    CGRect headerFrame = headerBar.frame;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        headerFrame.origin.y -= headerFrame.size.height;
+    
+    CGRect tableFrame = tableView.frame;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+    {
+        tableFrame.origin.y = 0.0;
+        tableFrame.size.height -= keyboardHeight - 15.0 - 32.0; // 32.0 is the default table origin (below header)
+    }
+    else
+        tableFrame.size.height -= keyboardHeight - 15.0;
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
-        inputBar.frame = aFrame;
+        inputBar.frame = inputBarFrame;
+        dismissalBar.frame = dismissalBarFrame;
+        tableView.frame = tableFrame;
+        headerBar.frame = headerFrame;
     [UIView commitAnimations];
     
-    [inputBar setNeedsLayout];
+    [self reloadMessages];
+    [self scrollToBottom];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
+    if (NO == keyboardShowing)
+        return;
+    
+    keyboardShowing = NO;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
     NSDictionary *userInfo = [aNotification userInfo];
     
     NSTimeInterval animationDuration;
@@ -534,21 +511,41 @@
     NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
     [animationCurveValue getValue:&animationCurve];
     
-    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [self.view.window convertRect:[keyboardBoundsValue CGRectValue] toView:self.view];
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue]; //[self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
     
-    CGRect aFrame = inputBar.frame;
-    aFrame.origin.y += keyboardHeight;
+    CGRect inputBarFrame = inputBar.frame;
+    inputBarFrame.origin.y += keyboardHeight;
+    
+    CGRect dismissalBarFrame = dismissalBar.frame;
+    dismissalBarFrame.origin.y += keyboardHeight - 15.0;
+    dismissalBarFrame.size.height = 35.0;
+    
+    CGRect headerFrame = headerBar.frame;
+    headerFrame.origin.y = 0.0;
+    
+    CGRect tableFrame = tableView.frame;
+    tableFrame.origin.y = 32.0;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
+    else
+        tableFrame.size.height += keyboardHeight - 15.0;
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
-        inputBar.frame = aFrame;
+        inputBar.frame = inputBarFrame;
+        dismissalBar.frame = dismissalBarFrame;
+        tableView.frame = tableFrame;
+        headerBar.frame = headerFrame;
     [UIView commitAnimations];
     
-    [inputBar setNeedsLayout];
+    [self reloadMessages];
+    [self scrollToBottom];
 }
 
 #pragma mark -
@@ -600,84 +597,24 @@
     [self reloadMessages];
 }
 
-/*
-#pragma mark -
-#pragma mark UIActionSheetDelegate methods
-
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (endSessionIndex == buttonIndex)
-    {
-        [delegate altChatViewControllerDidTapEndSessionButton:self];
-    }
-    else if (endSharingIndex == buttonIndex)
-    {
-        [delegate altChatViewControllerDidTapEndScreenshotsButton:self];
-    }
-    else if (emailIndex == buttonIndex)
-    {
-        [delegate altChatViewControllerDidTapEmailButton:self];
-    }
-    
-    [settingsActionSheet autorelease];
-    settingsActionSheet = nil;
-}
-*/
-
 #pragma mark -
 #pragma mark UIScrollViewDelegate methods
 
+/*
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    /*
-    if (scrollView.contentOffset.y < 0 && headerBar.mode != LIOHeaderBarViewModeFull)
-    {
-        [headerBar switchToMode:LIOHeaderBarViewModeFull animated:YES];
-        
-        CGRect aFrame = tableView.frame;
-        aFrame.origin.y = 49.0;
-        tableView.frame = aFrame;
-    }
-    else if (scrollView.contentOffset.y > 1 && headerBar.mode != LIOHeaderBarViewModeMinimal)
-    {
-        [headerBar switchToMode:LIOHeaderBarViewModeMinimal animated:YES];
-        
-        CGRect aFrame = tableView.frame;
-        aFrame.origin.y = 32.0;
-        tableView.frame = aFrame;
-    }
-    */
-    
     if (previousScrollHeight - scrollView.contentOffset.y > 3.0)
         [self.view endEditing:YES];
     
     previousScrollHeight = scrollView.contentOffset.y;
 }
+*/
 
 #pragma mark -
 #pragma mark LIOHeaderBarViewDelegate methods
 
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView
 {
-    /*
-    if (headerBar.mode != LIOHeaderBarViewModeFull)
-    {
-        [headerBar switchToMode:LIOHeaderBarViewModeFull animated:YES];
-        
-        CGRect aFrame = tableView.frame;
-        aFrame.origin.y = 49.0;
-        tableView.frame = aFrame;
-    }
-    else if (headerBar.mode != LIOHeaderBarViewModeMinimal)
-    {
-        [headerBar switchToMode:LIOHeaderBarViewModeMinimal animated:YES];
-        
-        CGRect aFrame = tableView.frame;
-        aFrame.origin.y = 32.0;
-        tableView.frame = aFrame;
-    }
-    */
-
     if (tableView.contentOffset.y > 0)
     {
         [UIView animateWithDuration:0.5
