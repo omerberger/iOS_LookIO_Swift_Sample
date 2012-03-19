@@ -1,10 +1,10 @@
-//
+//  
 //  LIOLookIOManager.h
-//  LookIO iOS Remote Support Client vtest
-//
+//  LookIO iOS Remote Support Client v##UNKNOWN_VERSION##
+//  
 //  Copyright 2011-2012 LookIO, Inc. All rights reserved.
-//	
-//	This header file is for use with LookIO.
+//  
+//  This header file is for use with LookIO.
 //  Documentation and support: http://support.look.io/
 
 #import <UIKit/UIKit.h>
