@@ -25,9 +25,10 @@ fi
 echo "Building LookIO v$1 ($CONFIGURATION), please wait..."
 
 sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager.m
+sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager.h
 
 rm -rf LookIO/build
-/Developer-4.1/usr/bin/xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
+xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
 
 if [ $? -ne 0 ]
 then
@@ -48,7 +49,7 @@ sed -i "" 's/connect.look.io/10.1.1.1/g' ./LookIO/Source/Managers/LIOLookIOManag
 sed -i "" 's/usesTLS = YES/usesTLS = NO/g' ./LookIO/Source/Managers/LIOLookIOManager.m
 
 rm -rf LookIO/build
-/Developer-4.1/usr/bin/xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
+xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release &>$LOG_FILE
 
 if [ $? -ne 0 ]
 then
@@ -65,10 +66,11 @@ cp LookIO/Source/Managers/LIOLookIOManager.h $TARGET_DIR_LOCAL
  
 #Undo the change
 git checkout ./LookIO/Source/Managers/LIOLookIOManager.m
+git checkout ./LookIO/Source/Managers/LIOLookIOManager.h
 
 #Copy to dropbox
-mkdir -p ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/$1
-mkdir -p ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/local/$1
-cp -r $TARGET_DIR_SHIP/* ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/$1
-cp -r $TARGET_DIR_LOCAL/* ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/local/$1
+#mkdir -p ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/$1
+#mkdir -p ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/local/$1
+#cp -r $TARGET_DIR_SHIP/* ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/$1
+#cp -r $TARGET_DIR_LOCAL/* ~/Dropbox/Look.io\ \(Marc\ \&\ Joe\)/libLookIO/local/$1
 

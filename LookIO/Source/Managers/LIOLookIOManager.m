@@ -1619,7 +1619,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
                                       [[UIDevice currentDevice] systemVersion], @"platform_version",
-                                      @"##UNKNOWN_VERSION##", @"sdk_version",
+                                      @"test", @"sdk_version",
                                       nil];
     
     if (includesType)
