@@ -12,6 +12,14 @@ then
     exit 1
 fi
 
+# Don't publish.
+if [ -z "$2" ]
+then
+    rm -rf _LOOKIO_$1_
+    exit 0
+fi
+
+# Publish!
 cp -f _LOOKIO_$1_/ship_it/* ../LookIO-Libraries/iOS/release
 rm -rf _LOOKIO_$1_
 cd ../LookIO-Libraries
