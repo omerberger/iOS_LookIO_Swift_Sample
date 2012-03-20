@@ -20,8 +20,8 @@ then
 fi
 
 # Publish!
-cp -f _LOOKIO_$1_/ship_it/* ../LookIO-Libraries/iOS/release
+cp -f _LOOKIO_$1_/* ../LookIO-Libraries/iOS/release
 rm -rf _LOOKIO_$1_
 cd ../LookIO-Libraries
-git commit -a -m "Jenkins build v$1"
-git push origin master
+#git commit -a -m "Jenkins build v$1"
+#git push origin master
