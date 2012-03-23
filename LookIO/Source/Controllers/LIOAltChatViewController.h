@@ -14,15 +14,18 @@
 @protocol LIOHeaderBarViewDelegate;
 @protocol LIOAboutViewControllerDelegate;
 @protocol LIODismissalBarViewDelegate;
+@protocol LIOEmailHistoryViewControllerDelegate;
+@protocol LIOLeaveMessageViewControllerDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString;
 - (void)altChatViewControllerDidTapEndSessionButton:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidTapEndScreenshotsButton:(LIOAltChatViewController *)aController;
-- (void)altChatViewControllerDidTapEmailButton:(LIOAltChatViewController *)aController;
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
@@ -36,7 +39,8 @@
 
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
-     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate>
+     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
+     LIOLeaveMessageViewControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIImageView *background;
@@ -61,5 +65,6 @@
 - (void)reloadMessages;
 - (void)scrollToBottom;
 - (void)performRevealAnimation;
+- (void)performDismissalAnimation;
 
 @end

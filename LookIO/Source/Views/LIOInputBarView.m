@@ -150,6 +150,7 @@
     NSString *text = inputField.text;
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];
+    [self setNeedsLayout];
 }
 
 #pragma mark -

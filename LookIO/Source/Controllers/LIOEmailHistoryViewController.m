@@ -19,120 +19,159 @@
     [super loadView];
     UIView *rootView = self.view;
     
-    UIView *backgroundView = [[[UIView alloc] initWithFrame:rootView.bounds] autorelease];
-    backgroundView.backgroundColor = [UIColor blackColor];
-    backgroundView.alpha = 0.33;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [rootView addSubview:backgroundView];
+    UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
-    scrollView = [[UIScrollView alloc] init];
-    scrollView.frame = rootView.bounds;
-    scrollView.autoresizingMask = backgroundView.autoresizingMask;
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutBackground.jpg")] autorelease];
+        CGRect aFrame = backgroundView.frame;
+        aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
+        backgroundView.frame = aFrame;
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        [rootView addSubview:backgroundView];
+    }
+    else
+    {
+        UIImage *backgroundImage = lookioImage(@"LIOAboutBackgroundForiPhone.jpg");
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [rootView addSubview:backgroundView];
+    }
+    
+    navBar = [[UINavigationBar alloc] init];
+    navBar.barStyle = UIBarStyleBlackOpaque;
+    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
+    CGRect aFrame = navBar.frame;
+    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.height = navBarHeight;
+    navBar.frame = aFrame;
+    navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"Email Conversation"] autorelease];
+    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
+    anItem.leftBarButtonItem = closeItem;
+    [navBar pushNavigationItem:anItem animated:NO];
+    navBar.delegate = self;
+    [rootView addSubview:navBar];
+    
+    scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    aFrame = scrollView.frame;
+    aFrame.origin.y = navBar.frame.size.height;
+    aFrame.size.height -= aFrame.origin.y;
+    scrollView.frame = aFrame;
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
     
-    CGFloat xInset = 5.0;
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-        xInset = 100.0;
-    
-    bubbleView = [[UIView alloc] init];
-    CGRect aFrame = CGRectZero;
-    aFrame.origin.x = xInset;
-    aFrame.size.width = rootView.frame.size.width - (xInset * 2.0);
+    UIImageView *logoView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutTitle")] autorelease];
+    aFrame = logoView.frame;
+    aFrame.size.height -= 20.0;
+    aFrame.size.width -= 67.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 5.0;
-    aFrame.size.height = 137.0;
-    bubbleView.frame = aFrame;
-    bubbleView.backgroundColor = [UIColor blackColor];
-    bubbleView.alpha = 0.7;
-    bubbleView.layer.masksToBounds = YES;
-    bubbleView.layer.cornerRadius = 12.0;
-    bubbleView.layer.borderColor = [UIColor whiteColor].CGColor;
-    bubbleView.layer.borderWidth = 2.0;
-    bubbleView.autoresizingMask = UIViewAutoresizingFlexibleWidth;// | UIViewAutoresizingFlexibleHeight;
-    [scrollView addSubview:bubbleView];
+    logoView.frame = aFrame;
+    logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:logoView];
     
-    UILabel *instructionsLabel = [[[UILabel alloc] init] autorelease];
-    instructionsLabel.font = [UIFont boldSystemFontOfSize:13.0];
-    instructionsLabel.backgroundColor = [UIColor clearColor];
-    instructionsLabel.textColor = [UIColor whiteColor];
-    instructionsLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    instructionsLabel.layer.shadowOpacity = 1.0;
-    instructionsLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    instructionsLabel.layer.shadowRadius = 1.0;
-    instructionsLabel.numberOfLines = 2;
-    instructionsLabel.text = @"Just enter your email address and we'll send you a copy of this chat history.";
-    instructionsLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
-    aFrame.size.width = bubbleView.frame.size.width - 24.0;
-    aFrame.origin.y = bubbleView.frame.origin.y + 5.0;
-    aFrame.size.height = 30.0;
-    instructionsLabel.frame = aFrame;
-    [scrollView addSubview:instructionsLabel];
+    UIImage *separatorImage = lookioImage(@"LIOAboutStretchableSeparator");
+    UIImage *stretchableSeparatorImage = [separatorImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    UILabel *emailLabel = [[[UILabel alloc] init] autorelease];
-    emailLabel.font = [UIFont systemFontOfSize:14.0];
-    emailLabel.backgroundColor = [UIColor clearColor];
-    emailLabel.textColor = [UIColor whiteColor];
-    emailLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    emailLabel.layer.shadowOpacity = 1.0;
-    emailLabel.layer.shadowOffset = CGSizeMake(2.0, 2.0);
-    emailLabel.layer.shadowRadius = 1.0;
-    emailLabel.numberOfLines = 1;
-    emailLabel.text = @"Your Email Address:";
-    aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
-    aFrame.size.width = bubbleView.frame.size.width - 24.0;
-    aFrame.origin.y = instructionsLabel.frame.origin.y + instructionsLabel.frame.size.height + 10.0;
-    aFrame.size.height = 15.0;
-    emailLabel.frame = aFrame;
-    emailLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:emailLabel];
+    UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
+    aFrame = topSeparator.frame;
+    aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 8.0;
+    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.height = 3.0;
+    topSeparator.frame = aFrame;
+    topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:topSeparator];
     
-    emailField = [[LIONiceTextField alloc] init];
-    emailField.delegate = self;
-    emailField.placeholder = @"name@example.com";
-    emailField.keyboardType = UIKeyboardTypeEmailAddress;
-    emailField.autocorrectionType = UITextAutocorrectionTypeNo;
-    emailField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    aFrame.origin.x = bubbleView.frame.origin.x + 12.0;
-    aFrame.size.width = bubbleView.frame.size.width - 24.0;
-    aFrame.origin.y = emailLabel.frame.origin.y + emailLabel.frame.size.height + 5.0;
-    aFrame.size.height = 30.0;
-    emailField.frame = aFrame;
-    emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:emailField];
+    UILabel *label01 = [[[UILabel alloc] init] autorelease];
+    label01.text = @"Need a copy of this chat? No problem!";
+    label01.textColor = [UIColor whiteColor];
+    label01.backgroundColor = [UIColor clearColor];
+    label01.layer.shadowColor = [UIColor blackColor].CGColor;
+    label01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    label01.layer.shadowOpacity = 0.5;
+    label01.layer.shadowRadius = 1.0;
+    label01.font = [UIFont boldSystemFontOfSize:14.0];
+    [label01 sizeToFit];
+    aFrame = label01.frame;
+    aFrame.origin.y = topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
+    label01.frame = aFrame;
+    label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:label01];
     
-    if ([initialEmailAddress length])
-        emailField.text = initialEmailAddress;
+    UILabel *label02 = [[[UILabel alloc] init] autorelease];
+    label02.text = @"Your Email Address:";
+    label02.textColor = altBlue;
+    label02.backgroundColor = [UIColor clearColor];
+    label02.layer.shadowColor = [UIColor blackColor].CGColor;
+    label02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    label02.layer.shadowOpacity = 0.5;
+    label02.layer.shadowRadius = 1.0;
+    label02.font = [UIFont systemFontOfSize:12.0];
+    [label02 sizeToFit];
+    aFrame = label02.frame;
+    aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
+    label02.frame = aFrame;
+    label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [scrollView addSubview:label02];
     
-    UIImage *glassButtonImage = lookioImage(@"LIOGlassButton");
-    glassButtonImage = [glassButtonImage stretchableImageWithLeftCapWidth:15 topCapHeight:15];
+    UIImage *fieldImage = lookioImage(@"LIOAboutStretchableField");
+    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
     
-    UIButton *sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    aFrame.size.width = 59.0;
-    aFrame.origin.x = bubbleView.frame.origin.x + bubbleView.frame.size.width - 59.0 - 12.0;
-    aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 8.0;
-    aFrame.size.height = 27.0;
-    sendButton.frame = aFrame;
-    [sendButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [sendButton setTitle:@"Send" forState:UIControlStateNormal];
-    sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [scrollView addSubview:sendButton];
+    fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
+    fieldBackground.userInteractionEnabled = YES;
+    aFrame = fieldBackground.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 48.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    fieldBackground.frame = aFrame;
+    fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:fieldBackground];
     
-    UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    aFrame.size.width = 65.0;
-    aFrame.origin.x = sendButton.frame.origin.x - aFrame.size.width - 10.0;
-    aFrame.origin.y = emailField.frame.origin.y + emailField.frame.size.height + 8.0;
-    aFrame.size.height = 27.0;
-    cancelButton.frame = aFrame;
-    [cancelButton setBackgroundImage:glassButtonImage forState:UIControlStateNormal];
-    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
-    cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [scrollView addSubview:cancelButton];
+    inputField = [[UITextField alloc] init];
+    inputField.delegate = self;
+    inputField.backgroundColor = [UIColor clearColor];
+    aFrame.origin.x = 10.0;
+    aFrame.origin.y = 14.0;
+    aFrame.size.width = 269.0;
+    aFrame.size.height = 28.0;
+    inputField.frame = aFrame;
+    inputField.font = [UIFont systemFontOfSize:14.0];
+    inputField.placeholder = @"name@example.com";
+    inputField.keyboardType = UIKeyboardTypeEmailAddress;
+    inputField.autocorrectionType = UITextAutocorrectionTypeNo;
+    inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    inputField.returnKeyType = UIReturnKeySend;
+    inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+    if ([[[LIOLookIOManager sharedLookIOManager] pendingEmailAddress] length])
+        inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
+    [fieldBackground addSubview:inputField];
     
-    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
+    UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
+    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
+    
+    submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
+    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    submitButton.titleLabel.layer.shadowOpacity = 0.5;
+    submitButton.titleLabel.layer.shadowRadius = 1.0;
+    submitButton.bounds = fieldBackground.bounds;
+    aFrame = submitButton.frame;
+    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
+    submitButton.frame = aFrame;
+    submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView addSubview:submitButton];
+    
+    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
 - (void)viewDidLoad
@@ -146,46 +185,57 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [bubbleView release];
-    bubbleView = nil;
-    
-    [emailField release];
-    emailField = nil;
-    
     [scrollView release];
     scrollView = nil;
+    
+    [fieldBackground release];
+    fieldBackground = nil;
+    
+    [inputField release];
+    inputField = nil;
+    
+    [submitButton release];
+    submitButton = nil;
+    
+    [navBar release];
+    navBar = nil;
 }
 
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [emailField release];
-    [bubbleView release];
-    [scrollView release];
     [initialEmailAddress release];
+    [scrollView release];
+    [fieldBackground release];
+    [inputField release];
+    [submitButton release];
+    [navBar release];
     
     [super dealloc];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        [inputField becomeFirstResponder];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardDidShow:)
-                                                 name:UIKeyboardDidShowNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardDidHide:)
-                                                 name:UIKeyboardDidHideNotification
-                                               object:nil];
-    double delayInSeconds = 0.5;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [emailField becomeFirstResponder];
-    });
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -201,24 +251,36 @@
     return [delegate emailHistoryViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
-    [self.view endEditing:YES];
-}
-
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, bubbleView.frame.origin.y + bubbleView.frame.size.height);
+    [scrollView scrollRectToVisible:fieldBackground.frame animated:NO];
+    
+    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
+    
+    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
+    CGRect aFrame = navBar.frame;
+    aFrame.size.height = navBarHeight;
+    navBar.frame = aFrame;
+    
+    aFrame = scrollView.frame;
+    aFrame.origin.y = navBar.frame.origin.y + navBar.frame.size.height;
+    CGFloat diff = aFrame.origin.y - scrollView.frame.origin.y;
+    aFrame.size.height -= diff;
+    scrollView.frame = aFrame;
 }
 
 #pragma mark -
 #pragma mark Notification handlers
 
-- (void)keyboardDidShow:(NSNotification *)aNotification
+- (void)keyboardWillShow:(NSNotification *)aNotification
 {
     if (keyboardShown)
         return;
     
+    keyboardShown = YES;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
     NSDictionary *userInfo = [aNotification userInfo];
     
     NSTimeInterval animationDuration;
@@ -230,24 +292,33 @@
     [animationCurveValue getValue:&animationCurve];
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
     
     CGRect aFrame = scrollView.frame;
     aFrame.size.height -= keyboardHeight;
-    scrollView.frame = aFrame;
     
-    [scrollView scrollRectToVisible:emailField.frame animated:YES];
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationCurve:animationCurve];
+    [UIView setAnimationDuration:animationDuration];
+        scrollView.frame = aFrame;
+    [UIView commitAnimations];
     
-    keyboardShown = YES;
+    [scrollView scrollRectToVisible:fieldBackground.frame animated:NO];
 }
 
-- (void)keyboardDidHide:(NSNotification *)aNotification
+- (void)keyboardWillHide:(NSNotification *)aNotification
 {
     if (NO == keyboardShown)
         return;
     
+    keyboardShown = NO;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
     NSDictionary *userInfo = [aNotification userInfo];
     
     NSTimeInterval animationDuration;
@@ -259,28 +330,33 @@
     [animationCurveValue getValue:&animationCurve];
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
     
     CGRect aFrame = scrollView.frame;
     aFrame.size.height += keyboardHeight;
-    scrollView.frame = aFrame;
     
-    keyboardShown = NO;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationCurve:animationCurve];
+    [UIView setAnimationDuration:animationDuration];
+        scrollView.frame = aFrame;
+    [UIView commitAnimations];
 }
 
 #pragma mark -
 #pragma mark UIControl actions
 
-- (void)cancelButtonWasTapped
+- (void)closeButtonWasTapped
 {
     [delegate emailHistoryViewControllerWasDismissed:self];
 }
 
-- (void)sendButtonWasTapped
+- (void)submitButtonWasTapped
 {
-    if ([emailField.text length])
+    if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
                                                             message:@"A transcript of this session has been emailed to you."
@@ -292,7 +368,7 @@
     }
     else
     {
-        [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:emailField.text];
+        [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
     }
 }
 
@@ -301,7 +377,7 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:emailField.text];
+    [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
 }
 
 

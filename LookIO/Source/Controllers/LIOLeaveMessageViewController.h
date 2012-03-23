@@ -9,31 +9,28 @@
 #import <UIKit/UIKit.h>
 #import "LIONiceTextField.h"
 
-/*
+@class LIOLeaveMessageViewController;
+
 @protocol LIOLeaveMessageViewControllerDelegate
 - (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController;
-- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail message:(NSString *)aMessage;
 - (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
-*/
 
 @interface LIOLeaveMessageViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate, UIAlertViewDelegate>
 {
-    UIView *bubbleView;
+    UINavigationBar *navBar;
     UIScrollView *scrollView;
-    LIONiceTextField *emailField;
+    UITextField *emailField;
     UITextView *messageView;
-    BOOL keyboardShown;
+    UIImageView *fieldBackground, *messageBackground;
+    BOOL keyboardShown, messageViewActive;
     NSString *initialMessage;
-    UILabel *instructionsLabel, *emailLabel, *messageLabel;
-    UIButton *cancelButton, *sendButton;
-    UIImageView *messageViewBackground;
-    BOOL suppressKeyboardNotifications;
-    id delegate;
+    UIButton *submitButton;
+    id<LIOLeaveMessageViewControllerDelegate> delegate;
 }
 
-@property(nonatomic, assign) id delegate;
+@property(nonatomic, assign) id<LIOLeaveMessageViewControllerDelegate> delegate;
 @property(nonatomic, retain) NSString *initialMessage;
 @property(nonatomic, retain) NSString *initialEmailAddress;
 

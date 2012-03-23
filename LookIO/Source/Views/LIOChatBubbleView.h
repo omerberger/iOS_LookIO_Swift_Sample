@@ -11,21 +11,26 @@
 #define LIOChatBubbleViewMaxTextWidth   250.0
 #define LIOChatBubbleViewMinTextHeight  67.0
 
+@class TTTAttributedLabel_LIO;
+
+@protocol TTTAttributedLabelDelegate;
+
 typedef enum
 {
     LIOChatBubbleViewFormattingModeRemote,
     LIOChatBubbleViewFormattingModeLocal
 } LIOChatBubbleViewFormattingMode;
 
-@interface LIOChatBubbleView : UIView
+@interface LIOChatBubbleView : UIView <TTTAttributedLabelDelegate>
 {
     LIOChatBubbleViewFormattingMode formattingMode;
-    UILabel *messageView;
+    TTTAttributedLabel_LIO *messageView;
     UIImageView *backgroundImage;
+    NSString *senderName;
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
-@property(nonatomic, readonly) UILabel *messageView;
+@property(nonatomic, retain) NSString *senderName;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
 

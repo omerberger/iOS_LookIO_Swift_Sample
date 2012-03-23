@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
+		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
+		D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */; };
 		D4ADC7A414F3211800713F29 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */; };
 		D4ADC7A514F3211800713F29 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */; };
 		D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */; };
@@ -57,6 +59,8 @@
 /* Begin PBXFileReference section */
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
+		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
+		D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = Source/Controllers/LIOAboutViewController.h; sourceTree = "<group>"; };
 		D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = Source/Controllers/LIOAboutViewController.m; sourceTree = "<group>"; };
@@ -170,6 +174,15 @@
 			name = Other;
 			sourceTree = "<group>";
 		};
+		D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */ = {
+			isa = PBXGroup;
+			children = (
+				D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */,
+				D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */,
+			);
+			path = TTTAttributedLabel;
+			sourceTree = "<group>";
+		};
 		D48ABEE51404607500835205 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -192,6 +205,7 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */,
 				D4ADC7D914F322C300713F29 /* CocoaAsyncSocket */,
 				D4ADC7DC14F322C300713F29 /* NSData+Base64 */,
 				D4ADC7DF14F322C300713F29 /* SBJSON */,
@@ -276,6 +290,7 @@
 				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
+				D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,6 +383,7 @@
 				D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */,
 				D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */,
 				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,
+				D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

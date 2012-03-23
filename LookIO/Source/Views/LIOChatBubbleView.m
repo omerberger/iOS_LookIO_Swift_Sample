@@ -9,10 +9,11 @@
 #import "LIOChatBubbleView.h"
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLookIOManager.h"
+#import "TTTAttributedLabel.h"
 
 @implementation LIOChatBubbleView
 
-@synthesize messageView;
+@synthesize senderName;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -25,7 +26,12 @@
         backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
         [self addSubview:backgroundImage];
         
-        messageView = [[UILabel alloc] initWithFrame:self.bounds];
+        messageView = [[TTTAttributedLabel_LIO alloc] initWithFrame:self.bounds];
+        messageView.delegate = self;
+        if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://555.555.5555"]])
+            messageView.dataDetectorTypes = UIDataDetectorTypeLink | UIDataDetectorTypePhoneNumber;
+        else
+            messageView.dataDetectorTypes = UIDataDetectorTypeLink;
         messageView.font = [UIFont systemFontOfSize:16.0];
         messageView.layer.shadowColor = [UIColor blackColor].CGColor;
         messageView.layer.shadowRadius = 1.0;
@@ -33,6 +39,7 @@
         messageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
         messageView.backgroundColor = [UIColor clearColor];
         messageView.textColor = [UIColor whiteColor];
+        messageView.numberOfLines = 0;
         [self addSubview:messageView];
         
         UILongPressGestureRecognizer *aLongPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
@@ -46,6 +53,7 @@
 {
     [messageView release];
     [backgroundImage release];
+    [senderName release];
     
     [super dealloc];
 }
@@ -55,8 +63,7 @@
     [super layoutSubviews];
         
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
-    CGSize boxSize = [messageView.text sizeWithFont:messageView.font constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
-    messageView.numberOfLines = 0;
+    CGSize boxSize = [messageView sizeThatFits:maxSize];
     messageView.frame = CGRectMake(20.0, 10.0, boxSize.width, boxSize.height);
     
     // This feels really wrong. >______>!
@@ -70,7 +77,28 @@
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
-    messageView.text = aString;
+    [messageView setText:aString afterInheritingLabelAttributesAndConfiguringWithBlock:^ NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
+        
+        if (0 == [senderName length])
+            return mutableAttributedString;
+        
+        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]];
+        [mutableAttributedString insertAttributedString:nameCallout atIndex:0];
+        
+        NSRange boldRange = NSMakeRange(0, [nameCallout length]);
+        
+        UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:16.0]; 
+        CTFontRef font = CTFontCreateWithName((CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
+        if (font && boldRange.location != NSNotFound)
+        {
+            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)font range:boldRange];
+            [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
+            CFRelease(font);
+        }
+        
+        return mutableAttributedString;
+    }];    
+    
     [self layoutSubviews];
 }
 
@@ -149,6 +177,20 @@
         [menu setTargetRect:targetFrame inView:self];
         [menu setMenuVisible:YES animated:YES];
     }
+}
+
+#pragma mark -
+#pragma mark TTTAttributedLabelDelegate methods
+
+- (void)attributedLabel:(TTTAttributedLabel_LIO *)label didSelectLinkWithURL:(NSURL *)url
+{
+    [[UIApplication sharedApplication] openURL:url];
+}
+
+- (void)attributedLabel:(TTTAttributedLabel_LIO *)label didSelectLinkWithPhoneNumber:(NSString *)phoneNumber
+{
+    NSURL *phoneUrl = [NSURL URLWithString:[NSString stringWithFormat:@"tel://%@", phoneNumber]];
+    [[UIApplication sharedApplication] openURL:phoneUrl];
 }
 
 @end

@@ -143,6 +143,7 @@
     inputField.autocorrectionType = UITextAutocorrectionTypeNo;
     inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
     inputField.returnKeyType = UIReturnKeySend;
     if ([[[LIOLookIOManager sharedLookIOManager] pendingEmailAddress] length])
         inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];

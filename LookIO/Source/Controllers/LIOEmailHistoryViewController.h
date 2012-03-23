@@ -7,27 +7,28 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "LIONiceTextField.h"
 
-/*
- @protocol LIOEmailHistoryViewControllerDelegate
- - (void)emailHistoryViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController;
- - (void)emailHistoryViewController:(LIOLeaveMessageViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail;
- - (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
- @end
- */
+@class LIOEmailHistoryViewController;
+
+@protocol LIOEmailHistoryViewControllerDelegate
+- (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController;
+- (void)emailHistoryViewController:(LIOEmailHistoryViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail;
+- (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
+@end
 
 @interface LIOEmailHistoryViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 {
-    UIView *bubbleView;
+    UINavigationBar *navBar;
     UIScrollView *scrollView;
-    LIONiceTextField *emailField;
+    UIImageView *fieldBackground;
+    UITextField *inputField;
+    UIButton *submitButton;
     BOOL keyboardShown;
     NSString *initialEmailAddress;
-    id delegate;
+    id<LIOEmailHistoryViewControllerDelegate> delegate;
 }
 
-@property(nonatomic, assign) id delegate;
+@property(nonatomic, assign) id<LIOEmailHistoryViewControllerDelegate> delegate;
 @property(nonatomic, retain) NSString *initialEmailAddress;
 
 @end

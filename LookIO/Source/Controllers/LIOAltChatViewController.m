@@ -15,6 +15,8 @@
 #import "LIOHeaderBarView.h"
 #import "LIOAboutViewController.h"
 #import "LIODismissalBarView.h"
+#import "LIOEmailHistoryViewController.h"
+#import "LIOLeaveMessageViewController.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -122,7 +124,7 @@
     emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
     emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [emailConvoButton setTitle:@"Email Convo" forState:UIControlStateNormal];
+    [emailConvoButton setTitle:@"Email Chat" forState:UIControlStateNormal];
     [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = emailConvoButton.frame;
     aFrame.size.width = 92.0;
@@ -183,8 +185,11 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
+
+    tableView.delegate = nil;
+    tableView.dataSource = nil;
     [tableView release];
+    
     [background release];
     [pendingChatText release];
     [initialChatText release];
@@ -281,27 +286,35 @@
 
 - (void)performDismissalAnimation
 {
-    /*
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     
-    CGRect targetFrame = backgroundView.frame;
-    targetFrame.origin.x = self.view.bounds.size.width;
+    background.alpha = 1.0;
     
     [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
-                         backgroundView.frame = targetFrame;
+                         background.alpha = 0.0;
+                         
+                         tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+                         headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+                         inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
+                         dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
                      }
                      completion:^(BOOL finished) {
-                         [delegate altChatViewControllerDidFinishDismissalAnimation:self];
+                         double delayInSeconds = 0.1;
+                         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                         dispatch_after(popTime, dispatch_get_main_queue(), ^{
+                             [delegate altChatViewControllerDidFinishDismissalAnimation:self];
+                         });
                      }];
-     */
 }
 
 - (void)scrollToBottom
 {
     double delayInSeconds = 0.75;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(){
         NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     });
@@ -341,7 +354,7 @@
         expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
         return expandingFooter;
     }
-    
+     
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
     LIOChatBubbleView *aBubble = (LIOChatBubbleView *)[aCell viewWithTag:LIOAltChatViewControllerTableViewCellBubbleViewTag];
     if (nil == aCell)
@@ -360,10 +373,12 @@
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
+        aBubble.senderName = @"Me";
     }
     else
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
+        aBubble.senderName = aMessage.senderName;
     }
     
     [aBubble populateMessageViewWithText:aMessage.text];
@@ -422,7 +437,9 @@
 
 - (void)emailConvoButtonWasTapped
 {
-    [delegate altChatViewControllerDidTapEmailButton:self];
+    LIOEmailHistoryViewController *aController = [[[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    aController.delegate = self;
+    [self presentModalViewController:aController animated:YES];
 }
 
 - (void)endSessionButtonWasTapped
@@ -487,9 +504,8 @@
         tableView.frame = tableFrame;
         headerBar.frame = headerFrame;
     [UIView commitAnimations];
-    
+
     [self reloadMessages];
-    [self scrollToBottom];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
@@ -512,7 +528,7 @@
     [animationCurveValue getValue:&animationCurve];
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey];
-    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue]; //[self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
@@ -527,25 +543,34 @@
     
     CGRect headerFrame = headerBar.frame;
     headerFrame.origin.y = 0.0;
-    
+
+    CGFloat jitterCorrection = 0.0;
     CGRect tableFrame = tableView.frame;
     tableFrame.origin.y = 32.0;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
+    {
         tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
+        jitterCorrection = 32.0;
+    }
     else
         tableFrame.size.height += keyboardHeight - 15.0;
+    
+    CGPoint previousOffset = tableView.contentOffset;
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
         inputBar.frame = inputBarFrame;
         dismissalBar.frame = dismissalBarFrame;
-        tableView.frame = tableFrame;
         headerBar.frame = headerFrame;
     [UIView commitAnimations];
     
     [self reloadMessages];
-    [self scrollToBottom];
+    
+    // Resizing the table causes contentOffset to jump to 0.
+    // Thus, we can't animate it.
+    tableView.frame = tableFrame;
+    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y + jitterCorrection);
 }
 
 #pragma mark -
@@ -586,7 +611,24 @@
     if ([aString length])
     {
         [delegate altChatViewControllerTypingDidStop:self];
-        [delegate altChatViewController:self didChatWithText:aString];
+        
+        if ([[LIOLookIOManager sharedLookIOManager] agentsAvailable])
+            [delegate altChatViewController:self didChatWithText:aString];
+        else
+        {
+            NSString *pendingEmailAddress = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
+            
+            LIOLeaveMessageViewController *aController = [[[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+            aController.delegate = self;
+            
+            if ([pendingEmailAddress length])
+                aController.initialEmailAddress = pendingEmailAddress;
+            
+            if ([pendingChatText length])
+                aController.initialMessage = pendingChatText;
+            
+            [self presentModalViewController:aController animated:YES];
+        }
     }
     
     [pendingChatText release];
@@ -644,6 +686,45 @@
 }
 
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark LIOEmailHistoryViewControllerDelegate methods
+
+- (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController
+{
+    [self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)emailHistoryViewController:(LIOEmailHistoryViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
+{
+    [self dismissModalViewControllerAnimated:YES];
+    
+    if ([anEmail length])
+        [delegate altChatViewController:self didEnterTranscriptEmail:anEmail];
+}
+
+- (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark LIOLeaveMessageViewControllerDelegate methods
+
+- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
+{
+    [self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
+{
+    [self dismissModalViewControllerAnimated:YES];
+}
+
+- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
 }

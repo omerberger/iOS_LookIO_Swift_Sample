@@ -13,6 +13,10 @@
 #import <sys/sysctl.h>
 #import <netinet/in.h>
 
+@interface LIOAnalyticsManager ()
+- (void)handleReachabilityCallbackWithFlags:(SCNetworkReachabilityFlags)flags;
+@end
+
 LIOAnalyticsManager *sharedAnalyticsManager = nil;
 
 static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
@@ -235,7 +239,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)beginLocationCheck
 {
-    if (NO == [self locationServicesEnabled])
+    if (NO == [self locationServicesEnabled] || [[[UIDevice currentDevice] systemVersion] floatValue] < 5.0)
         return;
     
     if (locationManager)
