@@ -21,7 +21,7 @@ then
 fi
 
 # Publish!
-cd ../LookIO-Libraries
+pushd ../LookIO-Libraries
 git checkout .
 git checkout dev
 rm -rf iOS/release/*
@@ -31,3 +31,8 @@ git commit -a -m "Jenkins build v$1"
 git push origin dev
 
 echo PUBLISHED
+
+popd
+zip -r ./bundle.zip ~/Development/LookIO-Libraries/iOS/release/LookIO.bundle/*
+python ./upload_bundle.py --version $1 --key $3 --secret $4
+rm -rf ./bundle.zip
