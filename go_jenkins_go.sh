@@ -34,5 +34,6 @@ echo PUBLISHED
 
 popd
 pwd
-zip -r ./bundle.zip . -i ../ios_lib/_LOOKIO_$1/LookIO.bundle/*
+zip -r ./bundle.zip ~/Development/LookIO-Libraries/iOS/release/LookIO.bundle/*
 python ./upload_bundle.py --version $1 --key $3 --secret $3
+rm -rm ./bundle.zip
