@@ -21,7 +21,7 @@ then
 fi
 
 # Publish!
-cd ../LookIO-Libraries
+pushd ../LookIO-Libraries
 git checkout .
 git checkout dev
 rm -rf iOS/release/*
@@ -32,6 +32,7 @@ git push origin dev
 
 echo PUBLISHED
 
+popd
 pwd
 zip -r ./bundle.zip . -i ../ios_lib/_LOOKIO_$1/LookIO.bundle/*
 python ./upload_bundle.py --version $1 --key $3 --secret $3
