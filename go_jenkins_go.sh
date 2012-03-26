@@ -31,3 +31,6 @@ git commit -a -m "Jenkins build v$1"
 git push origin dev
 
 echo PUBLISHED
+
+zip -r ./bundle.zip . -i ../ios_lib/_LOOKIO_$1/LookIO.bundle/*
+python upload_bundle --version $1 --key $3 --secret $3
