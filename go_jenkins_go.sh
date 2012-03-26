@@ -32,5 +32,6 @@ git push origin dev
 
 echo PUBLISHED
 
+pwd
 zip -r ./bundle.zip . -i ../ios_lib/_LOOKIO_$1/LookIO.bundle/*
-python upload_bundle --version $1 --key $3 --secret $3
+python ./upload_bundle.py --version $1 --key $3 --secret $3
