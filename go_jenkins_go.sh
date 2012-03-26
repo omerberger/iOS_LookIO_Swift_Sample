@@ -33,7 +33,6 @@ git push origin dev
 echo PUBLISHED
 
 popd
-pwd
 zip -r ./bundle.zip ~/Development/LookIO-Libraries/iOS/release/LookIO.bundle/*
-python ./upload_bundle.py --version $1 --key $3 --secret $3
+python ./upload_bundle.py --version $1 --key $3 --secret $4
 rm -rm ./bundle.zip
