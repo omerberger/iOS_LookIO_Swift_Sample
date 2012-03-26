@@ -39,7 +39,6 @@ typedef enum
 - (BOOL)locationServicesEnabled;
 - (BOOL)cellularNetworkInUse;
 - (BOOL)jailbroken;
-- (NSString *)distributionType;
 - (BOOL)pushEnabled;
 - (void)pumpReachabilityStatus;
 - (void)beginLocationCheck;

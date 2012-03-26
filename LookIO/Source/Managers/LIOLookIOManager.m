@@ -25,6 +25,7 @@
 #import "LIOControlButtonView.h"
 #import "LIOAnalyticsManager.h"
 #import "LIOChatMessage.h"
+#import "LIOBundleManager.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -131,89 +132,6 @@
 - (void)handleCallEvent:(CTCall *)aCall;
 
 @end
-
-NSBundle *lookioBundle()
-{
-    static NSBundle *bundle = nil;
-    
-    if (nil == bundle)
-    {
-        NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"LookIO.bundle"];
-        bundle = [[NSBundle bundleWithPath:path] retain];
-    }
-    
-    return bundle;
-}
-
-UIImage *lookioImage(NSString *path)
-{
-    NSBundle *bundle = lookioBundle();
-    if (bundle)
-    {
-        path = [path stringByDeletingPathExtension];
-        
-        if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
-        {
-            NSString *path2x = [path stringByAppendingString:@"@2x"];
-
-            // Try @2xPNG...
-            NSString *actualPath = [bundle pathForResource:path2x ofType:@"png"];
-            if ([actualPath length])
-            {
-                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-                if (fileData)
-                {
-                    UIImage *newImage = [UIImage imageWithData:fileData];
-                    return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
-                }
-            }
-                
-            // Try @2xJPG...
-            actualPath = [bundle pathForResource:path2x ofType:@"jpg"];
-            if ([actualPath length])
-            {
-                NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-                if (fileData)
-                {
-                    UIImage *newImage = [UIImage imageWithData:fileData];
-                    return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:2.0 orientation:UIImageOrientationUp] autorelease];
-                }
-            }
-        }
-        
-        NSString *actualPath = [bundle pathForResource:path ofType:@"png"];
-        if ([actualPath length])
-        {
-            // Try PNG...
-            NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-            if (fileData)
-                return [UIImage imageWithData:fileData];
-        }
-            
-        // Try JPG...
-        actualPath = [bundle pathForResource:path ofType:@"jpg"];
-        if ([actualPath length])
-        {
-            NSData *fileData = [NSData dataWithContentsOfFile:actualPath];
-            if (fileData)
-                return [UIImage imageWithData:fileData];
-        }
-        
-#ifdef DEBUG
-            NSLog(@"[LOOKIO] Couldn't find normal or @2x file for resource \"%@\" in LookIO bundle!", path);
-#endif
-    }
-    else
-    {
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] No LookIO bundle! Loading \"%@\" from main bundle...", path);
-#endif
-        return [UIImage imageNamed:path];
-    }
-    
-    // Never reached.
-    return nil;
-}
 
 NSString *uniqueIdentifier()
 {
@@ -425,8 +343,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     messageSeparatorData = [[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding] retain];
     
-    self.touchImage = lookioImage(@"LIODefaultTouch");
-    
     chatHistory = [[NSMutableArray alloc] init];
         
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
@@ -526,6 +442,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
     [self sendLaunchReport];
+    
+    //self.touchImage = lookioImage(@"LIODefaultTouch");
+    
+    [LIOBundleManager sharedBundleManager];
     
     NSLog(@"[LOOKIO] Loaded.");    
 }
@@ -1538,8 +1458,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = [enabledSetting retain];
         
+        BOOL trueEnabledStatus = [lastKnownEnabledStatus boolValue] && [[LIOBundleManager sharedBundleManager] isAvailable];
+        
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
+            [delegate lookIOManager:self didUpdateEnabledStatus:trueEnabledStatus];
     }
     
     [self refreshControlButtonVisibility];
@@ -1608,7 +1530,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
                                       [[UIDevice currentDevice] systemVersion], @"platform_version",
-                                      @"test", @"sdk_version",
+                                      LOOKIO_VERSION_STRING, @"sdk_version",
                                       nil];
     
     if (includesType)
@@ -1651,7 +1573,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
         [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
         
-        [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
+        //[detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
         
         if (lastKnownLocation)
         {
@@ -2549,7 +2471,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
-    return [lastKnownEnabledStatus boolValue];
+    return [lastKnownEnabledStatus boolValue] && [[LIOBundleManager sharedBundleManager] isAvailable];
 }
 
 @end

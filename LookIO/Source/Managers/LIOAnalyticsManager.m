@@ -217,6 +217,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 #endif
 }
 
+/*
 - (NSString *)distributionType
 {
 #if TARGET_IPHONE_SIMULATOR
@@ -231,6 +232,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         return @"app_store";
 #endif
 }
+*/
 
 - (BOOL)pushEnabled
 {

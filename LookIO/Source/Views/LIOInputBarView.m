@@ -8,7 +8,6 @@
 
 #import "LIOInputBarView.h"
 #import "LIOLookIOManager.h"
-#import "LIONiceTextField.h"
 
 @implementation LIOInputBarView
 

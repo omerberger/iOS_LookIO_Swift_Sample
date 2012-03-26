@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-UIImage *lookioImage(NSString *path);
+#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
 
 @class LIOLookIOManager;
 

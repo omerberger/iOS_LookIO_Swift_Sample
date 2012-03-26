@@ -11,6 +11,8 @@
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
 		D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */; };
+		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
+		D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */; };
 		D4ADC7A414F3211800713F29 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */; };
 		D4ADC7A514F3211800713F29 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */; };
 		D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */; };
@@ -35,8 +37,6 @@
 		D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */; };
 		D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C414F322B500713F29 /* LIOInputBarView.h */; };
 		D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C514F322B500713F29 /* LIOInputBarView.m */; };
-		D4ADC7D414F322B500713F29 /* LIONiceTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C614F322B500713F29 /* LIONiceTextField.h */; };
-		D4ADC7D514F322B500713F29 /* LIONiceTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C714F322B500713F29 /* LIONiceTextField.m */; };
 		D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DA14F322C300713F29 /* AsyncSocket.h */; };
 		D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7DB14F322C300713F29 /* AsyncSocket.m */; };
 		D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DD14F322C300713F29 /* NSData+Base64.h */; };
@@ -61,6 +61,8 @@
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
 		D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
+		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
+		D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBundleManager.m; path = Source/Managers/LIOBundleManager.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = Source/Controllers/LIOAboutViewController.h; sourceTree = "<group>"; };
 		D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = Source/Controllers/LIOAboutViewController.m; sourceTree = "<group>"; };
@@ -86,8 +88,6 @@
 		D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOHeaderBarView.m; path = Source/Views/LIOHeaderBarView.m; sourceTree = "<group>"; };
 		D4ADC7C414F322B500713F29 /* LIOInputBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInputBarView.h; path = Source/Views/LIOInputBarView.h; sourceTree = "<group>"; };
 		D4ADC7C514F322B500713F29 /* LIOInputBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInputBarView.m; path = Source/Views/LIOInputBarView.m; sourceTree = "<group>"; };
-		D4ADC7C614F322B500713F29 /* LIONiceTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONiceTextField.h; path = Source/Views/LIONiceTextField.h; sourceTree = "<group>"; };
-		D4ADC7C714F322B500713F29 /* LIONiceTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONiceTextField.m; path = Source/Views/LIONiceTextField.m; sourceTree = "<group>"; };
 		D4ADC7DA14F322C300713F29 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4ADC7DB14F322C300713F29 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D4ADC7DD14F322C300713F29 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
@@ -140,6 +140,8 @@
 				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
 				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
+				D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */,
+				D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */,
 			);
 			name = Managers;
 			sourceTree = "<group>";
@@ -157,8 +159,6 @@
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D4ADC7C414F322B500713F29 /* LIOInputBarView.h */,
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
-				D4ADC7C614F322B500713F29 /* LIONiceTextField.h */,
-				D4ADC7C714F322B500713F29 /* LIONiceTextField.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -279,7 +279,6 @@
 				D4ADC7CE14F322B500713F29 /* LIOControlButtonView.h in Headers */,
 				D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */,
 				D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */,
-				D4ADC7D414F322B500713F29 /* LIONiceTextField.h in Headers */,
 				D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */,
 				D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */,
 				D4ADC7F114F322C300713F29 /* JSON.h in Headers */,
@@ -291,6 +290,7 @@
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
 				D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */,
+				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,7 +373,6 @@
 				D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */,
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
 				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,
-				D4ADC7D514F322B500713F29 /* LIONiceTextField.m in Sources */,
 				D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */,
 				D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */,
 				D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */,
@@ -384,6 +383,7 @@
 				D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */,
 				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,
 				D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */,
+				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
