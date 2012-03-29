@@ -8,6 +8,7 @@
 
 #import "LIOInputBarView.h"
 #import "LIOLookIOManager.h"
+#import "LIOBundleManager.h"
 
 @implementation LIOInputBarView
 
@@ -21,7 +22,7 @@
     {
         self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
                 
-        UIImage *sendButtonImage = lookioImage(@"LIOStretchableSendButton");
+        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -36,7 +37,7 @@
         
         inputFieldBackground = [[UIImageView alloc] init];
         inputFieldBackground.userInteractionEnabled = YES;
-        inputFieldBackground.image = [lookioImage(@"LIOStretchableInputBar") stretchableImageWithLeftCapWidth:8 topCapHeight:8];
+        inputFieldBackground.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableInputBar"] stretchableImageWithLeftCapWidth:8 topCapHeight:8];
         CGRect aFrame = CGRectZero;
         aFrame.size.width = self.frame.size.width;
         aFrame.size.height = 37.0;

@@ -8,6 +8,7 @@
 
 #import "LIODismissalBarView.h"
 #import "LIOLookIOManager.h"
+#import "LIOBundleManager.h"
 
 @implementation LIODismissalBarView
 
@@ -20,7 +21,7 @@
     if (self)
     {
         separator = [[UIView alloc] init];
-        separator.backgroundColor = [UIColor colorWithPatternImage:lookioImage(@"LIORepeatableBlendedSeparatorBottom")];
+        separator.backgroundColor = [UIColor colorWithPatternImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableBlendedSeparatorBottom"]];
         separator.opaque = NO;
         CGRect aFrame = separator.frame;
         aFrame.size.height = 15.0;

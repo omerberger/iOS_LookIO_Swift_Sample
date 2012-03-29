@@ -8,15 +8,29 @@
 
 #import <UIKit/UIKit.h>
 
+// Notifications
+#define LIOBundleManagerBundleDownloadDidFinishNotification @"LIOBundleManagerBundleDownloadDidFinishNotification"
+
+// UserInfo keys
+#define LIOBundleManagerErrorKey @"LIOBundleManagerErrorKey"
+
 @class LIOBundleManager;
 
-@interface LIOBundleManager : NSObject
+@interface LIOBundleManager : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 {
-    NSBundle *bundle;
+    NSBundle *lioBundle;
+    NSURLRequest *bundleDownloadRequest;
+    NSURLConnection *bundleDownloadConnection;
+    NSInteger bundleDownloadResponseCode;
+    NSOutputStream *bundleDownloadOutputStream;
+    UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
 }
 
-@property(nonatomic, readonly, getter=isAvailable) BOOL available;
+@property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
 
 + (LIOBundleManager *)sharedBundleManager;
+- (void)findBundle;
+- (UIImage *)imageNamed:(NSString *)aString;
+- (BOOL)isAvailable;
 
 @end

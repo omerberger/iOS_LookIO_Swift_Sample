@@ -9,6 +9,7 @@
 #import "LIOHeaderBarView.h"
 #import "LIOLookIOManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOBundleManager.h"
 
 @implementation LIOHeaderBarView
 
@@ -21,7 +22,7 @@
     if (self)
     {        
         separator = [[UIView alloc] init];
-        separator.backgroundColor = [UIColor colorWithPatternImage:lookioImage(@"LIORepeatableBlendedSeparatorTop")];
+        separator.backgroundColor = [UIColor colorWithPatternImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableBlendedSeparatorTop"]];
         separator.opaque = NO;
         CGRect aFrame = separator.frame;
         aFrame.size.height = 15.0;
@@ -39,7 +40,7 @@
         [adLabel sizeToFit];
         [self addSubview:adLabel];
         
-        tinyLogo = [[UIImageView alloc] initWithImage:lookioImage(@"LIOHeaderBarTinyLogo")];
+        tinyLogo = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]];
         [self addSubview:tinyLogo];
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
@@ -52,7 +53,7 @@
                 
         plusButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [plusButton setBackgroundImage:lookioImage(@"LIOHeaderPlusIcon") forState:UIControlStateNormal];
+        [plusButton setBackgroundImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderPlusIcon"] forState:UIControlStateNormal];
         [plusButton sizeToFit];
         aFrame = plusButton.frame;
         aFrame.size.height = 15.0;

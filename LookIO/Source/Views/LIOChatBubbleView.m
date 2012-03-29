@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLookIOManager.h"
 #import "TTTAttributedLabel.h"
+#import "LIOBundleManager.h"
 
 @implementation LIOChatBubbleView
 
@@ -22,7 +23,7 @@
     
     if (self)
     {
-        UIImage *stretchableBubble = [lookioImage(@"LIOStretchableChatBubble") stretchableImageWithLeftCapWidth:16 topCapHeight:36];
+        UIImage *stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:36];
         backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
         [self addSubview:backgroundImage];
         
@@ -82,7 +83,7 @@
         if (0 == [senderName length])
             return mutableAttributedString;
         
-        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]];
+        NSAttributedString *nameCallout = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]] autorelease];
         [mutableAttributedString insertAttributedString:nameCallout atIndex:0];
         
         NSRange boldRange = NSMakeRange(0, [nameCallout length]);

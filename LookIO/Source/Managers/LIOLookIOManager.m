@@ -26,6 +26,7 @@
 #import "LIOAnalyticsManager.h"
 #import "LIOChatMessage.h"
 #import "LIOBundleManager.h"
+#import "LIOInterstitialViewController.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -70,7 +71,7 @@
 @class CTCall, CTCallCenter;
 
 @interface LIOLookIOManager ()
-    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate>
+    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -97,6 +98,7 @@
     LIOAltChatViewController *altChatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
+    LIOInterstitialViewController *interstitialViewController;
     NSString *pendingEmailAddress;
     NSString *friendlyName;
     NSMutableDictionary *sessionExtras;
@@ -443,8 +445,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self sendLaunchReport];
     
-    //self.touchImage = lookioImage(@"LIODefaultTouch");
-    
     [LIOBundleManager sharedBundleManager];
     
     NSLog(@"[LOOKIO] Loaded.");    
@@ -578,6 +578,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [emailHistoryViewController.view removeFromSuperview];
     [emailHistoryViewController release];
     emailHistoryViewController = nil;
+    
+    [interstitialViewController.view removeFromSuperview];
+    [interstitialViewController release];
+    interstitialViewController = nil;
 
     [callCenter release];
     callCenter = nil;
@@ -621,7 +625,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
     
-    if (altChatViewController || leaveMessageViewController || emailHistoryViewController)
+    if (altChatViewController || leaveMessageViewController || emailHistoryViewController || interstitialViewController)
     {
         if (nil == previousKeyWindow)
         {
@@ -743,7 +747,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [lookioWindow makeKeyAndVisible];
     }
     
-    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController)
+    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController || interstitialViewController)
         return;
     
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -793,10 +797,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     });
 }
 
-- (void)showChat
+- (void)showInterstitialAnimated:(BOOL)animated
+{
+    if (interstitialViewController)
+        return;
+    
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+    
+    interstitialViewController = [[LIOInterstitialViewController alloc] initWithNibName:nil bundle:nil];
+    interstitialViewController.delegate = self;
+    [lookioWindow addSubview:interstitialViewController.view];
+    [self rejiggerWindows];
+    
+    if (animated)
+        [interstitialViewController performRevealAnimation];
+    
+    [[LIOBundleManager sharedBundleManager] findBundle];
+}
+
+- (void)showChatAnimated:(BOOL)animated
 {
     if (altChatViewController)
         return;
+    
+    if (NO == [[LIOBundleManager sharedBundleManager] isAvailable])
+    {
+        [self showInterstitialAnimated:animated];
+        return;
+    }
     
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
@@ -807,7 +835,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lookioWindow addSubview:altChatViewController.view];
     [self rejiggerWindows];
     
-    [altChatViewController performRevealAnimation];
+    if (animated)
+        [altChatViewController performRevealAnimation];
     
     [pendingChatText release];
     pendingChatText = nil;
@@ -898,7 +927,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else
         firstMessage.text = @"Send a message to our live service reps for immediate help.";
     
-    [self showChat];
+    [self showChatAnimated:YES];
 }
 
 - (void)killConnection
@@ -991,7 +1020,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [emailHistoryViewController release];
             emailHistoryViewController = nil;
             
-            [self showChat];
+            [self showChatAnimated:YES];
         }
         else
         {
@@ -1010,6 +1039,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"cursor"])
     {
+        if (nil == touchImage)
+            self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
+        
         if (nil == cursorView)
         {
             UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
@@ -1050,6 +1082,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else if ([action isEqualToString:@"cursor_start"])
         {
             UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+            
+            if (nil == touchImage)
+                self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
             
             if (nil == cursorView)
             {
@@ -1127,7 +1162,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertAction = @"Go!";
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
                 
-                [self showChat];
+                [self showChatAnimated:NO];
             }
         }
         else if ([action isEqualToString:@"queued"])
@@ -1200,7 +1235,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (nil == clickView)
         {
-            clickView = [[UIImageView alloc] initWithImage:lookioImage(@"LIOClickIndicator")];
+            clickView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOClickIndicator"]];
             [keyWindow addSubview:clickView];
         }
         
@@ -1458,10 +1493,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = [enabledSetting retain];
         
-        BOOL trueEnabledStatus = [lastKnownEnabledStatus boolValue] && [[LIOBundleManager sharedBundleManager] isAvailable];
-        
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:trueEnabledStatus];
+            [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
     }
     
     [self refreshControlButtonVisibility];
@@ -1988,6 +2021,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
+#pragma mark LIOInterstitialViewControllerDelegate methods
+
+- (void)interstitialViewControllerWasDismissed:(LIOInterstitialViewController *)aController
+{
+    [interstitialViewController.view removeFromSuperview];
+    [interstitialViewController release];
+    interstitialViewController = nil;
+    
+    [self rejiggerWindows];
+}
+
+- (void)interstitialViewControllerWantsChatInterface:(LIOInterstitialViewController *)aController
+{
+    [interstitialViewController.view removeFromSuperview];
+    [interstitialViewController release];
+    interstitialViewController = nil;
+    
+    [self showChatAnimated:NO];
+}
+
+- (BOOL)interstitialViewController:(LIOInterstitialViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
 #pragma mark UIAlertViewDelegate methods
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
@@ -2172,7 +2231,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
         if (nil == leaveMessageViewController && nil == emailHistoryViewController && NO == screenshotsAllowed)
-            [self showChat];
+            [self showChatAnimated:NO];
     }
 
     [self refreshControlButtonVisibility];
@@ -2452,7 +2511,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonWasTapped
 {
-    [self showChat];
+    [self showChatAnimated:YES];
 }
 
 #pragma mark -
@@ -2461,7 +2520,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
 {
     if ([controlSocket isConnected] && introduced)
-        [self showChat];
+        [self showChatAnimated:YES];
     else
         [self beginSession];
 }
@@ -2471,7 +2530,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
-    return [lastKnownEnabledStatus boolValue] && [[LIOBundleManager sharedBundleManager] isAvailable];
+    return [lastKnownEnabledStatus boolValue];
 }
 
 @end

@@ -17,7 +17,6 @@ mkdir $TARGET_DIR
 
 echo "Building LookIO v$1 ($CONFIGURATION), please wait..."
 
-sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager.m
 sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager.h
 
 rm -rf LookIO/build

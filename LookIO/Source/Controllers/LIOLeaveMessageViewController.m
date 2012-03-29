@@ -9,6 +9,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLeaveMessageViewController.h"
 #import "LIOLookIOManager.h"
+#import "LIOBundleManager.h"
 
 @implementation LIOLeaveMessageViewController
 
@@ -21,9 +22,11 @@
     
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
+    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
+    
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
     {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutBackground.jpg")] autorelease];
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
         CGRect aFrame = backgroundView.frame;
         aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
         backgroundView.frame = aFrame;
@@ -32,7 +35,6 @@
     }
     else
     {
-        UIImage *backgroundImage = lookioImage(@"LIOAboutBackgroundForiPhone.jpg");
         UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
         backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [rootView addSubview:backgroundView];
@@ -96,7 +98,7 @@
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
     
-    UIImage *fieldImage = lookioImage(@"LIOAboutStretchableField");
+    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableField"];
     UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
     
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
@@ -157,7 +159,7 @@
     if ([initialMessage length])
         messageView.text = initialMessage;
     
-    UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableGreenButton"];
     UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];

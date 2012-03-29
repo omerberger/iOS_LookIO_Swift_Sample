@@ -9,6 +9,7 @@
 #import "LIOAboutViewController.h"
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLookIOManager.h"
+#import "LIOBundleManager.h"
 
 @interface LIOAboutViewController ()
 - (void)rejiggerInterface;
@@ -26,9 +27,11 @@
     
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
+    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
+    
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
     {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutBackground.jpg")] autorelease];
+        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
         CGRect aFrame = backgroundView.frame;
         aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
         backgroundView.frame = aFrame;
@@ -37,7 +40,6 @@
     }
     else
     {
-        UIImage *backgroundImage = lookioImage(@"LIOAboutBackgroundForiPhone.jpg");
         UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
         backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [rootView addSubview:backgroundView];
@@ -62,7 +64,7 @@
     navBar.delegate = self;
     [rootView addSubview:navBar];
     
-    UIImageView *logoView = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutTitle")] autorelease];
+    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
     aFrame = logoView.frame;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = navBar.frame.size.height + 5.0;
@@ -70,7 +72,7 @@
     logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:logoView];
     
-    UIImage *separatorImage = lookioImage(@"LIOAboutStretchableSeparator");
+    UIImage *separatorImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableSeparator"];
     UIImage *stretchableSeparatorImage = [separatorImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
     UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
@@ -116,7 +118,7 @@
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
     
-    UIImage *fieldImage = lookioImage(@"LIOAboutStretchableField");
+    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableField"];
     UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
 
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
@@ -149,7 +151,7 @@
         inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
-    UIImage *buttonImage = lookioImage(@"LIOAboutStretchableGreenButton");
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableGreenButton"];
     UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -189,7 +191,7 @@
     p1Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:p1Container];
     
-    UIImageView *bubbleIcon = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutPlusBubble")] autorelease];
+    UIImageView *bubbleIcon = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutPlusBubble"]] autorelease];
     [p1Container addSubview:bubbleIcon];
     
     header01 = [[UILabel alloc] init];
@@ -236,7 +238,7 @@
     p2Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:p2Container];
     
-    UIImageView *compassIcon = [[[UIImageView alloc] initWithImage:lookioImage(@"LIOAboutLookingGlass")] autorelease];
+    UIImageView *compassIcon = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutLookingGlass"]] autorelease];
     [p2Container addSubview:compassIcon];
     
     header02 = [[UILabel alloc] init];

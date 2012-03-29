@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOTimerProxy.h"
 #import "LIOLookIOManager.h"
+#import "LIOBundleManager.h"
 
 @implementation LIOControlButtonView
 
@@ -50,7 +51,11 @@
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
         
-        innerShadow = [[UIImageView alloc] initWithImage:lookioImage(@"LIOTabInnerShadow")];
+        if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
+            innerShadow = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] lioTabInnerShadow2x]];
+        else
+            innerShadow = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] lioTabInnerShadow]];
+        
         [self addSubview:innerShadow];
     }
     

@@ -17,6 +17,7 @@
 #import "LIODismissalBarView.h"
 #import "LIOEmailHistoryViewController.h"
 #import "LIOLeaveMessageViewController.h"
+#import "LIOBundleManager.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -43,12 +44,10 @@
 - (void)loadView
 {
     [super loadView];
-        
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-        background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPad")];
-    else
-        background = [[UIImageView alloc] initWithImage:lookioImage(@"LIOAltChatBackgroundForiPhone")];
     
+    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAltChatBackground"];
+    
+    background = [[UIImageView alloc] initWithImage:backgroundImage];
     background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:background];
     
@@ -99,8 +98,8 @@
     headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:headerBar];
     
-    UIImage *grayStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonGray") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
-    UIImage *redStretchableButtonImage = [lookioImage(@"LIOStretchableRecessedButtonRed") stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
     UIButton *aboutButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [aboutButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];

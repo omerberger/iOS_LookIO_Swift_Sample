@@ -7,12 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
+		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
 		D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
 		D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */; };
+		D486D7281521303B007C9AF8 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7151521303B007C9AF8 /* ioapi.c */; };
+		D486D7291521303B007C9AF8 /* ioapi.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7161521303B007C9AF8 /* ioapi.h */; };
+		D486D72A1521303B007C9AF8 /* mztools.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7171521303B007C9AF8 /* mztools.c */; };
+		D486D72B1521303B007C9AF8 /* mztools.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7181521303B007C9AF8 /* mztools.h */; };
+		D486D72C1521303B007C9AF8 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7191521303B007C9AF8 /* unzip.c */; };
+		D486D72D1521303B007C9AF8 /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71A1521303B007C9AF8 /* unzip.h */; };
+		D486D72E1521303B007C9AF8 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D71B1521303B007C9AF8 /* zip.c */; };
+		D486D72F1521303B007C9AF8 /* zip.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71C1521303B007C9AF8 /* zip.h */; };
+		D486D7301521303B007C9AF8 /* FileInZipInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71E1521303B007C9AF8 /* FileInZipInfo.h */; };
+		D486D7311521303B007C9AF8 /* FileInZipInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D71F1521303B007C9AF8 /* FileInZipInfo.m */; };
+		D486D7321521303B007C9AF8 /* ZipException.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7201521303B007C9AF8 /* ZipException.h */; };
+		D486D7331521303B007C9AF8 /* ZipException.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7211521303B007C9AF8 /* ZipException.m */; };
+		D486D7341521303B007C9AF8 /* ZipFile.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7221521303B007C9AF8 /* ZipFile.h */; };
+		D486D7351521303B007C9AF8 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7231521303B007C9AF8 /* ZipFile.m */; };
+		D486D7361521303B007C9AF8 /* ZipReadStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7241521303B007C9AF8 /* ZipReadStream.h */; };
+		D486D7371521303B007C9AF8 /* ZipReadStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7251521303B007C9AF8 /* ZipReadStream.m */; };
+		D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7261521303B007C9AF8 /* ZipWriteStream.h */; };
+		D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7271521303B007C9AF8 /* ZipWriteStream.m */; };
 		D4ADC7A414F3211800713F29 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */; };
 		D4ADC7A514F3211800713F29 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */; };
 		D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */; };
@@ -57,12 +77,32 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
+		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
 		D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
 		D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBundleManager.m; path = Source/Managers/LIOBundleManager.m; sourceTree = "<group>"; };
+		D486D7151521303B007C9AF8 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
+		D486D7161521303B007C9AF8 /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
+		D486D7171521303B007C9AF8 /* mztools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools.c; sourceTree = "<group>"; };
+		D486D7181521303B007C9AF8 /* mztools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools.h; sourceTree = "<group>"; };
+		D486D7191521303B007C9AF8 /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
+		D486D71A1521303B007C9AF8 /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
+		D486D71B1521303B007C9AF8 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
+		D486D71C1521303B007C9AF8 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		D486D71E1521303B007C9AF8 /* FileInZipInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileInZipInfo.h; sourceTree = "<group>"; };
+		D486D71F1521303B007C9AF8 /* FileInZipInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileInZipInfo.m; sourceTree = "<group>"; };
+		D486D7201521303B007C9AF8 /* ZipException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipException.h; sourceTree = "<group>"; };
+		D486D7211521303B007C9AF8 /* ZipException.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipException.m; sourceTree = "<group>"; };
+		D486D7221521303B007C9AF8 /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
+		D486D7231521303B007C9AF8 /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
+		D486D7241521303B007C9AF8 /* ZipReadStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipReadStream.h; sourceTree = "<group>"; };
+		D486D7251521303B007C9AF8 /* ZipReadStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipReadStream.m; sourceTree = "<group>"; };
+		D486D7261521303B007C9AF8 /* ZipWriteStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipWriteStream.h; sourceTree = "<group>"; };
+		D486D7271521303B007C9AF8 /* ZipWriteStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipWriteStream.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = Source/Controllers/LIOAboutViewController.h; sourceTree = "<group>"; };
 		D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = Source/Controllers/LIOAboutViewController.m; sourceTree = "<group>"; };
@@ -127,6 +167,8 @@
 				D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */,
 				D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */,
 				D4ADC7A114F3211800713F29 /* LIOEmailHistoryViewController.m */,
+				D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */,
+				D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */,
 				D4ADC7A214F3211800713F29 /* LIOLeaveMessageViewController.h */,
 				D4ADC7A314F3211800713F29 /* LIOLeaveMessageViewController.m */,
 			);
@@ -138,10 +180,10 @@
 			children = (
 				D4ADC7AC14F3215900713F29 /* LIOAnalyticsManager.h */,
 				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
-				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
-				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
 				D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */,
 				D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */,
+				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
+				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
 			);
 			name = Managers;
 			sourceTree = "<group>";
@@ -183,6 +225,38 @@
 			path = TTTAttributedLabel;
 			sourceTree = "<group>";
 		};
+		D486D7141521303B007C9AF8 /* MiniZip */ = {
+			isa = PBXGroup;
+			children = (
+				D486D7151521303B007C9AF8 /* ioapi.c */,
+				D486D7161521303B007C9AF8 /* ioapi.h */,
+				D486D7171521303B007C9AF8 /* mztools.c */,
+				D486D7181521303B007C9AF8 /* mztools.h */,
+				D486D7191521303B007C9AF8 /* unzip.c */,
+				D486D71A1521303B007C9AF8 /* unzip.h */,
+				D486D71B1521303B007C9AF8 /* zip.c */,
+				D486D71C1521303B007C9AF8 /* zip.h */,
+			);
+			path = MiniZip;
+			sourceTree = "<group>";
+		};
+		D486D71D1521303B007C9AF8 /* Objective-Zip */ = {
+			isa = PBXGroup;
+			children = (
+				D486D71E1521303B007C9AF8 /* FileInZipInfo.h */,
+				D486D71F1521303B007C9AF8 /* FileInZipInfo.m */,
+				D486D7201521303B007C9AF8 /* ZipException.h */,
+				D486D7211521303B007C9AF8 /* ZipException.m */,
+				D486D7221521303B007C9AF8 /* ZipFile.h */,
+				D486D7231521303B007C9AF8 /* ZipFile.m */,
+				D486D7241521303B007C9AF8 /* ZipReadStream.h */,
+				D486D7251521303B007C9AF8 /* ZipReadStream.m */,
+				D486D7261521303B007C9AF8 /* ZipWriteStream.h */,
+				D486D7271521303B007C9AF8 /* ZipWriteStream.m */,
+			);
+			path = "Objective-Zip";
+			sourceTree = "<group>";
+		};
 		D48ABEE51404607500835205 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -205,6 +279,8 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				D486D7141521303B007C9AF8 /* MiniZip */,
+				D486D71D1521303B007C9AF8 /* Objective-Zip */,
 				D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */,
 				D4ADC7D914F322C300713F29 /* CocoaAsyncSocket */,
 				D4ADC7DC14F322C300713F29 /* NSData+Base64 */,
@@ -291,6 +367,16 @@
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
 				D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
+				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
+				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
+				D486D72D1521303B007C9AF8 /* unzip.h in Headers */,
+				D486D72F1521303B007C9AF8 /* zip.h in Headers */,
+				D486D7301521303B007C9AF8 /* FileInZipInfo.h in Headers */,
+				D486D7321521303B007C9AF8 /* ZipException.h in Headers */,
+				D486D7341521303B007C9AF8 /* ZipFile.h in Headers */,
+				D486D7361521303B007C9AF8 /* ZipReadStream.h in Headers */,
+				D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */,
+				D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,7 +438,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Version 2.0 (updated for Xcode 4, with some fixes)\n# Changes:\n#    - Works with xcode 4, even when running xcode 3 projects (Workarounds for apple bugs)\n#    - Faster / better: only runs lipo once, instead of once per recursion\n#    - Added some debugging statemetns that can be switched on/off by changing the DEBUG_THIS_SCRIPT variable to \"true\"\n#    - Fixed some typos\n# \n# Purpose:\n#   Create a static library for iPhone from within XCode\n#   Because Apple staff DELIBERATELY broke Xcode to make this impossible from the GUI (Xcode 3.2.3 specifically states this in the Release notes!)\n#   ...no, I don't understand why they did this!\n#\n# Author: Adam Martin - http://twitter.com/redglassesapps\n# Based on: original script from Eonil (main changes: Eonil's script WILL NOT WORK in Xcode GUI - it WILL CRASH YOUR COMPUTER)\n#\n# More info: see this Stack Overflow question: http://stackoverflow.com/questions/3520977/build-fat-static-library-device-simulator-using-xcode-and-sdk-4\n\n#################[ Tests: helps workaround any future bugs in Xcode ]########\n#\nDEBUG_THIS_SCRIPT=\"false\"\n\nif [ $DEBUG_THIS_SCRIPT = \"true\" ]\nthen\necho \"########### TESTS #############\"\necho \"Use the following variables when debugging this script; note that they may change on recursions\"\necho \"BUILD_DIR = $BUILD_DIR\"\necho \"BUILD_ROOT = $BUILD_ROOT\"\necho \"CONFIGURATION_BUILD_DIR = $CONFIGURATION_BUILD_DIR\"\necho \"BUILT_PRODUCTS_DIR = $BUILT_PRODUCTS_DIR\"\necho \"CONFIGURATION_TEMP_DIR = $CONFIGURATION_TEMP_DIR\"\necho \"TARGET_BUILD_DIR = $TARGET_BUILD_DIR\"\nfi\n\n#####################[ part 1 ]##################\n# First, work out the BASESDK version number (NB: Apple ought to report this, but they hide it)\n#    (incidental: searching for substrings in sh is a nightmare! Sob)\n\nSDK_VERSION=$(echo ${SDK_NAME} | grep -o '.\\{3\\}$')\n\n# Next, work out if we're in SIM or DEVICE\n\nif [ ${PLATFORM_NAME} = \"iphonesimulator\" ]\nthen\nOTHER_SDK_TO_BUILD=iphoneos${SDK_VERSION}\nelse\nOTHER_SDK_TO_BUILD=iphonesimulator${SDK_VERSION}\nfi\n\necho \"XCode has selected SDK: ${PLATFORM_NAME} with version: ${SDK_VERSION} (although back-targetting: ${IPHONEOS_DEPLOYMENT_TARGET})\"\necho \"...therefore, OTHER_SDK_TO_BUILD = ${OTHER_SDK_TO_BUILD}\"\n#\n#####################[ end of part 1 ]##################\n\n#####################[ part 2 ]##################\n#\n# IF this is the original invocation, invoke WHATEVER other builds are required\n#\n# Xcode is already building ONE target...\n#\n# ...but this is a LIBRARY, so Apple is wrong to set it to build just one.\n# ...we need to build ALL targets\n# ...we MUST NOT re-build the target that is ALREADY being built: Xcode WILL CRASH YOUR COMPUTER if you try this (infinite recursion!)\n#\n#\n# So: build ONLY the missing platforms/configurations.\n\nif [ \"true\" == ${ALREADYINVOKED:-false} ]\nthen\necho \"RECURSION: I am NOT the root invocation, so I'm NOT going to recurse\"\nelse\n# CRITICAL:\n# Prevent infinite recursion (Xcode sucks)\nexport ALREADYINVOKED=\"true\"\n\necho \"RECURSION: I am the root ... recursing all missing build targets NOW...\"\necho \"RECURSION: ...about to invoke: xcodebuild -configuration \\\"${CONFIGURATION}\\\" -target \\\"${TARGET_NAME}\\\" -sdk \\\"${OTHER_SDK_TO_BUILD}\\\" ${ACTION} RUN_CLANG_STATIC_ANALYZER=NO\"\nxcodebuild -configuration \"${CONFIGURATION}\" -target \"${TARGET_NAME}\" -sdk \"${OTHER_SDK_TO_BUILD}\" ${ACTION} RUN_CLANG_STATIC_ANALYZER=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\"\n\nACTION=\"build\"\n\n#Merge all platform binaries as a fat binary for each configurations.\n\n# Calculate where the (multiple) built files are coming from:\nCURRENTCONFIG_DEVICE_DIR=${SYMROOT}/${CONFIGURATION}-iphoneos\nCURRENTCONFIG_SIMULATOR_DIR=${SYMROOT}/${CONFIGURATION}-iphonesimulator\n\necho \"Taking device build from: ${CURRENTCONFIG_DEVICE_DIR}\"\necho \"Taking simulator build from: ${CURRENTCONFIG_SIMULATOR_DIR}\"\n\nCREATING_UNIVERSAL_DIR=${SYMROOT}/${CONFIGURATION}-universal\necho \"...I will output a universal build to: ${CREATING_UNIVERSAL_DIR}\"\n\n# ... remove the products of previous runs of this script\n#      NB: this directory is ONLY created by this script - it should be safe to delete!\n\nrm -rf \"${CREATING_UNIVERSAL_DIR}\"\nmkdir \"${CREATING_UNIVERSAL_DIR}\"\n\n#\necho \"lipo: for current configuration (${CONFIGURATION}) creating output file: ${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\"\nlipo -create -output \"${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\" \"${CURRENTCONFIG_DEVICE_DIR}/${EXECUTABLE_NAME}\" \"${CURRENTCONFIG_SIMULATOR_DIR}/${EXECUTABLE_NAME}\"\n\n#########\n#\n# Added: StackOverflow suggestion to also copy \"include\" files\n#    (untested, but should work OK)\n#\nif [ -d \"${CURRENTCONFIG_DEVICE_DIR}/usr/local/include\" ]\nthen\nmkdir -p \"${CREATING_UNIVERSAL_DIR}/usr/local/include\"\n# * needs to be outside the double quotes?\ncp \"${CURRENTCONFIG_DEVICE_DIR}/usr/local/include/\"* \"${CREATING_UNIVERSAL_DIR}/usr/local/include\"\nfi\nfi\n\nrm -rf ${SRCROOT}/../Sample/libLookIO_dist\nmkdir ${SRCROOT}/../Sample/libLookIO_dist\nmkdir ${SRCROOT}/../Sample/libLookIO_dist/LookIO.bundle\ncp ${SRCROOT}/Resources/Images/* ${SRCROOT}/../Sample/libLookIO_dist/LookIO.bundle\ncp \"${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\" ${SRCROOT}/../Sample/libLookIO_dist\ncp ${SRCROOT}/Source/Managers/LIOLookIOManager.h ${SRCROOT}/../Sample/libLookIO_dist";
+			shellScript = "# Version 2.0 (updated for Xcode 4, with some fixes)\n# Changes:\n#    - Works with xcode 4, even when running xcode 3 projects (Workarounds for apple bugs)\n#    - Faster / better: only runs lipo once, instead of once per recursion\n#    - Added some debugging statemetns that can be switched on/off by changing the DEBUG_THIS_SCRIPT variable to \"true\"\n#    - Fixed some typos\n# \n# Purpose:\n#   Create a static library for iPhone from within XCode\n#   Because Apple staff DELIBERATELY broke Xcode to make this impossible from the GUI (Xcode 3.2.3 specifically states this in the Release notes!)\n#   ...no, I don't understand why they did this!\n#\n# Author: Adam Martin - http://twitter.com/redglassesapps\n# Based on: original script from Eonil (main changes: Eonil's script WILL NOT WORK in Xcode GUI - it WILL CRASH YOUR COMPUTER)\n#\n# More info: see this Stack Overflow question: http://stackoverflow.com/questions/3520977/build-fat-static-library-device-simulator-using-xcode-and-sdk-4\n\n#################[ Tests: helps workaround any future bugs in Xcode ]########\n#\nDEBUG_THIS_SCRIPT=\"false\"\n\nif [ $DEBUG_THIS_SCRIPT = \"true\" ]\nthen\necho \"########### TESTS #############\"\necho \"Use the following variables when debugging this script; note that they may change on recursions\"\necho \"BUILD_DIR = $BUILD_DIR\"\necho \"BUILD_ROOT = $BUILD_ROOT\"\necho \"CONFIGURATION_BUILD_DIR = $CONFIGURATION_BUILD_DIR\"\necho \"BUILT_PRODUCTS_DIR = $BUILT_PRODUCTS_DIR\"\necho \"CONFIGURATION_TEMP_DIR = $CONFIGURATION_TEMP_DIR\"\necho \"TARGET_BUILD_DIR = $TARGET_BUILD_DIR\"\nfi\n\n#####################[ part 1 ]##################\n# First, work out the BASESDK version number (NB: Apple ought to report this, but they hide it)\n#    (incidental: searching for substrings in sh is a nightmare! Sob)\n\nSDK_VERSION=$(echo ${SDK_NAME} | grep -o '.\\{3\\}$')\n\n# Next, work out if we're in SIM or DEVICE\n\nif [ ${PLATFORM_NAME} = \"iphonesimulator\" ]\nthen\nOTHER_SDK_TO_BUILD=iphoneos${SDK_VERSION}\nelse\nOTHER_SDK_TO_BUILD=iphonesimulator${SDK_VERSION}\nfi\n\necho \"XCode has selected SDK: ${PLATFORM_NAME} with version: ${SDK_VERSION} (although back-targetting: ${IPHONEOS_DEPLOYMENT_TARGET})\"\necho \"...therefore, OTHER_SDK_TO_BUILD = ${OTHER_SDK_TO_BUILD}\"\n#\n#####################[ end of part 1 ]##################\n\n#####################[ part 2 ]##################\n#\n# IF this is the original invocation, invoke WHATEVER other builds are required\n#\n# Xcode is already building ONE target...\n#\n# ...but this is a LIBRARY, so Apple is wrong to set it to build just one.\n# ...we need to build ALL targets\n# ...we MUST NOT re-build the target that is ALREADY being built: Xcode WILL CRASH YOUR COMPUTER if you try this (infinite recursion!)\n#\n#\n# So: build ONLY the missing platforms/configurations.\n\nif [ \"true\" == ${ALREADYINVOKED:-false} ]\nthen\necho \"RECURSION: I am NOT the root invocation, so I'm NOT going to recurse\"\nelse\n# CRITICAL:\n# Prevent infinite recursion (Xcode sucks)\nexport ALREADYINVOKED=\"true\"\n\necho \"RECURSION: I am the root ... recursing all missing build targets NOW...\"\necho \"RECURSION: ...about to invoke: xcodebuild -configuration \\\"${CONFIGURATION}\\\" -target \\\"${TARGET_NAME}\\\" -sdk \\\"${OTHER_SDK_TO_BUILD}\\\" ${ACTION} RUN_CLANG_STATIC_ANALYZER=NO\"\nxcodebuild -configuration \"${CONFIGURATION}\" -target \"${TARGET_NAME}\" -sdk \"${OTHER_SDK_TO_BUILD}\" ${ACTION} RUN_CLANG_STATIC_ANALYZER=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\"\n\nACTION=\"build\"\n\n#Merge all platform binaries as a fat binary for each configurations.\n\n# Calculate where the (multiple) built files are coming from:\nCURRENTCONFIG_DEVICE_DIR=${SYMROOT}/${CONFIGURATION}-iphoneos\nCURRENTCONFIG_SIMULATOR_DIR=${SYMROOT}/${CONFIGURATION}-iphonesimulator\n\necho \"Taking device build from: ${CURRENTCONFIG_DEVICE_DIR}\"\necho \"Taking simulator build from: ${CURRENTCONFIG_SIMULATOR_DIR}\"\n\nCREATING_UNIVERSAL_DIR=${SYMROOT}/${CONFIGURATION}-universal\necho \"...I will output a universal build to: ${CREATING_UNIVERSAL_DIR}\"\n\n# ... remove the products of previous runs of this script\n#      NB: this directory is ONLY created by this script - it should be safe to delete!\n\nrm -rf \"${CREATING_UNIVERSAL_DIR}\"\nmkdir \"${CREATING_UNIVERSAL_DIR}\"\n\n#\necho \"lipo: for current configuration (${CONFIGURATION}) creating output file: ${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\"\nlipo -create -output \"${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\" \"${CURRENTCONFIG_DEVICE_DIR}/${EXECUTABLE_NAME}\" \"${CURRENTCONFIG_SIMULATOR_DIR}/${EXECUTABLE_NAME}\"\n\n#########\n#\n# Added: StackOverflow suggestion to also copy \"include\" files\n#    (untested, but should work OK)\n#\nif [ -d \"${CURRENTCONFIG_DEVICE_DIR}/usr/local/include\" ]\nthen\nmkdir -p \"${CREATING_UNIVERSAL_DIR}/usr/local/include\"\n# * needs to be outside the double quotes?\ncp \"${CURRENTCONFIG_DEVICE_DIR}/usr/local/include/\"* \"${CREATING_UNIVERSAL_DIR}/usr/local/include\"\nfi\nfi\n\nrm -rf ${SRCROOT}/../Sample/libLookIO_dist\nmkdir ${SRCROOT}/../Sample/libLookIO_dist\n#mkdir ${SRCROOT}/../Sample/libLookIO_dist/LookIO.bundle\n#cp ${SRCROOT}/Resources/Images/* ${SRCROOT}/../Sample/libLookIO_dist/LookIO.bundle\ncp \"${CREATING_UNIVERSAL_DIR}/${EXECUTABLE_NAME}\" ${SRCROOT}/../Sample/libLookIO_dist\ncp ${SRCROOT}/Source/Managers/LIOLookIOManager.h ${SRCROOT}/../Sample/libLookIO_dist";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -384,6 +470,16 @@
 				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,
 				D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */,
 				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
+				D486D7281521303B007C9AF8 /* ioapi.c in Sources */,
+				D486D72A1521303B007C9AF8 /* mztools.c in Sources */,
+				D486D72C1521303B007C9AF8 /* unzip.c in Sources */,
+				D486D72E1521303B007C9AF8 /* zip.c in Sources */,
+				D486D7311521303B007C9AF8 /* FileInZipInfo.m in Sources */,
+				D486D7331521303B007C9AF8 /* ZipException.m in Sources */,
+				D486D7351521303B007C9AF8 /* ZipFile.m in Sources */,
+				D486D7371521303B007C9AF8 /* ZipReadStream.m in Sources */,
+				D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */,
+				D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -393,7 +489,6 @@
 		D48ABEEF1404607500835205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = (
 					i386,
 					armv7,
@@ -424,7 +519,6 @@
 		D48ABEF01404607500835205 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = (
 					i386,
 					armv7,
