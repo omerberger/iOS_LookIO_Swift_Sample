@@ -16,7 +16,7 @@
 
 @class LIOBundleManager;
 
-@interface LIOBundleManager : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
+@interface LIOBundleManager : NSObject
 {
     NSBundle *lioBundle;
     NSURLRequest *bundleDownloadRequest;

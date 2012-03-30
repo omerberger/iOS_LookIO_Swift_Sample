@@ -20,6 +20,7 @@
 		490E959814C3E371007BFD8C /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959414C3E371007BFD8C /* CFNetwork.framework */; };
 		490E959914C3E371007BFD8C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959514C3E371007BFD8C /* QuartzCore.framework */; };
 		490E959A14C3E371007BFD8C /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E959614C3E371007BFD8C /* SystemConfiguration.framework */; };
+		D403F78A1524D9E900101941 /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D4D5B77514F454F100FC4E4C /* LookIO.bundle */; };
 		D486D6EF151BC33E007C9AF8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D6EE151BC33E007C9AF8 /* CoreText.framework */; };
 		D486D6F1151BEDA3007C9AF8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D6EE151BC33E007C9AF8 /* CoreText.framework */; };
 		D486D748152138FA007C9AF8 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D747152138FA007C9AF8 /* libz.dylib */; };
@@ -265,6 +266,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D403F78A1524D9E900101941 /* LookIO.bundle in Resources */,
 				490E957E14C3E25E007BFD8C /* InfoPlist.strings in Resources */,
 				490E958A14C3E25F007BFD8C /* SampleViewController_iPhone.xib in Resources */,
 				490E958D14C3E25F007BFD8C /* SampleViewController_iPad.xib in Resources */,

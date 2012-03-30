@@ -23,6 +23,8 @@
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
+    UILabel *adLabel;
+    UIImageView *adLogo;
     UIButton *sendButton;
     UITextView *inputField;
     UIImageView *inputFieldBackground;

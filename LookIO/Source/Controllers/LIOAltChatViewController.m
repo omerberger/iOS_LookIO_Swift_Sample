@@ -45,58 +45,84 @@
 {
     [super loadView];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAltChatBackground"];
     
     background = [[UIImageView alloc] initWithImage:backgroundImage];
     background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:background];
     
-    CGRect aFrame = self.view.bounds;
-    aFrame.origin.y = 32.0;
-    aFrame.size.height -= 112.0;
+    CGRect tableViewFrame = self.view.bounds;
+    UIViewAutoresizing tableViewAutoresizing;
+    if (padUI)
+    {
+        tableViewFrame.origin.y = 0.0;
+        tableViewFrame.origin.x = self.view.bounds.size.width - 360.0;
+        tableViewFrame.size.width = 360.0;
+        tableViewAutoresizing = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin;
+    }
+    else
+    {
+        tableViewFrame.origin.y = 32.0;
+        tableViewFrame.size.height -= 112.0;
+        tableViewAutoresizing = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    }
     
-    tableView = [[UITableView alloc] initWithFrame:aFrame style:UITableViewStylePlain];
+    tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
-    //tableView.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
-    tableView.backgroundColor = [UIColor clearColor];
+    tableView.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+    //tableView.backgroundColor = [UIColor clearColor];
     tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     tableView.showsVerticalScrollIndicator = NO;
     tableView.showsHorizontalScrollIndicator = NO;
-    tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    tableView.autoresizingMask = tableViewAutoresizing;
     [self.view addSubview:tableView];
     
-    aFrame = CGRectZero;
-    aFrame.size.width = self.view.bounds.size.width;
-    aFrame.size.height = 40.0;
-    aFrame.origin.y = self.view.bounds.size.height - 44.0;
+    CGRect inputBarFrame = CGRectZero;
+    if (padUI)
+    {
+        inputBarFrame.size.width = self.view.bounds.size.width;
+        inputBarFrame.size.height = 75.0;
+        inputBarFrame.origin.y = self.view.bounds.size.height - 70.0;
+    }
+    else
+    {
+        inputBarFrame.size.width = self.view.bounds.size.width;
+        inputBarFrame.size.height = 40.0;
+        inputBarFrame.origin.y = self.view.bounds.size.height - 44.0;
+    }
     
-    inputBar = [[LIOInputBarView alloc] initWithFrame:aFrame];
+    inputBar = [[LIOInputBarView alloc] initWithFrame:inputBarFrame];
     inputBar.delegate = self;
     inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     [self.view addSubview:inputBar];
     
-    dismissalBar = [[LIODismissalBarView alloc] init];
-    //dismissalBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
-    dismissalBar.backgroundColor = [UIColor clearColor];
-    aFrame = dismissalBar.frame;
-    aFrame.size.width = self.view.frame.size.width;
-    aFrame.size.height = 35.0;
-    aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
-    dismissalBar.frame = aFrame;
-    dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    dismissalBar.delegate = self;
-    [self.view insertSubview:dismissalBar belowSubview:inputBar];
-    
-    aFrame = CGRectZero;
-    aFrame.size.width = self.view.bounds.size.width;
-    
-    headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
-    //headerBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
-    headerBar.backgroundColor = [UIColor clearColor];
-    headerBar.delegate = self;
-    headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self.view addSubview:headerBar];
+    if (NO == padUI)
+    {
+        dismissalBar = [[LIODismissalBarView alloc] init];
+        //dismissalBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+        dismissalBar.backgroundColor = [UIColor clearColor];
+        CGRect aFrame = dismissalBar.frame;
+        aFrame.size.width = self.view.frame.size.width;
+        aFrame.size.height = 35.0;
+        aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
+        dismissalBar.frame = aFrame;
+        dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        dismissalBar.delegate = self;
+        [self.view insertSubview:dismissalBar belowSubview:inputBar];
+
+        aFrame = CGRectZero;
+        aFrame.size.width = self.view.bounds.size.width;
+        
+        headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
+        //headerBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+        headerBar.backgroundColor = [UIColor clearColor];
+        headerBar.delegate = self;
+        headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self.view addSubview:headerBar];
+    }
     
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
@@ -109,7 +135,7 @@
     aboutButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     [aboutButton setTitle:@"About LookIO" forState:UIControlStateNormal];
     [aboutButton addTarget:self action:@selector(aboutButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    aFrame = aboutButton.frame;
+    CGRect aFrame = aboutButton.frame;
     aFrame.size.width = 92.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = 15.0;
@@ -456,6 +482,8 @@
     
     keyboardShowing = YES;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
     NSDictionary *userInfo = [aNotification userInfo];
@@ -469,7 +497,7 @@
     [animationCurveValue getValue:&animationCurve];
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue]; //[self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
     CGFloat keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
@@ -479,29 +507,41 @@
     inputBarFrame.origin.y -= keyboardHeight;
     
     CGRect dismissalBarFrame = dismissalBar.frame;
-    dismissalBarFrame.origin.y -= keyboardHeight - 15.0; // 15.0 is the difference in dismissal bar height
-    dismissalBarFrame.size.height = 20.0;
-    
     CGRect headerFrame = headerBar.frame;
-    if (UIInterfaceOrientationIsLandscape(actualOrientation))
-        headerFrame.origin.y -= headerFrame.size.height;
-    
     CGRect tableFrame = tableView.frame;
-    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+    if (NO == padUI)
     {
-        tableFrame.origin.y = 0.0;
-        tableFrame.size.height -= keyboardHeight - 15.0 - 32.0; // 32.0 is the default table origin (below header)
+        dismissalBarFrame.origin.y -= keyboardHeight - 15.0; // 15.0 is the difference in dismissal bar height
+        dismissalBarFrame.size.height = 20.0;
+        
+        if (UIInterfaceOrientationIsLandscape(actualOrientation))
+            headerFrame.origin.y -= headerFrame.size.height;
+        
+        CGRect tableFrame = tableView.frame;
+        if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        {
+            tableFrame.origin.y = 0.0;
+            tableFrame.size.height -= keyboardHeight - 15.0 - 32.0; // 32.0 is the default table origin (below header)
+        }
+        else
+            tableFrame.size.height -= keyboardHeight - 15.0;
     }
     else
-        tableFrame.size.height -= keyboardHeight - 15.0;
+    {
+        tableFrame.size.height -= keyboardHeight;
+    }
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
         inputBar.frame = inputBarFrame;
-        dismissalBar.frame = dismissalBarFrame;
         tableView.frame = tableFrame;
-        headerBar.frame = headerFrame;
+    
+        if (NO == padUI)
+        {
+            dismissalBar.frame = dismissalBarFrame;
+            headerBar.frame = headerFrame;
+        }
     [UIView commitAnimations];
 
     [self reloadMessages];
@@ -513,6 +553,8 @@
         return;
     
     keyboardShowing = NO;
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
@@ -537,22 +579,29 @@
     inputBarFrame.origin.y += keyboardHeight;
     
     CGRect dismissalBarFrame = dismissalBar.frame;
-    dismissalBarFrame.origin.y += keyboardHeight - 15.0;
-    dismissalBarFrame.size.height = 35.0;
-    
     CGRect headerFrame = headerBar.frame;
-    headerFrame.origin.y = 0.0;
-
-    CGFloat jitterCorrection = 0.0;
     CGRect tableFrame = tableView.frame;
-    tableFrame.origin.y = 32.0;
-    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+    CGFloat jitterCorrection = 0.0;
+    if (NO == padUI)
     {
-        tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
-        jitterCorrection = 32.0;
+        dismissalBarFrame.origin.y += keyboardHeight - 15.0;
+        dismissalBarFrame.size.height = 35.0;
+        
+        headerFrame.origin.y = 0.0;
+        
+        tableFrame.origin.y = 32.0;
+        if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        {
+            tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
+            jitterCorrection = 32.0;
+        }
+        else
+            tableFrame.size.height += keyboardHeight - 15.0;
     }
     else
-        tableFrame.size.height += keyboardHeight - 15.0;
+    {
+        tableFrame.size.height += keyboardHeight;
+    }
     
     CGPoint previousOffset = tableView.contentOffset;
     
@@ -560,8 +609,12 @@
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
         inputBar.frame = inputBarFrame;
-        dismissalBar.frame = dismissalBarFrame;
-        headerBar.frame = headerFrame;
+    
+        if (NO == padUI)
+        {
+            dismissalBar.frame = dismissalBarFrame;
+            headerBar.frame = headerFrame;
+        }
     [UIView commitAnimations];
     
     [self reloadMessages];
