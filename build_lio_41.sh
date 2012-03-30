@@ -24,8 +24,8 @@ xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration $CONFI
 
 if [ $? -ne 0 ]
 then
-    echo Build failed. Here's why:
-    cat $LOG_FILE
+    echo "Build failed. Here's why:"
+    cat "$LOG_FILE"
     exit 1
 fi
 
