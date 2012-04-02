@@ -10,12 +10,12 @@
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
 
-#define LIOInputBarViewMinHeight    40.0
+#define LIOInputBarViewMinHeight    35.0
 #define LIOInputBarViewMinHeightPad 50.0
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -31,19 +31,22 @@
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
         CGRect sendButtonFrame = CGRectZero;
+        UIFont *sendButtonFont = nil;
         if (padUI)
         {
-            sendButtonFrame.origin.x = self.bounds.size.width - 59.0 - 35.0;
-            sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 27.0;
-            sendButtonFrame.size.width = 59.0;
-            sendButtonFrame.size.height = 40.0;
+            sendButtonFrame.origin.x = self.bounds.size.width - 59.0 - 57.0;
+            sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 25.0;
+            sendButtonFrame.size.width = 75.0;
+            sendButtonFrame.size.height = 47.0;
+            sendButtonFont = [UIFont boldSystemFontOfSize:16.0];
         }
         else
         {
             sendButtonFrame.origin.x = self.bounds.size.width - 59.0 - 5.0;
             sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 14.0;
             sendButtonFrame.size.width = 59.0;
-            sendButtonFrame.size.height = 31.0;
+            sendButtonFrame.size.height = 36.0;
+            sendButtonFont = [UIFont boldSystemFontOfSize:12.0];
         }
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -83,16 +86,17 @@
         CGRect inputFieldBackgroundFrame = CGRectZero;
         if (padUI)
         {
-            inputFieldBackgroundFrame.size.width = self.frame.size.width - 160.0;
-            inputFieldBackgroundFrame.size.height = 50.0;
             inputFieldBackgroundFrame.origin.x = adLogo.frame.origin.x + adLogo.frame.size.width + 20.0;
-            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 4.0;
+            inputFieldBackgroundFrame.size.width = 450.0;
+            inputFieldBackgroundFrame.size.height = 50.0;
+            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
         }
         else
         {
-            inputFieldBackgroundFrame.size.width = self.frame.size.width;
+            inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 15.0;
             inputFieldBackgroundFrame.size.height = 37.0;
             inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 4.0;
+            inputFieldBackgroundFrame.origin.x = 5.0;
         }
         
         inputFieldBackground = [[UIImageView alloc] initWithFrame:inputFieldBackgroundFrame];
@@ -102,10 +106,14 @@
         inputFieldBackground.clipsToBounds = YES;
         [self addSubview:inputFieldBackground];
         
+        CGFloat fontSize = 14.0;
+        if (padUI)
+            fontSize = 20.0;
+        
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputField";
-        inputField.font = [UIFont systemFontOfSize:14.0];
+        inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputField.returnKeyType = UIReturnKeySend;
@@ -116,7 +124,7 @@
         inputField.frame = aFrame;
         [self addSubview:inputField];
         
-        CGSize size = [@"jpqQABTY" sizeWithFont:[UIFont systemFontOfSize:14.0]];
+        CGSize size = [@"jpqQABTY" sizeWithFont:inputField.font];
         singleLineHeight = size.height;
         
         totalLines = 1;
@@ -158,6 +166,8 @@
     if ([stringToMeasure length] && [[stringToMeasure substringFromIndex:[stringToMeasure length] - 1] isEqualToString:@"\n"])
         [stringToMeasure replaceCharactersInRange:NSMakeRange([stringToMeasure length] - 1, 1) withString:@"\n "];
     
+    CGFloat backgroundHeightMod = 12.0; // im not even really sure what this
+    
     CGFloat maxWidth = inputField.frame.size.width - 16.0;
     CGSize newSize = [stringToMeasure sizeWithFont:inputField.font constrainedToSize:CGSizeMake(maxWidth, FLT_MAX)];
     NSInteger calculatedNumLines = newSize.height / singleLineHeight;
@@ -166,6 +176,8 @@
         calculatedNumLines = maxLines;
         if (NO == inputField.scrollEnabled)
             inputField.scrollEnabled = YES;
+        
+        backgroundHeightMod = 24.0;
     }
     else if (calculatedNumLines < 1)
     {
@@ -175,7 +187,7 @@
     
     if (calculatedNumLines != totalLines)
     {
-        [delegate inputBarView:self didChangeNumberOfLines:(calculatedNumLines - totalLines)];
+        //[delegate inputBarView:self didChangeNumberOfLines:(calculatedNumLines - totalLines)];
         totalLines = calculatedNumLines;
     }
     
@@ -187,13 +199,16 @@
     if (padUI) minHeight = LIOInputBarViewMinHeightPad;
     
     aFrame = inputFieldBackground.frame;
-    aFrame.size.height = singleLineHeight * calculatedNumLines + 12.0;
+    aFrame.size.height = singleLineHeight * calculatedNumLines + backgroundHeightMod;
     if (aFrame.size.height < minHeight) aFrame.size.height = minHeight;
-    inputFieldBackground.frame = aFrame;    
+    inputFieldBackground.frame = aFrame;
     
-    aFrame = self.frame;
-    aFrame.size.height = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + 11.0;
-    self.frame = aFrame;
+    CGFloat bottomPadding = 5.0;
+    if (padUI)
+        bottomPadding = 12.0;
+    
+    desiredHeight = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + bottomPadding;
+    [delegate inputBarView:self didChangeDesiredHeight:desiredHeight];
 }
 
 #pragma mark -

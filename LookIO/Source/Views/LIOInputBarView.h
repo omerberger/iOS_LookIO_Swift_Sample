@@ -12,6 +12,7 @@
 
 @protocol LIOInputBarViewDelegate
 - (void)inputBarView:(LIOInputBarView *)aView didChangeNumberOfLines:(NSInteger)numLinesDelta;
+- (void)inputBarView:(LIOInputBarView *)aView didChangeDesiredHeight:(CGFloat)desiredHeight;
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString;
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView;
 @end
@@ -30,11 +31,13 @@
     UIImageView *inputFieldBackground;
     CGFloat singleLineHeight;
     NSInteger totalLines;
+    CGFloat desiredHeight;
     id<LIOInputBarViewDelegate> delegate;
 }
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;
 @property(nonatomic, readonly) UITextView *inputField;
+@property(nonatomic, readonly) CGFloat desiredHeight;
 
 @end

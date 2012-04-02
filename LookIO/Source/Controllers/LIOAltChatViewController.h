@@ -53,6 +53,7 @@
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;
     LIODismissalBarView *dismissalBar;
+    CGFloat keyboardHeight;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

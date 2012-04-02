@@ -179,9 +179,9 @@
 			isa = PBXGroup;
 			children = (
 				D4ADC7AC14F3215900713F29 /* LIOAnalyticsManager.h */,
-				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
 				D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */,
 				D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */,
+				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
 				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
 			);

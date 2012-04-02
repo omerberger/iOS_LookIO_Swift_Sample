@@ -72,8 +72,8 @@
     tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
-    tableView.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
-    //tableView.backgroundColor = [UIColor clearColor];
+    //tableView.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+    tableView.backgroundColor = [UIColor clearColor];
     tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     tableView.showsVerticalScrollIndicator = NO;
     tableView.showsHorizontalScrollIndicator = NO;
@@ -85,19 +85,20 @@
     {
         inputBarFrame.size.width = self.view.bounds.size.width;
         inputBarFrame.size.height = 75.0;
-        inputBarFrame.origin.y = self.view.bounds.size.height - 70.0;
+        inputBarFrame.origin.y = self.view.bounds.size.height - 75.0;
     }
     else
     {
         inputBarFrame.size.width = self.view.bounds.size.width;
         inputBarFrame.size.height = 40.0;
-        inputBarFrame.origin.y = self.view.bounds.size.height - 44.0;
+        inputBarFrame.origin.y = self.view.bounds.size.height - 40.0;
     }
     
     inputBar = [[LIOInputBarView alloc] initWithFrame:inputBarFrame];
     inputBar.delegate = self;
-    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    inputBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:inputBar];
+    [inputBar setNeedsLayout];
     
     if (NO == padUI)
     {
@@ -230,12 +231,15 @@
 {
     [super viewWillAppear:animated];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     [self reloadMessages];
     
     NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
-    [self scrollToBottom];
+    if (NO == padUI)
+        [self scrollToBottom];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -270,43 +274,73 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     [self reloadMessages];
-    [self scrollToBottom];
+    //[self scrollToBottom];
 }
 
 - (void)performRevealAnimation
 {
-    background.alpha = 0.0;
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    [UIView animateWithDuration:0.4
-                          delay:0.0
-                        options:UIViewAnimationOptionCurveEaseOut
-                     animations:^{
-                         background.alpha = 1.0;
-                     }
-                     completion:^(BOOL finished) {
-                         background.alpha = 1.0;
-                     }];
-    
-    tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
-    headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
-    inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
-    dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
-    
-    [UIView animateWithDuration:0.3
-                          delay:0.1
-                        options:UIViewAnimationOptionCurveEaseOut
-                     animations:^{
-                         tableView.transform = CGAffineTransformIdentity;
-                         inputBar.transform = CGAffineTransformIdentity;
-                         headerBar.transform = CGAffineTransformIdentity;
-                         dismissalBar.transform = CGAffineTransformIdentity;
-                     }
-                     completion:^(BOOL finished) {
-                         tableView.transform = CGAffineTransformIdentity;
-                         inputBar.transform = CGAffineTransformIdentity;
-                         headerBar.transform = CGAffineTransformIdentity;
-                         dismissalBar.transform = CGAffineTransformIdentity;
-                     }];
+    if (padUI)
+    {
+        tableView.alpha = 0.5;
+        
+        CATransform3D translate = CATransform3DMakeTranslation(tableView.frame.size.width / 2.0, -tableView.frame.size.height / 2.0, 0.0);
+        CATransform3D rotate = CATransform3DMakeRotation(M_PI, 0.0, 1.0, 0.0);
+        CATransform3D initialTransform = CATransform3DConcat(rotate, translate);
+        initialTransform.m34 = 1.0 / 1000.0;
+        
+        tableView.layer.anchorPoint = CGPointMake(1.0, 0.0);
+        tableView.layer.transform = initialTransform;
+        
+        [UIView animateWithDuration:0.5
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             tableView.alpha = 1.0;
+                             tableView.layer.transform = translate;
+                         }
+                         completion:^(BOOL finished) {
+                             tableView.layer.transform = CATransform3DIdentity;
+                             tableView.layer.anchorPoint = CGPointMake(0.5, 0.5);
+                             [self scrollToBottom];
+                         }];
+    }
+    else
+    {
+        background.alpha = 0.0;
+        
+        [UIView animateWithDuration:0.4
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             background.alpha = 1.0;
+                         }
+                         completion:^(BOOL finished) {
+                             background.alpha = 1.0;
+                         }];
+        
+        tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+        headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
+        inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
+        dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
+        
+        [UIView animateWithDuration:0.3
+                              delay:0.1
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             tableView.transform = CGAffineTransformIdentity;
+                             inputBar.transform = CGAffineTransformIdentity;
+                             headerBar.transform = CGAffineTransformIdentity;
+                             dismissalBar.transform = CGAffineTransformIdentity;
+                         }
+                         completion:^(BOOL finished) {
+                             tableView.transform = CGAffineTransformIdentity;
+                             inputBar.transform = CGAffineTransformIdentity;
+                             headerBar.transform = CGAffineTransformIdentity;
+                             dismissalBar.transform = CGAffineTransformIdentity;
+                         }];
+    }
 }
 
 - (void)performDismissalAnimation
@@ -411,7 +445,7 @@
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
     else
-        aBubble.frame = CGRectMake(self.view.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
+        aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
     
     [aBubble setNeedsLayout];
     [aBubble setNeedsDisplay];
@@ -499,7 +533,7 @@
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
     CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
-    CGFloat keyboardHeight = keyboardBounds.size.height;
+    keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
         keyboardHeight = keyboardBounds.size.width;
     
@@ -517,7 +551,6 @@
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
             headerFrame.origin.y -= headerFrame.size.height;
         
-        CGRect tableFrame = tableView.frame;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
             tableFrame.origin.y = 0.0;
@@ -571,7 +604,7 @@
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey];
     CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
     
-    CGFloat keyboardHeight = keyboardBounds.size.height;
+    keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
         keyboardHeight = keyboardBounds.size.width;
     
@@ -623,6 +656,8 @@
     // Thus, we can't animate it.
     tableView.frame = tableFrame;
     tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y + jitterCorrection);
+    
+    keyboardHeight = 0.0;
 }
 
 #pragma mark -
@@ -630,11 +665,30 @@
 
 - (void)inputBarView:(LIOInputBarView *)aView didChangeNumberOfLines:(NSInteger)numLinesDelta
 {
+    /*
     CGFloat deltaHeight = aView.singleLineHeight * numLinesDelta;
     
     CGRect aFrame = inputBar.frame;
     aFrame.origin.y -= deltaHeight;
     inputBar.frame = aFrame;
+     */
+}
+
+- (void)inputBarView:(LIOInputBarView *)aView didChangeDesiredHeight:(CGFloat)desiredHeight
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    CGRect aFrame = inputBar.frame;
+    aFrame.size.height = desiredHeight;
+    aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
+    inputBar.frame = aFrame;
+    
+    if (NO == padUI)
+    {
+        CGRect aFrame = dismissalBar.frame;
+        aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
+        dismissalBar.frame = aFrame;
+    }
 }
 
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView
