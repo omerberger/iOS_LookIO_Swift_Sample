@@ -41,6 +41,7 @@
 #define LIOLookIOManagerWriteTimeout            5.0
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
+//#define LIOLookIOManagerDefaultControlEndpoint      @"connect.dev.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
@@ -71,7 +72,8 @@
 @class CTCall, CTCallCenter;
 
 @interface LIOLookIOManager ()
-    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate>
+    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate,
+     LIOLeaveMessageViewControllerDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -857,6 +859,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.hidden = YES;
 }
 
+- (void)showLeaveMessage
+{
+    if (leaveMessageViewController)
+        return;
+    
+    // Just in case...
+    [altChatViewController.view removeFromSuperview];
+    [altChatViewController release];
+    altChatViewController = nil;
+    
+    leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
+    leaveMessageViewController.delegate = self;
+    leaveMessageViewController.initialEmailAddress = pendingEmailAddress;
+    [lookioWindow addSubview:leaveMessageViewController.view];
+    
+    [self rejiggerWindows];
+}
+
 - (void)beginSession
 {
     // Prevent a new session from being established if the current one
@@ -978,6 +998,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             introduced = YES;
             waitingForIntroAck = NO;
             enqueued = YES;
+            
+            [self sendCapabilitiesPacket];
             
             [controlSocket readDataToData:messageSeparatorData
                               withTimeout:-1
@@ -1226,7 +1248,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [altChatViewController release];
             altChatViewController = nil;
             
-            [self showLeaveMessageUI];
+            [self showLeaveMessage];
         }
     }
     else if ([type isEqualToString:@"click"])
@@ -1319,6 +1341,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1
                               tag:0];    
+}
+
+- (void)sendCapabilitiesPacket
+{
+    NSArray *capsArray = [NSArray arrayWithObjects:@"receive_leavemessage", nil];
+    
+    NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"capabilities", @"type",
+                              capsArray, @"capabilities",
+                              nil];
+    
+    NSString *caps = [jsonWriter stringWithObject:capsDict];
+    caps = [caps stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[caps dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
 }
 
 - (void)refreshControlButtonVisibility
@@ -1997,22 +2036,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage
 {
+    if ([anEmail length] && [aMessage length])
+    {
+        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                             @"feedback", @"type",
+                                             anEmail, @"email_address",
+                                             aMessage, @"message",
+                                             nil];
+        
+        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
+- (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
+{
     sessionEnding = YES;
     
     [self rejiggerWindows];
-    
-    NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                         @"feedback", @"type",
-                                         anEmail, @"email_address",
-                                         aMessage, @"message",
-                                         nil];
-    
-    NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
-    feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
     
     userWantsSessionTermination = YES;
     resetAfterDisconnect = YES;
@@ -2042,6 +2087,48 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (BOOL)interstitialViewController:(LIOInterstitialViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark LIOLeaveMessageViewControllerDelegate methods
+
+- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
+{
+    [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    sessionEnding = YES;
+    
+    [self rejiggerWindows];
+    
+    userWantsSessionTermination = YES;
+    resetAfterDisconnect = YES;
+    [self killConnection];
+}
+
+- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
+{
+    if ([anEmail length] && [aMessage length])
+    {
+        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                             @"feedback", @"type",
+                                             anEmail, @"email_address",
+                                             aMessage, @"message",
+                                             nil];
+        
+        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
+- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }

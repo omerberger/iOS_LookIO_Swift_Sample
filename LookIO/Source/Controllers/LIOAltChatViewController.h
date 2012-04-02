@@ -26,6 +26,7 @@
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
+- (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;

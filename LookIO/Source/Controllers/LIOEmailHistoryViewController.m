@@ -382,5 +382,4 @@
     [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
 }
 
-
 @end

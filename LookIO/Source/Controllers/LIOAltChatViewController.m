@@ -822,12 +822,14 @@
 
 - (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
 {
-    [self dismissModalViewControllerAnimated:YES];
+    [self dismissModalViewControllerAnimated:NO];
+    
+    [delegate altChatViewControllerWantsSessionTermination:self];
 }
 
 - (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
 {
-    [self dismissModalViewControllerAnimated:YES];
+    [delegate altChatViewController:self didEnterLeaveMessageEmail:anEmail withMessage:aMessage];
 }
 
 - (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
