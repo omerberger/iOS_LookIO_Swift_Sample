@@ -217,7 +217,38 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 #endif
 }
 
-/*
+- (NSArray *)twitterHandles
+{
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 5.0)
+        return nil;
+    
+    Class $ACAccountType = NSClassFromString(@"ACAccountType");
+    Class $ACAccountStore = NSClassFromString(@"ACAccountStore");
+    Class $TWTweetComposeViewController = NSClassFromString(@"TWTweetComposeViewController");
+    if (nil == $ACAccountType || nil == $ACAccountStore || nil == $TWTweetComposeViewController)
+        return nil;
+
+    id accountStore = [[[$ACAccountStore alloc] init] autorelease];
+    id twitterAccountType = [accountStore accountTypeWithAccountTypeIdentifier:@"com.apple.twitter"];
+    NSArray *twitterAccounts = [accountStore accountsWithAccountType:twitterAccountType];
+    NSMutableArray *result = [NSMutableArray array];
+    for (id anAccount in twitterAccounts)
+    {
+        NSString *aUsername = [anAccount username];
+        if ([aUsername length])
+            [result addObject:aUsername];
+    }
+    
+    return result;
+}
+
+- (NSString *)timezoneOffset
+{
+    NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
+    [formatter setDateFormat:@"ZZZ"];
+    return [formatter stringFromDate:[NSDate date]];
+}
+
 - (NSString *)distributionType
 {
 #if TARGET_IPHONE_SIMULATOR
@@ -225,14 +256,13 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 #else
     NSString *profilePath = [[NSBundle mainBundle] pathForResource:@"embedded.mobileprovision" ofType:nil];
     NSString *profileAsString = [NSString stringWithContentsOfFile:profilePath encoding:NSISOLatin1StringEncoding error:NULL];
-    BOOL isAdHoc = [profileAsString rangeOfString:[[UIDevice currentDevice] uniqueIdentifier] options:NSCaseInsensitiveSearch].length;
+    BOOL isAdHoc = [profileAsString rangeOfString:@"<key>ProvisionedDevices</key>" options:NSCaseInsensitiveSearch].length;
     if (isAdHoc)
         return @"other";
     else
         return @"app_store";
 #endif
 }
-*/
 
 - (BOOL)pushEnabled
 {

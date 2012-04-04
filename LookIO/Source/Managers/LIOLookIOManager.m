@@ -1638,6 +1638,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [detectedDict setObject:@"cellular" forKey:@"connection_type"];
         else
             [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+
+        NSArray *twitterHandles = [[LIOAnalyticsManager sharedAnalyticsManager] twitterHandles];
+        if ([twitterHandles count])
+            [detectedDict setObject:twitterHandles forKey:@"twitter"];
+        
+        NSString *tzOffset = [[LIOAnalyticsManager sharedAnalyticsManager] timezoneOffset];
+        if ([tzOffset length])
+            [detectedDict setObject:tzOffset forKey:@"tz_offset"];
         
         BOOL jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken];
         [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
@@ -1645,7 +1653,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
         [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
         
-        //[detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
+        [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
         
         if (lastKnownLocation)
         {

@@ -8,6 +8,7 @@
 
 #import "SampleAppDelegate.h"
 #import "SampleViewController.h"
+#import <Accounts/Accounts.h>
 
 #if RUN_KIF_TESTS
     #import "LIOTestController.h"

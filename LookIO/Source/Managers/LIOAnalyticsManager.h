@@ -42,5 +42,8 @@ typedef enum
 - (BOOL)pushEnabled;
 - (void)pumpReachabilityStatus;
 - (void)beginLocationCheck;
+- (NSArray *)twitterHandles;
+- (NSString *)timezoneOffset;
+- (NSString *)distributionType;
 
 @end
