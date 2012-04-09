@@ -205,6 +205,48 @@
     [functionHeader.contentView addSubview:aboutButton];
     [functionHeader.contentView addSubview:emailConvoButton];
     [functionHeader.contentView addSubview:endSessionButton];
+    
+    reconnectionOverlay = [[UIView alloc] initWithFrame:self.view.bounds];
+    reconnectionOverlay.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
+    reconnectionOverlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    reconnectionOverlay.hidden = YES;
+    [self.view addSubview:reconnectionOverlay];
+    
+    UIView *reconnectionBezel = [[[UIView alloc] init] autorelease];
+    reconnectionBezel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:1.0];
+    reconnectionBezel.layer.cornerRadius = 6.0;
+    reconnectionBezel.layer.shadowColor = [UIColor whiteColor].CGColor;
+    reconnectionBezel.layer.shadowOffset = CGSizeMake(0.0, 0.0);
+    reconnectionBezel.layer.shadowOpacity = 0.75;
+    reconnectionBezel.layer.shadowRadius = 4.0;
+    aFrame = reconnectionBezel.frame;
+    aFrame.size.height = 75.0;
+    aFrame.size.width = 200.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = (self.view.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
+    reconnectionBezel.frame = aFrame;
+    reconnectionBezel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [reconnectionOverlay addSubview:reconnectionBezel];
+    
+    UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
+    aFrame = spinner.frame;
+    aFrame.origin.x = (reconnectionBezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = 18.0;
+    spinner.frame = aFrame;
+    [spinner startAnimating];
+    [reconnectionBezel addSubview:spinner];
+    
+    UILabel *label = [[[UILabel alloc] init] autorelease];
+    label.font = [UIFont systemFontOfSize:16.0];
+    label.textColor = [UIColor whiteColor];
+    label.backgroundColor = [UIColor clearColor];
+    label.text = @"Reconnecting...";
+    [label sizeToFit];
+    aFrame = label.frame;
+    aFrame.origin.x = (reconnectionBezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height;
+    label.frame = aFrame;
+    [reconnectionBezel addSubview:label];    
 }
 
 - (void)viewDidLoad
@@ -236,6 +278,9 @@
     
     [horizGradient release];
     horizGradient = nil;
+    
+    [reconnectionOverlay release];
+    reconnectionOverlay = nil;
 }
 
 - (void)dealloc
@@ -255,6 +300,7 @@
     [functionHeader release];
     [vertGradient release];
     [horizGradient release];
+    [reconnectionOverlay release];
     
     [super dealloc];
 }
@@ -316,6 +362,17 @@
     
     [self reloadMessages];
     //[self scrollToBottom];
+}
+
+- (void)showReconnectionOverlay
+{
+    [self dismissModalViewControllerAnimated:NO];
+    reconnectionOverlay.hidden = NO;
+}
+
+- (void)hideReconnectionOverlay
+{
+    reconnectionOverlay.hidden = YES;
 }
 
 - (void)performRevealAnimation

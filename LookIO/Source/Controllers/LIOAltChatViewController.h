@@ -45,6 +45,7 @@
 {
     CGFloat previousScrollHeight;
     UIView *background;
+    UIView *reconnectionOverlay;
     UITableView *tableView;
     NSArray *messages;
     NSUInteger previousTextLength;
@@ -69,5 +70,7 @@
 - (void)scrollToBottom;
 - (void)performRevealAnimation;
 - (void)performDismissalAnimation;
+- (void)showReconnectionOverlay;
+- (void)hideReconnectionOverlay;
 
 @end

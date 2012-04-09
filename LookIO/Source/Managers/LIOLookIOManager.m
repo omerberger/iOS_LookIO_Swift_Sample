@@ -28,6 +28,7 @@
 #import "LIOBundleManager.h"
 #import "LIOInterstitialViewController.h"
 #import "LIOLogManager.h"
+#import "LIOTimerProxy.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -46,8 +47,8 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL     @"http://connect.look.io/api/v1/app/launch"
-#define LIOLookIOManagerAppLaunchRequestURL_TLS @"https://connect.look.io/api/v1/app/launch"
+#define LIOLookIOManagerAppLaunchRequestURL     [NSString stringWithFormat:@"http://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
+#define LIOLookIOManagerAppLaunchRequestURL_TLS [NSString stringWithFormat:@"https://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -122,6 +123,10 @@
     CLLocation *lastKnownLocation;
     NSString *overriddenEndpoint;
     BOOL appLaunchRequestIgnoringLocationHeader;
+    LIOTimerProxy *reconnectionTimer;
+    NSUInteger previousReconnectionTimerStep;
+    BOOL firstChatMessageSent;
+    BOOL resumeMode;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -135,6 +140,9 @@
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 - (void)handleCallEvent:(CTCall *)aCall;
+- (void)configureReconnectionTimer;
+- (BOOL)beginConnectingWithError:(NSError **)anError;
+- (void)killReconnectionTimer;
 
 @end
 
@@ -444,6 +452,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     
+    previousReconnectionTimerStep = 2;
+    resumeMode = NO;
+    
     [self sendLaunchReport];
     
     [LIOBundleManager sharedBundleManager];
@@ -543,6 +554,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [dateFormatter release];
     [overriddenEndpoint release];
     
+    [reconnectionTimer stopTimer];
+    [reconnectionTimer release];
+    reconnectionTimer = nil;
+    
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
     
@@ -603,9 +618,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [backgroundedTime release];
     backgroundedTime = nil;
     
+    [reconnectionTimer stopTimer];
+    [reconnectionTimer release];
+    reconnectionTimer = nil;
+    
+    previousReconnectionTimerStep = 2;
+    
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
-    sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO;
+    sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -881,37 +902,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
 
-    NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
-    if (NO == usesTLS)
-        chosenPort = LIOLookIOManagerControlEndpointPort;
-    
-    NSString *chosenEndpoint = LIOLookIOManagerDefaultControlEndpoint;
-    if ([overriddenEndpoint length])
-        chosenEndpoint = overriddenEndpoint;
-    
     NSError *connectError = nil;
-    BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
-                                               onPort:chosenPort
-                                                error:&connectError];
+    BOOL connectResult = [self beginConnectingWithError:&connectError];
     if (NO == connectResult)
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
         LIOLog(@"[CONNECT] Connection failed. Reason: %@", [connectError localizedDescription]);
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Connection Failed"
-                                                            message:[connectError localizedDescription]
-                                                           delegate:nil
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
-        [alertView show];
-        [alertView autorelease];
+        
+        if (NO == firstChatMessageSent)
+        {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Connection Failed"
+                                                                message:[connectError localizedDescription]
+                                                               delegate:nil
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Dismiss", nil];
+            [alertView show];
+            [alertView autorelease];
+        }
         
         controlSocketConnecting = NO;
         
+        [self killReconnectionTimer];
+        [self configureReconnectionTimer];
+        
         return;
     }
-    
-    LIOLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
     
     controlSocketConnecting = YES;
 
@@ -926,6 +942,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         firstMessage.text = @"Send a message to our live service reps for immediate help.";
     
     [self showChatAnimated:YES];
+}
+
+- (BOOL)beginConnectingWithError:(NSError **)anError
+{
+    NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
+    if (NO == usesTLS)
+        chosenPort = LIOLookIOManagerControlEndpointPort;
+    
+    NSString *chosenEndpoint = LIOLookIOManagerDefaultControlEndpoint;
+    if ([overriddenEndpoint length])
+        chosenEndpoint = overriddenEndpoint;
+    
+    BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
+                                               onPort:chosenPort
+                                                error:anError];
+    
+    LIOLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
+    
+    return connectResult;
 }
 
 - (void)killConnection
@@ -1266,17 +1301,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"outro"])
     {
         sessionEnding = YES;
+        resetAfterDisconnect = YES;
         outroReceived = YES;
-        
-        /*
-        if ([controlSocket isConnected])
-        {
-            resetAfterDisconnect = YES;
-            [self killConnection];
-        }
-        else
-            [self reset];
-         */
+        firstChatMessageSent = NO;
     }
     
     [controlSocket readDataToData:messageSeparatorData
@@ -1573,6 +1600,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (aDate)
         [introDict setObject:[self dateToStandardizedString:aDate] forKey:@"when"];
     
+    if ([sessionId length])
+        [introDict setObject:sessionId forKey:@"session_id"];
+    
     if (includeExtras)
     {
         if ([targetAgentId length])
@@ -1684,6 +1714,50 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)configureReconnectionTimer
+{
+    if ([controlSocket isConnected])
+    {
+        LIOLog(@"[CONNECT] Ignoring request to configure reconnection timer: we're already connected!");
+        
+        [self killReconnectionTimer];
+        resumeMode = NO;
+        
+        [altChatViewController hideReconnectionOverlay];
+        [self showChatAnimated:NO];
+        
+        return;
+    }
+    
+    [altChatViewController showReconnectionOverlay];
+    [self beginConnectingWithError:nil];
+    
+    NSTimeInterval timerInterval = exp2(previousReconnectionTimerStep);
+    LIOLog(@"[CONNECT] Configuring reconnection timer with interval: %f", timerInterval);
+    reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:exp2(previousReconnectionTimerStep)
+                                                             target:self
+                                                           selector:@selector(reconnectionTimerDidFire)];
+    
+    // Max: 2**6, or 64 seconds
+    previousReconnectionTimerStep++;
+    if (previousReconnectionTimerStep > 6)
+        previousReconnectionTimerStep = 6;
+}
+
+- (void)killReconnectionTimer
+{
+    [reconnectionTimer stopTimer];
+    [reconnectionTimer release];
+    reconnectionTimer = nil;
+}
+
+- (void)reconnectionTimerDidFire
+{
+    [self killReconnectionTimer];
+    
+    [self configureReconnectionTimer];
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate methods
 
@@ -1692,6 +1766,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlSocketConnecting = NO;
     
     LIOLog(@"[CONNECT] Connected to %@:%u", host, port);
+
+    [self configureReconnectionTimer];
     
     if (usesTLS)
         [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
@@ -1708,12 +1784,44 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
-    // We don't show error boxes if the user specifically requested a termination.
-    if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
+    // We don't show error boxes if resume mode is possible.
+    if (NO == firstChatMessageSent)
     {
-        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        // We don't show error boxes if the user specifically requested a termination.
+        if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
+        {
+            [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+            
+            if (introduced)
+            {
+                NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                                    message:message
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:@"Dismiss", nil];
+                alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+                [alertView show];
+                [alertView autorelease];
+            }
+            else
+            {
+                NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                                    message:message
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:@"Dismiss", nil];
+                alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+                [alertView show];
+                [alertView autorelease];
+            }
+        }
         
-        if (introduced)
+        // Wacky special case: server terminates session.
+        else if (NO == userWantsSessionTermination && err == nil)
         {
             NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
             
@@ -1726,49 +1834,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
         }
-        else
-        {
-            NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
-            
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                                message:message
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
-            alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
-            [alertView show];
-            [alertView autorelease];
-        }
-    }
-    
-    // Wacky special case: server terminates session.
-    else if (NO == userWantsSessionTermination && err == nil)
-    {
-        NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                            message:message
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
-        alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
-        [alertView show];
-        [alertView autorelease];
     }
     
     userWantsSessionTermination = NO;
         
-    LIOLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
+    LIOLog(@"[CONNECT] Socket will disconnect. Reason: %@", [err localizedDescription]);
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
 {
-    LIOLog(@"[CONNECT] Socket disconnected.");
+    LIOLog(@"[CONNECT] Socket did disconnect.");
     
     if (resetAfterDisconnect)
     {
         sessionEnding = YES;
         [self reset];
+    }
+    else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent)
+    {
+        LIOLog(@"[RESUME] Unexpected disconnection! Going into resume mode...");
+        
+        [self configureReconnectionTimer];
+        [altChatViewController showReconnectionOverlay];
+        resumeMode = YES;
     }
 }
 
@@ -1839,6 +1927,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [altChatViewController reloadMessages];
     [altChatViewController scrollToBottom];
+    
+    firstChatMessageSent = YES;
 }
 
 - (void)altChatViewControllerDidTapEndSessionButton:(LIOAltChatViewController *)aController
