@@ -14,7 +14,7 @@
 
 @implementation LIOControlButtonView
 
-@synthesize textColor, labelText, delegate, label;
+@synthesize textColor, labelText, delegate, label, currentMode;
 @dynamic tintColor;
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -57,6 +57,10 @@
             innerShadow = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] lioTabInnerShadow]];
         
         [self addSubview:innerShadow];
+        
+        spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        [spinner startAnimating];
+        [self addSubview:spinner];
     }
     
     return self;
@@ -71,6 +75,7 @@
     [fillColor release];
     [shadowColor release];
     [innerShadow release];
+    [spinner release];
     
     [fadeTimer stopTimer];
     [fadeTimer release];
@@ -89,6 +94,8 @@
         label.textColor = textColor;
     else
         label.textColor = [UIColor whiteColor];
+    
+    label.hidden = currentMode == LIOControllButtonViewModePending;
     
     //innerShadow.transform = CGAffineTransformIdentity;
     
@@ -114,6 +121,12 @@
     }
     
     innerShadow.frame = self.bounds;
+    
+    CGRect aFrame = spinner.frame;
+    aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = (self.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    spinner.frame = aFrame;
+    spinner.hidden = currentMode != LIOControllButtonViewModePending;
 }
 
 - (void)drawRect:(CGRect)rect

@@ -1444,6 +1444,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [delegate lookIOManagerDidShowControlButton:self];
     }
     
+    if (resumeMode && NO == [controlSocket isConnected])
+        controlButton.currentMode = LIOControllButtonViewModePending;
+    else
+        controlButton.currentMode = LIOControllButtonViewModeDefault;
+    
     [controlButton setNeedsLayout];
     [controlButton setNeedsDisplay];
 }
@@ -1722,6 +1727,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self killReconnectionTimer];
         resumeMode = NO;
+        previousReconnectionTimerStep = 2;
         
         [altChatViewController hideReconnectionOverlay];
         [self showChatAnimated:NO];
@@ -1737,6 +1743,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:exp2(previousReconnectionTimerStep)
                                                              target:self
                                                            selector:@selector(reconnectionTimerDidFire)];
+    
+    if (altChatViewController && previousReconnectionTimerStep == 3)
+    {
+        [altChatViewController.view removeFromSuperview];
+        [altChatViewController release];
+        altChatViewController = nil;
+        [self rejiggerWindows];
+    }
     
     // Max: 2**6, or 64 seconds
     previousReconnectionTimerStep++;

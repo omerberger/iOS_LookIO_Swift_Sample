@@ -247,6 +247,11 @@
     aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height;
     label.frame = aFrame;
     [reconnectionBezel addSubview:label];    
+    
+    /*
+    UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleReconnectionOverlayTap:)] autorelease];
+    [reconnectionOverlay addGestureRecognizer:tapper];
+    */
 }
 
 - (void)viewDidLoad
@@ -602,6 +607,14 @@
 - (void)endSessionButtonWasTapped
 {
     [delegate altChatViewControllerDidTapEndSessionButton:self];
+}
+
+#pragma mark -
+#pragma mark Gesture handlers
+
+- (void)handleReconnectionOverlayTap:(UITapGestureRecognizer *)aTapper
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 #pragma mark -
