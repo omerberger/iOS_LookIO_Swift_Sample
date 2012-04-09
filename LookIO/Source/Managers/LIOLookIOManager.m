@@ -27,6 +27,7 @@
 #import "LIOChatMessage.h"
 #import "LIOBundleManager.h"
 #import "LIOInterstitialViewController.h"
+#import "LIOLogManager.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -279,9 +280,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
         NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
         [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
-#endif
+        LIOLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
         appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
     }
     else
@@ -449,16 +448,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [LIOBundleManager sharedBundleManager];
     
-    NSLog(@"[LOOKIO] Loaded.");    
+    LIOLog(@"[LOOKIO] Loaded.");    
 }
 
 - (NSString *)dateToStandardizedString:(NSDate *)aDate
 {
     NSString *result = [dateFormatter stringFromDate:aDate];
-    
-#ifdef DEBUG
-    NSLog(@"[LOOKIO] Date conversion: [%@] => \"%@\"", aDate, result);
-#endif
     
     return result;
 }
@@ -561,7 +556,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [lookioWindow release];
     
-    NSLog(@"[LOOKIO] Unloaded.");
+    LIOLog(@"[LOOKIO] Unloaded.");
     
     [super dealloc];
 }
@@ -619,7 +614,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self rejiggerWindows];
     
-    NSLog(@"[LOOKIO] Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
+    LIOLog(@"[LOOKIO] Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
 
 - (void)rejiggerWindows
@@ -635,43 +630,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 previousKeyWindow = mainWindow;
                 
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] Got key window from mainWindow.");
-#endif
+                LIOLog(@"[LOOKIO] Got key window from mainWindow.");
             }
             else if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
             {
                 previousKeyWindow = [delegate lookIOManagerMainWindowForHostApp:self];
                 
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
-#endif
+                LIOLog(@"[LOOKIO] Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
             }
             else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
             {
                 previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
                 
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
-#endif // DEBUG
+                LIOLog(@"[LOOKIO] Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
             }
             else
             {
-                NSLog(@"[LOOKIO] WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
+                LIOLog(@"[LOOKIO] WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
             }
             
-#ifdef DEBUG
-            NSLog(@"[LOOKIO] Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
-#endif // DEBUG
+            LIOLog(@"[LOOKIO] Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
         }
     }
     else
     {
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Hiding LookIO window: 0x%08X", (unsigned int)lookioWindow);
-        NSLog(@"[LOOKIO] Restoring host app's window: 0x%08X", (unsigned int)previousKeyWindow);
-#endif // DEBUG
+        LIOLog(@"[LOOKIO] Hiding 0x%08X, restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
         
         lookioWindow.hidden = YES;
         
@@ -791,9 +775,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              withTimeout:-1
                                      tag:0];
                 
-#ifdef DEBUG
-                NSLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
-#endif
+                LIOLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
             });
         }
     });
@@ -883,15 +865,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // is ending.
     if (sessionEnding)
     {
-#ifdef DEBUG
-        NSLog(@"[beginSession] Ignored: current session is still ending...");
-#endif // DEBUG
+        LIOLog(@"beginSession ignored: current session is still ending...");
         return;
     }
     
     if (controlSocketConnecting)
     {
-        NSLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
+        LIOLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
         return;
     }
     
@@ -917,7 +897,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
-        NSLog(@"[CONNECT] Connection failed. Reason: %@", [connectError localizedDescription]);
+        LIOLog(@"[CONNECT] Connection failed. Reason: %@", [connectError localizedDescription]);
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Connection Failed"
                                                             message:[connectError localizedDescription]
                                                            delegate:nil
@@ -931,9 +911,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-#ifdef DEBUG
-    NSLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
-#endif
+    LIOLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
     
     controlSocketConnecting = YES;
 
@@ -992,9 +970,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (waitingForIntroAck)
         {
-#ifdef DEBUG
-            NSLog(@"[INTRODUCTION] Introduction complete.");
-#endif
+            LIOLog(@"[INTRODUCTION] Introduction complete.");
             introduced = YES;
             waitingForIntroAck = NO;
             enqueued = YES;
@@ -1007,9 +983,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if (waitingForScreenshotAck)
         {
-#ifdef DEBUG
-            NSLog(@"[SCREENSHOT] Screenshot received by remote host.");
-#endif
+            LIOLog(@"[SCREENSHOT] Screenshot received by remote host.");
             waitingForScreenshotAck = NO;
         }
     }
@@ -1078,10 +1052,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         CGRect aFrame = cursorView.frame;
         aFrame.origin.x = [x floatValue];
         aFrame.origin.y = [y floatValue];
-        
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] New cursor position: %@x%@ (frame: %@)", x, y, [NSValue valueWithCGRect:aFrame]);
-#endif // DEBUG
         
         [UIView animateWithDuration:0.25
                               delay:0.0
@@ -1171,9 +1141,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"connected"])
         {
-#ifdef DEBUG
-            NSLog(@"[QUEUE] We're live!");
-#endif
+            LIOLog(@"[QUEUE] We're live!");
             enqueued = NO;
             
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -1266,10 +1234,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
         
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] New click: %@x%@", x, y);
-#endif
-        
         CGRect aFrame = CGRectZero;
         aFrame.size.width = clickView.image.size.width;
         aFrame.size.height = clickView.image.size.height;
@@ -1326,9 +1290,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
-#ifdef DEBUG
-    NSLog(@"[INTRO] Intro JSON: %@", intro);
-#endif
+    LIOLog(@"[INTRO] Intro JSON: %@", intro);
     
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -1559,7 +1521,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([test length])
             [sessionExtras setObject:anObject forKey:aKey];
         else
-            NSLog(@"[LOOKIO] Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+            LIOLog(@"[LOOKIO] Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
     }
     else
         [sessionExtras removeObjectForKey:aKey];
@@ -1577,7 +1539,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([test length])
         [sessionExtras addEntriesFromDictionary:aDictionary];
     else
-        NSLog(@"[LOOKIO] Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
+        LIOLog(@"[LOOKIO] Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
 }
 
 - (void)clearSessionExtras
@@ -1729,7 +1691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     controlSocketConnecting = NO;
     
-    NSLog(@"[CONNECT] Connected to %@:%u", host, port);
+    LIOLog(@"[CONNECT] Connected to %@:%u", host, port);
     
     if (usesTLS)
         [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
@@ -1739,7 +1701,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
-    NSLog(@"[CONNECT] Secured.");    
+    LIOLog(@"[CONNECT] Secured.");    
     
     [self performIntroduction];
 }
@@ -1796,12 +1758,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     userWantsSessionTermination = NO;
         
-    NSLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
+    LIOLog(@"[CONNECT] Connection terminated unexpectedly. Reason: %@", [err localizedDescription]);
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
 {
-    NSLog(@"[CONNECT] Socket disconnected.");
+    LIOLog(@"[CONNECT] Socket disconnected.");
     
     if (resetAfterDisconnect)
     {
@@ -1816,22 +1778,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
     NSDictionary *result = [jsonParser objectWithString:jsonString];
     
-#ifdef DEBUG
-    NSLog(@"\n[READ]\n%@\n", jsonString);
-#endif
+    LIOLog(@"\n[READ]\n%@\n", jsonString);
     
     [self performSelectorOnMainThread:@selector(handlePacket:) withObject:result waitUntilDone:NO];    
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
 {
-    NSLog(@"\n\nREAD TIMEOUT\n\n");
+    LIOLog(@"\n\nREAD TIMEOUT\n\n");
     return 0;
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutWriteWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
 {
-    NSLog(@"\n\nWRITE TIMEOUT\n\n");
+    LIOLog(@"\n\nWRITE TIMEOUT\n\n");
     return 0;
 }
 
@@ -2389,12 +2349,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-
-/*
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
-#endif
-*/
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
@@ -2408,12 +2362,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-
-/*
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape left\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
-#endif
-*/
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
@@ -2428,11 +2376,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
 
-/*        
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: portrait upsidedown\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
-#endif
-*/
     }
     else // Landscape, home button right
     {
@@ -2446,12 +2389,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
-
-/*
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Rotation event.\n    actualInterfaceOrientation: landscape right\n    screenSize: %@\n    controlButton.frame: %@\n", [NSValue valueWithCGSize:screenSize], [NSValue valueWithCGRect:controlButton.frame]);
-#endif
-*/
     }
     
     [controlButton setNeedsLayout];
@@ -2483,9 +2420,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [request setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
                 [request autorelease];
-#ifdef DEBUG
-                NSLog(@"[LOOKIO] <QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
-#endif
+                LIOLog(@"[LOOKIO] <QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
             }
             
             [queuedLaunchReportDates removeAllObjects];
@@ -2532,9 +2467,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             appLaunchRequestIgnoringLocationHeader = YES;
             
-#ifdef DEBUG
-            NSLog(@"\n\n[LOOKIO] <<< REDIRECT >>>\n[LOOKIO] <<< REDIRECT >>> Location: %@\n[LOOKIO] <<< REDIRECT >>>\n\n", overriddenEndpoint);
-#endif // DEBUG
+            LIOLog(@"\n\n[LOOKIO] <<< REDIRECT >>>\n[LOOKIO] <<< REDIRECT >>> Location: %@\n[LOOKIO] <<< REDIRECT >>>\n\n", overriddenEndpoint);
             
             [self sendLaunchReport];
         }
@@ -2566,9 +2499,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appLaunchRequestConnection == connection)
     {
         NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease]];
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] <LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
-#endif
+        LIOLog(@"[LOOKIO] <LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
         
         NSDictionary *params = [responseDict objectForKey:@"response"];
         [self parseAndSaveClientParams:params];
@@ -2584,9 +2515,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] <LAUNCH> Failed. Reason: %@", [error localizedDescription]);
-#endif
+        LIOLog(@"[LOOKIO] <LAUNCH> Failed. Reason: %@", [error localizedDescription]);
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;

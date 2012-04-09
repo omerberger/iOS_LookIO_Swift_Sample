@@ -12,6 +12,7 @@
 #import <net/if_dl.h>
 #import <sys/sysctl.h>
 #import <netinet/in.h>
+#import "LIOLogManager.h"
 
 @interface LIOAnalyticsManager ()
 - (void)handleReachabilityCallbackWithFlags:(SCNetworkReachabilityFlags)flags;
@@ -137,9 +138,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     {
         // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
         int status = [$CLLocationManager authorizationStatus];
-#ifdef DEBUG
-        NSLog(@"[LOOKIO] Location services authorization status: %d", status);
-#endif
+        LIOLog(@"[LOOKIO] Location services authorization status: %d", status);
         return status == 3;
     }
     
