@@ -29,21 +29,12 @@
     
     UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
     
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-        CGRect aFrame = backgroundView.frame;
-        aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
-        backgroundView.frame = aFrame;
-        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [rootView addSubview:backgroundView];
-    }
-    else
-    {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        [rootView addSubview:backgroundView];
-    }
+    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
+    CGRect aFrame = backgroundView.frame;
+    aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
+    backgroundView.frame = aFrame;
+    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [rootView addSubview:backgroundView];
         
     scrollView = [[UIScrollView alloc] init];
     scrollView.frame = rootView.bounds;
@@ -52,7 +43,7 @@
     
     UINavigationBar *navBar = [[[UINavigationBar alloc] init] autorelease];
     navBar.barStyle = UIBarStyleBlackOpaque;
-    CGRect aFrame = navBar.frame;
+    aFrame = navBar.frame;
     aFrame.size.width = rootView.frame.size.width;
     aFrame.size.height = 44.0;
     navBar.frame = aFrame;

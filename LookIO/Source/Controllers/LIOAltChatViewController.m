@@ -26,6 +26,14 @@
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
 
+// LIOGradientLayer gets rid of implicit layer animations.
+@interface LIOGradientLayer : CAGradientLayer
+@end
+@implementation LIOGradientLayer
++ (id<CAAction>)defaultActionForKey:(NSString *)key { return NULL; }
+- (id<CAAction>)actionForKey:(NSString *)key { return NULL; }
+@end
+
 @implementation LIOAltChatViewController
 
 @synthesize delegate, dataSource, initialChatText, agentTyping;
@@ -47,10 +55,26 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAltChatBackground"];
+    CGColorRef blackColor = [UIColor colorWithWhite:0.1 alpha:0.9].CGColor;
+    CGColorRef clearColor = [UIColor colorWithWhite:0.1 alpha:0.1].CGColor;
+
+    vertGradient = [[LIOGradientLayer alloc] init];
+    vertGradient.colors = [NSArray arrayWithObjects:(id)blackColor, (id)clearColor, (id)clearColor, (id)blackColor, nil];
+    vertGradient.backgroundColor = clearColor;
+    vertGradient.frame = self.view.bounds;
     
-    background = [[UIImageView alloc] initWithImage:backgroundImage];
+    horizGradient = [[LIOGradientLayer alloc] init];
+    horizGradient.colors = [NSArray arrayWithObjects:(id)blackColor, (id)clearColor, (id)clearColor, (id)blackColor, nil];
+    horizGradient.backgroundColor = clearColor;
+    horizGradient.frame = self.view.bounds;
+    horizGradient.startPoint = CGPointMake(0.0, 0.5);
+    horizGradient.endPoint = CGPointMake(1.0, 0.5);
+    
+    background = [[UIView alloc] initWithFrame:self.view.bounds];
+    background.backgroundColor = [UIColor clearColor];
     background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    [background.layer addSublayer:vertGradient];
+    [background.layer addSublayer:horizGradient];
     [self.view addSubview:background];
     
     CGRect tableViewFrame = self.view.bounds;
@@ -206,6 +230,12 @@
     
     [functionHeader release];
     functionHeader = nil;
+    
+    [vertGradient release];
+    vertGradient = nil;
+    
+    [horizGradient release];
+    horizGradient = nil;
 }
 
 - (void)dealloc
@@ -223,6 +253,8 @@
     [headerBar release];
     [inputBar release];
     [functionHeader release];
+    [vertGradient release];
+    [horizGradient release];
     
     [super dealloc];
 }
@@ -271,8 +303,17 @@
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
+/*
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+}
+*/
+
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+    vertGradient.frame = self.view.bounds;
+    horizGradient.frame = self.view.bounds;
+    
     [self reloadMessages];
     //[self scrollToBottom];
 }

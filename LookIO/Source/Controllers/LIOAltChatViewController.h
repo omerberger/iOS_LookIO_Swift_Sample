@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -44,7 +44,7 @@
      LIOLeaveMessageViewControllerDelegate>
 {
     CGFloat previousScrollHeight;
-    UIImageView *background;
+    UIView *background;
     UITableView *tableView;
     NSArray *messages;
     NSUInteger previousTextLength;
@@ -55,6 +55,7 @@
     UITableViewCell *functionHeader;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
+    LIOGradientLayer *vertGradient, *horizGradient;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
