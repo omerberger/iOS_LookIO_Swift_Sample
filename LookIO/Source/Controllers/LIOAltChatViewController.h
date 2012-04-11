@@ -40,8 +40,8 @@
 
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
-     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
-     LIOLeaveMessageViewControllerDelegate>
+     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
+     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;

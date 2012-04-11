@@ -57,12 +57,12 @@ static LIOBundleManager *sharedBundleManager = nil;
             BOOL dirWasCreated = [fileManager createDirectoryAtPath:targetDir withIntermediateDirectories:YES attributes:nil error:&createDirectoryError];
             if (NO == dirWasCreated)
             {
-                LIOLog(@"[LOOKIO] BUNDLE: Warning! Unable to find/create target directory. Reason: %@", createDirectoryError);
+                LIOLog(@"BUNDLE: Warning! Unable to find/create target directory. Reason: %@", createDirectoryError);
                 [self release];
                 return nil;
             }
             
-            LIOLog(@"[LOOKIO] BUNDLE: Created target directory: %@", targetDir);
+            LIOLog(@"BUNDLE: Created target directory: %@", targetDir);
         }
         
         // Set up the HTTP download request in case we need it.
@@ -124,13 +124,13 @@ static LIOBundleManager *sharedBundleManager = nil;
 {
     if (lioBundle)
     {
-        LIOLog(@"[LOOKIO] BUNDLE: Ignoring request to find bundle; we've already got a valid one!");
+        LIOLog(@"BUNDLE: Ignoring request to find bundle; we've already got a valid one!");
         return;
     }
     
     if (bundleDownloadConnection)
     {
-        LIOLog(@"[LOOKIO] BUNDLE: Ignoring request to find bundle; a download request is already in progress!");
+        LIOLog(@"BUNDLE: Ignoring request to find bundle; a download request is already in progress!");
         return;
     }
     
@@ -140,7 +140,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     if (lioBundle)
     {
         // Yep!
-        LIOLog(@"[LOOKIO] BUNDLE: Found in host app's main bundle: %@", mainBundlePath);
+        LIOLog(@"BUNDLE: Found in host app's main bundle: %@", mainBundlePath);
     }
     else
     {
@@ -150,7 +150,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (lioBundle)
         {
             // Yep!
-            LIOLog(@"[LOOKIO] BUNDLE: Found in caches directory: %@", cachesPath);
+            LIOLog(@"BUNDLE: Found in caches directory: %@", cachesPath);
         }
         else
         {
@@ -164,11 +164,11 @@ static LIOBundleManager *sharedBundleManager = nil;
 {
     if (bundleDownloadConnection)
     {
-        LIOLog(@"[LOOKIO] BUNDLE: Warning! Was asked to begin bundle download, but a download request is already in progress.");
+        LIOLog(@"BUNDLE: Warning! Was asked to begin bundle download, but a download request is already in progress.");
         return;
     }
     
-    LIOLog(@"[LOOKIO] BUNDLE: Starting bundle download...");
+    LIOLog(@"BUNDLE: Starting bundle download...");
     
     [[NSFileManager defaultManager] removeItemAtPath:[self bundleZipPath] error:nil];
     bundleDownloadOutputStream = [[NSOutputStream outputStreamToFileAtPath:[self bundleZipPath] append:NO] retain];
@@ -186,7 +186,7 @@ static LIOBundleManager *sharedBundleManager = nil;
 {
     if (nil == lioBundle)
     {
-        LIOLog(@"[LOOKIO] BUNDLE: Warning! Image \"%@\" requested, but no bundle is present.", aString);
+        LIOLog(@"BUNDLE: Warning! Image \"%@\" requested, but no bundle is present.", aString);
         return [UIImage imageNamed:aString];
     }
     
@@ -225,7 +225,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -242,7 +242,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -260,7 +260,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -277,7 +277,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -295,7 +295,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }    
@@ -312,7 +312,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -329,7 +329,7 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }
@@ -346,12 +346,12 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         else
         {
-            LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't load \"%@\"", actualPath);
+            LIOLog(@"IMAGE: Warning! Couldn't load \"%@\"", actualPath);
             return nil;
         }
     }        
     
-    LIOLog(@"[LOOKIO] IMAGE: Warning! Couldn't find \"%@\"", aString);
+    LIOLog(@"IMAGE: Warning! Couldn't find \"%@\"", aString);
     
     return [UIImage imageNamed:aString];
 }
@@ -377,7 +377,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     
     [[NSFileManager defaultManager] removeItemAtPath:[self bundleZipPath] error:nil];
     
-    LIOLog(@"[LOOKIO] BUNDLE: Warning! Bundle download failed with error: %@", [error localizedDescription]);
+    LIOLog(@"BUNDLE: Warning! Bundle download failed with error: %@", [error localizedDescription]);
     
     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:error, LIOBundleManagerErrorKey, nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:LIOBundleManagerBundleDownloadDidFinishNotification
@@ -393,7 +393,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
     bundleDownloadResponseCode = httpResponse.statusCode;
     
-    LIOLog(@"[LOOKIO] BUNDLE: HTTP response code: %d", bundleDownloadResponseCode);
+    LIOLog(@"BUNDLE: HTTP response code: %d", bundleDownloadResponseCode);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -423,7 +423,7 @@ static LIOBundleManager *sharedBundleManager = nil;
             {
                 if ([info.name hasSuffix:@"/"])
                 {
-                    LIOLog(@"[LOOKIO] BUNDLE: Found a directory entry in zip file. Ignoring... \"%@\"", info.name);
+                    LIOLog(@"BUNDLE: Found a directory entry in zip file. Ignoring... \"%@\"", info.name);
                 }
                 else
                     [filesToCreate addObject:info.name];
@@ -530,7 +530,7 @@ static LIOBundleManager *sharedBundleManager = nil;
                 {
                     [aZipFile close];
                     
-                    LIOLog(@"[LOOKIO] BUNDLE: Successfully extracted %d file(s).", numFiles);
+                    LIOLog(@"BUNDLE: Successfully extracted %d file(s).", numFiles);
                 }
             }
         }
@@ -560,7 +560,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     {
         // Failure cleanup.
         [[NSFileManager defaultManager] removeItemAtPath:[self bundlePath] error:nil];
-        LIOLog(@"[LOOKIO] BUNDLE: Warning! Failed to download/extract bundle.");
+        LIOLog(@"BUNDLE: Warning! Failed to download/extract bundle.");
     }
     else
     {

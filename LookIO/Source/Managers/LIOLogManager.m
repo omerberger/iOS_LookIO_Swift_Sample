@@ -7,6 +7,9 @@
 //
 
 #import "LIOLogManager.h"
+#import "LIOLookIOManager.h"
+
+#define LIOLogManagerRecordSeparator        0x1E
 
 static LIOLogManager *sharedLogManager = nil;
 
@@ -26,11 +29,16 @@ static LIOLogManager *sharedLogManager = nil;
 {
     if ((self = [super init]))
     {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive:)
+                                                     name:UIApplicationWillResignActiveNotification
+                                                   object:nil];
+        
         logEntries = [[NSMutableArray alloc] init];
         
         dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateStyle:NSDateFormatterShortStyle];
-        [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+        dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
+        dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
         [self deleteExistingLogIfOversized];
     }
@@ -52,9 +60,8 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (NSString *)logPath
 {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *logPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"LookIO.log"];
-    return logPath;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    return [[paths objectAtIndex:0] stringByAppendingPathComponent:@"LookIO.log"];
 }
 
 - (void)deleteExistingLogIfOversized
@@ -67,6 +74,13 @@ static LIOLogManager *sharedLogManager = nil;
         [fileManager removeItemAtPath:path error:nil];
 }
 
+- (void)deleteExistingLog
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *path = [self logPath];
+    [fileManager removeItemAtPath:path error:nil];
+}
+
 - (void)flush
 {
     NSOutputStream *outputStream = [[NSOutputStream alloc] initToFileAtPath:[self logPath] append:YES];
@@ -76,6 +90,8 @@ static LIOLogManager *sharedLogManager = nil;
         NSData *data = [aLogEntry dataUsingEncoding:NSUTF8StringEncoding];
         const uint8_t *bytes = [data bytes];
         [outputStream write:bytes maxLength:[data length]];
+        const uint8_t separator = LIOLogManagerRecordSeparator;
+        [outputStream write:&separator maxLength:1];
     }
     
     [logEntries removeAllObjects];
@@ -93,20 +109,42 @@ static LIOLogManager *sharedLogManager = nil;
     va_end(args);
     
     NSMutableString *result = [NSMutableString string];
-    [result appendFormat:@"[%@] ", [dateFormatter stringFromDate:[NSDate date]]];
+    [result appendFormat:@"%@ ", [dateFormatter stringFromDate:[NSDate date]]];
     [result appendString:stringToLog];
     [result appendString:@" #ios\n"];
     
     [logEntries addObject:result];
     
 #ifdef DEBUG
-    NSLog(@"%@", result);
+    NSLog(@"[LOOKIO] %@", result);
 #endif // DEBUG
     
     // Clamp.
     residentLogCharacters += [result length];
     if (residentLogCharacters >= LIOLogManagerMaxResidentLogCharacters)
         [self flush];
+}
+
+- (void)uploadLog
+{
+    [self flush];
+    
+    NSString *allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
+                                                        encoding:NSUTF8StringEncoding
+                                                           error:nil];
+    
+    if ([allLogEntries length])
+        [[LIOLookIOManager sharedLookIOManager] uploadLog:allLogEntries];
+    
+    [self deleteExistingLog];
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
+    [self uploadLog];
 }
 
 @end

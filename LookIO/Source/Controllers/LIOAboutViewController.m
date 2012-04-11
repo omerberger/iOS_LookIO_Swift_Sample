@@ -28,12 +28,9 @@
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
     UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
-    
     UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-    CGRect aFrame = backgroundView.frame;
-    aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
-    backgroundView.frame = aFrame;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    backgroundView.frame = self.view.bounds;
+    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:backgroundView];
         
     scrollView = [[UIScrollView alloc] init];
@@ -43,7 +40,7 @@
     
     UINavigationBar *navBar = [[[UINavigationBar alloc] init] autorelease];
     navBar.barStyle = UIBarStyleBlackOpaque;
-    aFrame = navBar.frame;
+    CGRect aFrame = navBar.frame;
     aFrame.size.width = rootView.frame.size.width;
     aFrame.size.height = 44.0;
     navBar.frame = aFrame;

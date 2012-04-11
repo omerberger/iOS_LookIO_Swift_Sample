@@ -49,6 +49,8 @@
 
 #define LIOLookIOManagerAppLaunchRequestURL     [NSString stringWithFormat:@"http://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
 #define LIOLookIOManagerAppLaunchRequestURL_TLS [NSString stringWithFormat:@"https://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
+#define LIOLookIOManagerLogUploadRequestURL     [NSString stringWithFormat:@"http://%@/api/v1/app/log", LIOLookIOManagerDefaultControlEndpoint]
+#define LIOLookIOManagerLogUploadRequestURL_TLS [NSString stringWithFormat:@"https://%@/api/v1/app/log", LIOLookIOManagerDefaultControlEndpoint]
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -143,6 +145,7 @@
 - (void)configureReconnectionTimer;
 - (BOOL)beginConnectingWithError:(NSError **)anError;
 - (void)killReconnectionTimer;
+- (NSString *)dateToStandardizedString:(NSDate *)aDate;
 
 @end
 
@@ -258,18 +261,39 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return self;
 }
 
+- (void)uploadLog:(NSString *)logBody
+{
+    NSURL *url = [NSURL URLWithString:LIOLookIOManagerLogUploadRequestURL];
+    if (usesTLS)
+        url = [NSURL URLWithString:LIOLookIOManagerLogUploadRequestURL_TLS];
+    
+    NSString *udid = uniqueIdentifier();
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+    
+    NSMutableURLRequest *uploadLogRequest = [NSMutableURLRequest requestWithURL:url
+                                                                    cachePolicy:NSURLCacheStorageNotAllowed
+                                                                timeoutInterval:10.0];
+    [uploadLogRequest addValue:bundleId forHTTPHeaderField:@"X-Lookio-BundleID"];
+    [uploadLogRequest addValue:@"Apple iOS" forHTTPHeaderField:@"X-Lookio-Platform"];
+    [uploadLogRequest addValue:udid forHTTPHeaderField:@"X-Lookio-DeviceID"];
+    [uploadLogRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+    [uploadLogRequest setHTTPBody:[logBody dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    [NSURLConnection connectionWithRequest:uploadLogRequest delegate:nil];
+}
+
 - (void)sendLaunchReport
 {
     if ([overriddenEndpoint length])
     {
         if (usesTLS)
         {
-            NSString *urlString = [NSString stringWithFormat:@"https://%@", overriddenEndpoint];
+            NSString *urlString = [NSString stringWithFormat:@"https://%@/api/v1/app/launch", overriddenEndpoint];
             [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
         }
         else
         {
-            NSString *urlString = [NSString stringWithFormat:@"http://%@", overriddenEndpoint];
+            NSString *urlString = [NSString stringWithFormat:@"http://%@/api/v1/app/launch", overriddenEndpoint];
             [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
         }
     }
@@ -288,7 +312,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
         NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
         [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"[LOOKIO] <LAUNCH> Request: %@", introDictWwwFormEncoded);
+        LIOLog(@"<LAUNCH> Request: %@", introDictWwwFormEncoded);
         appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
     }
     else
@@ -416,7 +440,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self applicationDidChangeStatusBarOrientation:nil];
     
     appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                         cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+                                                    cachePolicy:NSURLCacheStorageNotAllowed
                                                      timeoutInterval:10.0];
     [appLaunchRequest setHTTPMethod:@"POST"];
     [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
@@ -459,7 +483,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [LIOBundleManager sharedBundleManager];
     
-    LIOLog(@"[LOOKIO] Loaded.");    
+    LIOLog(@"Loaded.");    
 }
 
 - (NSString *)dateToStandardizedString:(NSDate *)aDate
@@ -571,7 +595,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [lookioWindow release];
     
-    LIOLog(@"[LOOKIO] Unloaded.");
+    LIOLog(@"Unloaded.");
     
     [super dealloc];
 }
@@ -635,7 +659,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self rejiggerWindows];
     
-    LIOLog(@"[LOOKIO] Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
+    LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
 
 - (void)rejiggerWindows
@@ -651,32 +675,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 previousKeyWindow = mainWindow;
                 
-                LIOLog(@"[LOOKIO] Got key window from mainWindow.");
+                LIOLog(@"Got key window from mainWindow.");
             }
             else if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
             {
                 previousKeyWindow = [delegate lookIOManagerMainWindowForHostApp:self];
                 
-                LIOLog(@"[LOOKIO] Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
+                LIOLog(@"Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
             }
             else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
             {
                 previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
                 
-                LIOLog(@"[LOOKIO] Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
+                LIOLog(@"Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
             }
             else
             {
-                LIOLog(@"[LOOKIO] WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
+                LIOLog(@"WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
             }
             
-            LIOLog(@"[LOOKIO] Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
+            LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
         }
     }
     else
     {
-        LIOLog(@"[LOOKIO] Hiding 0x%08X, restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
+        LIOLog(@"Hiding 0x%08X, restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
         
         lookioWindow.hidden = YES;
         
@@ -796,7 +820,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              withTimeout:-1
                                      tag:0];
                 
-                LIOLog(@"[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
+                LIOLog(@"Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
             });
         }
     });
@@ -892,7 +916,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (controlSocketConnecting)
     {
-        LIOLog(@"[CONNECT] Connect attempt ignored: connecting or already connected.");
+        LIOLog(@"Connect attempt ignored: connecting or already connected.");
         return;
     }
     
@@ -908,7 +932,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
-        LIOLog(@"[CONNECT] Connection failed. Reason: %@", [connectError localizedDescription]);
+        LIOLog(@"Connection failed. Reason: %@", [connectError localizedDescription]);
         
         if (NO == firstChatMessageSent)
         {
@@ -958,7 +982,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                onPort:chosenPort
                                                 error:anError];
     
-    LIOLog(@"[CONNECT] Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
+    LIOLog(@"Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
     
     return connectResult;
 }
@@ -1005,7 +1029,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (waitingForIntroAck)
         {
-            LIOLog(@"[INTRODUCTION] Introduction complete.");
+            LIOLog(@"Introduction complete.");
             introduced = YES;
             waitingForIntroAck = NO;
             enqueued = YES;
@@ -1018,7 +1042,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if (waitingForScreenshotAck)
         {
-            LIOLog(@"[SCREENSHOT] Screenshot received by remote host.");
+            LIOLog(@"Screenshot received by remote host.");
             waitingForScreenshotAck = NO;
         }
     }
@@ -1098,7 +1122,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSString *action = [aPacket objectForKey:@"action"];
         
-        if ([action isEqualToString:@"typing_start"])
+        if ([action isEqualToString:@"send_logs"])
+        {
+            [[LIOLogManager sharedLogManager] uploadLog];
+        }
+        else if ([action isEqualToString:@"typing_start"])
         {
             altChatViewController.agentTyping = YES;
         }
@@ -1176,7 +1204,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"connected"])
         {
-            LIOLog(@"[QUEUE] We're live!");
+            LIOLog(@"We're live!");
             enqueued = NO;
             
             if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -1317,7 +1345,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
-    LIOLog(@"[INTRO] Intro JSON: %@", intro);
+    LIOLog(@"Intro JSON: %@", intro);
     
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -1553,7 +1581,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([test length])
             [sessionExtras setObject:anObject forKey:aKey];
         else
-            LIOLog(@"[LOOKIO] Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+            LIOLog(@"Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
     }
     else
         [sessionExtras removeObjectForKey:aKey];
@@ -1571,7 +1599,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([test length])
         [sessionExtras addEntriesFromDictionary:aDictionary];
     else
-        LIOLog(@"[LOOKIO] Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
+        LIOLog(@"Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
 }
 
 - (void)clearSessionExtras
@@ -1723,7 +1751,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if ([controlSocket isConnected])
     {
-        LIOLog(@"[CONNECT] Ignoring request to configure reconnection timer: we're already connected!");
+        LIOLog(@"Ignoring request to configure reconnection timer: we're already connected!");
         
         [self killReconnectionTimer];
         resumeMode = NO;
@@ -1739,7 +1767,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self beginConnectingWithError:nil];
     
     NSTimeInterval timerInterval = exp2(previousReconnectionTimerStep);
-    LIOLog(@"[CONNECT] Configuring reconnection timer with interval: %f", timerInterval);
+    LIOLog(@"Configuring reconnection timer with interval: %f", timerInterval);
     reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:exp2(previousReconnectionTimerStep)
                                                              target:self
                                                            selector:@selector(reconnectionTimerDidFire)];
@@ -1779,7 +1807,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     controlSocketConnecting = NO;
     
-    LIOLog(@"[CONNECT] Connected to %@:%u", host, port);
+    LIOLog(@"Connected to %@:%u", host, port);
 
     [self configureReconnectionTimer];
     
@@ -1791,7 +1819,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
-    LIOLog(@"[CONNECT] Secured.");    
+    LIOLog(@"Connection secured.");    
     
     [self performIntroduction];
 }
@@ -1852,12 +1880,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     userWantsSessionTermination = NO;
         
-    LIOLog(@"[CONNECT] Socket will disconnect. Reason: %@", [err localizedDescription]);
+    LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
 {
-    LIOLog(@"[CONNECT] Socket did disconnect.");
+    LIOLog(@"Socket did disconnect.");
     
     if (resetAfterDisconnect)
     {
@@ -1866,7 +1894,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent)
     {
-        LIOLog(@"[RESUME] Unexpected disconnection! Going into resume mode...");
+        LIOLog(@"Unexpected disconnection! Going into resume mode...");
         
         [self configureReconnectionTimer];
         [altChatViewController showReconnectionOverlay];
@@ -2365,6 +2393,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([backgroundedTime timeIntervalSinceNow] <= -1800.0)
         {
             // It's been 30 minutes! Send a launch packet.
+            [overriddenEndpoint release];
+            overriddenEndpoint = nil;
+            
             [self sendLaunchReport];
         }
         
@@ -2524,7 +2555,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [request setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
                 [request autorelease];
-                LIOLog(@"[LOOKIO] <QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
+                LIOLog(@"<QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
             }
             
             [queuedLaunchReportDates removeAllObjects];
@@ -2571,7 +2602,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             appLaunchRequestIgnoringLocationHeader = YES;
             
-            LIOLog(@"\n\n[LOOKIO] <<< REDIRECT >>>\n[LOOKIO] <<< REDIRECT >>> Location: %@\n[LOOKIO] <<< REDIRECT >>>\n\n", overriddenEndpoint);
+            LIOLog(@"\n\n<<< REDIRECT >>>\n<<< REDIRECT >>> Location: %@\n<<< REDIRECT >>>\n\n", overriddenEndpoint);
             
             [self sendLaunchReport];
         }
@@ -2603,7 +2634,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appLaunchRequestConnection == connection)
     {
         NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease]];
-        LIOLog(@"[LOOKIO] <LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
+        LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
         
         NSDictionary *params = [responseDict objectForKey:@"response"];
         [self parseAndSaveClientParams:params];
@@ -2619,7 +2650,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-        LIOLog(@"[LOOKIO] <LAUNCH> Failed. Reason: %@", [error localizedDescription]);
+        LIOLog(@"<LAUNCH> Failed. Reason: %@", [error localizedDescription]);
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;

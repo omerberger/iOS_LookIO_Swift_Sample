@@ -28,5 +28,6 @@
 - (void)logFormat:(NSString *)formatString, ...;
 - (void)deleteExistingLogIfOversized;
 - (void)flush;
+- (void)uploadLog;
 
 @end

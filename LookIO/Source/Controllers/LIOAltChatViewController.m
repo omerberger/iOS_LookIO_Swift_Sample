@@ -18,6 +18,8 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOLeaveMessageViewController.h"
 #import "LIOBundleManager.h"
+#import "DAKeyboardControlTableView.h"
+#import "LIOLogManager.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -55,8 +57,8 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    CGColorRef blackColor = [UIColor colorWithWhite:0.1 alpha:0.9].CGColor;
-    CGColorRef clearColor = [UIColor colorWithWhite:0.1 alpha:0.1].CGColor;
+    CGColorRef blackColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
+    CGColorRef clearColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
 
     vertGradient = [[LIOGradientLayer alloc] init];
     vertGradient.colors = [NSArray arrayWithObjects:(id)blackColor, (id)clearColor, (id)clearColor, (id)blackColor, nil];
@@ -134,7 +136,7 @@
         aFrame.size.height = 35.0;
         aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
         dismissalBar.frame = aFrame;
-        dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         dismissalBar.delegate = self;
         [self.view insertSubview:dismissalBar belowSubview:inputBar];
 
@@ -147,6 +149,9 @@
         headerBar.delegate = self;
         headerBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self.view addSubview:headerBar];
+        
+        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHeaderBarTap:)] autorelease];
+        [headerBar addGestureRecognizer:tapper];
     }
     
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
@@ -588,6 +593,13 @@
 }
 
 #pragma mark -
+#pragma mark DAKeyboardControlDelegate methods
+
+- (void)keyboardFrameWillChange:(CGRect)newFrame from:(CGRect)oldFrame over:(CGFloat)seconds
+{
+}
+
+#pragma mark -
 #pragma mark UIControl actions
 
 - (void)aboutButtonWasTapped
@@ -615,6 +627,11 @@
 - (void)handleReconnectionOverlayTap:(UITapGestureRecognizer *)aTapper
 {
     [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+}
+
+- (void)handleHeaderBarTap:(UITapGestureRecognizer *)aTapper
+{
+    [self headerBarViewPlusButtonWasTapped:headerBar];
 }
 
 #pragma mark -
@@ -770,7 +787,7 @@
     
     keyboardHeight = 0.0;
 }
-
+ 
 #pragma mark -
 #pragma mark LIOInputBarViewDelegate methods
 

@@ -23,22 +23,10 @@
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
     UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
-    
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-        CGRect aFrame = backgroundView.frame;
-        aFrame.origin.x = -((aFrame.size.width - rootView.frame.size.width) / 2.0);
-        backgroundView.frame = aFrame;
-        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [rootView addSubview:backgroundView];
-    }
-    else
-    {
-        UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        [rootView addSubview:backgroundView];
-    }
+    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
+    backgroundView.frame = self.view.bounds;
+    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [rootView addSubview:backgroundView];
     
     navBar = [[UINavigationBar alloc] init];
     navBar.barStyle = UIBarStyleBlackOpaque;
@@ -48,7 +36,7 @@
     aFrame.size.height = navBarHeight;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"Leave a Message"] autorelease];
+    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"No Agents Available"] autorelease];
     UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
     anItem.leftBarButtonItem = closeItem;
     [navBar pushNavigationItem:anItem animated:NO];
@@ -56,6 +44,7 @@
     [rootView addSubview:navBar];
     
     scrollView = [[UIScrollView alloc] init];
+    scrollView.backgroundColor = [UIColor clearColor];
     scrollView.frame = rootView.bounds;
     aFrame = scrollView.frame;
     aFrame.origin.y = navBar.frame.size.height;
@@ -63,7 +52,8 @@
     scrollView.frame = aFrame;
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
-                
+    
+    /*
     UILabel *label01 = [[[UILabel alloc] init] autorelease];
     label01.text = @"Sorry, no agents are available.";
     label01.textColor = [UIColor whiteColor];
@@ -80,6 +70,7 @@
     label01.frame = aFrame;
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label01];
+    */
     
     UILabel *label02 = [[[UILabel alloc] init] autorelease];
     label02.text = @"Please enter your email and a message for further help:";
@@ -92,7 +83,7 @@
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
-    aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height;
+    aFrame.origin.y = 5.0; //label01.frame.origin.y + label01.frame.size.height;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
     label02.frame = aFrame;
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -105,7 +96,7 @@
     fieldBackground.userInteractionEnabled = YES;
     aFrame = fieldBackground.frame;
     aFrame.size.width = 290.0;
-    aFrame.size.height = 48.0;
+    aFrame.size.height = 43.0;
     aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     fieldBackground.frame = aFrame;
@@ -116,9 +107,9 @@
     emailField.delegate = self;
     emailField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
-    aFrame.origin.y = 14.0;
+    aFrame.origin.y = 12.0;
     aFrame.size.width = 269.0;
-    aFrame.size.height = 28.0;
+    aFrame.size.height = 23.0;
     emailField.frame = aFrame;
     emailField.font = [UIFont systemFontOfSize:14.0];
     emailField.placeholder = @"name@example.com";
@@ -136,7 +127,7 @@
     messageBackground.clipsToBounds = YES;
     messageBackground.userInteractionEnabled = YES;
     aFrame.size.width = 290.0;
-    aFrame.size.height = 96.0;
+    aFrame.size.height = 76.0;
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 5.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     messageBackground.frame = aFrame;
@@ -147,11 +138,12 @@
     messageView.keyboardAppearance = UIKeyboardAppearanceAlert;
     messageView.returnKeyType = UIReturnKeySend;
     messageView.backgroundColor = [UIColor clearColor];
+    messageView.font = [UIFont systemFontOfSize:14.0];
     messageView.delegate = self;
     aFrame.origin.x = 1.0;
     aFrame.origin.y = 10.0;
     aFrame.size.width = 280.0;
-    aFrame.size.height = 80.0;
+    aFrame.size.height = 60.0;
     messageView.frame = aFrame;
     messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [messageBackground addSubview:messageView];
@@ -270,9 +262,9 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     if (messageViewActive)
-        [scrollView scrollRectToVisible:messageBackground.frame animated:YES];
+        [scrollView scrollRectToVisible:messageBackground.frame animated:NO];
     else
-        [scrollView scrollRectToVisible:fieldBackground.frame animated:YES];
+        [scrollView scrollRectToVisible:fieldBackground.frame animated:NO];
     
     scrollView.contentSize = CGSizeMake(self.view.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
     
