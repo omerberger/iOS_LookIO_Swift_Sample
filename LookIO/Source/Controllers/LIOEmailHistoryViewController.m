@@ -90,7 +90,7 @@
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label01];
     
-    UILabel *label02 = [[[UILabel alloc] init] autorelease];
+    label02 = [[UILabel alloc] init];
     label02.text = @"Your Email Address:";
     label02.textColor = altBlue;
     label02.backgroundColor = [UIColor clearColor];
@@ -164,6 +164,22 @@
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
+- (void)rejiggerInterface
+{
+    CGRect aFrame = fieldBackground.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 48.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    fieldBackground.frame = aFrame;
+    
+    submitButton.bounds = fieldBackground.bounds;
+    aFrame = submitButton.frame;
+    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
+    submitButton.frame = aFrame;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -189,6 +205,9 @@
     
     [navBar release];
     navBar = nil;
+    
+    [label02 release];
+    label02 = nil;
 }
 
 - (void)dealloc
@@ -201,6 +220,7 @@
     [inputField release];
     [submitButton release];
     [navBar release];
+    [label02 release];
     
     [super dealloc];
 }
@@ -217,7 +237,9 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
-                                               object:nil];
+                                               object:nil];   
+    
+    [self rejiggerInterface];
     
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [inputField becomeFirstResponder];
@@ -264,7 +286,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)aNotification
 {
-    if (keyboardShown)
+    if (keyboardShown || UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         return;
     
     keyboardShown = YES;
@@ -302,7 +324,7 @@
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
-    if (NO == keyboardShown)
+    if (NO == keyboardShown || UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         return;
     
     keyboardShown = NO;

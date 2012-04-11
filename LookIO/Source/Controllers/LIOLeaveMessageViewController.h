@@ -26,6 +26,7 @@
     BOOL keyboardShown, messageViewActive;
     NSString *initialMessage;
     UIButton *submitButton;
+    UILabel *label02;
     id<LIOLeaveMessageViewControllerDelegate> delegate;
 }
 

@@ -23,6 +23,7 @@
     UIImageView *fieldBackground;
     UITextField *inputField;
     UIButton *submitButton;
+    UILabel *label02;
     BOOL keyboardShown;
     NSString *initialEmailAddress;
     id<LIOEmailHistoryViewControllerDelegate> delegate;

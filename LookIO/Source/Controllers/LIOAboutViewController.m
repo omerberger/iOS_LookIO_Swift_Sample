@@ -550,7 +550,7 @@
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
 {
-    if (keyboardShown)
+    if (keyboardShown || UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         return;
     
     NSDictionary *userInfo = [aNotification userInfo];
@@ -579,7 +579,7 @@
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
 {
-    if (NO == keyboardShown)
+    if (NO == keyboardShown || UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         return;
     
     NSDictionary *userInfo = [aNotification userInfo];

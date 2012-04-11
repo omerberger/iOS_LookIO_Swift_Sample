@@ -56,27 +56,48 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    CGColorRef blackColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
-    CGColorRef clearColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
-
-    vertGradient = [[LIOGradientLayer alloc] init];
-    vertGradient.colors = [NSArray arrayWithObjects:(id)blackColor, (id)clearColor, (id)clearColor, (id)blackColor, nil];
-    vertGradient.backgroundColor = clearColor;
-    vertGradient.frame = self.view.bounds;
-    
-    horizGradient = [[LIOGradientLayer alloc] init];
-    horizGradient.colors = [NSArray arrayWithObjects:(id)blackColor, (id)clearColor, (id)clearColor, (id)blackColor, nil];
-    horizGradient.backgroundColor = clearColor;
-    horizGradient.frame = self.view.bounds;
-    horizGradient.startPoint = CGPointMake(0.0, 0.5);
-    horizGradient.endPoint = CGPointMake(1.0, 0.5);
-    
-    background = [[UIView alloc] initWithFrame:self.view.bounds];
-    background.backgroundColor = [UIColor clearColor];
-    background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [background.layer addSublayer:vertGradient];
-    [background.layer addSublayer:horizGradient];
-    [self.view addSubview:background];
+    if (padUI)
+    {
+        CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
+        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
+        
+        horizGradient = [[LIOGradientLayer alloc] init];
+        horizGradient.colors = [NSArray arrayWithObjects:(id)lightColor, (id)darkColor, nil];
+        horizGradient.backgroundColor = [UIColor clearColor].CGColor;
+        horizGradient.frame = self.view.bounds;
+        horizGradient.startPoint = CGPointMake(0.0, 0.5);
+        horizGradient.endPoint = CGPointMake(1.0, 0.5);
+        
+        background = [[UIView alloc] initWithFrame:self.view.bounds];
+        background.backgroundColor = [UIColor clearColor];
+        background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [background.layer addSublayer:horizGradient];
+        [self.view addSubview:background];
+    }
+    else
+    {
+        CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
+        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
+        
+        vertGradient = [[LIOGradientLayer alloc] init];
+        vertGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
+        vertGradient.backgroundColor = [UIColor clearColor].CGColor;
+        vertGradient.frame = self.view.bounds;
+        
+        horizGradient = [[LIOGradientLayer alloc] init];
+        horizGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
+        horizGradient.backgroundColor = [UIColor clearColor].CGColor;
+        horizGradient.frame = self.view.bounds;
+        horizGradient.startPoint = CGPointMake(0.0, 0.5);
+        horizGradient.endPoint = CGPointMake(1.0, 0.5);
+        
+        background = [[UIView alloc] initWithFrame:self.view.bounds];
+        background.backgroundColor = [UIColor clearColor];
+        background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [background.layer addSublayer:vertGradient];
+        [background.layer addSublayer:horizGradient];
+        [self.view addSubview:background];
+    }
     
     CGRect tableViewFrame = self.view.bounds;
     UIViewAutoresizing tableViewAutoresizing;
@@ -104,6 +125,12 @@
     tableView.showsHorizontalScrollIndicator = NO;
     tableView.autoresizingMask = tableViewAutoresizing;
     [self.view addSubview:tableView];
+
+    if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
+    {
+        UIPanGestureRecognizer *panner = [tableView panGestureRecognizer];
+        [panner addTarget:self action:@selector(handleTableViewPan:)];
+    }
     
     CGRect inputBarFrame = CGRectZero;
     if (padUI)
@@ -156,7 +183,7 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-    UIButton *aboutButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    aboutButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [aboutButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
     aboutButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     aboutButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -172,7 +199,7 @@
     aboutButton.frame = aFrame;
     aboutButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
     
-    UIButton *emailConvoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
     emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -250,12 +277,14 @@
     aFrame.origin.x = (reconnectionBezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height;
     label.frame = aFrame;
-    [reconnectionBezel addSubview:label];    
+    [reconnectionBezel addSubview:label];
     
     /*
     UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleReconnectionOverlayTap:)] autorelease];
     [reconnectionOverlay addGestureRecognizer:tapper];
     */
+    
+    [self.view bringSubviewToFront:tableView];
 }
 
 - (void)viewDidLoad
@@ -290,6 +319,15 @@
     
     [reconnectionOverlay release];
     reconnectionOverlay = nil;
+    
+    [popover release];
+    popover = nil;
+    
+    [aboutButton release];
+    aboutButton = nil;
+    
+    [emailConvoButton release];
+    emailConvoButton = nil;
 }
 
 - (void)dealloc
@@ -310,6 +348,9 @@
     [vertGradient release];
     [horizGradient release];
     [reconnectionOverlay release];
+    [popover release];
+    [aboutButton release];
+    [emailConvoButton release];
     
     [super dealloc];
 }
@@ -358,11 +399,16 @@
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
-/*
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    if (popover)
+    {
+        [popover.contentViewController.view endEditing:YES];
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
 }
-*/
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
@@ -390,6 +436,18 @@
     
     if (padUI)
     {
+        background.alpha = 0.0;
+        
+        [UIView animateWithDuration:0.4
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             background.alpha = 1.0;
+                         }
+                         completion:^(BOOL finished) {
+                             background.alpha = 1.0;
+                         }];
+        
         tableView.alpha = 0.5;
         
         CATransform3D translate = CATransform3DMakeTranslation(tableView.frame.size.width / 2.0, -tableView.frame.size.height / 2.0, 0.0);
@@ -400,8 +458,8 @@
         tableView.layer.anchorPoint = CGPointMake(1.0, 0.0);
         tableView.layer.transform = initialTransform;
         
-        [UIView animateWithDuration:0.5
-                              delay:0.0
+        [UIView animateWithDuration:0.6
+                              delay:0.1
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              tableView.alpha = 1.0;
@@ -592,27 +650,48 @@
 }
 
 #pragma mark -
-#pragma mark DAKeyboardControlDelegate methods
-
-- (void)keyboardFrameWillChange:(CGRect)newFrame from:(CGRect)oldFrame over:(CGFloat)seconds
-{
-}
-
-#pragma mark -
 #pragma mark UIControl actions
 
 - (void)aboutButtonWasTapped
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
-    [self presentModalViewController:aController animated:YES];
+    
+    if (padUI)
+    {
+        aController.modalInPopover = YES;
+        aController.contentSizeForViewInPopover = CGSizeMake(480.0, 450.0);
+        
+        popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+        [popover presentPopoverFromRect:aboutButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController:aController animated:YES];
+    }
 }
 
 - (void)emailConvoButtonWasTapped
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        
     LIOEmailHistoryViewController *aController = [[[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
-    [self presentModalViewController:aController animated:YES];
+    
+    if (padUI)
+    {
+        aController.modalInPopover = YES;
+        aController.contentSizeForViewInPopover = CGSizeMake(480.0, 350.0);
+        
+        popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+        [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController:aController animated:YES];
+    }
 }
 
 - (void)endSessionButtonWasTapped
@@ -631,6 +710,17 @@
 - (void)handleHeaderBarTap:(UITapGestureRecognizer *)aTapper
 {
     [self headerBarViewPlusButtonWasTapped:headerBar];
+}
+
+- (void)handleTableViewPan:(UIPanGestureRecognizer *)aPanner
+{
+    if (NO == keyboardShowing)
+        return;
+    
+    UIView *keyboard = inputBar.inputField.inputAccessoryView.superview;
+    CGPoint touchLocation = [aPanner locationInView:keyboard];
+    if (touchLocation.y > -30.0)
+        [self.view endEditing:YES];
 }
 
 #pragma mark -
@@ -786,7 +876,7 @@
     
     keyboardHeight = 0.0;
 }
- 
+
 #pragma mark -
 #pragma mark LIOInputBarViewDelegate methods
 
@@ -841,6 +931,8 @@
 
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     if ([aString length])
     {
         [delegate altChatViewControllerTypingDidStop:self];
@@ -860,6 +952,9 @@
             if ([pendingChatText length])
                 aController.initialMessage = pendingChatText;
             
+            if (padUI)
+                aController.modalPresentationStyle = UIModalPresentationFormSheet;
+            
             [self presentModalViewController:aController animated:YES];
         }
     }
@@ -872,18 +967,18 @@
     [self reloadMessages];
 }
 
-#pragma mark -
-#pragma mark UIScrollViewDelegate methods
-
-/*
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView
 {
-    if (previousScrollHeight - scrollView.contentOffset.y > 3.0)
-        [self.view endEditing:YES];
+    // This only applies to iPad.
     
-    previousScrollHeight = scrollView.contentOffset.y;
+    LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    aController.delegate = self;
+    aController.modalInPopover = YES;
+    aController.contentSizeForViewInPopover = CGSizeMake(480.0, 450.0);
+    
+    popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+    [popover presentPopoverFromRect:inputBar.adArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
-*/
 
 #pragma mark -
 #pragma mark LIOHeaderBarViewDelegate methods
@@ -907,7 +1002,14 @@
 
 - (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController
 {
-    [self dismissModalViewControllerAnimated:YES];
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
@@ -915,7 +1017,14 @@
     if ([anEmail length])
         [delegate altChatViewController:self didEnterBetaEmail:anEmail];
     
-    [self dismissModalViewControllerAnimated:YES];
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:YES];
 }
 
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -928,12 +1037,26 @@
 
 - (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController
 {
-    [self dismissModalViewControllerAnimated:YES];
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)emailHistoryViewController:(LIOEmailHistoryViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
 {
-    [self dismissModalViewControllerAnimated:YES];
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:YES];
     
     if ([anEmail length])
         [delegate altChatViewController:self didEnterTranscriptEmail:anEmail];

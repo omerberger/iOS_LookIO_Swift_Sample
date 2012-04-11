@@ -16,9 +16,9 @@
 
 typedef enum
 {
-    LIOControllButtonViewModeDefault,
-    LIOControllButtonViewModePending
-} LIOControllButtonViewMode;
+    LIOControlButtonViewModeDefault,
+    LIOControlButtonViewModePending
+} LIOControlButtonViewMode;
 
 @interface LIOControlButtonView : UIView
 {
@@ -28,7 +28,7 @@ typedef enum
     LIOTimerProxy *fadeTimer;
     UIImageView *innerShadow;
     UIActivityIndicatorView *spinner;
-    LIOControllButtonViewMode currentMode;
+    LIOControlButtonViewMode currentMode;
     
     id<LIOControlButtonViewDelegate> delegate;
 }
@@ -36,7 +36,7 @@ typedef enum
 @property(nonatomic, retain) UIColor *tintColor, *textColor;
 @property(nonatomic, retain) NSString *labelText;
 @property(nonatomic, readonly) UILabel *label;
-@property(nonatomic, assign) LIOControllButtonViewMode currentMode;
+@property(nonatomic, assign) LIOControlButtonViewMode currentMode;
 @property(nonatomic, readonly) UIActivityIndicatorView *spinner;
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
 

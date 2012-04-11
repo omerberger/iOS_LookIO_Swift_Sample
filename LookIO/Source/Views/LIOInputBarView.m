@@ -15,7 +15,7 @@
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField, desiredHeight;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -81,6 +81,13 @@
             adLogo.frame = aFrame;
             adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [self addSubview:adLogo];
+            
+            adArea = [[UIView alloc] initWithFrame:CGRectUnion(adLabel.frame, adLogo.frame)];
+            adArea.backgroundColor = [UIColor clearColor];
+            [self addSubview:adArea];
+            
+            UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleAdAreaTap:)] autorelease];
+            [adArea addGestureRecognizer:tapper];
         }
         
         CGRect inputFieldBackgroundFrame = CGRectZero;
@@ -106,6 +113,10 @@
         inputFieldBackground.clipsToBounds = YES;
         [self addSubview:inputFieldBackground];
         
+        
+        UIView *nullView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+        nullView.backgroundColor = [UIColor clearColor];
+        
         CGFloat fontSize = 14.0;
         if (padUI)
             fontSize = 20.0;
@@ -113,6 +124,7 @@
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputField";
+        inputField.inputAccessoryView = nullView;
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -140,6 +152,7 @@
     [inputFieldBackground release];
     [adLabel release];
     [adLogo release];
+    [adArea release];
     
     [super dealloc];
 }
@@ -221,6 +234,14 @@
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];
     [self setNeedsLayout];
+}
+
+#pragma mark -
+#pragma mark Gesture handlers
+
+- (void)handleAdAreaTap:(UITapGestureRecognizer *)aTapper
+{
+    [delegate inputBarViewDidTapAdArea:self];
 }
 
 #pragma mark -

@@ -95,8 +95,6 @@
     else
         label.textColor = [UIColor whiteColor];
     
-    label.hidden = currentMode == LIOControllButtonViewModePending;
-    
     //innerShadow.transform = CGAffineTransformIdentity;
     
     if (UIInterfaceOrientationPortrait == [UIApplication sharedApplication].statusBarOrientation)
@@ -123,10 +121,17 @@
     innerShadow.frame = self.bounds;
     
     CGRect aFrame = spinner.frame;
+    aFrame.size.width = 16.0;
+    aFrame.size.height = 16.0;
     aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = (self.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.origin.y = 8.0;
     spinner.frame = aFrame;
-    spinner.hidden = currentMode != LIOControllButtonViewModePending;
+    spinner.hidden = currentMode != LIOControlButtonViewModePending;
+    
+    if (LIOControlButtonViewModeDefault == currentMode)
+        label.alpha = 1.0;
+    else
+        label.alpha = 0.5;
 }
 
 - (void)drawRect:(CGRect)rect

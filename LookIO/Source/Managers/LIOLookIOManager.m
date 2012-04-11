@@ -1473,9 +1473,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     if (resumeMode && NO == [controlSocket isConnected])
-        controlButton.currentMode = LIOControllButtonViewModePending;
+        controlButton.currentMode = LIOControlButtonViewModePending;
     else
-        controlButton.currentMode = LIOControllButtonViewModeDefault;
+        controlButton.currentMode = LIOControlButtonViewModeDefault;
     
     [controlButton setNeedsLayout];
     [controlButton setNeedsDisplay];

@@ -54,9 +54,11 @@
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;
+    UIButton *aboutButton, *emailConvoButton;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;
+    UIPopoverController *popover;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

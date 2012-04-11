@@ -15,6 +15,7 @@
 - (void)inputBarView:(LIOInputBarView *)aView didChangeDesiredHeight:(CGFloat)desiredHeight;
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString;
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView;
+- (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView;
 @end
 
 // Misc. constants
@@ -32,6 +33,7 @@
     CGFloat singleLineHeight;
     NSInteger totalLines;
     CGFloat desiredHeight;
+    UIView *adArea;
     id<LIOInputBarViewDelegate> delegate;
 }
 
@@ -39,5 +41,6 @@
 @property(nonatomic, readonly) CGFloat singleLineHeight;
 @property(nonatomic, readonly) UITextView *inputField;
 @property(nonatomic, readonly) CGFloat desiredHeight;
+@property(nonatomic, readonly) UIView *adArea;
 
 @end
