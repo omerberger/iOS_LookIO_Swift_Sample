@@ -11,8 +11,6 @@
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
-		D40745871534F6710076C6BD /* DAKeyboardControlTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = D40745851534F6710076C6BD /* DAKeyboardControlTableView.h */; };
-		D40745881534F6710076C6BD /* DAKeyboardControlTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = D40745861534F6710076C6BD /* DAKeyboardControlTableView.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
@@ -85,8 +83,6 @@
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
-		D40745851534F6710076C6BD /* DAKeyboardControlTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAKeyboardControlTableView.h; sourceTree = "<group>"; };
-		D40745861534F6710076C6BD /* DAKeyboardControlTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DAKeyboardControlTableView.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
@@ -166,15 +162,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D40745841534F6710076C6BD /* DAKeyboardControlTableView */ = {
-			isa = PBXGroup;
-			children = (
-				D40745851534F6710076C6BD /* DAKeyboardControlTableView.h */,
-				D40745861534F6710076C6BD /* DAKeyboardControlTableView.m */,
-			);
-			path = DAKeyboardControlTableView;
-			sourceTree = "<group>";
-		};
 		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -298,7 +285,6 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				D40745841534F6710076C6BD /* DAKeyboardControlTableView */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
 				D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */,
@@ -398,7 +384,6 @@
 				D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */,
 				D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */,
 				D403F7B815335CC100101941 /* LIOLogManager.h in Headers */,
-				D40745871534F6710076C6BD /* DAKeyboardControlTableView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,7 +488,6 @@
 				D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */,
 				D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */,
 				D403F7B915335CC100101941 /* LIOLogManager.m in Sources */,
-				D40745881534F6710076C6BD /* DAKeyboardControlTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

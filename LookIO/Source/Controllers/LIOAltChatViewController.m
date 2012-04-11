@@ -18,7 +18,6 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOLeaveMessageViewController.h"
 #import "LIOBundleManager.h"
-#import "DAKeyboardControlTableView.h"
 #import "LIOLogManager.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
