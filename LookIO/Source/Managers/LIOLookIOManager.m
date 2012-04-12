@@ -43,14 +43,12 @@
 #define LIOLookIOManagerWriteTimeout            5.0
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
-//#define LIOLookIOManagerDefaultControlEndpoint      @"connect.dev.look.io"
+#define LIOLookIOManagerDefaultControlEndpoint_Dev  @"connect.dev.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL     [NSString stringWithFormat:@"http://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
-#define LIOLookIOManagerAppLaunchRequestURL_TLS [NSString stringWithFormat:@"https://%@/api/v1/app/launch", LIOLookIOManagerDefaultControlEndpoint]
-#define LIOLookIOManagerLogUploadRequestURL     [NSString stringWithFormat:@"http://%@/api/v1/app/log", LIOLookIOManagerDefaultControlEndpoint]
-#define LIOLookIOManagerLogUploadRequestURL_TLS [NSString stringWithFormat:@"https://%@/api/v1/app/log", LIOLookIOManagerDefaultControlEndpoint]
+#define LIOLookIOManagerAppLaunchRequestURL     @"/api/v1/app/launch"
+#define LIOLookIOManagerLogUploadRequestURL     @"/api/v1/app/log"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -129,6 +127,8 @@
     NSUInteger previousReconnectionTimerStep;
     BOOL firstChatMessageSent;
     BOOL resumeMode;
+    BOOL developmentMode;
+    NSString *controlEndpoint;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -228,6 +228,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
         usesTLS = YES;
         
         sessionExtras = [[NSMutableDictionary alloc] init];
@@ -261,12 +262,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return self;
 }
 
+- (void)enableDevelopmentMode
+{
+    developmentMode = YES;
+    controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_Dev;
+}
+
 - (void)uploadLog:(NSString *)logBody
 {
-    NSURL *url = [NSURL URLWithString:LIOLookIOManagerLogUploadRequestURL];
-    if (usesTLS)
-        url = [NSURL URLWithString:LIOLookIOManagerLogUploadRequestURL_TLS];
-    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerLogUploadRequestURL]];
     NSString *udid = uniqueIdentifier();
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     
@@ -286,23 +290,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if ([overriddenEndpoint length])
     {
-        if (usesTLS)
-        {
-            NSString *urlString = [NSString stringWithFormat:@"https://%@/api/v1/app/launch", overriddenEndpoint];
-            [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
-        }
-        else
-        {
-            NSString *urlString = [NSString stringWithFormat:@"http://%@/api/v1/app/launch", overriddenEndpoint];
-            [appLaunchRequest setURL:[NSURL URLWithString:urlString]];
-        }
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+        [appLaunchRequest setURL:url];
     }
     else
     {
-        if (usesTLS)
-            [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
-        else
-            [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+        [appLaunchRequest setURL:url];
     }
     
     // Send off the app launch packet, if connected.
@@ -446,12 +440,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     appLaunchRequestData = [[NSMutableData alloc] init];
     appLaunchRequestResponseCode = -1;
-    
-    if (usesTLS)
-        [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
-    else
-        [appLaunchRequest setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
-    
+        
     backgroundTaskId = UIBackgroundTaskInvalid;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -974,10 +963,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == usesTLS)
         chosenPort = LIOLookIOManagerControlEndpointPort;
     
-    NSString *chosenEndpoint = LIOLookIOManagerDefaultControlEndpoint;
-    if ([overriddenEndpoint length])
-        chosenEndpoint = overriddenEndpoint;
-    
+    NSString *chosenEndpoint = [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
     BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
                                                onPort:chosenPort
                                                 error:anError];
@@ -2545,10 +2531,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [request setHTTPMethod:@"POST"];
                 [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
                 
-                if (usesTLS)
-                    [request setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL_TLS]];
+                if ([overriddenEndpoint length])
+                {
+                    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+                    [request setURL:url];
+                }
                 else
-                    [request setURL:[NSURL URLWithString:LIOLookIOManagerAppLaunchRequestURL]];
+                {
+                    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+                    [request setURL:url];
+                }
                 
                 NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate];
                 NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
