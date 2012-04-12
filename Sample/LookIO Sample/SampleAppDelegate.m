@@ -38,8 +38,8 @@
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
     
-    [[LIOLookIOManager sharedLookIOManager]setUsesTLS:NO];
-    [[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
+    //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
+    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager]performSetupWithDelegate:self.viewController];
     
 #if RUN_KIF_TESTS

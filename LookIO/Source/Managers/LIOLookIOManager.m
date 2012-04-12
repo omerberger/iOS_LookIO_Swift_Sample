@@ -47,8 +47,8 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL     @"/api/v1/app/launch"
-#define LIOLookIOManagerLogUploadRequestURL     @"/api/v1/app/log"
+#define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
+#define LIOLookIOManagerLogUploadRequestURL     @"api/v1/app/log"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -2655,6 +2655,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self refreshControlButtonVisibility];
     }
+}
+
+- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace
+{
+    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
+{
+    [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+    [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
 }
 
 #pragma mark -
