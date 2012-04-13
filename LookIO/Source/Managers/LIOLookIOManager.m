@@ -129,6 +129,7 @@
     BOOL resumeMode;
     BOOL developmentMode;
     NSString *controlEndpoint;
+    BOOL unprovisioned;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -638,7 +639,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousReconnectionTimerStep = 2;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
-    resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO;
+    resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
     
     [screenSharingStartedDate release];
@@ -1248,6 +1249,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"unprovisioned"])
         {
+            unprovisioned = YES;
+            
             [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
@@ -1812,8 +1815,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
-    // We don't show error boxes if resume mode is possible.
-    if (NO == firstChatMessageSent)
+    // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
+    if (NO == firstChatMessageSent && NO == unprovisioned)
     {
         // We don't show error boxes if the user specifically requested a termination.
         if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
@@ -2301,8 +2304,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
-            resetAfterDisconnect = YES;
-            [self killConnection];
+            [self reset];
+            break;
         }
             
         case LIOLookIOManagerAgentEndedSessionAlertViewTag:

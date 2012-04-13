@@ -284,7 +284,7 @@
     [reconnectionOverlay addGestureRecognizer:tapper];
     */
     
-    [self.view bringSubviewToFront:tableView];
+    //[self.view bringSubviewToFront:tableView];
 }
 
 - (void)viewDidLoad
@@ -385,6 +385,9 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
+        [inputBar.inputField becomeFirstResponder];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
