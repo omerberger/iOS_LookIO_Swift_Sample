@@ -1553,11 +1553,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
-    // First, ask the delegate.
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (previousKeyWindow && previousKeyWindow != hostAppWindow)
+        hostAppWindow = previousKeyWindow;
+    
+    // Ask delegate.
     if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:shouldRotateToInterfaceOrientation:)])
         return [delegate lookIOManager:self shouldRotateToInterfaceOrientation:anOrientation];
     
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController shouldAutorotateToInterfaceOrientation:anOrientation];
+    
     // Fall back on plist settings.
+    LIOLog(@"Warning! Using .plist keys to determine rotation behavior. This may not be accurate. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:");
     return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
 }
 
@@ -1570,7 +1579,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([test length])
             [sessionExtras setObject:anObject forKey:aKey];
         else
-            LIOLog(@"Can't add object of class \"%@\" to session extras! >:| Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+            LIOLog(@"Can't add object of class \"%@\" to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
     }
     else
         [sessionExtras removeObjectForKey:aKey];

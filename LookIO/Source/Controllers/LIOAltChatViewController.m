@@ -380,14 +380,21 @@
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidChangeStatusBarOrientation:)
+                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
+    /*
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
         [inputBar.inputField becomeFirstResponder];
+     */
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -729,6 +736,16 @@
 #pragma mark -
 #pragma mark Notification handlers  
 
+- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
+{
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if ([[UIApplication sharedApplication] statusBarOrientation] != self.interfaceOrientation)
+            LIOLog(@"Warning! The LookIO UI isn't in the same orientation as the host app. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:");
+    });
+}
+
 - (void)keyboardWillShow:(NSNotification *)aNotification
 {
     if (keyboardShowing)
@@ -798,6 +815,7 @@
     [UIView commitAnimations];
 
     [self reloadMessages];
+    [self scrollToBottom];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
