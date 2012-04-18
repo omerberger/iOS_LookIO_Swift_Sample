@@ -141,16 +141,27 @@
     defaultNotification.frame = startFrame;
     defaultNotification.hidden = NO;
     
-    CGRect targetFrame = defaultNotification.frame;
-    targetFrame.origin.x = 0.0;
+    CGRect targetFrameOne = defaultNotification.frame;
+    targetFrameOne.origin.x = 10.0; // overshot
     
-    [UIView animateWithDuration:0.66
+    CGRect targetFrameTwo = targetFrameOne;
+    targetFrameTwo.origin.x = 0.0;
+    
+    [UIView animateWithDuration:0.5
                           delay:0.0
-                        options:0
+                        options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         defaultNotification.frame = targetFrame;
+                         defaultNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.1
+                                               delay:0.0
+                                             options:UIViewAnimationOptionCurveEaseIn
+                                          animations:^{
+                                              defaultNotification.frame = targetFrameTwo;
+                                          }
+                                          completion:^(BOOL finished) {
+                                          }];
                      }];
 }
 
@@ -164,9 +175,9 @@
     CGRect targetFrame = defaultNotification.frame;
     targetFrame.origin.x = startFrame.size.width;
     
-    [UIView animateWithDuration:0.66
+    [UIView animateWithDuration:0.5
                           delay:0.0
-                        options:0
+                        options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          defaultNotification.frame = targetFrame;
                      }
@@ -197,16 +208,28 @@
     activeNotification.frame = startFrame;
     activeNotification.hidden = NO;
     
-    CGRect targetFrame = activeNotification.frame;
-    targetFrame.origin.x = 0.0;
+    CGRect targetFrameOne = activeNotification.frame;
+    targetFrameOne.origin.x = 10.0; // overshot
     
-    [UIView animateWithDuration:0.66
+    CGRect targetFrameTwo = targetFrameOne;
+    targetFrameTwo.origin.x = 0.0;
+    
+    [UIView animateWithDuration:0.5
                           delay:0.0
-                        options:0
+                        options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         activeNotification.frame = targetFrame;
+                         activeNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.1
+                                               delay:0.0
+                                             options:UIViewAnimationOptionCurveEaseIn
+                                          animations:^{
+                                              activeNotification.frame = targetFrameTwo;
+                                          }
+                                          completion:^(BOOL finished) {
+                                              
+                                          }];
                      }];
     
     notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOHeaderBarViewDefaultNotificationDuration
@@ -225,9 +248,9 @@
     CGRect targetFrame = notificationToDismiss.frame;
     targetFrame.origin.y = -self.bounds.size.height;
     
-    [UIView animateWithDuration:0.66
+    [UIView animateWithDuration:0.5
                           delay:0.0
-                        options:0
+                        options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          notificationToDismiss.frame = targetFrame;
                          notificationToDismiss.alpha = 0.0;

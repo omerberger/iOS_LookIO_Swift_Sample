@@ -131,7 +131,6 @@
     BOOL developmentMode;
     NSString *controlEndpoint;
     BOOL unprovisioned;
-    UIView *statusBarUnderlay;
     UIStatusBarStyle originalStatusBarStyle;
     id<LIOLookIOManagerDelegate> delegate;
 }
@@ -233,8 +232,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         originalStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
-        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-            statusBarUnderlay = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
         
         controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
         usesTLS = YES;
@@ -575,7 +572,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates release];
     [dateFormatter release];
     [overriddenEndpoint release];
-    [statusBarUnderlay release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -656,7 +652,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates removeAllObjects];
     
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
-    [statusBarUnderlay removeFromSuperview];
     
     [self rejiggerWindows];
     
@@ -709,10 +704,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         previousKeyWindow = nil;
         
         [self refreshControlButtonVisibility];
+        
+        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+            [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     }
-    
-    if (statusBarUnderlay && nil == statusBarUnderlay.superview && [[UIApplication sharedApplication] keyWindow] != lookioWindow)
-        [[[UIApplication sharedApplication] keyWindow] addSubview:statusBarUnderlay];
 }
 
 - (UIImage *)captureScreen
@@ -788,6 +783,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         return;
     
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+    {
+        if (UIStatusBarStyleBlackOpaque == [[UIApplication sharedApplication] statusBarStyle])
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+        else
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+    }
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -803,10 +806,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (0 == previousScreenshotHash || currentHash != previousScreenshotHash)
         {
-            statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];
-            statusBarUnderlay.hidden = NO;
-            statusBarUnderlay.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
-            
             previousScreenshotHash = currentHash;
             
             NSString *orientationString = @"???";
@@ -2029,7 +2028,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     screenshotsAllowed = NO;
     
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
-    statusBarUnderlay.hidden = YES;
     
     NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
     NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -2068,6 +2066,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController
 {
+    [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
 }
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
@@ -2314,9 +2313,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 screenshotsAllowed = YES;
-                
-                statusBarUnderlay.hidden = NO;
-                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
                 
                 screenSharingStartedDate = [[NSDate date] retain];
                 

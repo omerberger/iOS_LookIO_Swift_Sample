@@ -361,6 +361,9 @@
 {
     [super viewWillAppear:animated];
     
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+    
     //[self reloadMessages];
     
     NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
