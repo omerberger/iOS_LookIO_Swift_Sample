@@ -11,6 +11,8 @@
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
+		D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */; };
+		D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
@@ -83,6 +85,8 @@
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
+		D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedKeyboardIcon.h; path = Source/Views/LIOAnimatedKeyboardIcon.h; sourceTree = "<group>"; };
+		D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnimatedKeyboardIcon.m; path = Source/Views/LIOAnimatedKeyboardIcon.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
@@ -197,6 +201,8 @@
 		D47C98EC14C9F01000E1223F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,
+				D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */,
 				D4ADC7BE14F322B500713F29 /* LIOChatBubbleView.h */,
 				D4ADC7BF14F322B500713F29 /* LIOChatBubbleView.m */,
 				D4ADC7C014F322B500713F29 /* LIOControlButtonView.h */,
@@ -384,6 +390,7 @@
 				D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */,
 				D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */,
 				D403F7B815335CC100101941 /* LIOLogManager.h in Headers */,
+				D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -488,6 +495,7 @@
 				D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */,
 				D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */,
 				D403F7B915335CC100101941 /* LIOLogManager.m in Sources */,
+				D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -66,7 +66,7 @@
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
 @property(nonatomic, assign) id<LIOAltChatViewControllerDataSource> dataSource;
 @property(nonatomic, retain) NSString *initialChatText;
-@property(nonatomic, assign) BOOL agentTyping;
+@property(nonatomic, assign, getter=isAgentTyping) BOOL agentTyping;
 
 - (void)reloadMessages;
 - (void)scrollToBottom;
@@ -74,5 +74,7 @@
 - (void)performDismissalAnimation;
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;
+- (NSString *)currentChatText;
+- (void)presentNotificationString:(NSString *)aString;
 
 @end

@@ -11,6 +11,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <CoreLocation/CoreLocation.h>
+#import <zlib.h>
 #import <sys/socket.h>
 #import <net/if.h>
 #import <net/if_dl.h>
@@ -38,7 +39,7 @@
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.1.0"
 
-#define LIOLookIOManagerScreenCaptureInterval   0.33
+#define LIOLookIOManagerScreenCaptureInterval   0.5
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
@@ -82,7 +83,7 @@
     AsyncSocket_LIO *controlSocket;
     BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
     NSData *messageSeparatorData;
-    NSData *lastScreenshotSent;
+    unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
     SBJsonWriter_LIO *jsonWriter;
     UIImageView *cursorView, *clickView;
@@ -130,6 +131,8 @@
     BOOL developmentMode;
     NSString *controlEndpoint;
     BOOL unprovisioned;
+    UIView *statusBarUnderlay;
+    UIStatusBarStyle originalStatusBarStyle;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -229,6 +232,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        originalStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
+        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+            statusBarUnderlay = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
+        
         controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
         usesTLS = YES;
         
@@ -469,6 +476,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousReconnectionTimerStep = 2;
     resumeMode = NO;
     
+    previousScreenshotHash = 0;
+    
     [self sendLaunchReport];
     
     [LIOBundleManager sharedBundleManager];
@@ -546,7 +555,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [jsonParser release];
     [jsonWriter release];
     [chatHistory release];
-    [lastScreenshotSent release];
     [lastKnownQueuePosition release];
     [targetAgentId release];
     [friendlyName release];
@@ -567,6 +575,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates release];
     [dateFormatter release];
     [overriddenEndpoint release];
+    [statusBarUnderlay release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -626,9 +635,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [clickView release];
     clickView = nil;
     
-    [lastScreenshotSent release];
-    lastScreenshotSent = nil;
-    
     [backgroundedTime release];
     backgroundedTime = nil;
     
@@ -638,6 +644,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     previousReconnectionTimerStep = 2;
     
+    previousScreenshotHash = 0;
+    
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
@@ -646,6 +654,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     screenSharingStartedDate = nil;
     
     [queuedLaunchReportDates removeAllObjects];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+    [statusBarUnderlay removeFromSuperview];
     
     [self rejiggerWindows];
     
@@ -699,6 +710,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self refreshControlButtonVisibility];
     }
+    
+    if (statusBarUnderlay && nil == statusBarUnderlay.superview && [[UIApplication sharedApplication] keyWindow] != lookioWindow)
+        [[[UIApplication sharedApplication] keyWindow] addSubview:statusBarUnderlay];
 }
 
 - (UIImage *)captureScreen
@@ -775,14 +789,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        
         UIImage *screenshotImage = [self captureScreen];
         CGSize screenshotSize = screenshotImage.size;
         NSData *screenshotData = UIImageJPEGRepresentation(screenshotImage, 0.0);
-        if (nil == lastScreenshotSent || NO == [lastScreenshotSent isEqualToData:screenshotData])
+        [screenshotData retain];
+        [pool release];
+        
+        unsigned long currentHash = crc32(0L, Z_NULL, 0);
+        currentHash = crc32(currentHash, [screenshotData bytes], [screenshotData length]);
+        
+        if (0 == previousScreenshotHash || currentHash != previousScreenshotHash)
         {
-            [lastScreenshotSent release];
-            lastScreenshotSent = [screenshotData retain];
-                        
+            statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];
+            statusBarUnderlay.hidden = NO;
+            statusBarUnderlay.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+            
+            previousScreenshotHash = currentHash;
+            
             NSString *orientationString = @"???";
             if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
                 orientationString = @"portrait";
@@ -804,14 +830,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [dataToSend appendData:screenshotData];
             [dataToSend appendData:messageSeparatorData];
             
+            [screenshotData release];
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 waitingForScreenshotAck = YES;
                 [controlSocket writeData:dataToSend
                              withTimeout:-1
                                      tag:0];
                 
-                LIOLog(@"Sent %dx%d %@ screenshot (%u bytes image data, %u bytes total).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [screenshotData length], [dataToSend length], header);
+                LIOLog(@"Sent %dx%d %@ screenshot (%u bytes).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [dataToSend length], header);
             });
+        }
+        else
+        {
+            [screenshotData release];
         }
     });
 }
@@ -1109,7 +1141,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSString *action = [aPacket objectForKey:@"action"];
         
-        if ([action isEqualToString:@"send_logs"])
+        if ([action isEqualToString:@"notification"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSString *message = [data objectForKey:@"message"];
+            if ([message length] && altChatViewController)
+                [altChatViewController presentNotificationString:message];
+        }
+        else if ([action isEqualToString:@"send_logs"])
         {
             [[LIOLogManager sharedLogManager] uploadLog];
         }
@@ -1989,6 +2028,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     screenshotsAllowed = NO;
     
+    [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+    statusBarUnderlay.hidden = YES;
+    
     NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
     NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                     @"advisory", @"type",
@@ -2030,6 +2072,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
 {
+    [pendingChatText release];
+    pendingChatText = [[altChatViewController currentChatText] retain];
     [altChatViewController dismissModalViewControllerAnimated:NO];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
@@ -2271,10 +2315,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 screenshotsAllowed = YES;
                 
+                statusBarUnderlay.hidden = NO;
+                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+                
                 screenSharingStartedDate = [[NSDate date] retain];
                 
                 if (altChatViewController)
                 {
+                    [pendingChatText release];
+                    pendingChatText = [[altChatViewController currentChatText] retain];
                     [altChatViewController dismissModalViewControllerAnimated:NO];
                     [altChatViewController.view removeFromSuperview];
                     [altChatViewController release];
@@ -2365,6 +2414,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    [pendingChatText release];
+    pendingChatText = [[altChatViewController currentChatText] retain];
     [altChatViewController dismissModalViewControllerAnimated:NO];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];

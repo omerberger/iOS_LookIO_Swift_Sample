@@ -10,6 +10,7 @@
 #import "LIOLookIOManager.h"
 #import <QuartzCore/QuartzCore.h>
 #import "LIOBundleManager.h"
+#import "LIOTimerProxy.h"
 
 @implementation LIOHeaderBarView
 
@@ -20,46 +21,74 @@
     self = [super initWithFrame:frame];
     
     if (self)
-    {        
+    {
+        self.clipsToBounds = YES;
+        
         separator = [[UIView alloc] init];
         separator.backgroundColor = [UIColor colorWithPatternImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableBlendedSeparatorTop"]];
         separator.opaque = NO;
         CGRect aFrame = separator.frame;
         aFrame.size.height = 15.0;
-        aFrame.size.width = self.frame.size.width;
-        aFrame.origin.y = self.frame.size.height;
+        aFrame.size.width = self.bounds.size.width;
+        aFrame.origin.y = self.bounds.size.height - 14.0;
         separator.frame = aFrame;
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:separator];
                 
-        adLabel = [[UILabel alloc] init];
+        defaultNotification = [[UIView alloc] initWithFrame:self.bounds];
+        aFrame = defaultNotification.frame;
+        aFrame.size.height = 32.0;
+        defaultNotification.frame = aFrame;
+        defaultNotification.backgroundColor = [UIColor clearColor];
+        defaultNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:defaultNotification];
+
+        UILabel *adLabel = [[[UILabel alloc] init] autorelease];
         adLabel.backgroundColor = [UIColor clearColor];
         adLabel.font = [UIFont boldSystemFontOfSize:12.0];
         adLabel.textColor = [UIColor whiteColor];
         adLabel.text = @"Live Chat powered by";
         [adLabel sizeToFit];
-        [self addSubview:adLabel];
+        aFrame = adLabel.frame;
+        aFrame.origin.x = 0.0;
+        aFrame.origin.y = 16.0 - (aFrame.size.height / 2.0);
+        adLabel.frame = aFrame;
         
-        tinyLogo = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]];
-        [self addSubview:tinyLogo];
+        UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]] autorelease];
+        aFrame = tinyLogo.frame;
+        aFrame.origin.y = 16.0 - (tinyLogo.frame.size.height / 2.0);
+        aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 5.0;
+        tinyLogo.frame = aFrame;
         
-        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
-        [self addGestureRecognizer:tapper];
-        
-        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
-        tappableBackground.backgroundColor = [UIColor clearColor];
-        [tappableBackground addGestureRecognizer:tapper];
-        [self addSubview:tappableBackground];
-                
-        plusButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        UIButton *plusButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         [plusButton setBackgroundImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderPlusIcon"] forState:UIControlStateNormal];
         [plusButton sizeToFit];
         aFrame = plusButton.frame;
         aFrame.size.height = 15.0;
         aFrame.origin.y = 8.0;
+        aFrame.origin.x = tinyLogo.frame.origin.x + tinyLogo.frame.size.width + 5.0;
         plusButton.frame = aFrame;
-        [self addSubview:plusButton];
+
+        UIView *lolcontainer = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
+        lolcontainer.backgroundColor = [UIColor clearColor];
+        aFrame = lolcontainer.frame;
+        aFrame.size.height = 32.0;
+        aFrame.size.width = adLabel.frame.size.width + tinyLogo.frame.size.width + plusButton.frame.size.width + 10.0;
+        aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+        lolcontainer.frame = aFrame;
+        lolcontainer.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        [defaultNotification addSubview:lolcontainer];
+        
+        [lolcontainer addSubview:adLabel];
+        [lolcontainer addSubview:tinyLogo];
+        [lolcontainer addSubview:plusButton];
+        
+        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
+        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
+        tappableBackground.backgroundColor = [UIColor clearColor];
+        [tappableBackground addGestureRecognizer:tapper];
+        [self addSubview:tappableBackground];
     }
     
     return self;
@@ -67,197 +96,156 @@
 
 - (void)dealloc
 {
-    [tinyLogo release];
-    [adLabel release];
+    [defaultNotification release];
     [separator release];
-    [plusButton release];
     [tappableBackground release];
+    
+    [notificationTimer stopTimer];
+    [notificationTimer release];
     
     [super dealloc];
 }
 
-/*
-- (void)switchToMode:(LIOHeaderBarViewMode)aMode animated:(BOOL)animated
+- (UIView *)createNotificationViewWithString:(NSString *)aString
 {
-    if (aMode == mode)
+    UIView *newNotification = [[UIView alloc] initWithFrame:self.bounds];
+    CGRect aFrame = newNotification.frame;
+    aFrame.size.height = 32.0;
+    newNotification.frame = aFrame;
+    newNotification.backgroundColor = [UIColor clearColor];
+    newNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    
+    UILabel *aLabel = [[[UILabel alloc] init] autorelease];
+    aLabel.backgroundColor = [UIColor clearColor];
+    aLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    aLabel.textColor = [UIColor whiteColor];
+    aLabel.text = aString;
+    [aLabel sizeToFit];
+    aFrame = aLabel.frame;
+    aFrame.origin.y = (newNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.origin.x = (newNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aLabel.frame = aFrame;
+    aLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [newNotification addSubview:aLabel];
+    
+    return newNotification;
+}
+
+- (void)revealDefaultNotification
+{
+    if (activeNotification)
         return;
     
-    mode = aMode;
+    CGRect startFrame = defaultNotification.frame;
+    startFrame.origin.x = -startFrame.size.width;
+    defaultNotification.frame = startFrame;
+    defaultNotification.hidden = NO;
     
-    if (LIOHeaderBarViewModeMinimal == mode)
-    {
-        [adLabel sizeToFit];
-        CGRect labelFrame = adLabel.frame;
-        labelFrame.origin.x = (self.frame.size.width / 2.0) - ((labelFrame.size.width + tinyLogo.frame.size.width + 3.0) / 2.0);
-        labelFrame.origin.y = 16.0 - (labelFrame.size.height / 2.0);
-        
-        CGRect logoFrame = tinyLogo.frame;
-        logoFrame.origin.x = labelFrame.origin.x + labelFrame.size.width + 3.0;
-        logoFrame.origin.y = 16.0 - (logoFrame.size.height / 2.0);
-        
-        CGRect plusFrame = plusButton.frame;
-        plusFrame.origin.x = logoFrame.origin.x + logoFrame.size.width + 5.0;
-        plusButton.frame = plusFrame;
-        
-        // Bar portion minus shadow is 32.0px
-        CGRect aFrame = self.frame;
-        aFrame.size.height = 40.0;
-        
-        CGRect sepFrame = separator.frame;
-        sepFrame.origin.y = aFrame.size.height - 14.0;
-        
-        if (NO == animated)
-        {
-            self.frame = aFrame;
-            
-            separator.frame = sepFrame;
-            adLabel.frame = labelFrame;
-            tinyLogo.frame = logoFrame;
-            
-            [self bringSubviewToFront:adLabel];
-            [self bringSubviewToFront:tinyLogo];
-            [self bringSubviewToFront:moreButton];
-            
-            moreButton.alpha = 0.0;
-            plusButton.alpha = 1.0;
-        }
-        else
-        {
-            [self bringSubviewToFront:adLabel];
-            [self bringSubviewToFront:tinyLogo];
-            [self bringSubviewToFront:moreButton];
-            
-            [UIView animateWithDuration:0.5
-                                  delay:0.0
-                                options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState
-                             animations:^{
-                                 moreButton.alpha = 0.0;
-                                 plusButton.alpha = 1.0;
-                                 adLabel.frame = labelFrame;
-                                 tinyLogo.frame = logoFrame;
-                                 separator.frame = sepFrame;
-                                 self.frame = aFrame;
-                             }
-                             completion:^(BOOL finished) {
-                                 moreButton.hidden = YES;
-                             }];
-        }
-    }
-    else if (LIOHeaderBarViewModeFull == mode)
-    {
-        [adLabel sizeToFit];
-        CGRect labelFrame = adLabel.frame;
-        labelFrame.origin.x = 17.0;
-        labelFrame.origin.y = (49.0 / 2.0) - (labelFrame.size.height / 2.0);
-        
-        CGRect logoFrame = tinyLogo.frame;
-        logoFrame.origin.x = labelFrame.origin.x + labelFrame.size.width + 5.0;
-        logoFrame.origin.y = (49.0 / 2.0) - (logoFrame.size.height / 2.0);
-        
-        CGRect buttonFrame = moreButton.frame;
-        buttonFrame.size.width = 100.0;
-        buttonFrame.size.height = 29.0;
-        buttonFrame.origin.x = self.bounds.size.width - 100.0 - 8.0;
-        buttonFrame.origin.y = (49.0 / 2.0) - (buttonFrame.size.height / 2.0);
-        
-        // Bar portion: 49.0px
-        CGRect aFrame = self.frame;
-        aFrame.size.height = 57.0;
-        
-        CGRect sepFrame = separator.frame;
-        sepFrame.origin.y = aFrame.size.height - 14.0;
-        
-        if (NO == animated)
-        {
-            self.frame = aFrame;
-            
-            adLabel.frame = labelFrame;
-            tinyLogo.frame = logoFrame;
-            moreButton.frame = buttonFrame;
-            separator.frame = sepFrame;
-            
-            [self bringSubviewToFront:adLabel];
-            [self bringSubviewToFront:tinyLogo];
-            [self bringSubviewToFront:moreButton];
-            
-            moreButton.hidden = NO;
-            moreButton.alpha = 1.0;
-            
-            plusButton.alpha = 0.0;
-        }
-        else
-        {
-            [self bringSubviewToFront:adLabel];
-            [self bringSubviewToFront:tinyLogo];
-            [self bringSubviewToFront:moreButton];
-            
-            moreButton.alpha = 0.0;
-            moreButton.hidden = NO;
-            
-            [UIView animateWithDuration:0.5
-                                  delay:0.0
-                                options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState
-                             animations:^{
-                                 moreButton.alpha = 1.0;
-                                 plusButton.alpha = 0.0;
-                                 
-                                 self.frame = aFrame;
-                                 
-                                 adLabel.frame = labelFrame;
-                                 tinyLogo.frame = logoFrame;
-                                 moreButton.frame = buttonFrame;
-                                 separator.frame = sepFrame;
-                             }
-                             completion:^(BOOL finished) {
-                                 moreButton.alpha = 1.0;
-                                 moreButton.hidden = NO;
-                             }];
-        }
-        
-        tappableBackground.frame = self.bounds;
-        [self sendSubviewToBack:tappableBackground];
-    }
+    CGRect targetFrame = defaultNotification.frame;
+    targetFrame.origin.x = 0.0;
+    
+    [UIView animateWithDuration:0.66
+                          delay:0.0
+                        options:0
+                     animations:^{
+                         defaultNotification.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
 }
 
-- (void)rejiggerLayout
+- (void)dismissDefaultNotification
 {
-    LIOHeaderBarViewMode savedMode = mode;
-    [self switchToMode:LIOHeaderBarViewModeNone animated:NO];
-    [self switchToMode:savedMode animated:NO];
+    CGRect startFrame = defaultNotification.frame;
+    startFrame.origin.x = 0.0;
+    defaultNotification.frame = startFrame;
+    defaultNotification.hidden = NO;
+    
+    CGRect targetFrame = defaultNotification.frame;
+    targetFrame.origin.x = startFrame.size.width;
+    
+    [UIView animateWithDuration:0.66
+                          delay:0.0
+                        options:0
+                     animations:^{
+                         defaultNotification.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                         defaultNotification.hidden = YES;
+                     }];
 }
-*/
 
-- (void)layoutSubviews
+- (void)revealNotificationString:(NSString *)aString
 {
-    [adLabel sizeToFit];
-    CGRect labelFrame = adLabel.frame;
-    labelFrame.origin.x = (self.frame.size.width / 2.0) - ((labelFrame.size.width + tinyLogo.frame.size.width + 3.0) / 2.0);
-    labelFrame.origin.y = 16.0 - (labelFrame.size.height / 2.0);
+    if (activeNotification)
+    {
+        [notificationTimer stopTimer];
+        [notificationTimer release];
+        
+        [self dismissActiveNotification];
+    }
+    else
+    {
+        [self dismissDefaultNotification];
+    }
     
-    CGRect logoFrame = tinyLogo.frame;
-    logoFrame.origin.x = labelFrame.origin.x + labelFrame.size.width + 3.0;
-    logoFrame.origin.y = 16.0 - (logoFrame.size.height / 2.0);
+    activeNotification = [self createNotificationViewWithString:aString];
+    [self addSubview:activeNotification];
     
-    CGRect plusFrame = plusButton.frame;
-    plusFrame.origin.x = logoFrame.origin.x + logoFrame.size.width + 5.0;
-    plusButton.frame = plusFrame;
+    CGRect startFrame = activeNotification.frame;
+    startFrame.origin.x = -startFrame.size.width;
+    activeNotification.frame = startFrame;
+    activeNotification.hidden = NO;
     
-    // Bar portion minus shadow is 32.0px
-    CGRect aFrame = self.frame;
-    aFrame.size.height = 40.0;
+    CGRect targetFrame = activeNotification.frame;
+    targetFrame.origin.x = 0.0;
     
-    CGRect sepFrame = separator.frame;
-    sepFrame.origin.y = aFrame.size.height - 14.0;
+    [UIView animateWithDuration:0.66
+                          delay:0.0
+                        options:0
+                     animations:^{
+                         activeNotification.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
     
-    self.frame = aFrame;
+    notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOHeaderBarViewDefaultNotificationDuration
+                                                             target:self
+                                                           selector:@selector(notificationTimerDidFire)];
+}
+
+- (void)dismissActiveNotification
+{
+    if (nil == activeNotification)
+        return;
     
-    separator.frame = sepFrame;
-    adLabel.frame = labelFrame;
-    tinyLogo.frame = logoFrame;
+    UIView *notificationToDismiss = activeNotification;
+    activeNotification = nil;
     
-    [self bringSubviewToFront:adLabel];
-    [self bringSubviewToFront:tinyLogo];
-    plusButton.alpha = 1.0;
+    CGRect targetFrame = notificationToDismiss.frame;
+    targetFrame.origin.y = -self.bounds.size.height;
+    
+    [UIView animateWithDuration:0.66
+                          delay:0.0
+                        options:0
+                     animations:^{
+                         notificationToDismiss.frame = targetFrame;
+                         notificationToDismiss.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
+                         [notificationToDismiss removeFromSuperview];
+                         [notificationToDismiss autorelease];
+                     }];
+}
+
+- (void)notificationTimerDidFire
+{
+    [notificationTimer stopTimer];
+    [notificationTimer release];
+    notificationTimer = nil;
+    
+    [self dismissActiveNotification];
+    [self revealDefaultNotification];
 }
 
 #pragma mark -

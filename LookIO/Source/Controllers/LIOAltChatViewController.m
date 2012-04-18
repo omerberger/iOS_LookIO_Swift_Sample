@@ -37,7 +37,8 @@
 
 @implementation LIOAltChatViewController
 
-@synthesize delegate, dataSource, initialChatText, agentTyping;
+@synthesize delegate, dataSource, initialChatText;
+@dynamic agentTyping;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -168,6 +169,7 @@
 
         aFrame = CGRectZero;
         aFrame.size.width = self.view.bounds.size.width;
+        aFrame.size.height = LIOHeaderBarViewDefaultHeight;
         
         headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
         //headerBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
@@ -359,15 +361,13 @@
 {
     [super viewWillAppear:animated];
     
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    [self reloadMessages];
+    //[self reloadMessages];
     
     NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
-    if (NO == padUI)
-        [self scrollToBottom];
+    //if (NO == padUI)
+    //    [self scrollToBottom];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -385,16 +385,27 @@
                                              selector:@selector(applicationDidChangeStatusBarOrientation:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
+    
+    if ([initialChatText length])
+    {
+        inputBar.inputField.text = initialChatText;
+        [initialChatText release];
+        initialChatText = nil;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-    /*
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
-        [inputBar.inputField becomeFirstResponder];
-     */
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [inputBar.inputField becomeFirstResponder];
+        });
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -422,11 +433,34 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
+    // Make sure the table view is perfectly sized.
+    CGRect tableFrame = tableView.frame;
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+    {
+        CGFloat origin = 32.0;
+        if (keyboardHeight)
+            origin = 0.0;
+        
+        tableFrame.origin.y = origin;
+        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
+    }
+    else
+    {
+        tableFrame.origin.y = 32.0;
+        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - 32.0;
+    }
+    tableView.frame = tableFrame;
+    
     [self reloadMessages];
-    //[self scrollToBottom];
+    
+    if (NO == padUI)
+        [self scrollToBottom];
 }
 
 - (void)showReconnectionOverlay
@@ -562,6 +596,19 @@
     [tableView reloadData];
 }
 
+- (NSString *)currentChatText
+{
+    return inputBar.inputField.text;
+}
+
+- (void)presentNotificationString:(NSString *)aString
+{
+    if (nil == headerBar)
+        return;
+    
+    [headerBar revealNotificationString:aString];
+}
+
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 
@@ -639,7 +686,9 @@
     if ([messages count] + 1 == indexPath.row)
     {
         CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
-        return tableView.bounds.size.height - heightOfLastBubble - 10.0;
+        CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
+        if (result < 0.0) result = 7.0;
+        return result;
     }
     
     LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
@@ -730,7 +779,10 @@
     UIView *keyboard = inputBar.inputField.inputAccessoryView.superview;
     CGPoint touchLocation = [aPanner locationInView:keyboard];
     if (touchLocation.y > -30.0)
+    {
         [self.view endEditing:YES];
+        [self reloadMessages];
+    }
 }
 
 #pragma mark -
@@ -786,15 +838,18 @@
         dismissalBarFrame.size.height = 20.0;
         
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
-            headerFrame.origin.y -= headerFrame.size.height;
+            headerFrame.origin.y = -headerFrame.size.height;
         
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
             tableFrame.origin.y = 0.0;
-            tableFrame.size.height -= keyboardHeight - 15.0 - 32.0; // 32.0 is the default table origin (below header)
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height;
         }
         else
-            tableFrame.size.height -= keyboardHeight - 15.0;
+        {
+            tableFrame.origin.y = 32.0;
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
+        }
     }
     else
     {
@@ -1114,6 +1169,29 @@
 - (void)dismissalBarViewButtonWasTapped:(LIODismissalBarView *)aView
 {
     [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+}
+
+#pragma mark -
+#pragma mark Dynamic accessors
+
+- (BOOL)isAgentTyping
+{
+    return agentTyping;
+}
+
+- (void)setAgentTyping:(BOOL)aBool
+{
+    agentTyping = aBool;
+    
+    dismissalBar.keyboardIconActive = agentTyping;
+    
+    if (agentTyping)
+    {
+        [self presentNotificationString:@"Agent is typing..."];
+    }
+    else
+    {
+    }
 }
 
 @end

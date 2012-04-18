@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIODismissalBarView;
+@class LIODismissalBarView, LIOAnimatedKeyboardIcon;
 
 @protocol LIODismissalBarViewDelegate
 - (void)dismissalBarViewButtonWasTapped:(LIODismissalBarView *)aView;
@@ -16,11 +16,14 @@
 
 @interface LIODismissalBarView : UIView
 {
+    LIOAnimatedKeyboardIcon *keyboardIcon;
     UIView *separator;
     UILabel *dismissLabel;
+    BOOL keyboardIconActive;
     id<LIODismissalBarViewDelegate> delegate;
 }
 
 @property(nonatomic, assign) id<LIODismissalBarViewDelegate> delegate;
+@property(nonatomic, assign, getter=isKeyboardIconActive) BOOL keyboardIconActive;
 
 @end

@@ -21,7 +21,7 @@
 // Misc. constants
 #define LIOInputBarViewMaxLinesPortrait     4
 #define LIOInputBarViewMaxLinesLandscape    2
-#define LIOInputBarViewMaxTextLength        500
+#define LIOInputBarViewMaxTextLength        150
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
