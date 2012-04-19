@@ -51,6 +51,7 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
     
+    /*
     UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
     aFrame = logoView.frame;
     aFrame.size.height -= 20.0;
@@ -72,6 +73,7 @@
     topSeparator.frame = aFrame;
     topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:topSeparator];
+     */
     
     UILabel *label01 = [[[UILabel alloc] init] autorelease];
     label01.text = @"Need a copy of this chat? No problem!";
@@ -84,7 +86,7 @@
     label01.font = [UIFont boldSystemFontOfSize:14.0];
     [label01 sizeToFit];
     aFrame = label01.frame;
-    aFrame.origin.y = topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
+    aFrame.origin.y = 20.0; //topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
     label01.frame = aFrame;
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -101,7 +103,7 @@
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
-    aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height;
+    aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height + 10.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
     label02.frame = aFrame;
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -115,7 +117,7 @@
     aFrame = fieldBackground.frame;
     aFrame.size.width = 290.0;
     aFrame.size.height = 48.0;
-    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 10.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     fieldBackground.frame = aFrame;
     fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -169,7 +171,7 @@
     CGRect aFrame = fieldBackground.frame;
     aFrame.size.width = 290.0;
     aFrame.size.height = 48.0;
-    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 10.0;
     aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     fieldBackground.frame = aFrame;
     

@@ -54,8 +54,10 @@
     
     UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
     aFrame = logoView.frame;
+    aFrame.size.width = 154.0;
+    aFrame.size.height = 44.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = navBar.frame.size.height + 5.0;
+    aFrame.origin.y = navBar.frame.size.height + 10.0;
     logoView.frame = aFrame;
     logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:logoView];
@@ -396,7 +398,7 @@
         }
     }
     
-    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height);
+    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
 
 - (void)viewDidLoad
@@ -506,7 +508,7 @@
     
     [self rejiggerInterface];
     
-    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height);
+    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
 
 #pragma mark -

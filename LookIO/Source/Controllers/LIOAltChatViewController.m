@@ -361,16 +361,18 @@
 {
     [super viewWillAppear:animated];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
     
-    //[self reloadMessages];
+    [self reloadMessages];
     
     NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
-    //if (NO == padUI)
-    //    [self scrollToBottom];
+    if (NO == padUI)
+        [self scrollToBottom];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -469,6 +471,7 @@
 - (void)showReconnectionOverlay
 {
     [self dismissModalViewControllerAnimated:NO];
+    [self.view endEditing:YES];
     reconnectionOverlay.hidden = NO;
 }
 
@@ -583,11 +586,17 @@
 
 - (void)scrollToBottom
 {
+    NSUInteger myScrollId = arc4random();
+    currentScrollId = myScrollId;
+    
     double delayInSeconds = 0.75;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(){
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
-        [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        if (myScrollId == currentScrollId)
+        {
+            NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
+            [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
     });
 }
 
@@ -1184,17 +1193,17 @@
 
 - (void)setAgentTyping:(BOOL)aBool
 {
-    agentTyping = aBool;
-    
-    dismissalBar.keyboardIconActive = agentTyping;
-    
-    if (agentTyping)
+    if (NO == agentTyping && aBool)
     {
         [self presentNotificationString:@"Agent is typing..."];
     }
-    else
+    else if (agentTyping && NO == aBool)
     {
+        [self presentNotificationString:nil];
     }
+    
+    agentTyping = aBool;
+    dismissalBar.keyboardIconActive = agentTyping;
 }
 
 @end

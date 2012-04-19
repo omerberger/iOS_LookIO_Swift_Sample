@@ -147,14 +147,14 @@
     CGRect targetFrameTwo = targetFrameOne;
     targetFrameTwo.origin.x = 0.0;
     
-    [UIView animateWithDuration:0.5
+    [UIView animateWithDuration:0.25
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          defaultNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
+                         [UIView animateWithDuration:0.05
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseIn
                                           animations:^{
@@ -175,7 +175,7 @@
     CGRect targetFrame = defaultNotification.frame;
     targetFrame.origin.x = startFrame.size.width;
     
-    [UIView animateWithDuration:0.5
+    [UIView animateWithDuration:0.3
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
@@ -188,6 +188,19 @@
 
 - (void)revealNotificationString:(NSString *)aString
 {
+    if (nil == aString)
+    {
+        [notificationTimer stopTimer];
+        [notificationTimer release];
+        notificationTimer = nil;
+        
+        [self dismissActiveNotification];
+        
+        [self revealDefaultNotification];
+        
+        return;
+    }
+    
     if (activeNotification)
     {
         [notificationTimer stopTimer];
@@ -214,14 +227,14 @@
     CGRect targetFrameTwo = targetFrameOne;
     targetFrameTwo.origin.x = 0.0;
     
-    [UIView animateWithDuration:0.5
+    [UIView animateWithDuration:0.25
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          activeNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
+                         [UIView animateWithDuration:0.05
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseIn
                                           animations:^{
@@ -248,7 +261,7 @@
     CGRect targetFrame = notificationToDismiss.frame;
     targetFrame.origin.y = -self.bounds.size.height;
     
-    [UIView animateWithDuration:0.5
+    [UIView animateWithDuration:0.3
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{

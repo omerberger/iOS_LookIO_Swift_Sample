@@ -59,6 +59,7 @@
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;
     UIPopoverController *popover;
+    NSUInteger currentScrollId;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

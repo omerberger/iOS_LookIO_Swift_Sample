@@ -43,6 +43,8 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
+#define LIOLookIOManagerReconnectionTimeLimit   600.0 // 10 minutes
+
 #define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"connect.dev.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
@@ -81,7 +83,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, didReconnect, socketConnected;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -89,12 +91,9 @@
     UIImageView *cursorView, *clickView;
     LIOControlButtonView *controlButton;
     NSMutableArray *chatHistory;
-    BOOL resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived;
     NSNumber *lastKnownQueuePosition;
-    BOOL screenshotsAllowed;
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
-    BOOL usesTLS, userWantsSessionTermination;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
     NSMutableURLRequest *appLaunchRequest;
     NSURLConnection *appLaunchRequestConnection;
@@ -119,25 +118,22 @@
     CTCallCenter *callCenter;
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
-    BOOL agentsAvailable;
     NSDate *backgroundedTime;
     CLLocation *lastKnownLocation;
     NSString *overriddenEndpoint;
-    BOOL appLaunchRequestIgnoringLocationHeader;
     LIOTimerProxy *reconnectionTimer;
     NSUInteger previousReconnectionTimerStep;
-    BOOL firstChatMessageSent;
-    BOOL resumeMode;
-    BOOL developmentMode;
     NSString *controlEndpoint;
-    BOOL unprovisioned;
     UIStatusBarStyle originalStatusBarStyle;
+    NSDate *lastActivity;
+    LIOTimerProxy *reintroTimeoutTimer;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
 @property(nonatomic, readonly) BOOL agentsAvailable;
+@property(nonatomic, retain) NSDate *lastActivity;
 
 - (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
@@ -212,7 +208,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress, agentsAvailable;
+@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress, agentsAvailable, lastActivity;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -638,6 +634,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [reconnectionTimer release];
     reconnectionTimer = nil;
     
+    [reintroTimeoutTimer stopTimer];
+    [reintroTimeoutTimer release];
+    reintroTimeoutTimer = nil;
+    
     previousReconnectionTimerStep = 2;
     
     previousScreenshotHash = 0;
@@ -645,11 +645,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
+    didReconnect = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
     
     [queuedLaunchReportDates removeAllObjects];
+    
+    [lastActivity release];
+    lastActivity = nil;
     
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
@@ -777,7 +781,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [lookioWindow makeKeyAndVisible];
     }
     
-    if (NO == [controlSocket isConnected] || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController || interstitialViewController)
+    if (NO == socketConnected || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController || interstitialViewController)
         return;
     
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -904,6 +908,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    if ([sessionId length] && NO == socketConnected)
+        [altChatViewController showReconnectionOverlay];
+    
     controlButton.hidden = YES;
 }
 
@@ -941,7 +948,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    if ([controlSocket isConnected])
+    if (socketConnected)
     {
         [self controlButtonWasTapped];
         return;
@@ -1043,6 +1050,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
     
     NSString *type = [aPacket objectForKey:@"type"];
+    
     if ([type isEqualToString:@"ack"])
     {
         if (waitingForIntroAck)
@@ -1076,6 +1084,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"chat"])
     {
+        self.lastActivity = [NSDate date];
+        
         NSString *text = [aPacket objectForKey:@"text"];
         NSString *senderName = [aPacket objectForKey:@"sender_name"];
         
@@ -1360,6 +1370,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         outroReceived = YES;
         firstChatMessageSent = NO;
     }
+    else if ([type isEqualToString:@"reintroed"])
+    {
+        NSNumber *success = [aPacket objectForKey:@"success"];
+        if ([success boolValue])
+        {
+            [reintroTimeoutTimer stopTimer];
+            [reintroTimeoutTimer release];
+            reintroTimeoutTimer = nil;
+            
+            resumeMode = NO;
+            sessionEnding = NO;
+            resetAfterDisconnect = NO;
+            killConnectionAfterChatViewDismissal = NO;
+            
+            [altChatViewController hideReconnectionOverlay];
+            [self showChatAnimated:YES];
+        }
+        else
+        {
+            [self reset];
+            
+            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                                message:message
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Dismiss", nil];
+            [alertView show];
+            [alertView autorelease];
+        }
+    }
     
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1
@@ -1368,11 +1410,39 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)performIntroduction
 {
+    // Reconnection? Send a reintro packet instead.
+    if (didReconnect && [sessionId length])
+    {
+        didReconnect = NO;
+        
+        NSDictionary *reintroDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"reintro", @"type",
+                                  sessionId, @"session_id",
+                                  nil];
+        
+        NSString *reintro = [jsonWriter stringWithObject:reintroDict];
+        reintro = [reintro stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[reintro dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];    
+        
+        reintroTimeoutTimer = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(reintroTimeoutTimerDidFire)];
+        
+        return;
+    }
+    
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
+#ifdef DEBUG
     LIOLog(@"Intro JSON: %@", intro);
+#endif // DEBUG
     
     intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
     
@@ -1499,7 +1569,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [delegate lookIOManagerDidShowControlButton:self];
     }
     
-    if (resumeMode && NO == [controlSocket isConnected])
+    if (resumeMode && NO == socketConnected)
         controlButton.currentMode = LIOControlButtonViewModePending;
     else
         controlButton.currentMode = LIOControlButtonViewModeDefault;
@@ -1785,30 +1855,43 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)configureReconnectionTimer
 {
-    if ([controlSocket isConnected])
+    if (socketConnected)
     {
-        LIOLog(@"Ignoring request to configure reconnection timer: we're already connected!");
+        LIOLog(@"RESUME MODE TERMINATED: socket did reconnect.");
         
         [self killReconnectionTimer];
         resumeMode = NO;
         previousReconnectionTimerStep = 2;
-        
-        [altChatViewController hideReconnectionOverlay];
-        [self showChatAnimated:NO];
+        didReconnect = YES;
         
         return;
     }
     
+    // Reset session if the last activity was more than 10 minutes ago.
+    if ([lastActivity timeIntervalSinceNow] < -LIOLookIOManagerReconnectionTimeLimit)
+    {
+        [self reset];
+        
+        NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                            message:message
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        [alertView show];
+        [alertView autorelease];
+    }
+        
     [altChatViewController showReconnectionOverlay];
     [self beginConnectingWithError:nil];
     
     NSTimeInterval timerInterval = exp2(previousReconnectionTimerStep);
-    LIOLog(@"Configuring reconnection timer with interval: %f", timerInterval);
-    reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:exp2(previousReconnectionTimerStep)
+    reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:timerInterval
                                                              target:self
                                                            selector:@selector(reconnectionTimerDidFire)];
     
-    if (altChatViewController && previousReconnectionTimerStep == 3)
+    if (altChatViewController && previousReconnectionTimerStep >= 3)
     {
         [altChatViewController.view removeFromSuperview];
         [altChatViewController release];
@@ -1836,6 +1919,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self configureReconnectionTimer];
 }
 
+- (void)reintroTimeoutTimerDidFire
+{
+    resetAfterDisconnect = YES;
+    [self killConnection];
+    
+    NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
+                                                        message:message
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Dismiss", nil];
+    [alertView show];
+    [alertView autorelease];
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate methods
 
@@ -1845,18 +1944,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LIOLog(@"Connected to %@:%u", host, port);
 
-    [self configureReconnectionTimer];
-    
     if (usesTLS)
         [controlSocket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
     else
+    {
+        socketConnected = YES;
+        [self configureReconnectionTimer];
         [self performIntroduction];
+    }
 }
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
     LIOLog(@"Connection secured.");    
     
+    socketConnected = YES;
+    [self configureReconnectionTimer];
     [self performIntroduction];
 }
 
@@ -1915,6 +2018,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     userWantsSessionTermination = NO;
+    
+    LIOLog(@"[lastActivity timeIntervalSinceNow]: %f", [lastActivity timeIntervalSinceNow]);
+    if ([lastActivity timeIntervalSinceNow] <= -LIOLookIOManagerReconnectionTimeLimit)
+        resetAfterDisconnect = YES;
         
     LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
 }
@@ -1922,6 +2029,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
 {
     LIOLog(@"Socket did disconnect.");
+
+    socketConnected = NO;
+    
+    [controlSocket autorelease];
+    controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
     
     if (resetAfterDisconnect)
     {
@@ -1982,6 +2094,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString
 {
+    self.lastActivity = [NSDate date];
+    
     NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"chat", @"type",
                                                     aString, @"text",
@@ -2196,10 +2310,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
 {
-    sessionEnding = YES;
-    
-    [self rejiggerWindows];
-    
     userWantsSessionTermination = YES;
     resetAfterDisconnect = YES;
     killConnectionAfterChatViewDismissal = YES;
@@ -2242,8 +2352,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     leaveMessageViewController = nil;
     
     sessionEnding = YES;
-    
-    [self rejiggerWindows];
     
     userWantsSessionTermination = YES;
     resetAfterDisconnect = YES;
@@ -2294,7 +2402,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 sessionEnding = YES;
                 userWantsSessionTermination = YES;
                 
-                if (NO == [controlSocket isConnected])
+                if (NO == socketConnected)
                 {
                     [self reset];
                 }
@@ -2365,7 +2473,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         case LIOLookIOManagerAgentEndedSessionAlertViewTag:
         {
             /*
-            if ([controlSocket isConnected])
+            if (socketConnected)
             {
                 resetAfterDisconnect = YES;
                 [self killConnection];
@@ -2375,6 +2483,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self reset];
             }
             */
+            break;
         }
     }
 }
@@ -2395,7 +2504,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         backgroundedTime = [[NSDate date] retain];
     }
     
-    if ([controlSocket isConnected])
+    if (socketConnected)
     {
         NSMutableDictionary *backgroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                                  @"advisory", @"type",
@@ -2448,7 +2557,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         backgroundedTime = nil;
     }
     
-    if ([controlSocket isConnected])
+    if (socketConnected)
     {
         NSMutableDictionary *foregroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                                     @"advisory", @"type",
@@ -2740,7 +2849,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
 {
-    if ([controlSocket isConnected] && introduced)
+    if (socketConnected && introduced)
         [self showChatAnimated:YES];
     else
         [self beginSession];

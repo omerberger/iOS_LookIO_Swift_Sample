@@ -121,17 +121,17 @@
     innerShadow.frame = self.bounds;
     
     CGRect aFrame = spinner.frame;
-    aFrame.size.width = 16.0;
-    aFrame.size.height = 16.0;
+//    aFrame.size.width = 8.0;
+//    aFrame.size.height = 8.0;
     aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = 8.0;
+    aFrame.origin.y = 4.0;
     spinner.frame = aFrame;
     spinner.hidden = currentMode != LIOControlButtonViewModePending;
     
     if (LIOControlButtonViewModeDefault == currentMode)
         label.alpha = 1.0;
     else
-        label.alpha = 0.5;
+        label.alpha = 0.33;
 }
 
 - (void)drawRect:(CGRect)rect
