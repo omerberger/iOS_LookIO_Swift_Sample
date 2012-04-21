@@ -13,23 +13,32 @@
 
 @class TTTAttributedLabel_LIO;
 
-@protocol TTTAttributedLabelDelegate;
-
 typedef enum
 {
     LIOChatBubbleViewFormattingModeRemote,
     LIOChatBubbleViewFormattingModeLocal
 } LIOChatBubbleViewFormattingMode;
 
-@interface LIOChatBubbleView : UIView <TTTAttributedLabelDelegate>
+typedef enum
+{
+    LIOChatBubbleViewLinkModeDisabled,
+    LIOChatBubbleViewLinkModeEnabled
+} LIOChatBubbleViewLinkMode;
+
+@interface LIOChatBubbleView : UIView
 {
     LIOChatBubbleViewFormattingMode formattingMode;
-    TTTAttributedLabel_LIO *messageView;
+    LIOChatBubbleViewLinkMode linkMode;
+    TTTAttributedLabel_LIO *mainMessageView;
+    NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes;
     UIImageView *backgroundImage;
     NSString *senderName;
+    NSDataDetector *dataDetector;
+    
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
+@property(nonatomic, readonly) LIOChatBubbleViewLinkMode linkMode;
 @property(nonatomic, retain) NSString *senderName;
 
 - (void)populateMessageViewWithText:(NSString *)aString;

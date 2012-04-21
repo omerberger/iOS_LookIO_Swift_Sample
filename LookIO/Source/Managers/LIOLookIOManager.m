@@ -278,13 +278,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSMutableURLRequest *uploadLogRequest = [NSMutableURLRequest requestWithURL:url
                                                                     cachePolicy:NSURLCacheStorageNotAllowed
                                                                 timeoutInterval:10.0];
-    [uploadLogRequest addValue:bundleId forHTTPHeaderField:@"X-Lookio-BundleID"];
+    [uploadLogRequest addValue:bundleId forHTTPHeaderField:@"X-Lookio-AppID"];
     [uploadLogRequest addValue:@"Apple iOS" forHTTPHeaderField:@"X-Lookio-Platform"];
     [uploadLogRequest addValue:udid forHTTPHeaderField:@"X-Lookio-DeviceID"];
     [uploadLogRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [uploadLogRequest setHTTPBody:[logBody dataUsingEncoding:NSUTF8StringEncoding]];
     
     [NSURLConnection connectionWithRequest:uploadLogRequest delegate:nil];
+    
+#ifdef DEBUG
+    NSLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
+#endif
+
 }
 
 - (void)sendLaunchReport
@@ -2102,10 +2107,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     nil]];
     
     chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
-
-    [controlSocket writeData:[chat dataUsingEncoding:NSUTF8StringEncoding]
+    NSData *chatData = [chat dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
+#ifdef DEBUG
+    LIOLog(@"Chat packet written to socket (%u bytes):\n    \"%@\"", [chatData length], chat);
+#endif
     
     [controlSocket readDataToData:messageSeparatorData
                       withTimeout:-1

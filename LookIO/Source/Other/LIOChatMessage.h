@@ -11,7 +11,10 @@
 typedef enum
 {
     LIOChatMessageKindRemote,
-    LIOChatMessageKindLocal
+    LIOChatMessageKindLocal,
+    LIOChatMessageKindMapLocation,
+    LIOChatMessageKindLink,
+    LIOChatMessageKindPhoneNumber
 } LIOChatMessageKind;
 
 @interface LIOChatMessage : NSObject

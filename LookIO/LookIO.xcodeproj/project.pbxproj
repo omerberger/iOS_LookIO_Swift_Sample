@@ -13,10 +13,16 @@
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
 		D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */; };
 		D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */; };
+		D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */; };
+		D440D46F1540AF640045DBFF /* LIOMapBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */; };
+		D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D4731540BD400045DBFF /* LIOMapAnnotation.h */; };
+		D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D4741540BD400045DBFF /* LIOMapAnnotation.m */; };
+		D440D4791540CBF40045DBFF /* LIOLinkBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D4771540CBF40045DBFF /* LIOLinkBubbleView.h */; };
+		D440D47A1540CBF40045DBFF /* LIOLinkBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D4781540CBF40045DBFF /* LIOLinkBubbleView.m */; };
+		D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */; };
+		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
-		D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */; };
-		D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
 		D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */; };
 		D486D7281521303B007C9AF8 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7151521303B007C9AF8 /* ioapi.c */; };
@@ -87,10 +93,16 @@
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
 		D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedKeyboardIcon.h; path = Source/Views/LIOAnimatedKeyboardIcon.h; sourceTree = "<group>"; };
 		D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnimatedKeyboardIcon.m; path = Source/Views/LIOAnimatedKeyboardIcon.m; sourceTree = "<group>"; };
+		D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMapBubbleView.h; path = Source/Views/LIOMapBubbleView.h; sourceTree = "<group>"; };
+		D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMapBubbleView.m; path = Source/Views/LIOMapBubbleView.m; sourceTree = "<group>"; };
+		D440D4731540BD400045DBFF /* LIOMapAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMapAnnotation.h; path = Source/Other/LIOMapAnnotation.h; sourceTree = "<group>"; };
+		D440D4741540BD400045DBFF /* LIOMapAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMapAnnotation.m; path = Source/Other/LIOMapAnnotation.m; sourceTree = "<group>"; };
+		D440D4771540CBF40045DBFF /* LIOLinkBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLinkBubbleView.h; path = Source/Views/LIOLinkBubbleView.h; sourceTree = "<group>"; };
+		D440D4781540CBF40045DBFF /* LIOLinkBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLinkBubbleView.m; path = Source/Views/LIOLinkBubbleView.m; sourceTree = "<group>"; };
+		D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
+		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
-		D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
-		D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
 		D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBundleManager.m; path = Source/Managers/LIOBundleManager.m; sourceTree = "<group>"; };
 		D486D7151521303B007C9AF8 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
@@ -166,6 +178,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D440D47B1541E8450045DBFF /* TTTAttributedLabel */ = {
+			isa = PBXGroup;
+			children = (
+				D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */,
+				D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */,
+			);
+			path = TTTAttributedLabel;
+			sourceTree = "<group>";
+		};
 		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -213,6 +234,10 @@
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D4ADC7C414F322B500713F29 /* LIOInputBarView.h */,
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
+				D440D4771540CBF40045DBFF /* LIOLinkBubbleView.h */,
+				D440D4781540CBF40045DBFF /* LIOLinkBubbleView.m */,
+				D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */,
+				D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -222,19 +247,12 @@
 			children = (
 				D4ADC7B414F3218300713F29 /* LIOChatMessage.h */,
 				D4ADC7B514F3218300713F29 /* LIOChatMessage.m */,
+				D440D4731540BD400045DBFF /* LIOMapAnnotation.h */,
+				D440D4741540BD400045DBFF /* LIOMapAnnotation.m */,
 				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
 				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
 			);
 			name = Other;
-			sourceTree = "<group>";
-		};
-		D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */ = {
-			isa = PBXGroup;
-			children = (
-				D486D6E9151BC1DE007C9AF8 /* TTTAttributedLabel.h */,
-				D486D6EA151BC1DE007C9AF8 /* TTTAttributedLabel.m */,
-			);
-			path = TTTAttributedLabel;
 			sourceTree = "<group>";
 		};
 		D486D7141521303B007C9AF8 /* MiniZip */ = {
@@ -291,9 +309,9 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				D440D47B1541E8450045DBFF /* TTTAttributedLabel */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
-				D486D6E8151BC1DE007C9AF8 /* TTTAttributedLabel */,
 				D4ADC7D914F322C300713F29 /* CocoaAsyncSocket */,
 				D4ADC7DC14F322C300713F29 /* NSData+Base64 */,
 				D4ADC7DF14F322C300713F29 /* SBJSON */,
@@ -377,7 +395,6 @@
 				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
-				D486D6EB151BC1DE007C9AF8 /* TTTAttributedLabel.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
 				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
 				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
@@ -391,6 +408,10 @@
 				D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */,
 				D403F7B815335CC100101941 /* LIOLogManager.h in Headers */,
 				D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */,
+				D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */,
+				D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */,
+				D440D4791540CBF40045DBFF /* LIOLinkBubbleView.h in Headers */,
+				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,7 +503,6 @@
 				D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */,
 				D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */,
 				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,
-				D486D6EC151BC1DE007C9AF8 /* TTTAttributedLabel.m in Sources */,
 				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
 				D486D7281521303B007C9AF8 /* ioapi.c in Sources */,
 				D486D72A1521303B007C9AF8 /* mztools.c in Sources */,
@@ -496,6 +516,10 @@
 				D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */,
 				D403F7B915335CC100101941 /* LIOLogManager.m in Sources */,
 				D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */,
+				D440D46F1540AF640045DBFF /* LIOMapBubbleView.m in Sources */,
+				D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */,
+				D440D47A1540CBF40045DBFF /* LIOLinkBubbleView.m in Sources */,
+				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
