@@ -25,7 +25,7 @@ typedef enum
     LIOChatBubbleViewLinkModeEnabled
 } LIOChatBubbleViewLinkMode;
 
-@interface LIOChatBubbleView : UIView
+@interface LIOChatBubbleView : UIView <UIAlertViewDelegate>
 {
     LIOChatBubbleViewFormattingMode formattingMode;
     LIOChatBubbleViewLinkMode linkMode;
@@ -34,12 +34,14 @@ typedef enum
     UIImageView *backgroundImage;
     NSString *senderName;
     NSDataDetector *dataDetector;
-    
+    NSURL *urlBeingLaunched;
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
 @property(nonatomic, readonly) LIOChatBubbleViewLinkMode linkMode;
+@property(nonatomic, readonly) NSMutableArray *linkMessageViews, *linkButtons, *links;
 @property(nonatomic, retain) NSString *senderName;
+@property(nonatomic, readonly) TTTAttributedLabel_LIO *mainMessageView;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
 

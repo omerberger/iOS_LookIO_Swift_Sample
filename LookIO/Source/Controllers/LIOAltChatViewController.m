@@ -19,6 +19,7 @@
 #import "LIOLeaveMessageViewController.h"
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
+#import "TTTAttributedLabel.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -46,6 +47,7 @@
     
     if (self)
     {
+        chatBubbleHeights = [[NSMutableArray alloc] init];
     }
     
     return self;
@@ -353,6 +355,7 @@
     [popover release];
     [aboutButton release];
     [emailConvoButton release];
+    [chatBubbleHeights release];
     
     [super dealloc];
 }
@@ -596,6 +599,32 @@
     [messages release];
     messages = [[dataSource altChatViewControllerChatMessages:self] retain];
     
+    // Pre-calculate all bubble heights. D:
+    [chatBubbleHeights removeAllObjects];
+    for (int i=0; i<[messages count]; i++)
+    {
+        LIOChatBubbleView *tempView = [[LIOChatBubbleView alloc] init];
+        
+        LIOChatMessage *aMessage = [messages objectAtIndex:i];
+        if (LIOChatMessageKindLocal == aMessage.kind)
+        {
+            tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
+            tempView.senderName = @"Me";
+        }
+        else
+        {
+            tempView.formattingMode = LIOChatBubbleViewFormattingModeRemote;
+            tempView.senderName = aMessage.senderName;
+        }
+        
+        [tempView populateMessageViewWithText:aMessage.text];
+        
+        NSNumber *aHeight = [NSNumber numberWithFloat:tempView.frame.size.height];
+        [chatBubbleHeights addObject:aHeight];
+        
+        [tempView release];
+    }
+    
     [tableView reloadData];
 }
 
@@ -673,7 +702,7 @@
         aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
     
     [aBubble setNeedsLayout];
-    [aBubble setNeedsDisplay];
+    [aBubble setNeedsDisplay];    
     
     return aCell;
 }
@@ -694,13 +723,11 @@
         return result;
     }
     
-    LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
+    NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(indexPath.row - 1)];
+    CGFloat height = [aHeight floatValue];
     
-    CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
-    CGSize boxSize = [aMessage.text sizeWithFont:[UIFont systemFontOfSize:16.0] constrainedToSize:maxSize lineBreakMode:UILineBreakModeWordWrap];
-    
-    CGFloat height = boxSize.height + 25.0;
-    if (height < LIOChatBubbleViewMinTextHeight) height = LIOChatBubbleViewMinTextHeight;
+    if (height < LIOChatBubbleViewMinTextHeight)
+        height = LIOChatBubbleViewMinTextHeight;
     
     return height + 10.0;
 }

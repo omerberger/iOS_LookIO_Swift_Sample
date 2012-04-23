@@ -60,6 +60,7 @@
     LIOGradientLayer *vertGradient, *horizGradient;
     UIPopoverController *popover;
     NSUInteger currentScrollId;
+    NSMutableArray *chatBubbleHeights;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
