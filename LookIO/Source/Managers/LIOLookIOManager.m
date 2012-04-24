@@ -135,7 +135,6 @@
 @property(nonatomic, readonly) BOOL agentsAvailable;
 @property(nonatomic, retain) NSDate *lastActivity;
 
-- (void)controlButtonWasTapped;
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate;
@@ -569,7 +568,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
-    [mainWindow release];
     [queuedLaunchReportDates release];
     [dateFormatter release];
     [overriddenEndpoint release];
@@ -586,10 +584,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [altChatViewController release];
     altChatViewController = nil;
-    
-    [self rejiggerWindows];
-    
+
     [lookioWindow release];
+    [mainWindow release];
     
     LIOLog(@"Unloaded.");
     
@@ -650,7 +647,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    didReconnect = NO;
+    didReconnect = NO, socketConnected = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -662,7 +659,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    [self rejiggerWindows];
+    if (mainWindow)
+        [mainWindow makeKeyWindow];
+    else
+        [self rejiggerWindows];
+    
+    [self refreshControlButtonVisibility];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
@@ -685,12 +687,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             else if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
             {
                 previousKeyWindow = [delegate lookIOManagerMainWindowForHostApp:self];
+                mainWindow = [previousKeyWindow retain];
                 
                 LIOLog(@"Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
             }
             else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
             {
                 previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+                mainWindow = [previousKeyWindow retain];
                 
                 LIOLog(@"Got host app's key window from UIApplication: 0x%08X", (unsigned int)previousKeyWindow);
             }
@@ -705,7 +709,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
-        LIOLog(@"Hiding 0x%08X, restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
+        LIOLog(@"Hiding LookIO (0x%08X), restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
         
         lookioWindow.hidden = YES;
         
@@ -949,16 +953,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (controlSocketConnecting)
     {
-        LIOLog(@"Connect attempt ignored: connecting or already connected.");
+        LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
         return;
     }
     
     if (socketConnected)
     {
-        [self controlButtonWasTapped];
+        LIOLog(@"beginSession ignored: already connected!");
         return;
     }
-
+    
     NSError *connectError = nil;
     BOOL connectResult = [self beginConnectingWithError:&connectError];
     if (NO == connectResult)
@@ -988,15 +992,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     controlSocketConnecting = YES;
 
-    LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
-    firstMessage.kind = LIOChatMessageKindRemote;
-    firstMessage.date = [NSDate date];
-    [chatHistory addObject:firstMessage];
-    
-    if ([lastKnownWelcomeMessage length])
-        firstMessage.text = lastKnownWelcomeMessage;
-    else
-        firstMessage.text = @"Send a message to our live service reps for immediate help.";
+    if (0 == [chatHistory count])
+    {
+        LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
+        firstMessage.kind = LIOChatMessageKindRemote;
+        firstMessage.date = [NSDate date];
+        [chatHistory addObject:firstMessage];
+        
+        if ([lastKnownWelcomeMessage length])
+            firstMessage.text = lastKnownWelcomeMessage;
+        else
+            firstMessage.text = @"Send a message to our live service reps for immediate help.";
+    }
     
     [self showChatAnimated:YES];
 }
@@ -1394,8 +1401,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            [self reset];
+            resumeMode = NO;
+            firstChatMessageSent = NO;
+            resetAfterDisconnect = YES;
+            [self killConnection];
             
+            /*
             NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
@@ -1405,6 +1416,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                       otherButtonTitles:@"Dismiss", nil];
             [alertView show];
             [alertView autorelease];
+            */
         }
     }
     
@@ -2036,6 +2048,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Socket did disconnect.");
 
     socketConnected = NO;
+    controlSocketConnecting = NO;
     
     [controlSocket autorelease];
     controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
@@ -2400,7 +2413,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         case LIOLookIOManagerDisconnectErrorAlertViewTag:
         {
-            [self reset];
+            [self rejiggerWindows];
             break;
         }
             
@@ -2843,14 +2856,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
     [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-}
-
-#pragma mark -
-#pragma mark UIControl actions
-
-- (void)controlButtonWasTapped
-{
-    [self showChatAnimated:YES];
 }
 
 #pragma mark -

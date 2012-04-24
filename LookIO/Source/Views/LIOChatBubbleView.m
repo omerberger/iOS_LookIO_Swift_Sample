@@ -151,6 +151,7 @@
     [newLinkButton setBackgroundImage:linkButtonImage forState:UIControlStateNormal];
     newLinkButton.titleLabel.lineBreakMode = UILineBreakModeTailTruncation;
     [newLinkButton addTarget:self action:@selector(linkButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 10.0, 0.0, 10.0);
     
     return newLinkButton;
 }
@@ -217,7 +218,6 @@
             UIButton *newLinkButton = [[self createLinkButton] autorelease];
             NSString *curLink = [links objectAtIndex:i];
             [newLinkButton setTitle:curLink forState:UIControlStateNormal];
-            newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 5.0, 0.0, 5.0);
             [linkButtons addObject:newLinkButton];
             [self addSubview:newLinkButton];
             

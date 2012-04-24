@@ -22,12 +22,12 @@
     UIView *defaultNotification, *activeNotification;
     UIView *tappableBackground;
     UIView *separator;
-    LIOTimerProxy *notificationTimer;
+    LIOTimerProxy *notificationTimer, *animatedEllipsisTimer;
     id<LIOHeaderBarViewDelegate> delegate;
 }
 
 @property(nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
 
-- (void)revealNotificationString:(NSString *)aString;
+- (void)revealNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animated;
 
 @end

@@ -131,10 +131,16 @@
         inputField.returnKeyType = UIReturnKeySend;
         inputField.backgroundColor = [UIColor clearColor];
         CGRect aFrame = inputFieldBackground.frame;
-        aFrame.origin.y -= 3.0;
+        aFrame.origin.y = -3.0;
         aFrame.size.height = 4800.0;
         inputField.frame = aFrame;
         [self addSubview:inputField];
+        
+        characterCount = [[UILabel alloc] init];
+        characterCount.backgroundColor = [UIColor clearColor];
+        characterCount.textColor = [UIColor lightGrayColor];
+        characterCount.font = [UIFont italicSystemFontOfSize:12.0];
+        [self addSubview:characterCount];
         
         CGSize size = [@"jpqQABTY" sizeWithFont:inputField.font];
         singleLineHeight = size.height;
@@ -153,6 +159,7 @@
     [adLabel release];
     [adLogo release];
     [adArea release];
+    [characterCount release];
     
     [super dealloc];
 }
@@ -216,12 +223,25 @@
     if (aFrame.size.height < minHeight) aFrame.size.height = minHeight;
     inputFieldBackground.frame = aFrame;
     
+    aFrame = inputField.frame;
+    if (1 == totalLines) aFrame.origin.y = 5.0;
+    else aFrame.origin.y = 0.0;
+    inputField.frame = aFrame;
+    
     CGFloat bottomPadding = 5.0;
     if (padUI)
         bottomPadding = 12.0;
     
     desiredHeight = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + bottomPadding;
     [delegate inputBarView:self didChangeDesiredHeight:desiredHeight];
+    
+    characterCount.text = [NSString stringWithFormat:@"(%u/%u)", [inputField.text length], LIOInputBarViewMaxTextLength];
+    [characterCount sizeToFit];
+    aFrame = characterCount.frame;
+    aFrame.origin.x = (sendButton.frame.origin.x + (sendButton.frame.size.width / 2.0)) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = self.bounds.size.height - aFrame.size.height - 5.0;
+    characterCount.frame = aFrame;
+    characterCount.hidden = totalLines < 3;
 }
 
 #pragma mark -

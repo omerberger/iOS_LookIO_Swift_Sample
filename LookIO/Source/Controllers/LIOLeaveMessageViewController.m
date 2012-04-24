@@ -95,10 +95,10 @@
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     fieldBackground.userInteractionEnabled = YES;
     aFrame = fieldBackground.frame;
-    aFrame.size.width = 290.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     aFrame.size.height = 43.0;
     aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = 10.0;
     fieldBackground.frame = aFrame;
     fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:fieldBackground];
@@ -126,10 +126,10 @@
     messageBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     messageBackground.clipsToBounds = YES;
     messageBackground.userInteractionEnabled = YES;
-    aFrame.size.width = 290.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     aFrame.size.height = 76.0;
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = 10.0;
     messageBackground.frame = aFrame;
     messageBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:messageBackground];
@@ -141,9 +141,9 @@
     messageView.font = [UIFont systemFontOfSize:14.0];
     messageView.delegate = self;
     aFrame.origin.x = 1.0;
-    aFrame.origin.y = 10.0;
+    aFrame.origin.y = 3.0;
     aFrame.size.width = 280.0;
-    aFrame.size.height = 60.0;
+    aFrame.size.height = 73.0;
     messageView.frame = aFrame;
     messageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [messageBackground addSubview:messageView];
@@ -157,7 +157,7 @@
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    [submitButton setTitle:@"Send" forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
@@ -165,8 +165,9 @@
     submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = messageBackground.frame.origin.y + messageBackground.frame.size.height + 3.0;
+    aFrame.origin.x = 10.0;
+    aFrame.origin.y = messageBackground.frame.origin.y + messageBackground.frame.size.height + 5.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
@@ -174,6 +175,7 @@
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
+/*
 - (void)rejiggerInterface
 {
     CGRect aFrame = fieldBackground.frame;
@@ -195,6 +197,7 @@
     aFrame.origin.y = messageBackground.frame.origin.y + messageBackground.frame.size.height + 3.0;
     submitButton.frame = aFrame;
 }
+*/
 
 - (void)viewDidLoad
 {
@@ -272,7 +275,7 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    [self rejiggerInterface];
+    //[self rejiggerInterface];
     
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [emailField becomeFirstResponder];

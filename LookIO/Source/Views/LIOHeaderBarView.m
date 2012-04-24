@@ -12,6 +12,8 @@
 #import "LIOBundleManager.h"
 #import "LIOTimerProxy.h"
 
+#define LIOHeaderBarViewNotificationLabelTag 2749
+
 @implementation LIOHeaderBarView
 
 @synthesize delegate;
@@ -103,6 +105,9 @@
     [notificationTimer stopTimer];
     [notificationTimer release];
     
+    [animatedEllipsisTimer stopTimer];
+    [animatedEllipsisTimer release];
+    
     [super dealloc];
 }
 
@@ -116,6 +121,7 @@
     newNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
     UILabel *aLabel = [[[UILabel alloc] init] autorelease];
+    aLabel.tag = LIOHeaderBarViewNotificationLabelTag;
     aLabel.backgroundColor = [UIColor clearColor];
     aLabel.font = [UIFont boldSystemFontOfSize:12.0];
     aLabel.textColor = [UIColor whiteColor];
@@ -186,7 +192,7 @@
                      }];
 }
 
-- (void)revealNotificationString:(NSString *)aString
+- (void)revealNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animated
 {
     if (nil == aString)
     {
@@ -248,6 +254,13 @@
     notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOHeaderBarViewDefaultNotificationDuration
                                                              target:self
                                                            selector:@selector(notificationTimerDidFire)];
+    
+    [animatedEllipsisTimer stopTimer];
+    [animatedEllipsisTimer release];
+    animatedEllipsisTimer = nil;
+    
+    if (animated)
+        animatedEllipsisTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.5 target:self selector:@selector(animatedEllipsisTimerDidFire)];
 }
 
 - (void)dismissActiveNotification
@@ -282,6 +295,22 @@
     
     [self dismissActiveNotification];
     [self revealDefaultNotification];
+}
+
+- (void)animatedEllipsisTimerDidFire
+{
+    if (nil == activeNotification)
+        return;
+    
+    UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIOHeaderBarViewNotificationLabelTag];
+    if ([aLabel.text hasSuffix:@"..."])
+        aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 3, 3) withString:@"."];
+    else if ([aLabel.text hasSuffix:@".."])
+         aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 2, 2) withString:@"..."];
+    else if ([aLabel.text hasSuffix:@"."])
+         aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 1, 1) withString:@".."];
+    
+    [aLabel setNeedsDisplay];
 }
 
 #pragma mark -

@@ -115,10 +115,10 @@
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     fieldBackground.userInteractionEnabled = YES;
     aFrame = fieldBackground.frame;
-    aFrame.size.width = 290.0;
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     aFrame.size.height = 48.0;
     aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 10.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     fieldBackground.frame = aFrame;
     fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:fieldBackground];
@@ -128,7 +128,7 @@
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 14.0;
-    aFrame.size.width = 269.0;
+    aFrame.size.width = fieldBackground.frame.size.width - 20.0;
     aFrame.size.height = 28.0;
     inputField.frame = aFrame;
     inputField.font = [UIFont systemFontOfSize:14.0];
@@ -157,7 +157,8 @@
     submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
+    aFrame.origin.x = 10.0; //(rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -166,6 +167,7 @@
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
+/*
 - (void)rejiggerInterface
 {
     CGRect aFrame = fieldBackground.frame;
@@ -181,6 +183,7 @@
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
     submitButton.frame = aFrame;
 }
+*/
 
 - (void)viewDidLoad
 {
@@ -241,7 +244,7 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];   
     
-    [self rejiggerInterface];
+    //[self rejiggerInterface];
     
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [inputField becomeFirstResponder];

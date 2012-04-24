@@ -283,10 +283,8 @@
     label.frame = aFrame;
     [reconnectionBezel addSubview:label];
     
-    /*
     UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleReconnectionOverlayTap:)] autorelease];
     [reconnectionOverlay addGestureRecognizer:tapper];
-    */
     
     //[self.view bringSubviewToFront:tableView];
 }
@@ -633,12 +631,12 @@
     return inputBar.inputField.text;
 }
 
-- (void)presentNotificationString:(NSString *)aString
+- (void)presentNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animatedEllipsis
 {
     if (nil == headerBar)
         return;
-    
-    [headerBar revealNotificationString:aString];
+        
+    [headerBar revealNotificationString:aString animatedEllipsis:YES];
 }
 
 #pragma mark -
@@ -1213,11 +1211,11 @@
 {
     if (NO == agentTyping && aBool)
     {
-        [self presentNotificationString:@"Agent is typing..."];
+        [self presentNotificationString:@"Agent is typing..." animatedEllipsis:YES];
     }
     else if (agentTyping && NO == aBool)
     {
-        [self presentNotificationString:nil];
+        [self presentNotificationString:nil animatedEllipsis:NO];
     }
     
     agentTyping = aBool;

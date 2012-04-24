@@ -34,6 +34,7 @@
     NSInteger totalLines;
     CGFloat desiredHeight;
     UIView *adArea;
+    UILabel *characterCount;
     id<LIOInputBarViewDelegate> delegate;
 }
 
