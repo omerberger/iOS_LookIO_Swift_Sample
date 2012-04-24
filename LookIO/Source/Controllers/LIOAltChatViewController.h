@@ -77,6 +77,6 @@
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;
 - (NSString *)currentChatText;
-- (void)presentNotificationString:(NSString *)aString;
+- (void)presentNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animatedEllipsis;
 
 @end

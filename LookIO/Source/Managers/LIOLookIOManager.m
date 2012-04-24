@@ -1167,7 +1167,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSDictionary *data = [aPacket objectForKey:@"data"];
             NSString *message = [data objectForKey:@"message"];
             if ([message length] && altChatViewController)
-                [altChatViewController presentNotificationString:message];
+                [altChatViewController presentNotificationString:message animatedEllipsis:NO];
         }
         else if ([action isEqualToString:@"send_logs"])
         {
