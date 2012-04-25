@@ -658,9 +658,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     lastActivity = nil;
     
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
-    
+
     if (mainWindow)
+    {
+        previousKeyWindow = nil;
+        
+        [lookioWindow removeFromSuperview];
+        [lookioWindow release];
+        lookioWindow = [[UIWindow alloc] initWithFrame:mainWindow.frame];
+        lookioWindow.hidden = YES;
+        lookioWindow.windowLevel = 0.1;
+        
+        [self refreshControlButtonVisibility];
+        
+        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+            [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+        
         [mainWindow makeKeyWindow];
+    }
     else
         [self rejiggerWindows];
     
@@ -959,8 +974,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (socketConnected)
     {
-        LIOLog(@"beginSession ignored: already connected!");
-        return;
+        if (introduced)
+        {
+            [self showChatAnimated:YES];
+            return;
+        }
+        else
+        {
+            LIOLog(@"beginSession ignored: already connected!");
+            return;
+        }
     }
     
     NSError *connectError = nil;
@@ -1035,11 +1058,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
     
-    double delayInSeconds = 1.0;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [controlSocket disconnectAfterWriting];
-    });
+    [controlSocket disconnectAfterWriting];
 }
 
 - (void)recordCurrentUILocation:(NSString *)aLocationString
@@ -1489,6 +1508,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[caps dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];    
 }
 
 - (void)refreshControlButtonVisibility
@@ -2050,7 +2073,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     socketConnected = NO;
     controlSocketConnecting = NO;
     
-    [controlSocket autorelease];
+    controlSocket.delegate = nil;
+    [controlSocket release];
     controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
     
     if (resetAfterDisconnect)

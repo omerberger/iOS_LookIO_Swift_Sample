@@ -107,7 +107,8 @@ static LIOBundleManager *sharedBundleManager = nil;
 - (NSString *)targetDirectory
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    return [paths objectAtIndex:0];
+    NSString *cachesDir = [paths objectAtIndex:0];
+    return [cachesDir stringByAppendingPathComponent:[NSString stringWithFormat:@"_LOOKIO_%@/", LOOKIO_VERSION_STRING]];
 }
 
 - (NSString *)bundleZipPath
@@ -134,30 +135,42 @@ static LIOBundleManager *sharedBundleManager = nil;
         return;
     }
     
-    // Is the bundle included in the host app?
-    NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"LookIO.bundle"];
-    lioBundle = [[NSBundle bundleWithPath:mainBundlePath] retain];
+    // Is the bundle in the caches dir w/ version number?
+    NSString *cachesPath = [self bundlePath];
+    lioBundle = [[NSBundle bundleWithPath:cachesPath] retain];
     if (lioBundle)
     {
         // Yep!
-        LIOLog(@"BUNDLE: Found in host app's main bundle: %@", mainBundlePath);
+        LIOLog(@"BUNDLE: Found in caches directory: %@", cachesPath);
     }
     else
     {
-        // Nope. Is the downloaded bundle in the caches directory?
-        NSString *cachesPath = [self bundlePath];
-        lioBundle = [[NSBundle bundleWithPath:cachesPath] retain];
-        if (lioBundle)
+        // Nope. Check the main .app bundle.
+        NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"LookIO.bundle"];
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        BOOL isDir = NO;
+        BOOL bundleExists = [fileManager fileExistsAtPath:mainBundlePath isDirectory:&isDir];
+        if (bundleExists && isDir)
         {
-            // Yep!
-            LIOLog(@"BUNDLE: Found in caches directory: %@", cachesPath);
-        }
-        else
-        {
-            // Nope. Kick off a download request.
-            [self beginDownloadingBundle];
+            // Yep! Copy it to the target dir and try loading it.
+            NSString *targetDir = [NSString stringWithFormat:@"%@/LookIO.bundle", [self targetDirectory]];
+            NSError *anError = nil;
+            BOOL copyResult = [fileManager copyItemAtPath:mainBundlePath toPath:targetDir error:&anError];
+            if (copyResult && nil == anError)
+            {
+                // Copy succeeded. Try loading the bundle again.
+                lioBundle = [[NSBundle bundleWithPath:cachesPath] retain];
+            }
+            else
+            {
+                LIOLog(@"Error while copying LookIO.bundle from host .app bundle: %@", [anError localizedDescription]);
+            }
         }
     }
+    
+    // If at this point we still have no bundle, we need to download it.
+    if (nil == lioBundle)
+        [self beginDownloadingBundle];
 }
 
 - (void)beginDownloadingBundle

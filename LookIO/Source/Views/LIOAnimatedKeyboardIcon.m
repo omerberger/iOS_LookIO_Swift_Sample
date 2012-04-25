@@ -60,14 +60,13 @@
     for (int i=0; i<LIOAnimatedKeyboardIconNumKeys; i++)
     {
         // Full opacity (at random) if 0.0.
-        if (keyOpacities[i] <= 0.0 && 0 == arc4random() % LIOAnimatedKeyboardIconRandomFrequency)
+        if (keyOpacities[i] <= 0.0 && 0 == arc4random() % (LIOAnimatedKeyboardIconRandomFrequency + (arc4random() % 10)))
             keyOpacities[i] = 1.0;
         else if (keyOpacities[i] > 0.0)
             keyOpacities[i] -= LIOAnimatedKeyboardIconKeyDecayRate * elapsed;
     }
 }
 
-// keys are 3x3, padding between is 3
 - (void)drawRect:(CGRect)rect
 {
     [super drawRect:rect];
@@ -83,29 +82,26 @@
     
     for (int i=0; i<LIOAnimatedKeyboardIconNumKeys; i++)
     {
-        if (i == 11 || i == 13)
-            continue;
-        
         CGFloat alpha = keyOpacities[i];
         if (alpha < 0.0) alpha = 0.0;
         CGContextSetAlpha(context, alpha);
         
-        // 12 == space bar
-        if (i == 12)
+        switch (i)
         {
-            CGContextAddRect(context, CGRectMake(9.0, 13.0, 14.0, 3.0));
-            CGContextFillPath(context);
+            case 0: CGContextAddRect(context, CGRectMake(2.5, 3.0, 1.5, 1.5)); break;
+            case 1: CGContextAddRect(context, CGRectMake(5.0, 3.0, 1.5, 1.5)); break;
+            case 2: CGContextAddRect(context, CGRectMake(7.5, 3.0, 1.5, 1.5)); break;
+            case 3: CGContextAddRect(context, CGRectMake(10.0, 3.0, 1.5, 1.5)); break;
+            case 4: CGContextAddRect(context, CGRectMake(2.5, 6.0, 3.0, 1.5)); break;
+            case 5: CGContextAddRect(context, CGRectMake(6.5, 6.0, 1.5, 1.5)); break;
+            case 6: CGContextAddRect(context, CGRectMake(9.0, 6.0, 1.5, 1.5)); break;
+            case 7: CGContextAddRect(context, CGRectMake(11.5, 6.0, 1.5, 1.5)); break;
+            case 8: CGContextAddRect(context, CGRectMake(2.5, 8.5, 1.5, 1.5)); break;
+            case 9: CGContextAddRect(context, CGRectMake(5.0, 8.5, 8.0, 1.5)); break;
+            case 10: CGContextAddRect(context, CGRectMake(14.0, 8.5, 1.5, 1.5)); break;
         }
-        else
-        {
-            int row = i / 5;
-            int col = i % 5;
-            CGFloat x = 3.0 + (col * 5.5);
-            CGFloat y = 3.0 + (row * 5.5);
-            
-            CGContextAddRect(context, CGRectMake(x, y, 5.0, 5.0));
-            CGContextFillPath(context);
-        }
+        
+        CGContextFillPath(context);
     }
 }
 

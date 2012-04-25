@@ -47,7 +47,7 @@
         [self addGestureRecognizer:tapper];
         
         keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] init];
-        //[self addSubview:keyboardIcon];
+        [self addSubview:keyboardIcon];
     }
     
     return self;
@@ -75,16 +75,16 @@
     dismissLabel.frame = aFrame;
     
     aFrame = keyboardIcon.frame;
-    aFrame.size.height = 21.0;
-    aFrame.size.width = 32.0;
-    aFrame.origin.x = 5.0;
-    aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.size.width = 18.0;
+    aFrame.size.height = 13.0;
+    aFrame.origin.x = 8.0;
+    aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0) + 1.0;
     keyboardIcon.frame = aFrame;
     
     if (keyboardIconActive)
         keyboardIcon.alpha = 1.0;
     else
-        keyboardIcon.alpha = 0.5;
+        keyboardIcon.alpha = 0.2;
 }
 
 #pragma mark -

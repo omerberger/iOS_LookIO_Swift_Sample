@@ -8,10 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOAnimatedKeyboardIconNumKeys          15
-#define LIOAnimatedKeyboardIconKeyDecayRate     3.0
+#define LIOAnimatedKeyboardIconNumKeys          11
+#define LIOAnimatedKeyboardIconKeyDecayRate     5.0
 #define LIOAnimatedKeyboardIconAnimationRate    0.1
-#define LIOAnimatedKeyboardIconRandomFrequency  20
+#define LIOAnimatedKeyboardIconRandomFrequency  5
 
 @class LIOTimerProxy;
 
