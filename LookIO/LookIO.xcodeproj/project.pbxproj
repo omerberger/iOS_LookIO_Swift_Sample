@@ -84,6 +84,8 @@
 		D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EA14F322C300713F29 /* SBJsonParser.m */; };
 		D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */; };
 		D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */; };
+		D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C902491549D04A00B36D68 /* LIOCacheEntry.h */; };
+		D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -165,6 +167,8 @@
 		D4ADC7EA14F322C300713F29 /* SBJsonParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonParser.m; sourceTree = "<group>"; };
 		D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
 		D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
+		D4C902491549D04A00B36D68 /* LIOCacheEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOCacheEntry.h; path = Source/Other/LIOCacheEntry.h; sourceTree = "<group>"; };
+		D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOCacheEntry.m; path = Source/Other/LIOCacheEntry.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -245,6 +249,8 @@
 		D47C98ED14C9F01900E1223F /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				D4C902491549D04A00B36D68 /* LIOCacheEntry.h */,
+				D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */,
 				D4ADC7B414F3218300713F29 /* LIOChatMessage.h */,
 				D4ADC7B514F3218300713F29 /* LIOChatMessage.m */,
 				D440D4731540BD400045DBFF /* LIOMapAnnotation.h */,
@@ -412,6 +418,7 @@
 				D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */,
 				D440D4791540CBF40045DBFF /* LIOLinkBubbleView.h in Headers */,
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
+				D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,6 +527,7 @@
 				D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */,
 				D440D47A1540CBF40045DBFF /* LIOLinkBubbleView.m in Sources */,
 				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
+				D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

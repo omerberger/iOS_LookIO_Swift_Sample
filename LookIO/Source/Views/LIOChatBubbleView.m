@@ -13,6 +13,8 @@
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
 
+static NSDataDetector *dataDetector = nil;
+
 @implementation LIOChatBubbleView
 
 @synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links;
@@ -43,7 +45,8 @@
         UILongPressGestureRecognizer *aLongPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
         [self addGestureRecognizer:aLongPresser];
         
-        dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
+        if (nil == dataDetector)
+            dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
         
         linkMessageViews = [[NSMutableArray alloc] init];
         links = [[NSMutableArray alloc] init];
@@ -59,7 +62,6 @@
     [mainMessageView release];
     [backgroundImage release];
     [senderName release];
-    [dataDetector release];
     [linkMessageViews release];
     [links release];
     [linkButtons release];

@@ -12,6 +12,7 @@
 #import "FileInZipInfo.h"
 #import "ZipReadStream.h"
 #import "LIOLogManager.h"
+#import "LIOCacheEntry.h"
 
 static const unsigned char lioTabInnerShadowBytes[905] = { 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 35, 0, 0, 0, 110, 8, 6, 0, 0, 0, 173, 31, 170, 235, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 11, 18, 0, 0, 11, 18, 1, 210, 221, 126, 252, 0, 0, 2, 33, 105, 84, 88, 116, 88, 77, 76, 58, 99, 111, 109, 46, 97, 100, 111, 98, 101, 46, 120, 109, 112, 0, 0, 0, 0, 0, 60, 120, 58, 120, 109, 112, 109, 101, 116, 97, 32, 120, 109, 108, 110, 115, 58, 120, 61, 34, 97, 100, 111, 98, 101, 58, 110, 115, 58, 109, 101, 116, 97, 47, 34, 32, 120, 58, 120, 109, 112, 116, 107, 61, 34, 88, 77, 80, 32, 67, 111, 114, 101, 32, 52, 46, 52, 46, 48, 34, 62, 10, 32, 32, 32, 60, 114, 100, 102, 58, 82, 68, 70, 32, 120, 109, 108, 110, 115, 58, 114, 100, 102, 61, 34, 104, 116, 116, 112, 58, 47, 47, 119, 119, 119, 46, 119, 51, 46, 111, 114, 103, 47, 49, 57, 57, 57, 47, 48, 50, 47, 50, 50, 45, 114, 100, 102, 45, 115, 121, 110, 116, 97, 120, 45, 110, 115, 35, 34, 62, 10, 32, 32, 32, 32, 32, 32, 60, 114, 100, 102, 58, 68, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 32, 114, 100, 102, 58, 97, 98, 111, 117, 116, 61, 34, 34, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 120, 109, 108, 110, 115, 58, 100, 99, 61, 34, 104, 116, 116, 112, 58, 47, 47, 112, 117, 114, 108, 46, 111, 114, 103, 47, 100, 99, 47, 101, 108, 101, 109, 101, 110, 116, 115, 47, 49, 46, 49, 47, 34, 62, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 60, 100, 99, 58, 115, 117, 98, 106, 101, 99, 116, 62, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 60, 114, 100, 102, 58, 66, 97, 103, 47, 62, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 60, 47, 100, 99, 58, 115, 117, 98, 106, 101, 99, 116, 62, 10, 32, 32, 32, 32, 32, 32, 60, 47, 114, 100, 102, 58, 68, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 62, 10, 32, 32, 32, 32, 32, 32, 60, 114, 100, 102, 58, 68, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 32, 114, 100, 102, 58, 97, 98, 111, 117, 116, 61, 34, 34, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 120, 109, 108, 110, 115, 58, 120, 109, 112, 61, 34, 104, 116, 116, 112, 58, 47, 47, 110, 115, 46, 97, 100, 111, 98, 101, 46, 99, 111, 109, 47, 120, 97, 112, 47, 49, 46, 48, 47, 34, 62, 10, 32, 32, 32, 32, 32, 32, 32, 32, 32, 60, 120, 109, 112, 58, 67, 114, 101, 97, 116, 111, 114, 84, 111, 111, 108, 62, 65, 100, 111, 98, 101, 32, 70, 105, 114, 101, 119, 111, 114, 107, 115, 32, 67, 83, 53, 60, 47, 120, 109, 112, 58, 67, 114, 101, 97, 116, 111, 114, 84, 111, 111, 108, 62, 10, 32, 32, 32, 32, 32, 32, 60, 47, 114, 100, 102, 58, 68, 101, 115, 99, 114, 105, 112, 116, 105, 111, 110, 62, 10, 32, 32, 32, 60, 47, 114, 100, 102, 58, 82, 68, 70, 62, 10, 60, 47, 120, 58, 120, 109, 112, 109, 101, 116, 97, 62, 10, 251, 139, 31, 177, 0, 0, 1, 14, 73, 68, 65, 84, 104, 222, 237, 219, 77, 11, 1, 81, 20, 135, 241, 59, 222, 66, 196, 120, 45, 172, 216, 160, 136, 108, 40, 190, 255, 215, 153, 111, 48, 254, 183, 206, 74, 97, 131, 123, 212, 179, 120, 106, 106, 38, 126, 141, 115, 237, 78, 40, 203, 50, 120, 233, 221, 3, 125, 181, 84, 59, 117, 80, 123, 187, 254, 116, 241, 115, 183, 207, 16, 35, 117, 82, 231, 248, 144, 90, 168, 161, 202, 13, 248, 141, 6, 143, 136, 76, 173, 213, 77, 173, 84, 87, 85, 83, 252, 76, 153, 189, 178, 75, 84, 170, 74, 202, 153, 89, 26, 164, 151, 122, 128, 219, 234, 170, 38, 30, 78, 211, 202, 38, 186, 230, 1, 115, 84, 51, 47, 255, 51, 7, 59, 182, 46, 48, 187, 148, 131, 11, 6, 12, 24, 48, 96, 192, 128, 1, 3, 6, 12, 24, 48, 96, 192, 128, 1, 3, 6, 12, 24, 48, 96, 192, 128, 1, 3, 6, 12, 24, 48, 96, 192, 128, 1, 3, 6, 12, 24, 48, 96, 192, 128, 1, 3, 6, 12, 24, 48, 96, 192, 128, 1, 243, 151, 152, 189, 39, 204, 198, 211, 174, 202, 220, 114, 129, 105, 218, 142, 83, 221, 203, 234, 226, 88, 77, 67, 8, 153, 7, 76, 68, 76, 139, 162, 200, 237, 58, 249, 82, 103, 102, 155, 130, 121, 138, 149, 180, 103, 55, 90, 118, 212, 59, 54, 71, 149, 95, 188, 173, 87, 55, 227, 151, 55, 108, 147, 176, 109, 67, 222, 248, 102, 110, 150, 128, 99, 119, 104, 70, 17, 139, 58, 220, 120, 235, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130 };
 
@@ -20,6 +21,7 @@ static const unsigned char lioTabInnerShadow2xBytes[969] = {137, 80, 78, 71, 13,
 #define LIOBundleManagerURLRoot                 @"http://cdn.look.io/ios"
 #define LIOBundleManagerDownloadRequestTimeout  10.0 // seconds
 #define LIOBundleManagerExtractionBufferLength  65535
+#define LIOBundleManagerImageCacheSize          5
 
 @interface LIOBundleManager ()
 - (void)beginDownloadingBundle;
@@ -82,6 +84,8 @@ static LIOBundleManager *sharedBundleManager = nil;
                                                    object:nil];
         
         [self findBundle];
+        
+        imageCache = [[NSMutableDictionary alloc] init];
     }
     
     return self;
@@ -94,6 +98,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     [lioBundle release];
     [bundleDownloadRequest release];
     [bundleDownloadConnection release];
+    [imageCache release];    
     
     [bundleDownloadOutputStream close];
     [bundleDownloadOutputStream release];
@@ -195,6 +200,38 @@ static LIOBundleManager *sharedBundleManager = nil;
     });
 }
 
+- (void)pruneImageCache
+{
+    // Are there more than n objects in the cache?
+    // If so, trim it down to the top-weighted entries.
+    if ([imageCache count] > LIOBundleManagerImageCacheSize)
+    {
+        NSArray *topKeys = [imageCache keysSortedByValueUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            LIOCacheEntry *entry1 = (LIOCacheEntry *)obj1;
+            LIOCacheEntry *entry2 = (LIOCacheEntry *)obj2;
+            if (entry1.weight < entry2.weight)
+                return NSOrderedDescending;
+            else if (entry1.weight > entry2.weight)
+                return NSOrderedAscending;
+            else
+                return NSOrderedSame;
+        }];
+        
+        topKeys = [topKeys subarrayWithRange:NSMakeRange(0, LIOBundleManagerImageCacheSize)];
+        
+        NSMutableDictionary *newImageCache = [[NSMutableDictionary alloc] init];
+        for (int i=0; i<[topKeys count]; i++)
+        {
+            NSString *aKey = [topKeys objectAtIndex:i];
+            LIOCacheEntry *anObject = [imageCache objectForKey:aKey];
+            [newImageCache setObject:anObject forKey:aKey];
+        }
+        
+        [imageCache release];
+        imageCache = newImageCache;
+    }
+}
+
 - (UIImage *)imageNamed:(NSString *)aString
 {
     if (nil == lioBundle)
@@ -203,7 +240,13 @@ static LIOBundleManager *sharedBundleManager = nil;
         return [UIImage imageNamed:aString];
     }
     
-    //NSString *fileExtension = [aString pathExtension];
+    LIOCacheEntry *aCacheEntry = [imageCache objectForKey:aString];
+    if (aCacheEntry)
+    {
+        aCacheEntry.weight += 1;
+        return (UIImage *)aCacheEntry.cachedObject;
+    }
+    
     NSString *filename = [aString stringByDeletingPathExtension];
     
     NSString *scaleString = [NSString string];
@@ -234,7 +277,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -251,7 +297,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -269,7 +318,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -286,7 +338,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:screenScale orientation:UIImageOrientationUp] autorelease];;
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -304,7 +359,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -321,7 +379,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -338,7 +399,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -355,7 +419,10 @@ static LIOBundleManager *sharedBundleManager = nil;
         if (fileData)
         {
             UIImage *newImage = [UIImage imageWithData:fileData];
-            return [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            UIImage *finalImage = [[[UIImage alloc] initWithCGImage:[newImage CGImage] scale:1.0 orientation:UIImageOrientationUp] autorelease];
+            LIOCacheEntry *newCacheEntry = [LIOCacheEntry cacheEntryWithCachedObject:finalImage];
+            [imageCache setObject:newCacheEntry forKey:aString];
+            return finalImage;
         }
         else
         {
@@ -592,6 +659,12 @@ static LIOBundleManager *sharedBundleManager = nil;
 - (void)applicationDidBecomeActive:(NSNotification *)aNotification
 {
     [self findBundle];
+    [imageCache removeAllObjects];
+}
+
+- (void)applicationDidResignActive:(NSNotification *)aNotification
+{
+    [self pruneImageCache];
 }
 
 @end

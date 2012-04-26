@@ -24,6 +24,7 @@
     NSInteger bundleDownloadResponseCode;
     NSOutputStream *bundleDownloadOutputStream;
     UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
+    NSMutableDictionary *imageCache;
 }
 
 @property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
@@ -32,5 +33,6 @@
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
 - (BOOL)isAvailable;
+- (void)pruneImageCache;
 
 @end

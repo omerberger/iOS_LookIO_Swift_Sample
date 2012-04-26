@@ -33,7 +33,6 @@ typedef enum
     NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes;
     UIImageView *backgroundImage;
     NSString *senderName;
-    NSDataDetector *dataDetector;
     NSURL *urlBeingLaunched;
 }
 

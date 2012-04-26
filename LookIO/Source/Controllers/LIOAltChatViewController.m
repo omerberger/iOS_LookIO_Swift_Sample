@@ -355,6 +355,9 @@
     [emailConvoButton release];
     [chatBubbleHeights release];
     
+    // I. Don't know. If this is such a great idea, but.
+    [[LIOBundleManager sharedBundleManager] pruneImageCache];
+    
     [super dealloc];
 }
 
