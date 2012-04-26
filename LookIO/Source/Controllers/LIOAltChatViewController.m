@@ -898,7 +898,9 @@
     [UIView commitAnimations];
 
     [self reloadMessages];
-    [self scrollToBottom];
+    
+    if (nil == popover)
+        [self scrollToBottom];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
