@@ -402,12 +402,12 @@
 
 - (void)closeButtonWasTapped
 {
-    [delegate leaveMessageViewControllerWasDismissed:self];
+    [delegate leaveMessageViewControllerWasCancelled:self];
 }
 
 - (void)submitButtonWasTapped
 {
-    if ([messageView.text length])
+    if ([messageView.text length] && [emailField.text length])
     {
         alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
                                                message:@"Your message has been received."
@@ -420,7 +420,7 @@
     }
     else
     {
-        [delegate leaveMessageViewControllerWasDismissed:self];
+        [delegate leaveMessageViewControllerWasCancelled:self];
     }
 }
 
@@ -467,7 +467,7 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate leaveMessageViewControllerWasDismissed:self];
+    [delegate leaveMessageViewControllerWasCancelled:self];
 }
 
 @end

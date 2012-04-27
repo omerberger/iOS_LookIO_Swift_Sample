@@ -398,7 +398,9 @@
     if ([initialChatText length])
     {
         inputBar.inputField.text = initialChatText;
-        [initialChatText release];
+        
+        pendingChatText = initialChatText;
+        
         initialChatText = nil;
     }
 }
@@ -444,7 +446,7 @@
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
     {
         CGFloat origin = 32.0;
-        if (keyboardHeight)
+        if (keyboardHeight || padUI)
             origin = 0.0;
         
         tableFrame.origin.y = origin;
@@ -452,8 +454,12 @@
     }
     else
     {
-        tableFrame.origin.y = 32.0;
-        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - 32.0;
+        CGFloat origin = 32.0;
+        if (padUI)
+            origin = 0.0;
+        
+        tableFrame.origin.y = origin;
+        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
     }
     tableView.frame = tableFrame;
     
@@ -1183,7 +1189,11 @@
 - (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
 {
     [self dismissModalViewControllerAnimated:NO];
-    
+}
+
+- (void)leaveMessageViewControllerWasCancelled:(LIOLeaveMessageViewController *)aController
+{
+    [self dismissModalViewControllerAnimated:NO];
     [delegate altChatViewControllerWantsSessionTermination:self];
 }
 

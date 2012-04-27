@@ -832,16 +832,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
     {
+        [statusBarUnderlay.superview bringSubviewToFront:statusBarUnderlay];
+        
         [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
                               delay:0.0
-                            options:UIViewAnimationCurveEaseInOut
+                            options:(UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction)
                          animations:^{
                              statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
                          }
                          completion:^(BOOL finished) {
                              [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
                                                    delay:0.0
-                                                 options:UIViewAnimationCurveEaseInOut
+                                                 options:(UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction)
                                               animations:^{
                                                   statusBarUnderlay.backgroundColor = [UIColor redColor];
                                               }
@@ -964,7 +966,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
-    if ([sessionId length] && NO == socketConnected)
+    if ([sessionId length] && NO == socketConnected && resumeMode)
         [altChatViewController showReconnectionOverlay];
     
     controlButton.hidden = YES;
@@ -2090,6 +2092,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     userWantsSessionTermination = NO;
+    introduced = NO;
+    [self refreshControlButtonVisibility];
     
     LIOLog(@"[lastActivity timeIntervalSinceNow]: %f", [lastActivity timeIntervalSinceNow]);
     if ([lastActivity timeIntervalSinceNow] <= -LIOLookIOManagerReconnectionTimeLimit)
@@ -2105,9 +2109,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     socketConnected = NO;
     controlSocketConnecting = NO;
     
-    controlSocket.delegate = nil;
-    [controlSocket release];
-    controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
+    //controlSocket.delegate = nil;
+    //[controlSocket release];
+    //controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
     
     if (resetAfterDisconnect)
     {
@@ -2372,6 +2376,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if ([anEmail length] && [aMessage length])
     {
+        userWantsSessionTermination = YES;
+        
         NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                              @"feedback", @"type",
                                              anEmail, @"email_address",
@@ -2389,10 +2395,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
 {
-    userWantsSessionTermination = YES;
-    resetAfterDisconnect = YES;
-    killConnectionAfterChatViewDismissal = YES;
-    [altChatViewController performDismissalAnimation];
+    if (socketConnected)
+    {    
+        userWantsSessionTermination = YES;
+        resetAfterDisconnect = YES;
+        killConnectionAfterChatViewDismissal = YES;
+        [altChatViewController performDismissalAnimation];
+    }
+    else
+    {
+        [self reset];
+    }
 }
 
 #pragma mark -

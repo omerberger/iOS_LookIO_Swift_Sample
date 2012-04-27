@@ -223,10 +223,20 @@
     if (aFrame.size.height < minHeight) aFrame.size.height = minHeight;
     inputFieldBackground.frame = aFrame;
     
-    aFrame = inputField.frame;
-    if (1 == totalLines) aFrame.origin.y = 5.0;
-    else aFrame.origin.y = 0.0;
-    inputField.frame = aFrame;
+    if (padUI)
+    {
+        aFrame = inputField.frame;
+        if (1 == totalLines) aFrame.origin.y = 12.0;
+        else aFrame.origin.y = 6.0;
+        inputField.frame = aFrame;
+    }
+    else
+    {
+        aFrame = inputField.frame;
+        if (1 == totalLines) aFrame.origin.y = 5.0;
+        else aFrame.origin.y = 0.0;
+        inputField.frame = aFrame;
+    }
     
     CGFloat bottomPadding = 5.0;
     if (padUI)

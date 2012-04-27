@@ -49,7 +49,7 @@
         adLabel.backgroundColor = [UIColor clearColor];
         adLabel.font = [UIFont boldSystemFontOfSize:12.0];
         adLabel.textColor = [UIColor whiteColor];
-        adLabel.text = @"Live Chat powered by";
+        adLabel.text = @"Live Chat Powered by";
         [adLabel sizeToFit];
         aFrame = adLabel.frame;
         aFrame.origin.x = 0.0;
