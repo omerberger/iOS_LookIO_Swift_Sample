@@ -11,7 +11,7 @@
 #define LIOChatBubbleViewMaxTextWidth   250.0
 #define LIOChatBubbleViewMinTextHeight  67.0
 
-@class TTTAttributedLabel_LIO;
+@class TTTAttributedLabel_LIO, LIOChatMessage;
 
 typedef enum
 {
@@ -34,6 +34,7 @@ typedef enum
     UIImageView *backgroundImage;
     NSString *senderName;
     NSURL *urlBeingLaunched;
+    LIOChatMessage *rawChatMessage;
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
@@ -41,6 +42,7 @@ typedef enum
 @property(nonatomic, readonly) NSMutableArray *linkMessageViews, *linkButtons, *links;
 @property(nonatomic, retain) NSString *senderName;
 @property(nonatomic, readonly) TTTAttributedLabel_LIO *mainMessageView;
+@property(nonatomic, retain) LIOChatMessage *rawChatMessage;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
 

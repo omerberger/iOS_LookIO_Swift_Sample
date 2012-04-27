@@ -12,12 +12,13 @@
 #import "TTTAttributedLabel.h"
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
+#import "LIOChatMessage.h"
 
 static NSDataDetector *dataDetector = nil;
 
 @implementation LIOChatBubbleView
 
-@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links;
+@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -67,6 +68,7 @@ static NSDataDetector *dataDetector = nil;
     [linkButtons release];
     [linkTypes release];
     [urlBeingLaunched release];
+    [rawChatMessage release];
     
     [super dealloc];
 }
@@ -153,7 +155,7 @@ static NSDataDetector *dataDetector = nil;
     [newLinkButton setBackgroundImage:linkButtonImage forState:UIControlStateNormal];
     newLinkButton.titleLabel.lineBreakMode = UILineBreakModeTailTruncation;
     [newLinkButton addTarget:self action:@selector(linkButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-    newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 10.0, 0.0, 10.0);
+    newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 20.0, 0.0, 20.0);
     
     return newLinkButton;
 }
@@ -272,7 +274,7 @@ static NSDataDetector *dataDetector = nil;
 
 - (void)copy:(id)sender
 {
-    [UIPasteboard generalPasteboard].string = mainMessageView.text;
+    [UIPasteboard generalPasteboard].string = rawChatMessage.text;
 }
 
 #pragma mark -
@@ -362,11 +364,12 @@ static NSDataDetector *dataDetector = nil;
             urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
         }
         
+        NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:aLink
+                                                            message:alertMessage
                                                            delegate:self
                                                   cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Cancel", @"Open", nil];
+                                                  otherButtonTitles:@"Don't Open", @"Open", nil];
         [alertView show];
         [alertView autorelease];
     }
@@ -376,11 +379,12 @@ static NSDataDetector *dataDetector = nil;
         [urlBeingLaunched release];
         urlBeingLaunched = [[NSURL URLWithString:result] retain];
         
+        NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and call \"%@\"?", aLink];
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:aLink
+                                                            message:alertMessage
                                                            delegate:self
                                                   cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Cancel", @"Call", nil];
+                                                  otherButtonTitles:@"Don't Call", @"Call", nil];
         [alertView show];
         [alertView autorelease];
     }

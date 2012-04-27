@@ -696,6 +696,7 @@
     }
     
     [aBubble populateMessageViewWithText:aMessage.text];
+    aBubble.rawChatMessage = aMessage;
     
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);

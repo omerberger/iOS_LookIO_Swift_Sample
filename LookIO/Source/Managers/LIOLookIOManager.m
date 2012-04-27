@@ -127,6 +127,7 @@
     UIStatusBarStyle originalStatusBarStyle;
     NSDate *lastActivity;
     LIOTimerProxy *reintroTimeoutTimer;
+    UIView *statusBarUnderlay;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -479,6 +480,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [LIOBundleManager sharedBundleManager];
     
+    statusBarUnderlay = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
+    statusBarUnderlay.backgroundColor = [UIColor redColor];
+    statusBarUnderlay.hidden = YES;
+    [keyWindow addSubview:statusBarUnderlay];
+    
     LIOLog(@"Loaded.");    
 }
 
@@ -588,6 +594,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lookioWindow release];
     [mainWindow release];
     
+    [statusBarUnderlay release];
+    
     LIOLog(@"Unloaded.");
     
     [super dealloc];
@@ -657,8 +665,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastActivity release];
     lastActivity = nil;
     
-    [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
-
+    statusBarUnderlay.hidden = YES;
+    
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+        [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+    
     if (mainWindow)
     {
         previousKeyWindow = nil;
@@ -670,9 +681,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lookioWindow.windowLevel = 0.1;
         
         [self refreshControlButtonVisibility];
-        
-        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-            [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
         
         [mainWindow makeKeyWindow];
     }
@@ -734,7 +742,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self refreshControlButtonVisibility];
         
         if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-            [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+        {
+            if (screenshotsAllowed)
+            {
+                statusBarUnderlay.hidden = NO;
+                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+            }
+            else
+            {
+                statusBarUnderlay.hidden = YES;
+                [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+            }
+        }
     }
 }
 
@@ -813,10 +832,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
     {
-        if (UIStatusBarStyleBlackOpaque == [[UIApplication sharedApplication] statusBarStyle])
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-        else
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+        [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
+                              delay:0.0
+                            options:UIViewAnimationCurveEaseInOut
+                         animations:^{
+                             statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
+                         }
+                         completion:^(BOOL finished) {
+                             [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
+                                                   delay:0.0
+                                                 options:UIViewAnimationCurveEaseInOut
+                                              animations:^{
+                                                  statusBarUnderlay.backgroundColor = [UIColor redColor];
+                                              }
+                                              completion:^(BOOL finished) {
+                                              }];
+                         }];
+        
     }
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -2187,6 +2219,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     screenshotsAllowed = NO;
     
+    statusBarUnderlay.hidden = YES;
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
     NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
@@ -2467,6 +2500,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 screenshotsAllowed = YES;
+                statusBarUnderlay.hidden = NO;
+                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
                 
                 screenSharingStartedDate = [[NSDate date] retain];
                 
@@ -2630,6 +2665,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
 {
     controlButton.hidden = YES;
+    statusBarUnderlay.hidden = YES;
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -2638,6 +2674,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [self refreshControlButtonVisibility];
+        
+        statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];
+        statusBarUnderlay.hidden = NO == screenshotsAllowed;
     });
     
     CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
