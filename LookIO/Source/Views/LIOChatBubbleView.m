@@ -148,8 +148,8 @@ static NSDataDetector *dataDetector = nil;
 
 - (UIButton *)createLinkButton
 {
-    UIImage *linkButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedLinkButton"];
-    linkButtonImage = [linkButtonImage stretchableImageWithLeftCapWidth:20 topCapHeight:0];
+    UIImage *linkButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableTransparentLinkButton"];
+    linkButtonImage = [linkButtonImage stretchableImageWithLeftCapWidth:9 topCapHeight:9];
     
     UIButton *newLinkButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [newLinkButton setBackgroundImage:linkButtonImage forState:UIControlStateNormal];
@@ -375,9 +375,12 @@ static NSDataDetector *dataDetector = nil;
     }
     else if (NSTextCheckingTypePhoneNumber)
     {
-        NSString *result = [@"tel://" stringByAppendingString:aLink];
+        NSString *cleanedString = [[aLink componentsSeparatedByCharactersInSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789-+()"] invertedSet]] componentsJoinedByString:@""];
+        NSString *escapedPhoneNumber = [cleanedString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSURL *result = [NSURL URLWithString:[NSString stringWithFormat:@"tel://%@", escapedPhoneNumber]];        
+        
         [urlBeingLaunched release];
-        urlBeingLaunched = [[NSURL URLWithString:result] retain];
+        urlBeingLaunched = [result retain];
         
         NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and call \"%@\"?", aLink];
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil

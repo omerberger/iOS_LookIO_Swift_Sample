@@ -66,7 +66,7 @@
         
         horizGradient = [[LIOGradientLayer alloc] init];
         horizGradient.colors = [NSArray arrayWithObjects:(id)lightColor, (id)darkColor, nil];
-        horizGradient.backgroundColor = [UIColor clearColor].CGColor;
+        //horizGradient.backgroundColor = [UIColor clearColor].CGColor;
         horizGradient.frame = self.view.bounds;
         horizGradient.startPoint = CGPointMake(0.0, 0.5);
         horizGradient.endPoint = CGPointMake(1.0, 0.5);
@@ -355,7 +355,7 @@
     [emailConvoButton release];
     [chatBubbleHeights release];
     
-    // I. Don't know. If this is such a great idea, but.
+    // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
     
     [super dealloc];
@@ -489,8 +489,8 @@
     {
         background.alpha = 0.0;
         
-        [UIView animateWithDuration:0.4
-                              delay:0.0
+        [UIView animateWithDuration:0.2
+                              delay:0.45
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              background.alpha = 1.0;
@@ -509,8 +509,8 @@
         tableView.layer.anchorPoint = CGPointMake(1.0, 0.0);
         tableView.layer.transform = initialTransform;
         
-        [UIView animateWithDuration:0.6
-                              delay:0.1
+        [UIView animateWithDuration:0.5
+                              delay:0.0
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              tableView.alpha = 1.0;
@@ -814,9 +814,8 @@
     if (NO == keyboardShowing)
         return;
     
-    UIView *keyboard = inputBar.inputField.inputAccessoryView.superview;
-    CGPoint touchLocation = [aPanner locationInView:keyboard];
-    if (touchLocation.y > -30.0)
+    CGPoint touchLocation = [aPanner locationInView:inputBar];
+    if (touchLocation.y > 0.0)
     {
         [self.view endEditing:YES];
         [self reloadMessages];

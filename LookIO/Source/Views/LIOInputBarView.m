@@ -112,11 +112,7 @@
         inputFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputFieldBackground.clipsToBounds = YES;
         [self addSubview:inputFieldBackground];
-        
-        
-        UIView *nullView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
-        nullView.backgroundColor = [UIColor clearColor];
-        
+                
         CGFloat fontSize = 14.0;
         if (padUI)
             fontSize = 20.0;
@@ -124,7 +120,6 @@
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputField";
-        inputField.inputAccessoryView = nullView;
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -135,6 +130,19 @@
         aFrame.size.height = 4800.0;
         inputField.frame = aFrame;
         [self addSubview:inputField];
+        
+        placeholderText = [[UILabel alloc] init];
+        placeholderText.backgroundColor = [UIColor clearColor];
+        placeholderText.textColor = [UIColor lightGrayColor];
+        placeholderText.font = inputField.font;
+        if (padUI) placeholderText.text = @"Send a message to a customer service rep.";
+        else placeholderText.text = @"Send a message.";
+        [placeholderText sizeToFit];
+        aFrame = placeholderText.frame;
+        aFrame.origin.x = 8.0;
+        aFrame.origin.y = 7.0;
+        placeholderText.frame = aFrame;
+        [inputField addSubview:placeholderText];
         
         characterCount = [[UILabel alloc] init];
         characterCount.backgroundColor = [UIColor clearColor];
@@ -160,6 +168,7 @@
     [adLogo release];
     [adArea release];
     [characterCount release];
+    [placeholderText release];
     
     [super dealloc];
 }
@@ -168,10 +177,21 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    CGRect aFrame = inputField.frame;
-    aFrame.origin.x = inputFieldBackground.frame.origin.x - 3.0;
-    aFrame.size.width = inputFieldBackground.frame.size.width;
-    inputField.frame = aFrame;
+    CGRect aFrame;
+    if (padUI)
+    {
+        aFrame = inputField.frame;
+        aFrame.origin.x = inputFieldBackground.frame.origin.x + 6.0;
+        aFrame.size.width = inputFieldBackground.frame.size.width - 9.0;
+        inputField.frame = aFrame;
+    }
+    else
+    {
+        aFrame = inputField.frame;
+        aFrame.origin.x = inputFieldBackground.frame.origin.x;
+        aFrame.size.width = inputFieldBackground.frame.size.width - 3.0;
+        inputField.frame = aFrame;
+    }
     
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
@@ -226,7 +246,7 @@
     if (padUI)
     {
         aFrame = inputField.frame;
-        if (1 == totalLines) aFrame.origin.y = 12.0;
+        if (1 == totalLines) aFrame.origin.y = 14.0;
         else aFrame.origin.y = 6.0;
         inputField.frame = aFrame;
     }
@@ -245,13 +265,30 @@
     desiredHeight = inputFieldBackground.frame.origin.y + inputFieldBackground.frame.size.height + bottomPadding;
     [delegate inputBarView:self didChangeDesiredHeight:desiredHeight];
     
-    characterCount.text = [NSString stringWithFormat:@"(%u/%u)", [inputField.text length], LIOInputBarViewMaxTextLength];
+    int maxTextLength = LIOInputBarViewMaxTextLength;
+    if (padUI)
+        maxTextLength = LIOInputBarViewMaxTextLength_iPad;
+    
+    characterCount.text = [NSString stringWithFormat:@"(%u/%u)", [inputField.text length], maxTextLength];
     [characterCount sizeToFit];
-    aFrame = characterCount.frame;
-    aFrame.origin.x = (sendButton.frame.origin.x + (sendButton.frame.size.width / 2.0)) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = self.bounds.size.height - aFrame.size.height - 5.0;
-    characterCount.frame = aFrame;
     characterCount.hidden = totalLines < 3;
+    
+    if (padUI)
+    {
+        aFrame = characterCount.frame;
+        aFrame.origin.x = (sendButton.frame.origin.x + (sendButton.frame.size.width / 2.0)) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = sendButton.frame.origin.y + sendButton.frame.size.height + 5.0;
+        characterCount.frame = aFrame;
+    }
+    else
+    {
+        aFrame = characterCount.frame;
+        aFrame.origin.x = (sendButton.frame.origin.x + (sendButton.frame.size.width / 2.0)) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = self.bounds.size.height - aFrame.size.height - 5.0;
+        characterCount.frame = aFrame;
+    }
+    
+    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
 }
 
 #pragma mark -
@@ -287,11 +324,17 @@
 
 - (void)textViewDidChange:(UITextView *)aTextView
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    int maxTextLength = LIOInputBarViewMaxTextLength;
+    if (padUI)
+        maxTextLength = LIOInputBarViewMaxTextLength_iPad;
+    
     // Clamp the length.
     NSUInteger newLen = [aTextView.text length];
-    if (newLen > LIOInputBarViewMaxTextLength)
+    if (newLen > maxTextLength)
     {
-        NSString *newText = [aTextView.text substringToIndex:(LIOInputBarViewMaxTextLength - 1)];
+        NSString *newText = [aTextView.text substringToIndex:(maxTextLength - 1)];
         aTextView.text = newText;
         newLen = [newText length];
     }
@@ -299,6 +342,16 @@
     [self setNeedsLayout];
     
     [delegate inputBarViewDidTypeStuff:self];
+}
+
+- (void)textViewDidBeginEditing:(UITextView *)textView
+{
+    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView
+{
+    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
 }
 
 @end

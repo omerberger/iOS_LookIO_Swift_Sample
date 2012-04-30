@@ -38,7 +38,7 @@
         dismissLabel.font = [UIFont boldSystemFontOfSize:14.0];
         dismissLabel.alpha = 0.75;
         dismissLabel.textColor = [UIColor whiteColor];
-        dismissLabel.text = @"Back to App";
+        dismissLabel.text = @"Hide Chat";
         [dismissLabel sizeToFit];
         dismissLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self addSubview:dismissLabel];
