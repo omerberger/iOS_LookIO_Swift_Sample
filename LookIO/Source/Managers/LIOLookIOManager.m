@@ -1015,7 +1015,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            LIOLog(@"beginSession ignored: already connected!");
+            LIOLog(@"beginSession ignored: already connected! (But not introduced)");
             return;
         }
     }
@@ -1447,6 +1447,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             resumeMode = NO;
             sessionEnding = NO;
             resetAfterDisconnect = NO;
+            introduced = YES;
             killConnectionAfterChatViewDismissal = NO;
             
             [altChatViewController hideReconnectionOverlay];
@@ -1844,9 +1845,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             [detectedDict setObject:@"wifi" forKey:@"connection_type"];
 
+        /*
         NSArray *twitterHandles = [[LIOAnalyticsManager sharedAnalyticsManager] twitterHandles];
         if ([twitterHandles count])
             [detectedDict setObject:twitterHandles forKey:@"twitter"];
+         */
         
         NSString *tzOffset = [[LIOAnalyticsManager sharedAnalyticsManager] timezoneOffset];
         if ([tzOffset length])
