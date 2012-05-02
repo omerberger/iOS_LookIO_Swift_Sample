@@ -66,7 +66,7 @@
     if (padUI)
     {
         CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
-        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
+        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.5].CGColor;
         
         horizGradient = [[LIOGradientLayer alloc] init];
         horizGradient.colors = [NSArray arrayWithObjects:(id)lightColor, (id)darkColor, nil];
@@ -428,11 +428,14 @@
         initialChatText = nil;
     }
     
-    double delayInSeconds = 0.1;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [inputBar.inputField becomeFirstResponder];
-    });
+    if (NO == leavingMessage)
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [inputBar.inputField becomeFirstResponder];
+        });
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -713,20 +716,29 @@
     }
      
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
-    LIOChatBubbleView *aBubble = (LIOChatBubbleView *)[aCell viewWithTag:LIOAltChatViewControllerTableViewCellBubbleViewTag];
     if (nil == aCell)
     {
         aCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
         aCell.selectionStyle = UITableViewCellSelectionStyleNone;
         [aCell autorelease];
-        
-        aBubble = [[LIOChatBubbleView alloc] initWithFrame:CGRectZero];
-        aBubble.backgroundColor = [UIColor clearColor];
-        aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
-        aBubble.delegate = self;
-        aBubble.index = indexPath.row;
-        [aCell.contentView addSubview:aBubble];
     }
+    
+    [aCell.contentView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+
+    UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTappableDummyCellViewTap:)] autorelease];
+    UIView *tappableDummyView = [[[UIView alloc] init] autorelease];
+    tappableDummyView.backgroundColor = [UIColor clearColor];
+    tappableDummyView.frame = aCell.contentView.bounds;
+    tappableDummyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [tappableDummyView addGestureRecognizer:tapper];
+    [aCell.contentView addSubview:tappableDummyView];
+    
+    LIOChatBubbleView *aBubble = [[[LIOChatBubbleView alloc] initWithFrame:CGRectZero] autorelease];
+    aBubble.backgroundColor = [UIColor clearColor];
+    aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
+    aBubble.delegate = self;
+    aBubble.index = indexPath.row;
+    [aCell.contentView addSubview:aBubble];
     
     LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
     if (LIOChatMessageKindLocal == aMessage.kind)
@@ -861,8 +873,13 @@
     }
 }
 
+- (void)handleTappableDummyCellViewTap:(UITapGestureRecognizer *)aTapper
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+}
+
 #pragma mark -
-#pragma mark Notification handlers  
+#pragma mark Notification handlers
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
@@ -1110,6 +1127,8 @@
             
             if (padUI)
                 aController.modalPresentationStyle = UIModalPresentationFormSheet;
+            
+            leavingMessage = YES;            
             
             [self presentModalViewController:aController animated:YES];
         }

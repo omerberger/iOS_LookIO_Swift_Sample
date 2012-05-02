@@ -51,7 +51,7 @@
     NSArray *messages;
     NSUInteger previousTextLength;
     NSString *pendingChatText, *initialChatText;
-    BOOL agentTyping, keyboardShowing;
+    BOOL agentTyping, keyboardShowing, leavingMessage;
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;

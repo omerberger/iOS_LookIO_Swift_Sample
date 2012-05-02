@@ -21,5 +21,6 @@
 @property(nonatomic, readonly) UIWebView *webView;
 
 - (IBAction)helpButtonSelected:(id)sender;
+- (IBAction)crashButtonSelected:(id)sender;
 
 @end

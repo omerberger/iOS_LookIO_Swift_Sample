@@ -82,6 +82,12 @@
 {
     [[LIOLookIOManager sharedLookIOManager]beginSession];
 }
+
+- (IBAction)crashButtonSelected:(id)sender
+{
+    NSString *badPointer = (NSString *)0xcafebabe;
+    [badPointer length];
+}
     
 #pragma mark -
 #pragma mark LookIO Delegate

@@ -70,7 +70,8 @@
 #define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
 #define LIOLookIOManagerLastKnownEnabledStatusKey       @"LIOLookIOManagerLastKnownEnabledStatusKey"
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
-#define LIOLookIOManagerResumeModeEnabledKey            @"LIOLookIOManagerResumeModeEnabledKey"
+#define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
+#define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -84,7 +85,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, didReconnect, socketConnected;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -108,7 +109,6 @@
     NSString *friendlyName;
     NSMutableDictionary *sessionExtras;
     UIInterfaceOrientation actualInterfaceOrientation;
-    NSString *sessionId;
     NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
@@ -126,7 +126,6 @@
     NSUInteger previousReconnectionTimerStep;
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
-    NSDate *lastActivity;
     LIOTimerProxy *reintroTimeoutTimer;
     UIView *statusBarUnderlay;
     id<LIOLookIOManagerDelegate> delegate;
@@ -135,7 +134,6 @@
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
 @property(nonatomic, readonly) BOOL agentsAvailable;
-@property(nonatomic, retain) NSDate *lastActivity;
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
@@ -209,7 +207,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress, agentsAvailable, lastActivity;
+@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress, agentsAvailable;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -485,6 +483,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay.backgroundColor = [UIColor redColor];
     statusBarUnderlay.hidden = YES;
     [keyWindow addSubview:statusBarUnderlay];
+
+    NSString *sessionId = [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+    if ([sessionId length])
+    {
+        NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
+        if ([lastActivity timeIntervalSinceNow] > -LIOLookIOManagerReconnectionTimeLimit)
+        {
+            LIOLog(@"Found a saved session id! Trying to reconnect...");
+            [self beginSession];
+        }
+        else
+        {
+            // Too much time has passed.
+            LIOLog(@"Found a saved session id, but it's old. Discarding...");
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults synchronize];
+        }
+    }
     
     LIOLog(@"Loaded.");    
 }
@@ -562,7 +580,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownQueuePosition release];
     [targetAgentId release];
     [friendlyName release];
-    [sessionId release];
     [appLaunchRequest release];
     [appLaunchRequestConnection release];
     [appLaunchRequestData release];
@@ -624,9 +641,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [callCenter release];
     callCenter = nil;
     
-    [sessionId release];
-    sessionId = nil;
-    
     [chatHistory release];
     chatHistory = [[NSMutableArray alloc] init];
     
@@ -656,15 +670,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    didReconnect = NO, socketConnected = NO;
+    socketConnected = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
     
     [queuedLaunchReportDates removeAllObjects];
-    
-    [lastActivity release];
-    lastActivity = nil;
     
     statusBarUnderlay.hidden = YES;
     
@@ -689,6 +700,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self rejiggerWindows];
     
     [self refreshControlButtonVisibility];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+    [userDefaults synchronize];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
@@ -968,6 +984,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    NSString *sessionId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length] && NO == socketConnected && resumeMode)
         [altChatViewController showReconnectionOverlay];
     
@@ -1145,13 +1162,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *sessionIdString = [dataDict objectForKey:@"session_id"];
         if ([sessionIdString length])
         {
-            [sessionId release];
-            sessionId = [sessionIdString retain];
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            [userDefaults setObject:sessionIdString forKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults synchronize];
         }
     }
     else if ([type isEqualToString:@"chat"])
     {
-        self.lastActivity = [NSDate date];
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+        [userDefaults synchronize];
         
         NSString *text = [aPacket objectForKey:@"text"];
         NSString *senderName = [aPacket objectForKey:@"sender_name"];
@@ -1451,6 +1471,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             resetAfterDisconnect = NO;
             introduced = YES;
             killConnectionAfterChatViewDismissal = NO;
+            agentsAvailable = YES;
             
             [altChatViewController hideReconnectionOverlay];
             [self showChatAnimated:YES];
@@ -1484,10 +1505,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performIntroduction
 {
     // Reconnection? Send a reintro packet instead.
-    if (didReconnect && [sessionId length])
+    NSString *sessionId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+    if ([sessionId length])
     {
-        didReconnect = NO;
-        
         NSDictionary *reintroDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                   @"reintro", @"type",
                                   sessionId, @"session_id",
@@ -1816,9 +1836,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (aDate)
         [introDict setObject:[self dateToStandardizedString:aDate] forKey:@"when"];
     
-    if ([sessionId length])
-        [introDict setObject:sessionId forKey:@"session_id"];
-    
     if (includeExtras)
     {
         if ([targetAgentId length])
@@ -1942,12 +1959,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self killReconnectionTimer];
         resumeMode = NO;
         previousReconnectionTimerStep = 2;
-        didReconnect = YES;
         
         return;
     }
     
     // Reset session if the last activity was more than 10 minutes ago.
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
     if ([lastActivity timeIntervalSinceNow] < -LIOLookIOManagerReconnectionTimeLimit)
     {
         [self reset];
@@ -1974,17 +1992,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:timerInterval
                                                              target:self
                                                            selector:@selector(reconnectionTimerDidFire)];
-    
-    /*
-    if (altChatViewController && previousReconnectionTimerStep >= 3)
-    {
-        [altChatViewController.view removeFromSuperview];
-        [altChatViewController release];
-        altChatViewController = nil;
-        [self rejiggerWindows];
-    }
-    */
-    
+        
     // Max: 2**6, or 64 seconds
     previousReconnectionTimerStep++;
     if (previousReconnectionTimerStep > 6)
@@ -2108,8 +2116,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     userWantsSessionTermination = NO;
     introduced = NO;
     [self refreshControlButtonVisibility];
-    
-    LIOLog(@"[lastActivity timeIntervalSinceNow]: %f", [lastActivity timeIntervalSinceNow]);
+
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
     if ([lastActivity timeIntervalSinceNow] <= -LIOLookIOManagerReconnectionTimeLimit)
         resetAfterDisconnect = YES;
         
@@ -2139,8 +2148,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self configureReconnectionTimer];
         [altChatViewController showReconnectionOverlay];
         resumeMode = YES;
-        
-        [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:YES] forKey:LIOLookIOManagerResumeModeEnabledKey];
     }
 }
 
@@ -2188,7 +2195,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString
 {
-    self.lastActivity = [NSDate date];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+    [userDefaults synchronize];
     
     NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"chat", @"type",
@@ -2415,8 +2424,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {    
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
-        killConnectionAfterChatViewDismissal = YES;
-        [altChatViewController performDismissalAnimation];
+        [self killConnection];
     }
     else
     {

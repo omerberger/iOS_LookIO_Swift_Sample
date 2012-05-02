@@ -233,9 +233,6 @@
     
     [label02 release];
     label02 = nil;
-    
-    [alertView release];
-    alertView = nil;
 }
                    
 - (void)dealloc
@@ -251,7 +248,6 @@
     [messageBackground release];
     [navBar release];
     [label02 release];
-    [alertView release];
     
     [super dealloc];
 }
@@ -287,8 +283,6 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
-    
-    [alertView dismissWithClickedButtonIndex:0 animated:NO];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -407,21 +401,43 @@
 
 - (void)submitButtonWasTapped
 {
-    if ([messageView.text length] && [emailField.text length])
+    if (0 == [emailField.text length])
     {
-        alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                               message:@"Your message has been received."
-                                              delegate:self
-                                     cancelButtonTitle:nil
-                                     otherButtonTitles:@"Dismiss", nil];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                            message:@"Please enter an e-mail address."
+                                                           delegate:nil
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
         [alertView show];
+        [alertView autorelease];
         
-        [delegate leaveMessageViewController:self didSubmitEmailAddress:emailField.text withMessage:messageView.text];
+        return;
     }
-    else
+    
+    if (0 == [messageView.text length])
     {
-        [delegate leaveMessageViewControllerWasCancelled:self];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                            message:@"Please enter a message."
+                                                           delegate:nil
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Dismiss", nil];
+        [alertView show];
+        [alertView autorelease];
+        
+        return;
     }
+    
+    [self.view endEditing:YES];
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                                        message:@"Your message has been received."
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Dismiss", nil];
+    [alertView show];
+    [alertView autorelease];
+    
+    [delegate leaveMessageViewController:self didSubmitEmailAddress:emailField.text withMessage:messageView.text];
 }
 
 #pragma mark -

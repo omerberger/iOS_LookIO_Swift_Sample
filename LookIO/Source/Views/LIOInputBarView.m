@@ -288,7 +288,7 @@
         characterCount.frame = aFrame;
     }
     
-    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
+    placeholderText.hidden = [inputField.text length] > 0; // || [inputField isFirstResponder];
 }
 
 #pragma mark -

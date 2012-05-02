@@ -28,7 +28,6 @@
     NSString *initialMessage;
     UIButton *submitButton;
     UILabel *label02;
-    UIAlertView *alertView;
     id<LIOLeaveMessageViewControllerDelegate> delegate;
 }
 
