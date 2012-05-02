@@ -36,6 +36,10 @@
 - (id<CAAction>)actionForKey:(NSString *)key { return NULL; }
 @end
 
+@interface LIOAltChatViewController ()
+- (void)rejiggerTableViewFrame;
+@end
+
 @implementation LIOAltChatViewController
 
 @synthesize delegate, dataSource, initialChatText;
@@ -283,6 +287,23 @@
     label.frame = aFrame;
     [reconnectionBezel addSubview:label];
     
+    dismissButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [dismissButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    dismissButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    dismissButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    dismissButton.titleLabel.layer.shadowOpacity = 0.8;
+    dismissButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [dismissButton setTitle:@"Hide" forState:UIControlStateNormal];
+    [dismissButton addTarget:self action:@selector(dismissButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = dismissButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = reconnectionBezel.frame.origin.y + reconnectionBezel.frame.size.height + 20.0;
+    dismissButton.frame = aFrame;
+    dismissButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [reconnectionOverlay addSubview:dismissButton];
+    
     UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleReconnectionOverlayTap:)] autorelease];
     [reconnectionOverlay addGestureRecognizer:tapper];
     
@@ -330,6 +351,9 @@
     
     [emailConvoButton release];
     emailConvoButton = nil;
+    
+    [dismissButton release];
+    dismissButton = nil;
 }
 
 - (void)dealloc
@@ -403,6 +427,12 @@
         
         initialChatText = nil;
     }
+    
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [inputBar.inputField becomeFirstResponder];
+    });
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -440,6 +470,18 @@
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
+    [self rejiggerTableViewFrame];
+    
+    [self reloadMessages];
+    
+    if (NO == padUI)
+        [self scrollToBottom];
+}
+
+- (void)rejiggerTableViewFrame
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     // Make sure the table view is perfectly sized.
     CGRect tableFrame = tableView.frame;
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -462,11 +504,6 @@
         tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
     }
     tableView.frame = tableFrame;
-    
-    [self reloadMessages];
-    
-    if (NO == padUI)
-        [self scrollToBottom];
 }
 
 - (void)showReconnectionOverlay
@@ -685,8 +722,10 @@
         
         aBubble = [[LIOChatBubbleView alloc] initWithFrame:CGRectZero];
         aBubble.backgroundColor = [UIColor clearColor];
-        [aCell.contentView addSubview:aBubble];
         aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
+        aBubble.delegate = self;
+        aBubble.index = indexPath.row;
+        [aCell.contentView addSubview:aBubble];
     }
     
     LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
@@ -1021,6 +1060,8 @@
         aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
         dismissalBar.frame = aFrame;
     }
+    
+    [self rejiggerTableViewFrame];
 }
 
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView
@@ -1235,6 +1276,25 @@
     
     agentTyping = aBool;
     dismissalBar.keyboardIconActive = agentTyping;
+}
+
+#pragma mark -
+#pragma mark LIOChatBubbleViewDelegate methods
+
+- (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView
+{
+    NSInteger index = aView.index;
+    
+    [self.view endEditing:YES];
+    
+    UITableViewCell *aCell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
+    LIOChatBubbleView *newChatBubbleView = (LIOChatBubbleView *)[aCell viewWithTag:LIOAltChatViewControllerTableViewCellBubbleViewTag];
+    
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [newChatBubbleView enterCopyModeAnimated:YES];
+    });
 }
 
 @end

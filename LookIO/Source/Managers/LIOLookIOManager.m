@@ -70,6 +70,7 @@
 #define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
 #define LIOLookIOManagerLastKnownEnabledStatusKey       @"LIOLookIOManagerLastKnownEnabledStatusKey"
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
+#define LIOLookIOManagerResumeModeEnabledKey            @"LIOLookIOManagerResumeModeEnabledKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -932,6 +933,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (altChatViewController)
         return;
     
+    
     if (NO == [[LIOBundleManager sharedBundleManager] isAvailable])
     {
         [self showInterstitialAnimated:animated];
@@ -1593,7 +1595,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else // 3 = only in session
         {
-            if (introduced)
+            if (introduced || resumeMode)
             {
                 // Want to show.
                 willShow = controlButton.hidden;
@@ -1932,6 +1934,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)configureReconnectionTimer
 {
+    // Are we done?
     if (socketConnected)
     {
         LIOLog(@"RESUME MODE TERMINATED: socket did reconnect.");
@@ -1960,14 +1963,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [alertView autorelease];
     }
         
-    [altChatViewController showReconnectionOverlay];
-    [self beginConnectingWithError:nil];
+    // Guard against the case where we are in the process of reconnecting.
+    if (NO == controlSocketConnecting)
+    {
+        [altChatViewController showReconnectionOverlay];
+        [self beginConnectingWithError:nil];
+    }
     
     NSTimeInterval timerInterval = exp2(previousReconnectionTimerStep);
     reconnectionTimer = [[LIOTimerProxy alloc] initWithTimeInterval:timerInterval
                                                              target:self
                                                            selector:@selector(reconnectionTimerDidFire)];
     
+    /*
     if (altChatViewController && previousReconnectionTimerStep >= 3)
     {
         [altChatViewController.view removeFromSuperview];
@@ -1975,6 +1983,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         altChatViewController = nil;
         [self rejiggerWindows];
     }
+    */
     
     // Max: 2**6, or 64 seconds
     previousReconnectionTimerStep++;
@@ -2075,6 +2084,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
+                
+                resetAfterDisconnect = YES;
             }
         }
         
@@ -2128,6 +2139,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self configureReconnectionTimer];
         [altChatViewController showReconnectionOverlay];
         resumeMode = YES;
+        
+        [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:YES] forKey:LIOLookIOManagerResumeModeEnabledKey];
     }
 }
 

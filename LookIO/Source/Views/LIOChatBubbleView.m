@@ -18,7 +18,7 @@ static NSDataDetector *dataDetector = nil;
 
 @implementation LIOChatBubbleView
 
-@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage;
+@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage, delegate, index;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -319,24 +319,27 @@ static NSDataDetector *dataDetector = nil;
                      }];
 }
 
+- (void)enterCopyModeAnimated:(BOOL)animated
+{
+    if (animated)
+        [self performBounceAnimation];
+    
+    [self becomeFirstResponder];
+    
+    CGRect targetFrame = CGRectMake(self.frame.size.width / 2.0, self.frame.size.height / 2.0, 0.0, 0.0);
+    UIMenuController *menu = [UIMenuController sharedMenuController];
+    menu.arrowDirection = UIMenuControllerArrowUp;
+    [menu setTargetRect:targetFrame inView:self];
+    [menu setMenuVisible:YES animated:YES];
+}
+
 #pragma mark -
 #pragma mark Gesture handlers
 
 - (void)handleLongPress:(UILongPressGestureRecognizer *)aLongPresser
 {
     if (aLongPresser.state == UIGestureRecognizerStateBegan)
-    {
-        CGRect targetFrame = CGRectMake(self.frame.size.width / 2.0, self.frame.size.height / 2.0, 0.0, 0.0);
-        
-        [self becomeFirstResponder];
-        
-        [self performBounceAnimation];
-        
-        UIMenuController *menu = [UIMenuController sharedMenuController];
-        menu.arrowDirection = UIMenuControllerArrowUp;
-        [menu setTargetRect:targetFrame inView:self];
-        [menu setMenuVisible:YES animated:YES];
-    }
+        [delegate chatBubbleViewWantsCopyMenu:self];
 }
 
 #pragma mark -

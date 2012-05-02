@@ -59,6 +59,25 @@
     aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height;
     label.frame = aFrame;
     [bezel addSubview:label];
+    
+    UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
+    
+    dismissButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [dismissButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    dismissButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    dismissButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    dismissButton.titleLabel.layer.shadowOpacity = 0.8;
+    dismissButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [dismissButton setTitle:@"Hide" forState:UIControlStateNormal];
+    [dismissButton addTarget:self action:@selector(dismissButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = dismissButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 10.0;
+    dismissButton.frame = aFrame;
+    dismissButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
+    [self.view addSubview:dismissButton];
 }
 
 - (void)viewDidLoad
@@ -90,6 +109,9 @@
     
     [background release];
     background = nil;
+    
+    [dismissButton release];
+    dismissButton = nil;
 }
 
 - (void)dealloc
@@ -101,6 +123,7 @@
     
     [bezel release];
     [background release];
+    [dismissButton release];
     
     [super dealloc];
 }
@@ -114,6 +137,7 @@
 {
     background.alpha = 0.0;
     bezel.transform = CGAffineTransformMakeScale(0.1, 0.1);
+    dismissButton.transform = bezel.transform;
     
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -125,6 +149,7 @@
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          bezel.transform = CGAffineTransformMakeScale(1.2, 1.2);
+                         dismissButton.transform = bezel.transform;
                      }
                      completion:^(BOOL finished) {
                          [UIView animateWithDuration:0.25
@@ -132,6 +157,7 @@
                                              options:UIViewAnimationOptionCurveEaseInOut
                                           animations:^{
                                               bezel.transform = CGAffineTransformMakeScale(0.97, 0.97);
+                                              dismissButton.transform = bezel.transform;
                                           }
                                           completion:^(BOOL finished) {
                                               [UIView animateWithDuration:0.15
@@ -139,6 +165,7 @@
                                                                   options:UIViewAnimationOptionCurveEaseIn
                                                                animations:^{
                                                                    bezel.transform = CGAffineTransformIdentity;
+                                                                   dismissButton.transform = bezel.transform;
                                                                }
                                                                completion:^(BOOL finished) {
                                                                }];
@@ -168,6 +195,14 @@
     timeoutTimer = nil;
     
     [self showFailureAlert];
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)dismissButtonWasTapped
+{
+    [delegate interstitialViewControllerWasDismissed:self];
 }
 
 #pragma mark -

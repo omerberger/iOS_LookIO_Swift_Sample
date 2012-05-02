@@ -24,6 +24,7 @@
     LIOTimerProxy *timeoutTimer;
     UIView *background;
     UIView *bezel;
+    UIButton *dismissButton;
     id<LIOInterstitialViewControllerDelegate> delegate;
 }
 

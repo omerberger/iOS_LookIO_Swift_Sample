@@ -16,6 +16,7 @@
 @protocol LIODismissalBarViewDelegate;
 @protocol LIOEmailHistoryViewControllerDelegate;
 @protocol LIOLeaveMessageViewControllerDelegate;
+@protocol LIOChatBubbleViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -41,7 +42,7 @@
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
-     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate>
+     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -54,7 +55,7 @@
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeader;
-    UIButton *aboutButton, *emailConvoButton;
+    UIButton *aboutButton, *emailConvoButton, *dismissButton;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;

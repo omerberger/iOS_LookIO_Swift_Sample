@@ -11,7 +11,7 @@
 #define LIOChatBubbleViewMaxTextWidth   250.0
 #define LIOChatBubbleViewMinTextHeight  67.0
 
-@class TTTAttributedLabel_LIO, LIOChatMessage;
+@class TTTAttributedLabel_LIO, LIOChatMessage, LIOChatBubbleView;
 
 typedef enum
 {
@@ -25,6 +25,10 @@ typedef enum
     LIOChatBubbleViewLinkModeEnabled
 } LIOChatBubbleViewLinkMode;
 
+@protocol LIOChatBubbleViewDelegate
+- (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView;
+@end
+
 @interface LIOChatBubbleView : UIView <UIAlertViewDelegate>
 {
     LIOChatBubbleViewFormattingMode formattingMode;
@@ -35,6 +39,8 @@ typedef enum
     NSString *senderName;
     NSURL *urlBeingLaunched;
     LIOChatMessage *rawChatMessage;
+    NSInteger index;
+    id<LIOChatBubbleViewDelegate> delegate;
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
@@ -43,7 +49,10 @@ typedef enum
 @property(nonatomic, retain) NSString *senderName;
 @property(nonatomic, readonly) TTTAttributedLabel_LIO *mainMessageView;
 @property(nonatomic, retain) LIOChatMessage *rawChatMessage;
+@property(nonatomic, assign) NSInteger index;
+@property(nonatomic, assign) id<LIOChatBubbleViewDelegate> delegate;
 
 - (void)populateMessageViewWithText:(NSString *)aString;
+- (void)enterCopyModeAnimated:(BOOL)animated;
 
 @end
