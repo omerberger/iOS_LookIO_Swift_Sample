@@ -949,7 +949,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (altChatViewController)
         return;
     
-    
     if (NO == [[LIOBundleManager sharedBundleManager] isAvailable])
     {
         [self showInterstitialAnimated:animated];

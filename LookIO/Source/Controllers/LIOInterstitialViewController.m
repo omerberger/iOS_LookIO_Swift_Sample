@@ -60,10 +60,12 @@
     label.frame = aFrame;
     [bezel addSubview:label];
     
-    UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
-    
     dismissButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    [dismissButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    dismissButton.layer.borderColor = [UIColor whiteColor].CGColor;
+    dismissButton.layer.borderWidth = 1.0;
+    dismissButton.layer.cornerRadius = 5.0;
+    dismissButton.layer.masksToBounds = YES;
+    dismissButton.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.9];
     dismissButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     dismissButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     dismissButton.titleLabel.layer.shadowOpacity = 0.8;
@@ -74,9 +76,9 @@
     aFrame.size.width = 92.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 10.0;
+    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 30.0;
     dismissButton.frame = aFrame;
-    dismissButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
+    dismissButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [self.view addSubview:dismissButton];
 }
 
@@ -131,6 +133,23 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return [delegate interstitialViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    dismissButton.hidden = YES;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    CGRect aFrame = dismissButton.frame;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 30.0;
+    dismissButton.frame = aFrame;
+    
+    dismissButton.hidden = NO;
 }
 
 - (void)performRevealAnimation
