@@ -139,6 +139,25 @@
         [panner addTarget:self action:@selector(handleTableViewPan:)];
     }
     
+    // We need a tappable area for the entire left side of the iPad screen.
+    if (padUI)
+    {
+        UITapGestureRecognizer *aTapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handlePadDismissalAreaTap:)] autorelease];
+        
+        tappableDismissalAreaForPadUI = [[UIView alloc] init];
+        [tappableDismissalAreaForPadUI addGestureRecognizer:aTapper];
+        tappableDismissalAreaForPadUI.backgroundColor = [UIColor clearColor];
+        //tappableDismissalAreaForPadUI.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
+        CGRect aFrame;
+        aFrame.origin.x = 0.0;
+        aFrame.origin.y = 0.0;
+        aFrame.size.width = self.view.bounds.size.width - tableView.frame.size.width;
+        aFrame.size.height = self.view.bounds.size.height;
+        tappableDismissalAreaForPadUI.frame = aFrame;
+        tappableDismissalAreaForPadUI.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [self.view addSubview:tappableDismissalAreaForPadUI];
+    }
+    
     CGRect inputBarFrame = CGRectZero;
     if (padUI)
     {
@@ -325,6 +344,9 @@
     [tableView release];
     tableView = nil;
     
+    [tappableDismissalAreaForPadUI release];
+    tappableDismissalAreaForPadUI = nil;
+    
     [inputBar release];
     inputBar = nil;
     
@@ -378,6 +400,7 @@
     [aboutButton release];
     [emailConvoButton release];
     [chatBubbleHeights release];
+    [tappableDismissalAreaForPadUI release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -388,6 +411,9 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    if (leavingMessage)
+        return;
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -427,21 +453,25 @@
         
         initialChatText = nil;
     }
-    
-    if (NO == leavingMessage)
-    {
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [inputBar.inputField becomeFirstResponder];
-            [inputBar setNeedsLayout];
-        });
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    if (leavingMessage)
+        return;
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    double delayInSeconds = 0.6;
+    if (NO == padUI) delayInSeconds = 0.1;
+    
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [inputBar.inputField becomeFirstResponder];
+        [inputBar setNeedsLayout];
+    });
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -561,6 +591,7 @@
                              tableView.layer.transform = CATransform3DIdentity;
                              tableView.layer.anchorPoint = CGPointMake(0.5, 0.5);
                              [self scrollToBottom];
+                             [self rejiggerTableViewFrame];
                          }];
     }
     else
@@ -875,6 +906,11 @@
 }
 
 - (void)handleTappableDummyCellViewTap:(UITapGestureRecognizer *)aTapper
+{
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+}
+
+- (void)handlePadDismissalAreaTap:(UITapGestureRecognizer *)aTapper
 {
     [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
@@ -1246,15 +1282,15 @@
 #pragma mark -
 #pragma mark LIOLeaveMessageViewControllerDelegate methods
 
-- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
-{
-    [self dismissModalViewControllerAnimated:NO];
-}
-
 - (void)leaveMessageViewControllerWasCancelled:(LIOLeaveMessageViewController *)aController
 {
     [self dismissModalViewControllerAnimated:NO];
-    [delegate altChatViewControllerWantsSessionTermination:self];
+    
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [delegate altChatViewControllerWantsSessionTermination:self];
+    });
 }
 
 - (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage

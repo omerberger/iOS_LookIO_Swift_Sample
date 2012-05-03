@@ -62,6 +62,7 @@
     UIPopoverController *popover;
     NSUInteger currentScrollId;
     NSMutableArray *chatBubbleHeights;
+    UIView *tappableDismissalAreaForPadUI;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

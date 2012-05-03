@@ -127,7 +127,7 @@
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
     LIOTimerProxy *reintroTimeoutTimer;
-    UIView *statusBarUnderlay;
+    UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -483,6 +483,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay.backgroundColor = [UIColor redColor];
     statusBarUnderlay.hidden = YES;
     [keyWindow addSubview:statusBarUnderlay];
+    
+    /*
+    UILabel *vLabel = [[[UILabel alloc] init] autorelease];
+    vLabel.backgroundColor = [UIColor clearColor];
+    vLabel.font = [UIFont boldSystemFontOfSize:14.0];
+    vLabel.textColor = [UIColor whiteColor];
+    vLabel.text = @"V";
+    [vLabel sizeToFit];
+    CGRect aFrame = vLabel.frame;
+    aFrame.origin.x = 200.0;
+    aFrame.origin.y = 0.0;
+    vLabel.frame = aFrame;
+    [statusBarUnderlay addSubview:vLabel];
+    */
+    
+    statusBarUnderlayBlackout = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
+    statusBarUnderlayBlackout.backgroundColor = [UIColor blackColor];
+    statusBarUnderlayBlackout.hidden = YES;
+    [keyWindow addSubview:statusBarUnderlayBlackout];
 
     NSString *sessionId = [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length])
@@ -613,6 +632,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [mainWindow release];
     
     [statusBarUnderlay release];
+    [statusBarUnderlayBlackout release];
     
     LIOLog(@"Unloaded.");
     
@@ -678,6 +698,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates removeAllObjects];
     
     statusBarUnderlay.hidden = YES;
+    statusBarUnderlayBlackout.hidden = YES;
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
@@ -776,9 +797,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (UIImage *)captureScreen
 {
-    CGSize imageSize = [[UIScreen mainScreen] bounds].size;
-    UIGraphicsBeginImageContextWithOptions(imageSize, NO, 1.0);
+    // CAUTION: Called on a non-main thread!
+    statusBarUnderlayBlackout.hidden = NO;
     
+    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+    UIGraphicsBeginImageContextWithOptions(screenSize, NO, 1.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     // Iterate over every window from back to front
@@ -805,13 +828,48 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             CGContextRestoreGState(context);
         }
     }
-    
+
     // Retrieve the screenshot image
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    
+    UIImage *screenshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    return image;
+    // Chop off the status bar area, if necessary.
+    // FIXME: Too expensive.
+    /*
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+    {
+        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        CGFloat statusBarHeight;
+        CGRect clippedRect;
+        if (UIInterfaceOrientationIsPortrait(interfaceOrientation))
+        {
+            statusBarHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
+            clippedRect = CGRectMake(0.0, statusBarHeight, screenSize.width, screenSize.height - statusBarHeight);
+        }
+        else
+        {
+            statusBarHeight = [[UIApplication sharedApplication] statusBarFrame].size.width;
+            clippedRect = CGRectMake(statusBarHeight, 0.0, screenSize.height - statusBarHeight, screenSize.width);
+        }
+        
+        if (screenshotImage.scale > 1.0)
+        {
+            clippedRect = CGRectMake(clippedRect.origin.x * screenshotImage.scale,
+                                     clippedRect.origin.y * screenshotImage.scale,
+                                     clippedRect.size.width * screenshotImage.scale,
+                                     clippedRect.size.height * screenshotImage.scale);
+        }
+        
+        CGImageRef croppedImage = CGImageCreateWithImageInRect(screenshotImage.CGImage, clippedRect);
+        screenshotImage = [UIImage imageWithCGImage:croppedImage scale:screenshotImage.scale orientation:screenshotImage.imageOrientation];
+        CGImageRelease(croppedImage);        
+    }
+    */
+
+    // CAUTION: Called on a non-main thread!
+    statusBarUnderlayBlackout.hidden = YES;
+    
+    return screenshotImage;
 }
 
 - (NSString *)nextGUID
@@ -850,19 +908,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
     {
         [statusBarUnderlay.superview bringSubviewToFront:statusBarUnderlay];
+        [statusBarUnderlayBlackout.superview bringSubviewToFront:statusBarUnderlayBlackout];
         
-        [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
+        [UIView animateWithDuration:LIOLookIOManagerScreenCaptureInterval
                               delay:0.0
                             options:(UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction)
                          animations:^{
-                             statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
+                             statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.0 green:(100.0/256.0) blue:(137.0/256.0) alpha:1.0];
                          }
                          completion:^(BOOL finished) {
-                             [UIView animateWithDuration:(LIOLookIOManagerScreenCaptureInterval / 2.0)
+                             [UIView animateWithDuration:LIOLookIOManagerScreenCaptureInterval
                                                    delay:0.0
                                                  options:(UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction)
                                               animations:^{
-                                                  statusBarUnderlay.backgroundColor = [UIColor redColor];
+                                                  statusBarUnderlay.backgroundColor = [UIColor colorWithRed:(8.0/256.0) green:(141.0/256.0) blue:(178.0/256.0) alpha:1.0];
                                               }
                                               completion:^(BOOL finished) {
                                               }];
@@ -2248,6 +2307,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     screenshotsAllowed = NO;
     
     statusBarUnderlay.hidden = YES;
+    statusBarUnderlayBlackout.hidden = YES;
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
     NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
@@ -2423,7 +2483,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {    
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
-        [self killConnection];
+        killConnectionAfterChatViewDismissal = YES;
+        [altChatViewController performDismissalAnimation];
     }
     else
     {
@@ -2702,6 +2763,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     controlButton.hidden = YES;
     statusBarUnderlay.hidden = YES;
+    statusBarUnderlayBlackout.hidden = YES;
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -2713,6 +2775,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];
         statusBarUnderlay.hidden = NO == screenshotsAllowed;
+
+        statusBarUnderlayBlackout.frame = [[UIApplication sharedApplication] statusBarFrame];
+        statusBarUnderlayBlackout.hidden = YES;
     });
     
     CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;

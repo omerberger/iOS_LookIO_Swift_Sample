@@ -11,7 +11,6 @@
 @class LIOLeaveMessageViewController;
 
 @protocol LIOLeaveMessageViewControllerDelegate
-- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController;
 - (void)leaveMessageViewControllerWasCancelled:(LIOLeaveMessageViewController *)aController;
 - (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
