@@ -23,7 +23,8 @@
 - (void)loadView
 {
     [super loadView];
-    UIView *rootView = self.view;
+
+    CGRect rootBounds = self.view.bounds;
     
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
@@ -31,18 +32,18 @@
     UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
     backgroundView.frame = self.view.bounds;
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [rootView addSubview:backgroundView];
+    [self.view addSubview:backgroundView];
         
     scrollView = [[UIScrollView alloc] init];
-    scrollView.frame = rootView.bounds;
+    scrollView.frame = rootBounds;
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [rootView addSubview:scrollView];
+    [self.view addSubview:scrollView];
     
-    UINavigationBar *navBar = [[[UINavigationBar alloc] init] autorelease];
+    navBar = [[UINavigationBar alloc] init];
     navBar.barStyle = UIBarStyleBlackOpaque;
     CGRect aFrame = navBar.frame;
-    aFrame.size.width = rootView.frame.size.width;
-    aFrame.size.height = 44.0;
+    aFrame.size.width = rootBounds.size.width;
+    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"About LookIO"] autorelease];
@@ -50,13 +51,13 @@
     anItem.leftBarButtonItem = closeItem;
     [navBar pushNavigationItem:anItem animated:NO];
     navBar.delegate = self;
-    [rootView addSubview:navBar];
+    [self.view addSubview:navBar];
     
     UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
     aFrame = logoView.frame;
     aFrame.size.width = 154.0;
     aFrame.size.height = 44.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = navBar.frame.size.height + 10.0;
     logoView.frame = aFrame;
     logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -68,7 +69,7 @@
     UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
     aFrame = topSeparator.frame;
     aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 8.0;
-    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.width = rootBounds.size.width;
     aFrame.size.height = 3.0;
     topSeparator.frame = aFrame;
     topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -86,12 +87,12 @@
     [label01 sizeToFit];
     aFrame = label01.frame;
     aFrame.origin.y = topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (label01.frame.size.width / 2.0);
     label01.frame = aFrame;
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label01];
     
-    UILabel *label02 = [[[UILabel alloc] init] autorelease];
+    label02 = [[UILabel alloc] init];
     label02.text = @"Your Email Address:";
     label02.textColor = altBlue;
     label02.backgroundColor = [UIColor clearColor];
@@ -103,7 +104,7 @@
     [label02 sizeToFit];
     aFrame = label02.frame;
     aFrame.origin.y = label01.frame.origin.y + label01.frame.size.height;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (label02.frame.size.width / 2.0);
     label02.frame = aFrame;
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
@@ -117,7 +118,7 @@
     aFrame.size.width = 290.0;
     aFrame.size.height = 48.0;
     aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     fieldBackground.frame = aFrame;
     fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:fieldBackground];
@@ -130,6 +131,7 @@
     aFrame.size.width = 269.0;
     aFrame.size.height = 28.0;
     inputField.frame = aFrame;
+    inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     inputField.font = [UIFont systemFontOfSize:14.0];
     inputField.keyboardType = UIKeyboardTypeEmailAddress;
     inputField.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -155,16 +157,16 @@
     submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    UIImageView *bottomSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
+    bottomSeparator = [[UIImageView alloc] initWithImage:stretchableSeparatorImage];
     aFrame = bottomSeparator.frame;
     aFrame.origin.y = submitButton.frame.origin.y + submitButton.frame.size.height + 8.0;
-    aFrame.size.width = rootView.frame.size.width;
+    aFrame.size.width = rootBounds.size.width;
     aFrame.size.height = 3.0;
     bottomSeparator.frame = aFrame;
     bottomSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -175,8 +177,8 @@
     aFrame = p1Container.frame;
     aFrame.size.width = 290.0;
     aFrame.size.height = 84.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = bottomSeparator.frame.origin.y + bottomSeparator.frame.size.height + 8.0;
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = bottomSeparator.frame.origin.y + bottomSeparator.frame.size.height + 12.0;
     p1Container.frame = aFrame;
     p1Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:p1Container];
@@ -195,7 +197,7 @@
     header01.font = [UIFont boldSystemFontOfSize:14.0];
     [header01 sizeToFit];
     aFrame = header01.frame;
-    aFrame.origin.x = bubbleIcon.frame.origin.x + bubbleIcon.frame.size.width + 10.0;
+    aFrame.origin.x = bubbleIcon.frame.size.width + 10.0;
     header01.frame = aFrame;
     [p1Container addSubview:header01];
     
@@ -215,6 +217,7 @@
     aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
     textsplosion01.frame = aFrame;
     textsplosion01.numberOfLines = 0;
+    textsplosion01.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [p1Container addSubview:textsplosion01];
     
     p2Container = [[UIView alloc] init];
@@ -222,7 +225,7 @@
     aFrame = p2Container.frame;
     aFrame.size.width = 290.0;
     aFrame.size.height = 84.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
     p2Container.frame = aFrame;
     p2Container.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -262,143 +265,42 @@
     aFrame.origin.y = header02.frame.origin.y + header02.frame.size.height + 3.0;
     textsplosion02.frame = aFrame;
     textsplosion02.numberOfLines = 0;
+    textsplosion02.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [p2Container addSubview:textsplosion02];
 }
 
+// iPad only.
+// This has to be done because in loadView, the view's size is
+// gigantic full-screen iPad size. The popover size constraint
+// doesn't take effect until later, apparently.
 - (void)rejiggerInterface
 {
-    if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-        {
-            CGRect aFrame = fieldBackground.frame;
-            aFrame.size.width = 290.0;
-            aFrame.size.height = 48.0;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            fieldBackground.frame = aFrame;
-            
-            submitButton.bounds = fieldBackground.bounds;
-            aFrame = submitButton.frame;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            submitButton.frame = aFrame;
-            
-            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion01.frame;
-            aFrame.size = restrictedSize;
-            aFrame.origin.x = header01.frame.origin.x;
-            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
-            textsplosion01.frame = aFrame;
-            
-            aFrame = p1Container.frame;
-            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
-            p1Container.frame = aFrame;
-            
-            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion02.frame;
-            aFrame.size = restrictedSize;
-            textsplosion02.frame = aFrame;
-            
-            aFrame = p2Container.frame;
-            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
-            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
-            p2Container.frame = aFrame;
-        }
-        else
-        {
-            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            CGRect aFrame = textsplosion01.frame;
-            aFrame.size = restrictedSize;
-            aFrame.origin.x = header01.frame.origin.x;
-            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
-            textsplosion01.frame = aFrame;
-            
-            aFrame = p1Container.frame;
-            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
-            p1Container.frame = aFrame;
-            
-            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion02.frame;
-            aFrame.size = restrictedSize;
-            textsplosion02.frame = aFrame;
-            
-            aFrame = p2Container.frame;
-            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
-            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
-            p2Container.frame = aFrame;
-        }
-    }
-    else
-    {
-        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-        {
-            CGRect aFrame = fieldBackground.frame;
-            aFrame.size.width = 407.0;
-            aFrame.size.height = 48.0;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            fieldBackground.frame = aFrame;
-            
-            submitButton.bounds = fieldBackground.bounds;
-            aFrame = submitButton.frame;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            submitButton.frame = aFrame;
-            
-            aFrame = p1Container.frame;
-            aFrame.size.width = fieldBackground.frame.size.width;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            p1Container.frame = aFrame;
-            
-            aFrame = p2Container.frame;
-            aFrame.size.width = fieldBackground.frame.size.width;
-            aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            p2Container.frame = aFrame;
-            
-            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion01.frame;
-            aFrame.size = restrictedSize;
-            aFrame.origin.x = header01.frame.origin.x;
-            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
-            textsplosion01.frame = aFrame;
-            
-            aFrame = p1Container.frame;
-            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
-            p1Container.frame = aFrame;
-            
-            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion02.frame;
-            aFrame.size = restrictedSize;
-            textsplosion02.frame = aFrame;
-            
-            aFrame = p2Container.frame;
-            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
-            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
-            p2Container.frame = aFrame;            
-        }
-        else
-        {
-            CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            CGRect aFrame = textsplosion01.frame;
-            aFrame.size = restrictedSize;
-            aFrame.origin.x = header01.frame.origin.x;
-            aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
-            textsplosion01.frame = aFrame;
-            
-            aFrame = p1Container.frame;
-            aFrame.size.height = textsplosion01.frame.size.height + header01.frame.size.height;
-            p1Container.frame = aFrame;
-            
-            restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-            aFrame = textsplosion02.frame;
-            aFrame.size = restrictedSize;
-            textsplosion02.frame = aFrame;
-            
-            aFrame = p2Container.frame;
-            aFrame.size.height = textsplosion02.frame.size.height + header02.frame.size.height;
-            aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
-            p2Container.frame = aFrame;
-        }
-    }
+    CGRect aFrame = fieldBackground.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 48.0;
+    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    fieldBackground.frame = aFrame;
     
-    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
+    submitButton.frame = aFrame;
+    
+    aFrame = p1Container.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 84.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = bottomSeparator.frame.origin.y + bottomSeparator.frame.size.height + 12.0;
+    p1Container.frame = aFrame;
+    
+    aFrame = p2Container.frame;
+    aFrame.size.width = 290.0;
+    aFrame.size.height = 84.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
+    p2Container.frame = aFrame;
+    
+    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
 
 - (void)viewDidLoad
@@ -441,13 +343,23 @@
     
     [header02 release];
     header02 = nil;
+    
+    [label02 release];
+    label02 = nil;
+    
+    [bottomSeparator release];
+    bottomSeparator = nil;
+    
+    [navBar release];
+    navBar = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
-    [self rejiggerInterface];
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        [self rejiggerInterface];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -489,6 +401,9 @@
     [textsplosion02 release];
     [header01 release];
     [header02 release];
+    [label02 release];
+    [bottomSeparator release];
+    [navBar release];
     
     [super dealloc];
 }
@@ -504,11 +419,14 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [self.view endEditing:YES];
-    
-    [self rejiggerInterface];
-    
     scrollView.contentSize = CGSizeMake(self.view.frame.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
+    
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        [self rejiggerInterface];
+    
+    CGRect aFrame = navBar.frame;
+    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
+    navBar.frame = aFrame;
 }
 
 #pragma mark -

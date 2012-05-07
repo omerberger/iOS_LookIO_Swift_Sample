@@ -842,9 +842,10 @@
     if (padUI)
     {
         aController.modalInPopover = YES;
-        aController.contentSizeForViewInPopover = CGSizeMake(480.0, 450.0);
+        aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+        popover.popoverContentSize = CGSizeMake(320.0, 460.0);
         [popover presentPopoverFromRect:aboutButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
@@ -1186,7 +1187,7 @@
     LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
     aController.modalInPopover = YES;
-    aController.contentSizeForViewInPopover = CGSizeMake(480.0, 450.0);
+    aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
     
     popover = [[UIPopoverController alloc] initWithContentViewController:aController];
     [popover presentPopoverFromRect:inputBar.adArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];

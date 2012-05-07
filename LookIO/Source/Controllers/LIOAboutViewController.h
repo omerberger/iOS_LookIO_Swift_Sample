@@ -18,12 +18,13 @@
 
 @interface LIOAboutViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 {
-    UILabel *textsplosion01, *textsplosion02, *header01, *header02;
-    UIImageView *fieldBackground;
+    UILabel *textsplosion01, *textsplosion02, *header01, *header02, *label02;
+    UIImageView *fieldBackground, *bottomSeparator;
     UIScrollView *scrollView;
     UITextField *inputField;
     UIView *p1Container, *p2Container;
     UIButton *submitButton;
+    UINavigationBar *navBar;
     BOOL keyboardShown;
     id<LIOAboutViewControllerDelegate> delegate;
 }

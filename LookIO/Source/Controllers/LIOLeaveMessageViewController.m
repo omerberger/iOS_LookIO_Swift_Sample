@@ -83,7 +83,7 @@
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
-    aFrame.origin.y = 5.0; //label01.frame.origin.y + label01.frame.size.height;
+    aFrame.origin.y = 5.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
     label02.frame = aFrame;
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -175,29 +175,52 @@
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
-/*
 - (void)rejiggerInterface
 {
-    CGRect aFrame = fieldBackground.frame;
-    aFrame.size.width = 290.0;
-    aFrame.size.height = 43.0;
-    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 5.0;
-    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    fieldBackground.frame = aFrame;
-        
-    aFrame.size.width = 290.0;
-    aFrame.size.height = 76.0;
-    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 5.0;
-    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    messageBackground.frame = aFrame;
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    submitButton.bounds = fieldBackground.bounds;
-    aFrame = submitButton.frame;
-    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = messageBackground.frame.origin.y + messageBackground.frame.size.height + 3.0;
-    submitButton.frame = aFrame;
+    if (padUI)
+    {
+        label02.font = [UIFont systemFontOfSize:14.0];
+        [label02 sizeToFit];
+        CGRect aFrame = label02.frame;
+        aFrame.origin.y = 15.0;
+        aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (label02.frame.size.width / 2.0);
+        label02.frame = aFrame;
+    
+        aFrame = fieldBackground.frame;
+        aFrame.size.width = self.view.bounds.size.width * 0.75;
+        aFrame.size.height = 43.0;
+        aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 15.0;
+        aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        fieldBackground.frame = aFrame;
+        fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        
+        aFrame.origin.x = 10.0;
+        aFrame.origin.y = 12.0;
+        aFrame.size.width = fieldBackground.frame.size.width - 21.0;
+        aFrame.size.height = 23.0;
+        emailField.frame = aFrame;
+            
+        aFrame.size.width = fieldBackground.frame.size.width;
+        aFrame.size.height = 76.0;
+        aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 15.0;
+        aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        messageBackground.frame = aFrame;
+        
+        aFrame.origin.x = 1.0;
+        aFrame.origin.y = 3.0;
+        aFrame.size.width = messageBackground.frame.size.width - 10.0;
+        aFrame.size.height = 73.0;
+        messageView.frame = aFrame;
+        
+        submitButton.bounds = fieldBackground.bounds;
+        aFrame = submitButton.frame;
+        aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = messageBackground.frame.origin.y + messageBackground.frame.size.height + 15.0;
+        submitButton.frame = aFrame;
+    }
 }
-*/
 
 - (void)viewDidLoad
 {
@@ -261,6 +284,8 @@
 {
     [super viewWillAppear:animated];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification
@@ -271,9 +296,9 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    //[self rejiggerInterface];
+    [self rejiggerInterface];
     
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+    if (padUI || UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [emailField becomeFirstResponder];
 }
 

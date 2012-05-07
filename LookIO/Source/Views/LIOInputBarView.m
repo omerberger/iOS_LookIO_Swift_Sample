@@ -135,8 +135,7 @@
         placeholderText.backgroundColor = [UIColor clearColor];
         placeholderText.textColor = [UIColor lightGrayColor];
         placeholderText.font = inputField.font;
-        if (padUI) placeholderText.text = @"Send a message to a customer service rep.";
-        else placeholderText.text = @"Send a message.";
+        placeholderText.text = @"Send a message.";
         [placeholderText sizeToFit];
         aFrame = placeholderText.frame;
         aFrame.origin.x = 8.0;
@@ -231,9 +230,11 @@
         totalLines = calculatedNumLines;
     }
     
+    /*
     aFrame = inputField.frame;
     aFrame.size.height = (maxLines + 1) * singleLineHeight;
     inputField.frame = aFrame;
+    */
     
     CGFloat minHeight = LIOInputBarViewMinHeight;
     if (padUI) minHeight = LIOInputBarViewMinHeightPad;
@@ -288,7 +289,7 @@
         characterCount.frame = aFrame;
     }
     
-    placeholderText.hidden = [inputField.text length] > 0; // || [inputField isFirstResponder];
+    placeholderText.hidden = [inputField.text length] > 0;
 }
 
 #pragma mark -
