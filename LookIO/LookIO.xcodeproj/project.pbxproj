@@ -21,6 +21,8 @@
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
+		D4868A78155AFE800081164D /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4868A76155AFE800081164D /* AsyncSocket.h */; };
+		D4868A79155AFE800081164D /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4868A77155AFE800081164D /* AsyncSocket.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
 		D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */; };
 		D486D7281521303B007C9AF8 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7151521303B007C9AF8 /* ioapi.c */; };
@@ -65,8 +67,6 @@
 		D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */; };
 		D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C414F322B500713F29 /* LIOInputBarView.h */; };
 		D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C514F322B500713F29 /* LIOInputBarView.m */; };
-		D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DA14F322C300713F29 /* AsyncSocket.h */; };
-		D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7DB14F322C300713F29 /* AsyncSocket.m */; };
 		D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DD14F322C300713F29 /* NSData+Base64.h */; };
 		D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7DE14F322C300713F29 /* NSData+Base64.m */; };
 		D4ADC7F114F322C300713F29 /* JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E014F322C300713F29 /* JSON.h */; };
@@ -101,6 +101,8 @@
 		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
+		D4868A76155AFE800081164D /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
+		D4868A77155AFE800081164D /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
 		D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBundleManager.m; path = Source/Managers/LIOBundleManager.m; sourceTree = "<group>"; };
 		D486D7151521303B007C9AF8 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
@@ -146,8 +148,6 @@
 		D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOHeaderBarView.m; path = Source/Views/LIOHeaderBarView.m; sourceTree = "<group>"; };
 		D4ADC7C414F322B500713F29 /* LIOInputBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInputBarView.h; path = Source/Views/LIOInputBarView.h; sourceTree = "<group>"; };
 		D4ADC7C514F322B500713F29 /* LIOInputBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInputBarView.m; path = Source/Views/LIOInputBarView.m; sourceTree = "<group>"; };
-		D4ADC7DA14F322C300713F29 /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
-		D4ADC7DB14F322C300713F29 /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D4ADC7DD14F322C300713F29 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64.h"; sourceTree = "<group>"; };
 		D4ADC7DE14F322C300713F29 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64.m"; sourceTree = "<group>"; };
 		D4ADC7E014F322C300713F29 /* JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSON.h; sourceTree = "<group>"; };
@@ -322,8 +322,8 @@
 		D4ADC7D914F322C300713F29 /* CocoaAsyncSocket */ = {
 			isa = PBXGroup;
 			children = (
-				D4ADC7DA14F322C300713F29 /* AsyncSocket.h */,
-				D4ADC7DB14F322C300713F29 /* AsyncSocket.m */,
+				D4868A76155AFE800081164D /* AsyncSocket.h */,
+				D4868A77155AFE800081164D /* AsyncSocket.m */,
 			);
 			path = CocoaAsyncSocket;
 			sourceTree = "<group>";
@@ -385,7 +385,6 @@
 				D4ADC7CE14F322B500713F29 /* LIOControlButtonView.h in Headers */,
 				D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */,
 				D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */,
-				D4ADC7ED14F322C300713F29 /* AsyncSocket.h in Headers */,
 				D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */,
 				D4ADC7F114F322C300713F29 /* JSON.h in Headers */,
 				D4ADC7F214F322C300713F29 /* NSObject+SBJSON.h in Headers */,
@@ -412,6 +411,7 @@
 				D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */,
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
 				D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */,
+				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,7 +494,6 @@
 				D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */,
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
 				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,
-				D4ADC7EE14F322C300713F29 /* AsyncSocket.m in Sources */,
 				D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */,
 				D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */,
 				D4ADC7F514F322C300713F29 /* NSString+SBJSON.m in Sources */,
@@ -520,6 +519,7 @@
 				D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */,
 				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
 				D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */,
+				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

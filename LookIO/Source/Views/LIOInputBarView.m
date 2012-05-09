@@ -9,6 +9,7 @@
 #import "LIOInputBarView.h"
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
+#import "LIOLogManager.h"
 
 #define LIOInputBarViewMinHeight    35.0
 #define LIOInputBarViewMinHeightPad 50.0
@@ -260,7 +261,11 @@
     {
         aFrame = inputField.frame;
         if (1 == totalLines) aFrame.origin.y = 14.0;
-        else if (inputField.scrollEnabled) aFrame.origin.y = 14.0;
+        else if (inputField.scrollEnabled)
+        {
+            aFrame.origin.y = 14.0;
+            aFrame.size.height -= 5.0;
+        }
         else aFrame.origin.y = 6.0;
         inputField.frame = aFrame;
     }
@@ -361,12 +366,12 @@
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
-    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
+    placeholderText.hidden = [inputField.text length] > 0;
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
-    placeholderText.hidden = [inputField.text length] > 0 || [inputField isFirstResponder];
+    placeholderText.hidden = [inputField.text length] > 0;
 }
 
 @end

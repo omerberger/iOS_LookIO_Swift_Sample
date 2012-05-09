@@ -80,7 +80,7 @@
 
 @interface LIOLookIOManager ()
     <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate,
-     LIOLeaveMessageViewControllerDelegate>
+     LIOLeaveMessageViewControllerDelegate, AsyncSocketDelegate_LIO>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -970,7 +970,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [screenshotData release];
             
             dispatch_async(dispatch_get_main_queue(), ^{
+                
                 waitingForScreenshotAck = YES;
+                
                 [controlSocket writeData:dataToSend
                              withTimeout:-1
                                      tag:0];
@@ -1203,10 +1205,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             enqueued = YES;
             
             [self sendCapabilitiesPacket];
-            
-            [controlSocket readDataToData:messageSeparatorData
-                              withTimeout:-1
-                                      tag:0];
         }
         else if (waitingForScreenshotAck)
         {
@@ -1545,24 +1543,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             firstChatMessageSent = NO;
             resetAfterDisconnect = YES;
             [self killConnection];
-            
-            /*
-            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-            
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                                message:message
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
-            [alertView show];
-            [alertView autorelease];
-            */
         }
     }
-    
-    [controlSocket readDataToData:messageSeparatorData
-                      withTimeout:-1
-                              tag:0];
 }
 
 - (void)performIntroduction
@@ -1628,10 +1610,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[caps dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-    
-    [controlSocket readDataToData:messageSeparatorData
-                      withTimeout:-1
-                              tag:0];    
 }
 
 - (void)refreshControlButtonVisibility
@@ -2042,6 +2020,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                   otherButtonTitles:@"Dismiss", nil];
         [alertView show];
         [alertView autorelease];
+        
+        LIOLog(@"Session forcibly terminated. Reason: reconnection mode terminated due to last activity being too far in the past.");
     }
         
     // Guard against the case where we are in the process of reconnecting.
@@ -2090,10 +2070,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                               otherButtonTitles:@"Dismiss", nil];
     [alertView show];
     [alertView autorelease];
+        
+    LIOLog(@"Session forcibly terminated. Reason: reintro process took too long!");
 }
 
 #pragma mark -
-#pragma mark AsyncSocketDelegate methods
+#pragma mark AsyncSocketDelegate_LIO methods
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port
 {
@@ -2113,8 +2095,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
-    LIOLog(@"Connection secured.");    
-    
+    LIOLog(@"Connection secured.");
+
     socketConnected = YES;
     [self configureReconnectionTimer];
     [self performIntroduction];
@@ -2122,6 +2104,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err
 {
+    LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
+    
     // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
     if (NO == firstChatMessageSent && NO == unprovisioned)
     {
@@ -2142,6 +2126,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
+                
+                resetAfterDisconnect = YES;
+                
+                LIOLog(@"Session forcibly terminated. Reason: socket closed unexpectedly during an introduced session.");
             }
             else
             {
@@ -2173,6 +2161,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
             [alertView show];
             [alertView autorelease];
+            
+            LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server but without outro.");
         }
     }
     
@@ -2184,20 +2174,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
     if ([lastActivity timeIntervalSinceNow] <= -LIOLookIOManagerReconnectionTimeLimit)
         resetAfterDisconnect = YES;
-        
-    LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
 {
     LIOLog(@"Socket did disconnect.");
-
+    
     socketConnected = NO;
     controlSocketConnecting = NO;
-    
-    //controlSocket.delegate = nil;
-    //[controlSocket release];
-    //controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
     
     if (resetAfterDisconnect)
     {
@@ -2220,18 +2204,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
     NSDictionary *result = [jsonParser objectWithString:jsonString];
     
+#ifdef DEBUG
     LIOLog(@"\n[READ]\n%@\n", jsonString);
+#endif
     
-    [self performSelectorOnMainThread:@selector(handlePacket:) withObject:result waitUntilDone:NO];    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [self handlePacket:result];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];    
+    });
 }
 
-- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
+- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
+
 {
     LIOLog(@"\n\nREAD TIMEOUT\n\n");
     return 0;
 }
 
-- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutWriteWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length;
+- (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutWriteWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
 {
     LIOLog(@"\n\nWRITE TIMEOUT\n\n");
     return 0;
@@ -2276,10 +2270,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #ifdef DEBUG
     LIOLog(@"Chat packet written to socket (%u bytes):\n    \"%@\"", [chatData length], chat);
 #endif
-    
-    [controlSocket readDataToData:messageSeparatorData
-                      withTimeout:-1
-                              tag:0];
     
     LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
     newMessage.date = [NSDate date];
@@ -2373,7 +2363,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[chatDown dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-
+    
     [self rejiggerWindows];
     
     if (killConnectionAfterChatViewDismissal)

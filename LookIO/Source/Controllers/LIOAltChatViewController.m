@@ -479,6 +479,10 @@
     [super viewWillDisappear:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [popover dismissPopoverAnimated:NO];
+    [popover autorelease];
+    popover = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -841,7 +845,7 @@
     
     if (padUI)
     {
-        aController.modalInPopover = YES;
+        //aController.modalInPopover = YES;
         aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
@@ -863,7 +867,7 @@
     
     if (padUI)
     {
-        aController.modalInPopover = YES;
+        //aController.modalInPopover = YES;
         aController.contentSizeForViewInPopover = CGSizeMake(320.0, 240.0);
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
@@ -1187,7 +1191,7 @@
     
     LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
-    aController.modalInPopover = YES;
+    //aController.modalInPopover = YES;
     aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
     
     popover = [[UIPopoverController alloc] initWithContentViewController:aController];

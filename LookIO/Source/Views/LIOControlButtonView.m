@@ -14,7 +14,7 @@
 
 @implementation LIOControlButtonView
 
-@synthesize textColor, labelText, delegate, label, currentMode;
+@synthesize textColor, labelText, delegate, label, currentMode, spinner;
 @dynamic tintColor;
 
 - (id)initWithFrame:(CGRect)aFrame

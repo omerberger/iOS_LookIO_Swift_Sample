@@ -164,7 +164,7 @@
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
+    //scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
 /*
@@ -272,8 +272,6 @@
 {
     [scrollView scrollRectToVisible:fieldBackground.frame animated:NO];
     
-    scrollView.contentSize = CGSizeMake(self.view.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
-    
     CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
     CGRect aFrame = navBar.frame;
     aFrame.size.height = navBarHeight;
@@ -284,6 +282,8 @@
     CGFloat diff = aFrame.origin.y - scrollView.frame.origin.y;
     aFrame.size.height -= diff;
     scrollView.frame = aFrame;
+    
+    scrollView.contentSize = CGSizeMake(0.0, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
 #pragma mark -
@@ -395,6 +395,17 @@
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
+}
+
+#pragma mark -
+#pragma mark UITextFieldDelegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.view endEditing:YES];
+    [self submitButtonWasTapped];
+    
+    return NO;
 }
 
 @end
