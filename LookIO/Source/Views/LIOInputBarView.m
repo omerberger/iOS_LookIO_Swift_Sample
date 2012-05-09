@@ -83,6 +83,11 @@
             [self addSubview:adLogo];
             
             adArea = [[UIView alloc] initWithFrame:CGRectUnion(adLabel.frame, adLogo.frame)];
+            aFrame = adArea.frame;
+            aFrame.origin.y = 0.0;
+            aFrame.size.height = self.bounds.size.height;
+            adArea.frame = aFrame;
+            adArea.autoresizingMask = UIViewAutoresizingFlexibleHeight;
             adArea.backgroundColor = [UIColor clearColor];
             [self addSubview:adArea];
             
@@ -230,11 +235,18 @@
         totalLines = calculatedNumLines;
     }
     
-    /*
-    aFrame = inputField.frame;
-    aFrame.size.height = (maxLines + 1) * singleLineHeight;
-    inputField.frame = aFrame;
-    */
+    if (inputField.scrollEnabled)
+    {
+        aFrame = inputField.frame;
+        aFrame.size.height = (maxLines + 1) * singleLineHeight;
+        inputField.frame = aFrame;
+    }
+    else
+    {
+        aFrame = inputField.frame;
+        aFrame.size.height = 4800.0;
+        inputField.frame = aFrame;
+    }
     
     CGFloat minHeight = LIOInputBarViewMinHeight;
     if (padUI) minHeight = LIOInputBarViewMinHeightPad;
@@ -248,6 +260,7 @@
     {
         aFrame = inputField.frame;
         if (1 == totalLines) aFrame.origin.y = 14.0;
+        else if (inputField.scrollEnabled) aFrame.origin.y = 14.0;
         else aFrame.origin.y = 6.0;
         inputField.frame = aFrame;
     }
@@ -255,6 +268,7 @@
     {
         aFrame = inputField.frame;
         if (1 == totalLines) aFrame.origin.y = 5.0;
+        else if (inputField.scrollEnabled) aFrame.origin.y = 8.0;
         else aFrame.origin.y = 0.0;
         inputField.frame = aFrame;
     }

@@ -286,6 +286,13 @@
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
     submitButton.frame = aFrame;
     
+    CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame = textsplosion01.frame;
+    aFrame.size = restrictedSize;
+    aFrame.origin.x = header01.frame.origin.x;
+    aFrame.origin.y = header01.frame.origin.y + header01.frame.size.height + 3.0;
+    textsplosion01.frame = aFrame;
+    
     aFrame = p1Container.frame;
     aFrame.size.width = 290.0;
     aFrame.size.height = 84.0;
@@ -299,6 +306,13 @@
     aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = p1Container.frame.origin.y + p1Container.frame.size.height + 8.0;
     p2Container.frame = aFrame;
+    
+    restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame = textsplosion02.frame;
+    aFrame.size = restrictedSize;
+    aFrame.origin.x = header02.frame.origin.x;
+    aFrame.origin.y = header02.frame.origin.y + header02.frame.size.height + 3.0;
+    textsplosion02.frame = aFrame;
     
     scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }

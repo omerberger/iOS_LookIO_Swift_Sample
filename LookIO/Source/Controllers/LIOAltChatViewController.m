@@ -864,9 +864,10 @@
     if (padUI)
     {
         aController.modalInPopover = YES;
-        aController.contentSizeForViewInPopover = CGSizeMake(480.0, 350.0);
+        aController.contentSizeForViewInPopover = CGSizeMake(320.0, 240.0);
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else

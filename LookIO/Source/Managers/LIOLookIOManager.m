@@ -449,13 +449,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     backgroundTaskId = UIBackgroundTaskInvalid;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(applicationWillResignActive:)
-                                                 name:UIApplicationWillResignActiveNotification
+                                             selector:@selector(applicationDidEnterBackground:)
+                                                 name:UIApplicationDidEnterBackgroundNotification
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(applicationDidBecomeActive:)
-                                                 name:UIApplicationDidBecomeActiveNotification
+                                             selector:@selector(applicationWillEnterForeground:)
+                                                 name:UIApplicationWillEnterForegroundNotification
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -1536,6 +1536,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults synchronize];
+            
             resumeMode = NO;
             firstChatMessageSent = NO;
             resetAfterDisconnect = YES;
@@ -2481,6 +2486,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (socketConnected)
     {    
+        sessionEnding = YES;
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
         killConnectionAfterChatViewDismissal = YES;
@@ -2669,7 +2675,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #pragma mark -
 #pragma mark Notification handlers
 
-- (void)applicationWillResignActive:(NSNotification *)aNotification
+- (void)applicationDidEnterBackground:(NSNotification *)aNotification
 {
     if (UIBackgroundTaskInvalid == backgroundTaskId)
     {
@@ -2715,7 +2721,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
 }
 
-- (void)applicationDidBecomeActive:(NSNotification *)aNotification
+- (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
     if (UIBackgroundTaskInvalid != backgroundTaskId)
     {
@@ -2785,7 +2791,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
-    {        
+    {
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {

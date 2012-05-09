@@ -20,6 +20,8 @@
     [super loadView];
     UIView *rootView = self.view;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
     
     UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
@@ -203,7 +205,8 @@
         emailField.frame = aFrame;
             
         aFrame.size.width = fieldBackground.frame.size.width;
-        aFrame.size.height = 76.0;
+        if (padUI) aFrame.size.height = 97.0;
+        else aFrame.size.height = 76.0;
         aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 15.0;
         aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
         messageBackground.frame = aFrame;
@@ -211,7 +214,8 @@
         aFrame.origin.x = 1.0;
         aFrame.origin.y = 3.0;
         aFrame.size.width = messageBackground.frame.size.width - 10.0;
-        aFrame.size.height = 73.0;
+        if (padUI) aFrame.size.height = 90.0;
+        else aFrame.size.height = 73.0;
         messageView.frame = aFrame;
         
         submitButton.bounds = fieldBackground.bounds;

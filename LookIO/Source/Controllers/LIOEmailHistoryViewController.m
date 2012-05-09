@@ -159,7 +159,7 @@
     aFrame = submitButton.frame;
     aFrame.size.width = self.view.bounds.size.width - 20.0;
     aFrame.origin.x = 10.0; //(rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
+    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 8.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
