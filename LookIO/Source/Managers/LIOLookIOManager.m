@@ -39,7 +39,8 @@
 // Misc. constants
 #define LIOLookIOManagerVersion @"1.1.0"
 
-#define LIOLookIOManagerScreenCaptureInterval   0.5
+#define LIOLookIOManagerScreenCaptureInterval       0.5
+#define LIOLookIOManagerContinuationReportInterval  300.0 // 5 minutes
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
@@ -51,6 +52,7 @@
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
 #define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
+#define LIOLookIOManagerAppContinueRequestURL   @"api/v1/app/continue"
 #define LIOLookIOManagerLogUploadRequestURL     @"api/v1/app/log"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
@@ -97,10 +99,10 @@
     UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *targetAgentId;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
-    NSMutableURLRequest *appLaunchRequest;
-    NSURLConnection *appLaunchRequestConnection;
-    NSMutableData *appLaunchRequestData;
-    NSInteger appLaunchRequestResponseCode;
+    NSMutableURLRequest *appLaunchRequest, *appContinueRequest;
+    NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection;
+    NSMutableData *appLaunchRequestData, *appContinueRequestData;
+    NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode;
     LIOAltChatViewController *altChatViewController;
     LIOEmailHistoryViewController *emailHistoryViewController;
     LIOLeaveMessageViewController *leaveMessageViewController;
@@ -122,11 +124,10 @@
     NSDate *backgroundedTime;
     CLLocation *lastKnownLocation;
     NSString *overriddenEndpoint;
-    LIOTimerProxy *reconnectionTimer;
+    LIOTimerProxy *reconnectionTimer, *reintroTimeoutTimer, *continuationTimer;
     NSUInteger previousReconnectionTimerStep;
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
-    LIOTimerProxy *reintroTimeoutTimer;
     UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
     id<LIOLookIOManagerDelegate> delegate;
 }
@@ -330,6 +331,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)sendContinuationReport
+{
+    if (appContinueRequestConnection)
+        return;
+    
+    if ([overriddenEndpoint length])
+    {
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerAppContinueRequestURL]];
+        [appContinueRequest setURL:url];
+    }
+    else
+    {
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppContinueRequestURL]];
+        [appContinueRequest setURL:url];
+    }
+    
+    // Send it! ... if we have Internets, that is.
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
+        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
+        [appContinueRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+        LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictWwwFormEncoded);
+        appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
+    }
+}
+
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
@@ -445,6 +474,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     appLaunchRequestData = [[NSMutableData alloc] init];
     appLaunchRequestResponseCode = -1;
+    
+    appContinueRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                      cachePolicy:NSURLCacheStorageNotAllowed
+                                                  timeoutInterval:10.0];
+    [appContinueRequest setHTTPMethod:@"POST"];
+    [appContinueRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    appContinueRequestData = [[NSMutableData alloc] init];
+    appContinueRequestResponseCode = -1;
+    
+    continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerContinuationReportInterval
+                                                             target:self
+                                                           selector:@selector(continuationTimerDidFire)];
         
     backgroundTaskId = UIBackgroundTaskInvalid;
     
@@ -602,6 +643,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [appLaunchRequest release];
     [appLaunchRequestConnection release];
     [appLaunchRequestData release];
+    [appContinueRequest release];
+    [appContinueRequestConnection release];
+    [appContinueRequestData release];
     [lastKnownButtonVisibility release];
     [lastKnownButtonText release];
     [lastKnownButtonTintColor release];
@@ -618,6 +662,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
     reconnectionTimer = nil;
+    
+    [continuationTimer stopTimer];
+    [continuationTimer release];
+    continuationTimer = nil;
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -2074,6 +2122,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Session forcibly terminated. Reason: reintro process took too long!");
 }
 
+- (void)continuationTimerDidFire
+{
+    [self sendContinuationReport];
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate_LIO methods
 
@@ -2961,6 +3014,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
         }
     }
+    else if (appContinueRequestConnection == connection)
+    {
+        [appContinueRequestData setData:[NSData data]];
+        appContinueRequestResponseCode = [httpResponse statusCode];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -2968,6 +3026,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appLaunchRequestConnection == connection)
     {
         [appLaunchRequestData appendData:data];
+    }
+    else if (appContinueRequestConnection == connection)
+    {
+        [appContinueRequestData appendData:data];
     }
 }
 
@@ -2986,6 +3048,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         appLaunchRequestResponseCode = -1;
     }
+    else if (appContinueRequestConnection == connection)
+    {
+        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease]];
+        LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseDict);
+        
+        NSDictionary *params = [responseDict objectForKey:@"response"];
+        [self parseAndSaveClientParams:params];
+        
+        [appContinueRequestConnection release];
+        appContinueRequestConnection = nil;
+        
+        appContinueRequestResponseCode = -1;
+    }
+    
+    [self refreshControlButtonVisibility];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
@@ -3003,8 +3080,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = nil;
         
-        [self refreshControlButtonVisibility];
+        
     }
+    else if (appContinueRequestConnection == connection)
+    {
+        LIOLog(@"<CONTINUE> Failed. Reason: %@", [error localizedDescription]);
+        
+        [appContinueRequestConnection release];
+        appLaunchRequestConnection = nil;
+        
+        appLaunchRequestResponseCode = -1;
+        
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+        [lastKnownEnabledStatus release];
+        lastKnownEnabledStatus = nil;
+    }
+    
+    [self refreshControlButtonVisibility];
 }
 
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace
