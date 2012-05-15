@@ -11,9 +11,6 @@
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
 
-#define LIOInputBarViewMinHeight    35.0
-#define LIOInputBarViewMinHeightPad 50.0
-
 @implementation LIOInputBarView
 
 @synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea;
@@ -144,8 +141,8 @@
         placeholderText.text = @"Send a message.";
         [placeholderText sizeToFit];
         aFrame = placeholderText.frame;
-        aFrame.origin.x = 8.0;
-        aFrame.origin.y = 7.0;
+        aFrame.origin.x = 9.0;
+        aFrame.origin.y = 7.5;
         placeholderText.frame = aFrame;
         [inputField addSubview:placeholderText];
         
@@ -272,9 +269,9 @@
     else
     {
         aFrame = inputField.frame;
-        if (1 == totalLines) aFrame.origin.y = 5.0;
+        if (1 == totalLines) aFrame.origin.y = 7.0;
         else if (inputField.scrollEnabled) aFrame.origin.y = 8.0;
-        else aFrame.origin.y = 0.0;
+        else aFrame.origin.y = 2.0;
         inputField.frame = aFrame;
     }
     

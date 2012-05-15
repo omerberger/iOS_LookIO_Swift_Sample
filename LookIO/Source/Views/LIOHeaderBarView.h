@@ -11,7 +11,7 @@
 #define LIOHeaderBarViewDefaultHeight               40.0
 #define LIOHeaderBarViewDefaultNotificationDuration 5.0
 
-@class LIOHeaderBarView, LIOTimerProxy;
+@class LIOHeaderBarView, LIOTimerProxy, LIOAnimatedKeyboardIcon;
 
 @protocol LIOHeaderBarViewDelegate
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
@@ -23,6 +23,8 @@
     UIView *tappableBackground;
     UIView *separator;
     LIOTimerProxy *notificationTimer, *animatedEllipsisTimer;
+    LIOAnimatedKeyboardIcon *keyboardIcon;
+    
     id<LIOHeaderBarViewDelegate> delegate;
 }
 

@@ -721,7 +721,7 @@
     if (nil == headerBar)
         return;
         
-    [headerBar revealNotificationString:aString animatedEllipsis:YES];
+    [headerBar revealNotificationString:aString animatedEllipsis:animatedEllipsis];
 }
 
 #pragma mark -
@@ -907,7 +907,8 @@
     if (touchLocation.y > 0.0)
     {
         [self.view endEditing:YES];
-        [self reloadMessages];
+        currentScrollId = 0;
+        //[self reloadMessages];
     }
 }
 
@@ -940,6 +941,9 @@
         return;
     
     keyboardShowing = YES;
+    
+    [tableView.layer removeAllAnimations];
+    currentScrollId = 0;
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -1018,6 +1022,9 @@
     
     keyboardShowing = NO;
     
+    [tableView.layer removeAllAnimations];
+    currentScrollId = 0;
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -1060,7 +1067,9 @@
             jitterCorrection = 32.0;
         }
         else
+        {
             tableFrame.size.height += keyboardHeight - 15.0;
+        }
     }
     else
     {
@@ -1337,7 +1346,6 @@
     }
     
     agentTyping = aBool;
-    dismissalBar.keyboardIconActive = agentTyping;
 }
 
 #pragma mark -

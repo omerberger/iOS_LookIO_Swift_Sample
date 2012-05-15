@@ -23,6 +23,8 @@
 #define LIOInputBarViewMaxLinesLandscape    2
 #define LIOInputBarViewMaxTextLength        150
 #define LIOInputBarViewMaxTextLength_iPad   300
+#define LIOInputBarViewMinHeight            37.0
+#define LIOInputBarViewMinHeightPad         50.0
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {

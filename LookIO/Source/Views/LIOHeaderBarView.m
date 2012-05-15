@@ -11,6 +11,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOBundleManager.h"
 #import "LIOTimerProxy.h"
+#import "LIOAnimatedKeyboardIcon.h"
 
 #define LIOHeaderBarViewNotificationLabelTag 2749
 
@@ -91,6 +92,13 @@
         tappableBackground.backgroundColor = [UIColor clearColor];
         [tappableBackground addGestureRecognizer:tapper];
         [self addSubview:tappableBackground];
+        
+        keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didChangeStatusBarOrientation:)
+                                                     name:UIApplicationDidChangeStatusBarOrientationNotification
+                                                   object:nil];
     }
     
     return self;
@@ -98,6 +106,8 @@
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     [defaultNotification release];
     [separator release];
     [tappableBackground release];
@@ -107,6 +117,8 @@
     
     [animatedEllipsisTimer stopTimer];
     [animatedEllipsisTimer release];
+    
+    [keyboardIcon release];
     
     [super dealloc];
 }
@@ -260,7 +272,24 @@
     animatedEllipsisTimer = nil;
     
     if (animated)
+    {
         animatedEllipsisTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.5 target:self selector:@selector(animatedEllipsisTimerDidFire)];
+        
+        UILabel *notificationLabel = (UILabel *)[activeNotification viewWithTag:LIOHeaderBarViewNotificationLabelTag];
+        
+        CGRect aFrame = keyboardIcon.frame;
+        aFrame.origin.x = notificationLabel.frame.origin.x - aFrame.size.width - 10.0;
+        aFrame.origin.y = (activeNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 3.0;
+        keyboardIcon.frame = aFrame;
+        keyboardIcon.animating = YES;
+        
+        [activeNotification addSubview:keyboardIcon];
+    }
+    else
+    {
+        [keyboardIcon removeFromSuperview];
+        keyboardIcon.animating = NO;
+    }
 }
 
 - (void)dismissActiveNotification
@@ -311,6 +340,26 @@
          aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 1, 1) withString:@".."];
     
     [aLabel setNeedsDisplay];
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)didChangeStatusBarOrientation:(NSNotification *)aNotification
+{
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (activeNotification)
+        {
+            UILabel *notificationLabel = (UILabel *)[activeNotification viewWithTag:LIOHeaderBarViewNotificationLabelTag];
+            
+            CGRect aFrame = keyboardIcon.frame;
+            aFrame.origin.x = notificationLabel.frame.origin.x - aFrame.size.width - 10.0;
+            aFrame.origin.y = (activeNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 3.0;
+            keyboardIcon.frame = aFrame;
+        }
+    });
 }
 
 #pragma mark -
