@@ -6,14 +6,12 @@
 //  Copyright (c) 2012 LookIO, Inc. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
 #import "LIOHeaderBarView.h"
 #import "LIOLookIOManager.h"
-#import <QuartzCore/QuartzCore.h>
 #import "LIOBundleManager.h"
 #import "LIOTimerProxy.h"
-#import "LIOAnimatedKeyboardIcon.h"
-
-#define LIOHeaderBarViewNotificationLabelTag 2749
+#import "LIONotificationArea.h"
 
 @implementation LIOHeaderBarView
 
@@ -38,6 +36,8 @@
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:separator];
                 
+        //notificationArea = 
+        
         defaultNotification = [[UIView alloc] initWithFrame:self.bounds];
         aFrame = defaultNotification.frame;
         aFrame.size.height = 32.0;

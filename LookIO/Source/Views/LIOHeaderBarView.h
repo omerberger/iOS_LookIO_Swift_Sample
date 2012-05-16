@@ -8,10 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOHeaderBarViewDefaultHeight               40.0
-#define LIOHeaderBarViewDefaultNotificationDuration 5.0
+#define LIOHeaderBarViewDefaultHeight   40.0
 
-@class LIOHeaderBarView, LIOTimerProxy, LIOAnimatedKeyboardIcon;
+@class LIOHeaderBarView, LIOTimerProxy, LIONotificationArea;
 
 @protocol LIOHeaderBarViewDelegate
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
@@ -19,17 +18,12 @@
 
 @interface LIOHeaderBarView : UIView
 {
-    UIView *defaultNotification, *activeNotification;
     UIView *tappableBackground;
     UIView *separator;
-    LIOTimerProxy *notificationTimer, *animatedEllipsisTimer;
-    LIOAnimatedKeyboardIcon *keyboardIcon;
-    
+    LIONotificationArea *notificationArea;
     id<LIOHeaderBarViewDelegate> delegate;
 }
 
 @property(nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
-
-- (void)revealNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animated;
 
 @end

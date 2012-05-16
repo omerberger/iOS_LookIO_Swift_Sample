@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIONotificationAreaDefaultNotificationDuration 5.0
+#define LIONotificationAreaDefaultNotificationDuration  5.0
+#define LIOHeaderBarViewNotificationLabelTag            2749
 
 @class LIOAnimatedKeyboardIcon, LIOTimerProxy;
 
@@ -18,5 +19,7 @@
     LIOTimerProxy *notificationTimer, *animatedEllipsisTimer;
     LIOAnimatedKeyboardIcon *keyboardIcon;
 }
+
+- (void)revealNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animated;
 
 @end

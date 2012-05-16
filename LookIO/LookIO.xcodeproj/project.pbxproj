@@ -11,6 +11,8 @@
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
+		D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE7981563274B006DFE81 /* LIONotificationArea.h */; };
+		D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE7991563274B006DFE81 /* LIONotificationArea.m */; };
 		D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */; };
 		D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */; };
 		D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */; };
@@ -91,6 +93,8 @@
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
+		D42DE7981563274B006DFE81 /* LIONotificationArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONotificationArea.h; path = Source/Views/LIONotificationArea.h; sourceTree = "<group>"; };
+		D42DE7991563274B006DFE81 /* LIONotificationArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONotificationArea.m; path = Source/Views/LIONotificationArea.m; sourceTree = "<group>"; };
 		D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedKeyboardIcon.h; path = Source/Views/LIOAnimatedKeyboardIcon.h; sourceTree = "<group>"; };
 		D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnimatedKeyboardIcon.m; path = Source/Views/LIOAnimatedKeyboardIcon.m; sourceTree = "<group>"; };
 		D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMapBubbleView.h; path = Source/Views/LIOMapBubbleView.h; sourceTree = "<group>"; };
@@ -236,6 +240,8 @@
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
 				D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */,
 				D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */,
+				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
+				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -412,6 +418,7 @@
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
 				D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */,
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
+				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,6 +527,7 @@
 				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
 				D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */,
 				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
+				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
