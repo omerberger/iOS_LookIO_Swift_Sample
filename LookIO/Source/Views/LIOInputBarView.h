@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOInputBarView;
+@class LIOInputBarView, LIONotificationArea;
 
 @protocol LIOInputBarViewDelegate
 - (void)inputBarView:(LIOInputBarView *)aView didChangeNumberOfLines:(NSInteger)numLinesDelta;
@@ -28,24 +28,28 @@
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
-    UILabel *adLabel;
-    UIImageView *adLogo;
+    //UILabel *adLabel;
+    //UIImageView *adLogo;
+    //UIView *adArea;
     UIButton *sendButton;
     UITextView *inputField;
     UIImageView *inputFieldBackground;
     CGFloat singleLineHeight;
     NSInteger totalLines;
     CGFloat desiredHeight;
-    UIView *adArea;
     UILabel *characterCount;
     UILabel *placeholderText;
+    LIONotificationArea *notificationArea;
     id<LIOInputBarViewDelegate> delegate;
 }
+
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;
 @property(nonatomic, readonly) UITextView *inputField;
 @property(nonatomic, readonly) CGFloat desiredHeight;
 @property(nonatomic, readonly) UIView *adArea;
+@property(nonatomic, readonly) LIONotificationArea *notificationArea;
 
 @end

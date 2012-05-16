@@ -20,6 +20,7 @@
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
 #import "TTTAttributedLabel.h"
+#import "LIONotificationArea.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -724,12 +725,14 @@
     return inputBar.inputField.text;
 }
 
-- (void)presentNotificationString:(NSString *)aString animatedEllipsis:(BOOL)animatedEllipsis
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated
 {
-    if (nil == headerBar)
-        return;
-        
-    [headerBar revealNotificationString:aString animatedEllipsis:animatedEllipsis];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (padUI)
+        [inputBar revealNotificationString:aString withAnimatedKeyboard:animated];
+    else
+        [headerBar revealNotificationString:aString withAnimatedKeyboard:animated];
 }
 
 #pragma mark -
@@ -1212,7 +1215,7 @@
     aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
     
     popover = [[UIPopoverController alloc] initWithContentViewController:aController];
-    [popover presentPopoverFromRect:inputBar.adArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+    [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 #pragma mark -
@@ -1346,11 +1349,11 @@
 {
     if (NO == agentTyping && aBool)
     {
-        [self presentNotificationString:@"Agent is typing..." animatedEllipsis:YES];
+        [self revealNotificationString:@"Agent is typing..." withAnimatedKeyboard:YES];
     }
     else if (agentTyping && NO == aBool)
     {
-        [self presentNotificationString:nil animatedEllipsis:NO];
+        [self revealNotificationString:nil withAnimatedKeyboard:NO];
     }
     
     agentTyping = aBool;

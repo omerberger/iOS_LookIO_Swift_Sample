@@ -10,10 +10,11 @@
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
+#import "LIONotificationArea.h"
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -59,44 +60,20 @@
         
         if (padUI)
         {
-            adLabel = [[UILabel alloc] init];
-            adLabel.backgroundColor = [UIColor clearColor];
-            adLabel.font = [UIFont boldSystemFontOfSize:12.0];
-            adLabel.textColor = [UIColor whiteColor];
-            adLabel.text = @"powered by";
-            [adLabel sizeToFit];
-            CGRect aFrame = adLabel.frame;
-            aFrame.origin.x = 15.0;
-            aFrame.origin.y = (self.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            adLabel.frame = aFrame;
-            adLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-            [self addSubview:adLabel];
-            
-            adLogo = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]];
-            aFrame = adLogo.frame;
-            aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 3.0;
-            aFrame.origin.y = (self.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            adLogo.frame = aFrame;
-            adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-            [self addSubview:adLogo];
-            
-            adArea = [[UIView alloc] initWithFrame:CGRectUnion(adLabel.frame, adLogo.frame)];
-            aFrame = adArea.frame;
-            aFrame.origin.y = 0.0;
-            aFrame.size.height = self.bounds.size.height;
-            adArea.frame = aFrame;
-            adArea.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-            adArea.backgroundColor = [UIColor clearColor];
-            [self addSubview:adArea];
+            CGRect notificationAreaFrame = CGRectZero;
+            notificationAreaFrame.size.width = 160.0;
+            notificationAreaFrame.size.height = self.bounds.size.height;
+            notificationArea = [[LIONotificationArea alloc] initWithFrame:notificationAreaFrame];
+            [self addSubview:notificationArea];
             
             UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleAdAreaTap:)] autorelease];
-            [adArea addGestureRecognizer:tapper];
+            [notificationArea addGestureRecognizer:tapper];
         }
         
         CGRect inputFieldBackgroundFrame = CGRectZero;
         if (padUI)
         {
-            inputFieldBackgroundFrame.origin.x = adLogo.frame.origin.x + adLogo.frame.size.width + 20.0;
+            inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width/* + 20.0*/;
             inputFieldBackgroundFrame.size.width = 450.0;
             inputFieldBackgroundFrame.size.height = 50.0;
             inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
@@ -166,9 +143,11 @@
     [sendButton release];
     [inputField release];
     [inputFieldBackground release];
+    /*
     [adLabel release];
     [adLogo release];
     [adArea release];
+    */
     [characterCount release];
     [placeholderText release];
     
@@ -306,6 +285,12 @@
     }
     
     placeholderText.hidden = [inputField.text length] > 0;
+}
+
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated
+{
+    notificationArea.keyboardIconVisible = animated;
+    [notificationArea revealNotificationString:aString];
 }
 
 #pragma mark -
