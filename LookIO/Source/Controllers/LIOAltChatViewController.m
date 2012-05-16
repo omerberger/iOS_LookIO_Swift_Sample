@@ -426,7 +426,7 @@
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
     if (NO == padUI)
-        [self scrollToBottom];
+        [self scrollToBottomDelayed:YES];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -513,7 +513,7 @@
     [self reloadMessages];
     
     if (NO == padUI)
-        [self scrollToBottom];
+        [self scrollToBottomDelayed:NO];
 }
 
 - (void)rejiggerTableViewFrame
@@ -594,7 +594,7 @@
                          completion:^(BOOL finished) {
                              tableView.layer.transform = CATransform3DIdentity;
                              tableView.layer.anchorPoint = CGPointMake(0.5, 0.5);
-                             [self scrollToBottom];
+                             [self scrollToBottomDelayed:YES];
                              [self rejiggerTableViewFrame];
                          }];
     }
@@ -661,20 +661,28 @@
                      }];
 }
 
-- (void)scrollToBottom
+- (void)scrollToBottomDelayed:(BOOL)delayed
 {
     NSUInteger myScrollId = arc4random();
     currentScrollId = myScrollId;
     
-    double delayInSeconds = 0.75;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(){
-        if (myScrollId == currentScrollId)
-        {
-            NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
-            [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        }
-    });
+    if (delayed)
+    {
+        double delayInSeconds = 0.75;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(){
+            if (myScrollId == currentScrollId)
+            {
+                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
+                [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+            }
+        });
+    }
+    else
+    {
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
+        [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+    }
 }
 
 - (void)reloadMessages
@@ -1012,7 +1020,7 @@
     [self reloadMessages];
     
     if (nil == popover)
-        [self scrollToBottom];
+        [self scrollToBottomDelayed:NO];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification

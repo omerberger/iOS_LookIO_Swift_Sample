@@ -27,13 +27,15 @@
     bezel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:1.0];
     bezel.layer.cornerRadius = 6.0;
     //bezel.layer.masksToBounds = YES;
+    /*
     bezel.layer.shadowColor = [UIColor whiteColor].CGColor;
     bezel.layer.shadowOffset = CGSizeMake(0.0, 0.0);
     bezel.layer.shadowOpacity = 0.75;
-    bezel.layer.shadowRadius = 4.0;
+    bezel.layer.shadowRadius = 1.0;
+    */
     CGRect aFrame = bezel.frame;
     aFrame.size.height = 75.0;
-    aFrame.size.width = 200.0;
+    aFrame.size.width = 175.0;
     aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = (self.view.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
     bezel.frame = aFrame;
@@ -43,43 +45,49 @@
     UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
     aFrame = spinner.frame;
     aFrame.origin.x = (bezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = 18.0;
+    aFrame.origin.y = 10.0;
     spinner.frame = aFrame;
     [spinner startAnimating];
     [bezel addSubview:spinner];
     
     UILabel *label = [[[UILabel alloc] init] autorelease];
-    label.font = [UIFont systemFontOfSize:16.0];
+    label.font = [UIFont systemFontOfSize:13.0];
     label.textColor = [UIColor whiteColor];
     label.backgroundColor = [UIColor clearColor];
-    label.text = @"One moment, please...";
+    label.text = @"We're loading the chat.\nGive us just a few. :)";
+    label.textAlignment = UITextAlignmentCenter;
+    label.numberOfLines = 2;
     [label sizeToFit];
     aFrame = label.frame;
     aFrame.origin.x = (bezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height;
+    aFrame.origin.y = spinner.frame.origin.y + spinner.frame.size.height + 2.0;
     label.frame = aFrame;
     [bezel addSubview:label];
     
     dismissButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    dismissButton.layer.borderColor = [UIColor whiteColor].CGColor;
-    dismissButton.layer.borderWidth = 1.0;
-    dismissButton.layer.cornerRadius = 5.0;
+    dismissButton.layer.borderColor = [UIColor blackColor].CGColor;
+    dismissButton.layer.borderWidth = 1.5;
+    dismissButton.layer.cornerRadius = 7.0;
     dismissButton.layer.masksToBounds = YES;
-    dismissButton.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.9];
-    dismissButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    dismissButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    dismissButton.titleLabel.layer.shadowOpacity = 0.8;
-    dismissButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [dismissButton setTitle:@"Hide" forState:UIControlStateNormal];
+    dismissButton.titleLabel.font = [UIFont systemFontOfSize:14.0];
+    [dismissButton setTitle:@"Let's just hide this for now" forState:UIControlStateNormal];
     [dismissButton addTarget:self action:@selector(dismissButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = dismissButton.frame;
-    aFrame.size.width = 92.0;
-    aFrame.size.height = 32.0;
+    aFrame.size.width = bezel.frame.size.width + 40.0;
+    aFrame.size.height = 35.0;
     aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 30.0;
+    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 15.0;
     dismissButton.frame = aFrame;
     dismissButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [self.view addSubview:dismissButton];
+    
+    // 119 -> 41
+    CGColorRef startColor = [UIColor colorWithWhite:(150.0/255.0) alpha:0.75].CGColor;
+    CGColorRef endColor = [UIColor colorWithWhite:(41.0/255.0) alpha:0.75].CGColor;
+    CAGradientLayer *gradientLayer = [[[CAGradientLayer alloc] init] autorelease];
+    gradientLayer.frame = dismissButton.bounds;
+    gradientLayer.colors = [NSArray arrayWithObjects:(id)startColor, (id)endColor, nil];
+    [dismissButton.layer insertSublayer:gradientLayer atIndex:0];
 }
 
 - (void)viewDidLoad
@@ -143,10 +151,8 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     CGRect aFrame = dismissButton.frame;
-    aFrame.size.width = 92.0;
-    aFrame.size.height = 32.0;
     aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 30.0;
+    aFrame.origin.y = bezel.frame.origin.y + bezel.frame.size.height + 15.0;
     dismissButton.frame = aFrame;
     
     dismissButton.hidden = NO;

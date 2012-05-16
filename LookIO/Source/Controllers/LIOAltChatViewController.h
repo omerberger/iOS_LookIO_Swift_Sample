@@ -73,7 +73,7 @@
 @property(nonatomic, assign, getter=isAgentTyping) BOOL agentTyping;
 
 - (void)reloadMessages;
-- (void)scrollToBottom;
+- (void)scrollToBottomDelayed:(BOOL)delayed;
 - (void)performRevealAnimation;
 - (void)performDismissalAnimation;
 - (void)showReconnectionOverlay;

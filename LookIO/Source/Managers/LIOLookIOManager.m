@@ -1299,7 +1299,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
         {
             [altChatViewController reloadMessages];
-            [altChatViewController scrollToBottom];
+            [altChatViewController scrollToBottomDelayed:YES];
         }
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
@@ -2331,7 +2331,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatHistory addObject:newMessage];
     
     [altChatViewController reloadMessages];
-    [altChatViewController scrollToBottom];
+    [altChatViewController scrollToBottomDelayed:YES];
     
     firstChatMessageSent = YES;
 }
