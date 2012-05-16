@@ -66,7 +66,7 @@
     
     dismissButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     dismissButton.layer.borderColor = [UIColor blackColor].CGColor;
-    dismissButton.layer.borderWidth = 1.5;
+    dismissButton.layer.borderWidth = 1.0;
     dismissButton.layer.cornerRadius = 7.0;
     dismissButton.layer.masksToBounds = YES;
     dismissButton.titleLabel.font = [UIFont systemFontOfSize:14.0];
