@@ -225,11 +225,11 @@
     
     aboutButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [aboutButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-    aboutButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    aboutButton.titleLabel.font = [UIFont boldSystemFontOfSize:10.0];
     aboutButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     aboutButton.titleLabel.layer.shadowOpacity = 0.8;
     aboutButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [aboutButton setTitle:@"About LookIO" forState:UIControlStateNormal];
+    [aboutButton setTitle:@"About LP Mobile" forState:UIControlStateNormal];
     [aboutButton addTarget:self action:@selector(aboutButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     CGRect aFrame = aboutButton.frame;
     aFrame.size.width = 92.0;

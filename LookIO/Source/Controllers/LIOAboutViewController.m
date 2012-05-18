@@ -46,17 +46,17 @@
     aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"About LookIO"] autorelease];
+    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"About LP Mobile"] autorelease];
     UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
     anItem.leftBarButtonItem = closeItem;
     [navBar pushNavigationItem:anItem animated:NO];
     navBar.delegate = self;
     [self.view addSubview:navBar];
     
-    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
+    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
     aFrame = logoView.frame;
-    aFrame.size.width = 154.0;
-    aFrame.size.height = 44.0;
+    aFrame.size.width = 215.0;
+    aFrame.size.height = 47.0;
     aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = navBar.frame.size.height + 10.0;
     logoView.frame = aFrame;
@@ -187,7 +187,7 @@
     [p1Container addSubview:bubbleIcon];
     
     header01 = [[UILabel alloc] init];
-    header01.text = @"About LookIO";
+    header01.text = @"About LP Mobile";
     header01.textColor = [UIColor whiteColor];
     header01.backgroundColor = [UIColor clearColor];
     header01.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -202,7 +202,7 @@
     [p1Container addSubview:header01];
     
     textsplosion01 = [[UILabel alloc] init];
-    textsplosion01.text = @"LookIO enables developers to easily integrate live chat with visual feedback into any mobile application. It is all done with a simple SDK and one line of code.";
+    textsplosion01.text = @"LP Mobile enables developers to easily integrate live chat with visual feedback into any mobile application. It is all done with a simple SDK and one line of code.";
     textsplosion01.textColor = altBlue;
     textsplosion01.backgroundColor = [UIColor clearColor];
     textsplosion01.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -250,7 +250,7 @@
     [p2Container addSubview:header02];
     
     textsplosion02 = [[UILabel alloc] init];
-    textsplosion02.text = @"LookIO agents are only able to interact with the app that you're in & only if you accept or initiate a help session. Ending the session ends the access the agent has to your app.";
+    textsplosion02.text = @"LP Mobile agents are only able to interact with the app that you're in & only if you accept or initiate a help session. Ending the session ends the access the agent has to your app.";
     textsplosion02.textColor = altBlue;
     textsplosion02.backgroundColor = [UIColor clearColor];
     textsplosion02.layer.shadowColor = [UIColor blackColor].CGColor;

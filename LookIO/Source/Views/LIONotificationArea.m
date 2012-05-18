@@ -88,14 +88,14 @@
             adLabel.backgroundColor = [UIColor clearColor];
             adLabel.font = [UIFont boldSystemFontOfSize:12.0];
             adLabel.textColor = [UIColor whiteColor];
-            adLabel.text = @"Live Chat Powered by";
+            adLabel.text = @"Powered by";
             [adLabel sizeToFit];
             aFrame = adLabel.frame;
             aFrame.origin.x = 0.0;
             aFrame.origin.y = 8.0;
             adLabel.frame = aFrame;
             
-            UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]] autorelease];
+            UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
             aFrame = tinyLogo.frame;
             aFrame.origin.y = 8.0;
             aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 5.0;

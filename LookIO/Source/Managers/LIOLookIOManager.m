@@ -1584,7 +1584,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             agentsAvailable = YES;
             
             [altChatViewController hideReconnectionOverlay];
-            [self showChatAnimated:YES];
+            //[self showChatAnimated:YES];
         }
         else
         {
