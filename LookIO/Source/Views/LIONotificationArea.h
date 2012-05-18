@@ -23,6 +23,6 @@
 
 @property(nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
 
-- (void)revealNotificationString:(NSString *)aString;
+- (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent;
 
 @end

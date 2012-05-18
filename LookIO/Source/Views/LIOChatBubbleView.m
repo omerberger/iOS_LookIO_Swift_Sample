@@ -47,7 +47,12 @@ static NSDataDetector *dataDetector = nil;
         [self addGestureRecognizer:aLongPresser];
         
         if (nil == dataDetector)
-            dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
+        {
+            if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
+                dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
+            else
+                dataDetector = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
+        }
         
         linkMessageViews = [[NSMutableArray alloc] init];
         links = [[NSMutableArray alloc] init];

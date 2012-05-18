@@ -287,10 +287,10 @@
     placeholderText.hidden = [inputField.text length] > 0;
 }
 
-- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent
 {
     notificationArea.keyboardIconVisible = animated;
-    [notificationArea revealNotificationString:aString];
+    [notificationArea revealNotificationString:aString permanently:permanent];
 }
 
 #pragma mark -

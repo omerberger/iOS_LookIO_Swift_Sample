@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -17,6 +17,7 @@
 @protocol LIOEmailHistoryViewControllerDelegate;
 @protocol LIOLeaveMessageViewControllerDelegate;
 @protocol LIOChatBubbleViewDelegate;
+@protocol LIOToasterViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -42,7 +43,8 @@
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
-     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate>
+     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
+     LIOToasterViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -63,6 +65,9 @@
     NSUInteger currentScrollId;
     NSMutableArray *chatBubbleHeights;
     UIView *tappableDismissalAreaForPadUI;
+    LIOToasterView *toasterView;
+    NSString *pendingNotificationString;
+    BOOL pendingNotificationStringIsTypingNotification;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

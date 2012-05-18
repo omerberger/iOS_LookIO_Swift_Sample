@@ -43,7 +43,7 @@
     id<LIOInputBarViewDelegate> delegate;
 }
 
-- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;

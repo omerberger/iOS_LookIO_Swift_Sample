@@ -13,6 +13,8 @@
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
 		D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE7981563274B006DFE81 /* LIONotificationArea.h */; };
 		D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE7991563274B006DFE81 /* LIONotificationArea.m */; };
+		D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE8031565B869006DFE81 /* LIOToasterView.h */; };
+		D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE8041565B869006DFE81 /* LIOToasterView.m */; };
 		D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */; };
 		D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */; };
 		D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */; };
@@ -95,6 +97,8 @@
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
 		D42DE7981563274B006DFE81 /* LIONotificationArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONotificationArea.h; path = Source/Views/LIONotificationArea.h; sourceTree = "<group>"; };
 		D42DE7991563274B006DFE81 /* LIONotificationArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONotificationArea.m; path = Source/Views/LIONotificationArea.m; sourceTree = "<group>"; };
+		D42DE8031565B869006DFE81 /* LIOToasterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOToasterView.h; path = Source/Views/LIOToasterView.h; sourceTree = "<group>"; };
+		D42DE8041565B869006DFE81 /* LIOToasterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOToasterView.m; path = Source/Views/LIOToasterView.m; sourceTree = "<group>"; };
 		D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedKeyboardIcon.h; path = Source/Views/LIOAnimatedKeyboardIcon.h; sourceTree = "<group>"; };
 		D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnimatedKeyboardIcon.m; path = Source/Views/LIOAnimatedKeyboardIcon.m; sourceTree = "<group>"; };
 		D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMapBubbleView.h; path = Source/Views/LIOMapBubbleView.h; sourceTree = "<group>"; };
@@ -242,6 +246,8 @@
 				D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
+				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
+				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -419,6 +425,7 @@
 				D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */,
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
+				D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -528,6 +535,7 @@
 				D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */,
 				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
 				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
+				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

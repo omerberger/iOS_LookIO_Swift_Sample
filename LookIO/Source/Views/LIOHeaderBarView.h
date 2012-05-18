@@ -26,6 +26,6 @@
 
 @property(nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
 
-- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
+- (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 
 @end

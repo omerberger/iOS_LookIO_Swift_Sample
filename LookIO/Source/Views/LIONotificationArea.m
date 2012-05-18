@@ -249,7 +249,7 @@
                      }];
 }
 
-- (void)revealNotificationString:(NSString *)aString
+- (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -312,9 +312,12 @@
                                           }];
                      }];
     
-    notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaDefaultNotificationDuration
-                                                             target:self
-                                                           selector:@selector(notificationTimerDidFire)];
+    if (NO == permanent)
+    {
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaDefaultNotificationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+    }
     
     [animatedEllipsisTimer stopTimer];
     [animatedEllipsisTimer release];

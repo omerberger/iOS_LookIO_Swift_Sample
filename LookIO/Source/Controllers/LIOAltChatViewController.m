@@ -21,6 +21,7 @@
 #import "LIOLogManager.h"
 #import "TTTAttributedLabel.h"
 #import "LIONotificationArea.h"
+#import "LIOToasterView.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -132,6 +133,7 @@
     tableView.showsVerticalScrollIndicator = NO;
     tableView.showsHorizontalScrollIndicator = NO;
     tableView.autoresizingMask = tableViewAutoresizing;
+    tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
 
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
@@ -206,6 +208,16 @@
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleHeaderBarTap:)] autorelease];
         [headerBar addGestureRecognizer:tapper];
+    }
+    else
+    {
+        toasterView = [[LIOToasterView alloc] init];
+        toasterView.delegate = self;
+        toasterView.yOrigin = self.view.bounds.size.height - 60.0;
+        CGRect aFrame = toasterView.frame;
+        aFrame.origin.x = -500.0;
+        toasterView.frame = aFrame;
+        [self.view addSubview:toasterView];
     }
     
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
@@ -377,6 +389,9 @@
     
     [dismissButton release];
     dismissButton = nil;
+    
+    [toasterView release];
+    toasterView = nil;
 }
 
 - (void)dealloc
@@ -402,6 +417,8 @@
     [emailConvoButton release];
     [chatBubbleHeights release];
     [tappableDismissalAreaForPadUI release];
+    [pendingNotificationString release];
+    [toasterView release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -730,9 +747,26 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (padUI)
-        [inputBar revealNotificationString:aString withAnimatedKeyboard:animated];
+    {
+        if (toasterView.isShown)
+        {
+            if (NO == toasterView.keyboardIconVisible)
+            {
+                [pendingNotificationString release];
+                pendingNotificationString = [aString retain];
+                
+                [toasterView hideAnimated:YES];
+            }
+        }
+        else
+        {
+            toasterView.keyboardIconVisible = animated;
+            toasterView.text = aString;
+            [toasterView showAnimated:YES permanently:animated];
+        }
+    }
     else
-        [headerBar revealNotificationString:aString withAnimatedKeyboard:animated];
+        [headerBar revealNotificationString:aString withAnimatedKeyboard:animated permanently:animated];
 }
 
 #pragma mark -
@@ -980,6 +1014,9 @@
     CGRect inputBarFrame = inputBar.frame;
     inputBarFrame.origin.y -= keyboardHeight;
     
+    toasterView.yOrigin = inputBarFrame.origin.y - toasterView.frame.size.height - 10.0;
+    [toasterView setNeedsLayout];
+    
     CGRect dismissalBarFrame = dismissalBar.frame;
     CGRect headerFrame = headerBar.frame;
     CGRect tableFrame = tableView.frame;
@@ -1059,6 +1096,9 @@
     
     CGRect inputBarFrame = inputBar.frame;
     inputBarFrame.origin.y += keyboardHeight;
+    
+    toasterView.yOrigin = inputBarFrame.origin.y - toasterView.frame.size.height - 10.0;
+    [toasterView setNeedsLayout];
     
     CGRect dismissalBarFrame = dismissalBar.frame;
     CGRect headerFrame = headerBar.frame;
@@ -1347,13 +1387,19 @@
 
 - (void)setAgentTyping:(BOOL)aBool
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     if (NO == agentTyping && aBool)
     {
+        pendingNotificationStringIsTypingNotification = YES;
         [self revealNotificationString:@"Agent is typing..." withAnimatedKeyboard:YES];
     }
     else if (agentTyping && NO == aBool)
     {
-        [self revealNotificationString:nil withAnimatedKeyboard:NO];
+        if (padUI)
+            [toasterView hideAnimated:YES];
+        else
+            [self revealNotificationString:nil withAnimatedKeyboard:NO];
     }
     
     agentTyping = aBool;
@@ -1377,5 +1423,29 @@
         [newChatBubbleView enterCopyModeAnimated:YES];
     });
 }
+
+#pragma mark -
+#pragma mark LIOToasterViewDelegate methods
+
+- (void)toasterViewDidFinishShowing:(LIOToasterView *)aView
+{
+    pendingNotificationStringIsTypingNotification = NO;
+}
+
+- (void)toasterViewDidFinishHiding:(LIOToasterView *)aView
+{
+    if ([pendingNotificationString length])
+    {
+        toasterView.keyboardIconVisible = pendingNotificationStringIsTypingNotification;
+        toasterView.text = pendingNotificationString;
+        [toasterView showAnimated:YES permanently:pendingNotificationStringIsTypingNotification];
+        
+        pendingNotificationStringIsTypingNotification = NO;
+        [pendingNotificationString release];
+        pendingNotificationString = nil;
+        
+    }
+}
+
 
 @end
