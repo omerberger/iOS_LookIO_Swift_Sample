@@ -34,6 +34,7 @@
         
         if (padUI)
         {
+            /*
             UIView *lolcontainer = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
             lolcontainer.backgroundColor = [UIColor clearColor];
             aFrame = lolcontainer.frame;
@@ -56,15 +57,6 @@
             adLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [self addSubview:adLabel];
 
-            UIImageView *adLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderBarTinyLogo"]] autorelease];
-            aFrame = adLogo.frame;
-            aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 3.0;
-            aFrame.origin.y = (lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            adLogo.frame = aFrame;
-            adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-            adLogo.backgroundColor = [UIColor clearColor];
-            [self addSubview:adLogo];
-            
             aFrame = lolcontainer.frame;
             aFrame.size.width = adLabel.frame.size.width + adLogo.frame.size.width + 10.0;
             aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
@@ -72,6 +64,18 @@
             
             [lolcontainer addSubview:adLabel];
             [lolcontainer addSubview:adLogo];
+             */
+            
+            UIImageView *adLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
+            aFrame = adLogo.frame;
+            aFrame.size.width = 107.0;
+            aFrame.size.height = 23.0;
+            aFrame.origin.x = 27.0;//adLabel.frame.origin.x + adLabel.frame.size.width + 3.0;
+            aFrame.origin.y = 27.0;//(lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            adLogo.frame = aFrame;
+            adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            adLogo.backgroundColor = [UIColor clearColor];
+            [self addSubview:adLogo];
         }
         else
         {
