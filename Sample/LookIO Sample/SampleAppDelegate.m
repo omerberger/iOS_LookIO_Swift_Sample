@@ -41,7 +41,7 @@
     //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
     [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
     [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
-    [[LIOLookIOManager sharedLookIOManager]performSetupWithDelegate:self.viewController];
+    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
     
 #if RUN_KIF_TESTS
     [[LIOTestController sharedInstance] startTestingWithCompletionBlock:^{

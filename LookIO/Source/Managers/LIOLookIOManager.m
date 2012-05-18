@@ -551,7 +551,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([lastActivity timeIntervalSinceNow] > -LIOLookIOManagerReconnectionTimeLimit)
         {
             LIOLog(@"Found a saved session id! Trying to reconnect...");
-            [self beginSession];
+            [self beginSessionImmediatelyShowingChat:NO];
         }
         else
         {
@@ -1117,7 +1117,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
 }
 
-- (void)beginSession
+- (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
     // Prevent a new session from being established if the current one
     // is ending.
@@ -1189,7 +1189,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             firstMessage.text = @"Send a message to our live service reps for immediate help.";
     }
     
-    [self showChatAnimated:YES];
+    if (showChat)
+        [self showChatAnimated:YES];
+}
+
+- (void)beginSession
+{
+    [self beginSessionImmediatelyShowingChat:YES];
 }
 
 - (BOOL)beginConnectingWithError:(NSError **)anError

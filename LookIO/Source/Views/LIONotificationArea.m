@@ -422,7 +422,7 @@
             
             CGRect aFrame = keyboardIcon.frame;
             aFrame.origin.x = notificationLabel.frame.origin.x - aFrame.size.width - 10.0;
-            aFrame.origin.y = (activeNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 3.0;
+            aFrame.origin.y = 9.0;
             keyboardIcon.frame = aFrame;
         }
     });

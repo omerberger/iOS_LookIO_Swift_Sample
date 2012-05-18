@@ -408,7 +408,7 @@
 				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/libLookIO_dist\"";
 				INFOPLIST_FILE = "LookIO Sample/LookIO Sample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -426,7 +426,7 @@
 				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/libLookIO_dist\"";
 				INFOPLIST_FILE = "LookIO Sample/LookIO Sample-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -451,7 +451,7 @@
 					"\"$(SRCROOT)/../KIF/**\"",
 				);
 				INFOPLIST_FILE = "LookIO Sample copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -477,7 +477,7 @@
 					"\"$(SRCROOT)/../KIF/**\"",
 				);
 				INFOPLIST_FILE = "LookIO Sample copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
