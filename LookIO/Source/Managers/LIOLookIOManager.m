@@ -1959,11 +1959,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             [detectedDict setObject:@"wifi" forKey:@"connection_type"];
 
-        /*
         NSArray *twitterHandles = [[LIOAnalyticsManager sharedAnalyticsManager] twitterHandles];
         if ([twitterHandles count])
             [detectedDict setObject:twitterHandles forKey:@"twitter"];
-         */
         
         NSString *tzOffset = [[LIOAnalyticsManager sharedAnalyticsManager] timezoneOffset];
         if ([tzOffset length])

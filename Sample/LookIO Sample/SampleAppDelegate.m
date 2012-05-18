@@ -9,6 +9,7 @@
 #import "SampleAppDelegate.h"
 #import "SampleViewController.h"
 #import <Accounts/Accounts.h>
+#import <CoreLocation/CoreLocation.h>
 
 #if RUN_KIF_TESTS
     #import "LIOTestController.h"
@@ -39,6 +40,21 @@
     [self.window makeKeyAndVisible];
     
     //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
+    
+    CLLocationManager *locMan = [[CLLocationManager alloc] init];
+    [locMan startUpdatingLocation];
+    double delayInSeconds = 2.0;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [locMan stopUpdatingLocation];
+        [locMan release];
+        
+        ACAccountStore *accountStore = [[ACAccountStore alloc] init];
+        ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+        [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
+        }];
+    });
+    
     [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
     [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
