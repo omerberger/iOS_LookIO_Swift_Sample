@@ -41,6 +41,7 @@
     
     //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
     
+    /*
     CLLocationManager *locMan = [[CLLocationManager alloc] init];
     [locMan startUpdatingLocation];
     double delayInSeconds = 2.0;
@@ -54,6 +55,7 @@
         [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
         }];
     });
+    */
     
     [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
     [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];

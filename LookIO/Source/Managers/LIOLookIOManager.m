@@ -1157,8 +1157,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (NO == firstChatMessageSent)
         {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Connection Failed"
-                                                                message:[connectError localizedDescription]
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Connection Failed"
+                                                                message:@"Sorry, we can't connect with the live chat support right now. Please try again later."
                                                                delegate:nil
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:@"Dismiss", nil];
@@ -1498,7 +1498,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Not Enabled"
                                                                 message:@"This app is not configured for live help. Please contact the app developer."
                                                                delegate:self
                                                       cancelButtonTitle:nil
@@ -1584,7 +1584,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             agentsAvailable = YES;
             
             [altChatViewController hideReconnectionOverlay];
-            [self showChatAnimated:YES];
+            //[self showChatAnimated:YES];
         }
         else
         {
@@ -2192,7 +2192,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
                 
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Error"
                                                                     message:message
                                                                    delegate:self
                                                           cancelButtonTitle:nil
@@ -2344,11 +2344,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
-                                                        message:@"End this session?"
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"End Support Session?"
+                                                        message:@"Would you like to end this customer support session?"
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"No", @"Yes", nil];
+                                              otherButtonTitles:@"Don't End", @"End", nil];
     alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
     [alertView show];
     [alertView autorelease];

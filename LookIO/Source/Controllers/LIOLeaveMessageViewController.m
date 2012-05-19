@@ -459,7 +459,7 @@
     [self.view endEditing:YES];
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                        message:@"Your message has been received."
+                                                        message:@"Your message has been sent."
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"Dismiss", nil];

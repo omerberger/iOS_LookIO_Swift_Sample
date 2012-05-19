@@ -68,6 +68,7 @@
     LIOToasterView *toasterView;
     NSString *pendingNotificationString;
     BOOL pendingNotificationStringIsTypingNotification;
+    BOOL aboutScreenWasPresentedViaInputBarAdArea;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

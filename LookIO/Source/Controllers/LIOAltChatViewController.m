@@ -459,6 +459,16 @@
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidHide:)
+                                                 name:UIKeyboardDidHideNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationDidChangeStatusBarOrientation:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
@@ -497,6 +507,8 @@
     [super viewWillDisappear:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    aboutScreenWasPresentedViaInputBarAdArea = NO;
     
     [popover dismissPopoverAnimated:NO];
     [popover autorelease];
@@ -769,6 +781,12 @@
         [headerBar revealNotificationString:aString withAnimatedKeyboard:animated permanently:animated];
 }
 
+- (void)refreshExpandingFooter
+{
+    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([messages count] + 1) inSection:0];
+    [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
+}
+
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 
@@ -852,15 +870,35 @@
 
 - (CGFloat)tableView:(UITableView *)aTableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     if (0 == indexPath.row)
         return 64.0;
     
     if ([messages count] + 1 == indexPath.row)
     {
-        CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
-        CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
-        if (result < 0.0) result = 7.0;
-        return result;
+        if (padUI)
+        {
+            // We want to show more bubbles on iPad. Thus, a smaller expanding footer vs. iPhone.
+            CGFloat heightAccum = 0.0;
+            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+            
+            if ([messages count] >= 2)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 2) inSection:0]];
+            if ([messages count] >= 1)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 1) inSection:0]];
+            
+            CGFloat result = tableView.bounds.size.height - heightAccum - 10.0;
+            if (result < 0.0) result = 7.0;
+            return result;
+        }
+        else
+        {
+            CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+            CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
+            if (result < 0.0) result = 7.0;
+            return result;
+        }
     }
     
     NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(indexPath.row - 1)];
@@ -1151,6 +1189,20 @@
     keyboardHeight = 0.0;
 }
 
+- (void)keyboardDidShow:(NSNotification *)aNotification
+{
+    if (aboutScreenWasPresentedViaInputBarAdArea)
+        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+}
+
+- (void)keyboardDidHide:(NSNotification *)aNotification
+{
+    if (aboutScreenWasPresentedViaInputBarAdArea)
+        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+    
+    [self refreshExpandingFooter];
+}
+
 #pragma mark -
 #pragma mark LIOInputBarViewDelegate methods
 
@@ -1249,6 +1301,8 @@
 {
     // This only applies to iPad.
     
+    aboutScreenWasPresentedViaInputBarAdArea = YES;
+    
     LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
     //aController.modalInPopover = YES;
@@ -1282,6 +1336,8 @@
 {
     if (popover)
     {
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+        
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
         popover = nil;
@@ -1297,6 +1353,8 @@
     
     if (popover)
     {
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+        
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
         popover = nil;
@@ -1446,6 +1504,5 @@
         
     }
 }
-
 
 @end

@@ -164,7 +164,7 @@
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    //scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
+    scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
 /*
@@ -376,7 +376,7 @@
     if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"A transcript of this session has been emailed to you."
+                                                            message:@"We just sent you an email with some additional information."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];

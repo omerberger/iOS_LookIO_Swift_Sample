@@ -267,6 +267,8 @@
     textsplosion02.numberOfLines = 0;
     textsplosion02.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [p2Container addSubview:textsplosion02];
+    
+    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
 
 // iPad only.
