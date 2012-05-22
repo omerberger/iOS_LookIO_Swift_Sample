@@ -47,6 +47,10 @@
 @synthesize delegate, dataSource, initialChatText;
 @dynamic agentTyping;
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+}
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -135,6 +139,8 @@
     tableView.autoresizingMask = tableViewAutoresizing;
     tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
+    
+    [self addObserver:self forKeyPath:@"tableView.frame" options:0 context:NULL];
 
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
     {
@@ -522,18 +528,20 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    if (popover)
-    {
-        [popover.contentViewController.view endEditing:YES];
-        [popover dismissPopoverAnimated:NO];
-        [popover autorelease];
-        popover = nil;
-    }
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    /*
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    */
     
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
@@ -1025,9 +1033,6 @@
     
     keyboardShowing = YES;
     
-    [tableView.layer removeAllAnimations];
-    currentScrollId = 0;
-    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -1107,10 +1112,7 @@
         return;
     
     keyboardShowing = NO;
-    
-    [tableView.layer removeAllAnimations];
-    currentScrollId = 0;
-    
+        
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -1141,7 +1143,6 @@
     CGRect dismissalBarFrame = dismissalBar.frame;
     CGRect headerFrame = headerBar.frame;
     CGRect tableFrame = tableView.frame;
-    CGFloat jitterCorrection = 0.0;
     if (NO == padUI)
     {
         dismissalBarFrame.origin.y += keyboardHeight - 15.0;
@@ -1150,15 +1151,17 @@
         headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
+        CGFloat newTableHeight = 0.0;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
-            tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
-            jitterCorrection = 32.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0 - 32.0;
         }
         else
         {
-            tableFrame.size.height += keyboardHeight - 15.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0;
         }
+        
+        tableFrame.size.height = newTableHeight;
     }
     else
     {
@@ -1178,15 +1181,12 @@
             headerBar.frame = headerFrame;
         }
     [UIView commitAnimations];
-    
-    [self reloadMessages];
-    
-    // Resizing the table causes contentOffset to jump to 0.
-    // Thus, we can't animate it.
-    tableView.frame = tableFrame;
-    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y + jitterCorrection);
-    
+
+    // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
     keyboardHeight = 0.0;
+    tableView.frame = tableFrame;
+    [self refreshExpandingFooter];
+    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y);
 }
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
@@ -1199,8 +1199,6 @@
 {
     if (aboutScreenWasPresentedViaInputBarAdArea)
         [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
-    
-    [self refreshExpandingFooter];
 }
 
 #pragma mark -
@@ -1294,7 +1292,7 @@
     
     [self.view endEditing:YES];
     
-    [self reloadMessages];
+    //[self reloadMessages];
 }
 
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView

@@ -58,7 +58,7 @@
         
         [self addSubview:innerShadow];
         
-        spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];        
         [spinner startAnimating];
         [self addSubview:spinner];
     }
@@ -85,48 +85,69 @@
 
 - (void)layoutSubviews
 {
-    if (labelText)
+    if (LIOControlButtonViewModePending == currentMode)
+    {
+        label.font = [UIFont systemFontOfSize:14.0];
+        label.text = @"     Reconnecting";
+    }
+    else if (labelText)
+    {
+        label.font = [UIFont systemFontOfSize:17.0];
         label.text = labelText;
+    }
     else
+    {
+        label.font = [UIFont systemFontOfSize:17.0];
         label.text = @"Live Chat";
+    }
     
     if (textColor)
         label.textColor = textColor;
     else
         label.textColor = [UIColor whiteColor];
     
-    //innerShadow.transform = CGAffineTransformIdentity;
+    spinner.hidden = currentMode != LIOControlButtonViewModePending;
+    CGRect spinnerFrame;
+    spinnerFrame.size.height = 16.0;
+    spinnerFrame.size.width = 16.0;
     
-    if (UIInterfaceOrientationPortrait == [UIApplication sharedApplication].statusBarOrientation)
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    if (UIInterfaceOrientationPortrait == actualOrientation)
     {
         innerShadow.transform = CGAffineTransformIdentity;
+        
+        spinnerFrame.origin.x = (self.bounds.size.width / 2.0) - (spinnerFrame.size.width / 2.0);
+        spinnerFrame.origin.y = self.bounds.size.height - spinnerFrame.size.height - 8.0;
     }
-    else if (UIInterfaceOrientationLandscapeLeft == [UIApplication sharedApplication].statusBarOrientation)
+    else if (UIInterfaceOrientationLandscapeLeft == actualOrientation)
     {
         CGAffineTransform rotate = CGAffineTransformMakeRotation((3.0*M_PI)/2.0);
         CGAffineTransform translate = CGAffineTransformMakeTranslation(37.0, 37.0);
         innerShadow.transform = CGAffineTransformConcat(translate, rotate);
+        
+        spinnerFrame.origin.x = self.bounds.size.width - spinnerFrame.size.height - 8.0;
+        spinnerFrame.origin.y = (self.bounds.size.height / 2.0) - (spinnerFrame.size.width / 2.0);
     }
-    else if (UIInterfaceOrientationPortraitUpsideDown == [UIApplication sharedApplication].statusBarOrientation)
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualOrientation)
     {
         innerShadow.transform = CGAffineTransformMakeScale(-1.0, -1.0);
+        
+        spinnerFrame.origin.x = (self.bounds.size.width / 2.0) - (spinnerFrame.size.width / 2.0);
+        spinnerFrame.origin.y = 8.0;
     }
-    else if (UIInterfaceOrientationLandscapeRight == [UIApplication sharedApplication].statusBarOrientation)
+    else if (UIInterfaceOrientationLandscapeRight == actualOrientation)
     {
         CGAffineTransform translate = CGAffineTransformMakeTranslation(-37.0, -37.0);
         CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2.0);
         innerShadow.transform = CGAffineTransformConcat(translate, rotate);
+        
+        spinnerFrame.origin.x = 8.0;
+        spinnerFrame.origin.y = (self.bounds.size.height / 2.0) - (spinnerFrame.size.width / 2.0);
     }
     
     innerShadow.frame = self.bounds;
     
-    CGRect aFrame = spinner.frame;
-//    aFrame.size.width = 8.0;
-//    aFrame.size.height = 8.0;
-    aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = 4.0;
-    spinner.frame = aFrame;
-    spinner.hidden = currentMode != LIOControlButtonViewModePending;
+    spinner.frame = spinnerFrame;
     
     if (LIOControlButtonViewModeDefault == currentMode)
         label.alpha = 1.0;
@@ -172,7 +193,7 @@
     CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
     UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width/* + 5.0*/, rect.size.height)
                                                     byRoundingCorners:corners
-                                                          cornerRadii:CGSizeMake(10.0, 10.0)];
+                                                          cornerRadii:CGSizeMake(13.0, 13.0)];
     outerPath.lineWidth = 2.0;
     [outerPath stroke];
 }
