@@ -2393,9 +2393,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-#ifdef DEBUG
-    LIOLog(@"Chat packet written to socket (%u bytes):\n    \"%@\"", [chatData length], chat);
-#endif
     
     LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
     newMessage.date = [NSDate date];

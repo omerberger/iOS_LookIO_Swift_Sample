@@ -678,6 +678,7 @@
                         options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
                          background.alpha = 0.0;
+                         toasterView.alpha = 0.0;
                          
                          tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
                          headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
@@ -746,6 +747,8 @@
         [chatBubbleHeights addObject:aHeight];
         
         [tempView release];
+        
+        NSLog(@"[%d] %f", i, [aHeight floatValue]);
     }
     
     [tableView reloadData];
@@ -884,14 +887,13 @@
             // We want to show more bubbles on iPad. Thus, a smaller expanding footer vs. iPhone.
             CGFloat heightAccum = 0.0;
             heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
-            
-            if ([messages count] >= 2)
-                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 2) inSection:0]];
             if ([messages count] >= 1)
                 heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 1) inSection:0]];
+            if ([messages count] >= 2)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 2) inSection:0]];
             
-            CGFloat result = tableView.bounds.size.height - heightAccum - 10.0;
-            if (result < 0.0) result = 7.0;
+            CGFloat result = tableView.bounds.size.height - heightAccum;
+            if (result < 0.0) result = 7.0 - 10.0;
             return result;
         }
         else
@@ -1186,13 +1188,16 @@
 - (void)keyboardDidShow:(NSNotification *)aNotification
 {
     if (aboutScreenWasPresentedViaInputBarAdArea)
+    {
         [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+    }
 }
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
 {
-    if (aboutScreenWasPresentedViaInputBarAdArea)
-        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+//    if (aboutScreenWasPresentedViaInputBarAdArea)
+//        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 #pragma mark -

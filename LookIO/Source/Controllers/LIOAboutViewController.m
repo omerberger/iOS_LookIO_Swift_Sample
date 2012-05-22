@@ -375,7 +375,10 @@
     [super viewWillAppear:animated];
     
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
         [self rejiggerInterface];
+        [inputField becomeFirstResponder];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
