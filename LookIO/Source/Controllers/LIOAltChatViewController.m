@@ -747,8 +747,6 @@
         [chatBubbleHeights addObject:aHeight];
         
         [tempView release];
-        
-        NSLog(@"[%d] %f", i, [aHeight floatValue]);
     }
     
     [tableView reloadData];
@@ -1196,6 +1194,9 @@
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
 {
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        [self refreshExpandingFooter];
+    
 //    if (aboutScreenWasPresentedViaInputBarAdArea)
 //        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
