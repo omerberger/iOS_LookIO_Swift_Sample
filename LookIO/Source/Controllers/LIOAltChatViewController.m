@@ -47,10 +47,6 @@
 @synthesize delegate, dataSource, initialChatText;
 @dynamic agentTyping;
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-}
-
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -140,8 +136,6 @@
     tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
     
-    [self addObserver:self forKeyPath:@"tableView.frame" options:0 context:NULL];
-
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
     {
         UIPanGestureRecognizer *panner = [tableView panGestureRecognizer];
