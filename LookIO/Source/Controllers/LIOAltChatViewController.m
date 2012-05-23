@@ -135,7 +135,7 @@
     tableView.autoresizingMask = tableViewAutoresizing;
     tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
-
+    
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
     {
         UIPanGestureRecognizer *panner = [tableView panGestureRecognizer];
@@ -459,6 +459,16 @@
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidHide:)
+                                                 name:UIKeyboardDidHideNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationDidChangeStatusBarOrientation:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
@@ -498,6 +508,8 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    aboutScreenWasPresentedViaInputBarAdArea = NO;
+    
     [popover dismissPopoverAnimated:NO];
     [popover autorelease];
     popover = nil;
@@ -510,18 +522,20 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    if (popover)
-    {
-        [popover.contentViewController.view endEditing:YES];
-        [popover dismissPopoverAnimated:NO];
-        [popover autorelease];
-        popover = nil;
-    }
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    /*
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover autorelease];
+        popover = nil;
+    }
+    */
     
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
@@ -664,6 +678,7 @@
                         options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
                          background.alpha = 0.0;
+                         toasterView.alpha = 0.0;
                          
                          tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
                          headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
@@ -769,6 +784,12 @@
         [headerBar revealNotificationString:aString withAnimatedKeyboard:animated permanently:animated];
 }
 
+- (void)refreshExpandingFooter
+{
+    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([messages count] + 1) inSection:0];
+    [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
+}
+
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 
@@ -852,15 +873,34 @@
 
 - (CGFloat)tableView:(UITableView *)aTableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     if (0 == indexPath.row)
         return 64.0;
     
     if ([messages count] + 1 == indexPath.row)
     {
-        CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
-        CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
-        if (result < 0.0) result = 7.0;
-        return result;
+        if (padUI)
+        {
+            // We want to show more bubbles on iPad. Thus, a smaller expanding footer vs. iPhone.
+            CGFloat heightAccum = 0.0;
+            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+            if ([messages count] >= 1)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 1) inSection:0]];
+            if ([messages count] >= 2)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 2) inSection:0]];
+            
+            CGFloat result = tableView.bounds.size.height - heightAccum;
+            if (result < 0.0) result = 7.0 - 10.0;
+            return result;
+        }
+        else
+        {
+            CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+            CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
+            if (result < 0.0) result = 7.0;
+            return result;
+        }
     }
     
     NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(indexPath.row - 1)];
@@ -895,6 +935,7 @@
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 460.0);
+        popover.delegate = self;
         [popover presentPopoverFromRect:aboutButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
@@ -917,6 +958,7 @@
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+        popover.delegate = self;
         [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
@@ -986,9 +1028,6 @@
         return;
     
     keyboardShowing = YES;
-    
-    [tableView.layer removeAllAnimations];
-    currentScrollId = 0;
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -1069,10 +1108,7 @@
         return;
     
     keyboardShowing = NO;
-    
-    [tableView.layer removeAllAnimations];
-    currentScrollId = 0;
-    
+        
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -1103,7 +1139,6 @@
     CGRect dismissalBarFrame = dismissalBar.frame;
     CGRect headerFrame = headerBar.frame;
     CGRect tableFrame = tableView.frame;
-    CGFloat jitterCorrection = 0.0;
     if (NO == padUI)
     {
         dismissalBarFrame.origin.y += keyboardHeight - 15.0;
@@ -1112,15 +1147,17 @@
         headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
+        CGFloat newTableHeight = 0.0;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
-            tableFrame.size.height += keyboardHeight - 15.0 - 32.0;
-            jitterCorrection = 32.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0 - 32.0;
         }
         else
         {
-            tableFrame.size.height += keyboardHeight - 15.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0;
         }
+        
+        tableFrame.size.height = newTableHeight;
     }
     else
     {
@@ -1140,15 +1177,30 @@
             headerBar.frame = headerFrame;
         }
     [UIView commitAnimations];
-    
-    [self reloadMessages];
-    
-    // Resizing the table causes contentOffset to jump to 0.
-    // Thus, we can't animate it.
-    tableView.frame = tableFrame;
-    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y + jitterCorrection);
-    
+
+    // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
     keyboardHeight = 0.0;
+    tableView.frame = tableFrame;
+    [self refreshExpandingFooter];
+    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y);
+}
+
+- (void)keyboardDidShow:(NSNotification *)aNotification
+{
+    if (aboutScreenWasPresentedViaInputBarAdArea && popover)
+    {
+        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+    }
+}
+
+- (void)keyboardDidHide:(NSNotification *)aNotification
+{
+    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+        [self refreshExpandingFooter];
+    
+//    if (aboutScreenWasPresentedViaInputBarAdArea)
+//        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 #pragma mark -
@@ -1179,6 +1231,11 @@
         CGRect aFrame = dismissalBar.frame;
         aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
         dismissalBar.frame = aFrame;
+    }
+    else
+    {
+        toasterView.yOrigin = inputBar.frame.origin.y - toasterView.frame.size.height - 10.0;
+        [toasterView setNeedsLayout];
     }
     
     [self rejiggerTableViewFrame];
@@ -1242,12 +1299,14 @@
     
     [self.view endEditing:YES];
     
-    [self reloadMessages];
+    //[self reloadMessages];
 }
 
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView
 {
     // This only applies to iPad.
+    
+    aboutScreenWasPresentedViaInputBarAdArea = YES;
     
     LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     aController.delegate = self;
@@ -1255,6 +1314,7 @@
     aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
     
     popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+    popover.delegate = self;
     [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
@@ -1282,6 +1342,8 @@
 {
     if (popover)
     {
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+        
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
         popover = nil;
@@ -1297,6 +1359,8 @@
     
     if (popover)
     {
+        aboutScreenWasPresentedViaInputBarAdArea = NO;
+        
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
         popover = nil;
@@ -1447,5 +1511,13 @@
     }
 }
 
+#pragma mark -
+#pragma mark UIPopoverControllerDelegate methods
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
+{
+    [popover release];
+    popover = nil;
+}
 
 @end

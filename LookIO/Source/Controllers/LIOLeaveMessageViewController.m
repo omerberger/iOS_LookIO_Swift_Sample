@@ -459,7 +459,7 @@
     [self.view endEditing:YES];
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                        message:@"Your message has been received."
+                                                        message:@"Your message has been sent."
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"Dismiss", nil];
@@ -512,7 +512,11 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate leaveMessageViewControllerWasCancelled:self];
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [delegate leaveMessageViewControllerWasCancelled:self];
+    });
 }
 
 @end

@@ -267,6 +267,8 @@
     textsplosion02.numberOfLines = 0;
     textsplosion02.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [p2Container addSubview:textsplosion02];
+    
+    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
 
 // iPad only.
@@ -373,7 +375,10 @@
     [super viewWillAppear:animated];
     
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
         [self rejiggerInterface];
+        [inputField becomeFirstResponder];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -398,7 +403,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     
-    [self.view endEditing:YES];
+    //[self.view endEditing:YES];
 }
 
 - (void)dealloc
@@ -543,7 +548,12 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
+    });
+    
 }
 
 @end

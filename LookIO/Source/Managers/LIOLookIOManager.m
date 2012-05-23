@@ -44,7 +44,8 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
-#define LIOLookIOManagerReconnectionTimeLimit   600.0 // 10 minutes
+#define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
+#define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"connect.dev.look.io"
@@ -63,6 +64,10 @@
 #define LIOLookIOManagerNoAgentsOnlineAlertViewTag          4
 #define LIOLookIOManagerUnprovisionedAlertViewTag           5
 #define LIOLookIOManagerAgentEndedSessionAlertViewTag       6
+#define LIOLookIOManagerReconnectionModeAlertViewTag        7
+#define LIOLookIOManagerReconnectionCancelAlertViewTag      8
+#define LIOLookIOManagerReconnectionSucceededAlertViewTag   9
+#define LIOLookIOManagerReconnectionFailedAlertViewTag      10
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -87,7 +92,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -145,6 +150,8 @@
 - (BOOL)beginConnectingWithError:(NSError **)anError;
 - (void)killReconnectionTimer;
 - (NSString *)dateToStandardizedString:(NSDate *)aDate;
+- (void)showReconnectionQuery;
+- (void)populateChatWithFirstMessage;
 
 @end
 
@@ -365,6 +372,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     delegate = aDelegate;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     // Try to get supported orientation information from plist.
     NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
     if (plistOrientations)
@@ -523,7 +532,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
     statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.0 green:(100.0/256.0) blue:(137.0/256.0) alpha:1.0];
     statusBarUnderlay.hidden = YES;
-    [keyWindow addSubview:statusBarUnderlay];
+    if (NO == padUI)
+        [keyWindow addSubview:statusBarUnderlay];
     
     /*
     UILabel *vLabel = [[[UILabel alloc] init] autorelease];
@@ -542,16 +552,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlayBlackout = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
     statusBarUnderlayBlackout.backgroundColor = [UIColor blackColor];
     statusBarUnderlayBlackout.hidden = YES;
-    [keyWindow addSubview:statusBarUnderlayBlackout];
+    if (NO == padUI)
+        [keyWindow addSubview:statusBarUnderlayBlackout];
 
     NSString *sessionId = [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length])
     {
         NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
-        if ([lastActivity timeIntervalSinceNow] > -LIOLookIOManagerReconnectionTimeLimit)
+        NSTimeInterval timeSinceLastActivity = [lastActivity timeIntervalSinceNow];
+        if (lastActivity && timeSinceLastActivity > -LIOLookIOManagerReconnectionAfterCrashTimeLimit)
         {
             LIOLog(@"Found a saved session id! Trying to reconnect...");
-            [self beginSessionImmediatelyShowingChat:NO];
+            willAskUserToReconnect = YES;
+            
+            double delayInSeconds = 2.0;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self showReconnectionQuery];
+            });
         }
         else
         {
@@ -738,7 +756,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    socketConnected = NO;
+    socketConnected = NO, willAskUserToReconnect = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1092,9 +1110,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
+    /*
     NSString *sessionId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length] && NO == socketConnected && resumeMode)
         [altChatViewController showReconnectionOverlay];
+     */
     
     controlButton.hidden = YES;
 }
@@ -1119,6 +1139,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
+    // Waiting for the "do you want to reconnect?" alert view.
+    if (willAskUserToReconnect)
+        return;
+    
     // Prevent a new session from being established if the current one
     // is ending.
     if (sessionEnding)
@@ -1157,8 +1181,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (NO == firstChatMessageSent)
         {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Connection Failed"
-                                                                message:[connectError localizedDescription]
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Connection Failed"
+                                                                message:@"Sorry, we can't connect with the live chat support right now. Please try again later."
                                                                delegate:nil
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:@"Dismiss", nil];
@@ -1176,18 +1200,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     controlSocketConnecting = YES;
 
-    if (0 == [chatHistory count])
-    {
-        LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
-        firstMessage.kind = LIOChatMessageKindRemote;
-        firstMessage.date = [NSDate date];
-        [chatHistory addObject:firstMessage];
-        
-        if ([lastKnownWelcomeMessage length])
-            firstMessage.text = lastKnownWelcomeMessage;
-        else
-            firstMessage.text = @"Send a message to our live service reps for immediate help.";
-    }
+    [self populateChatWithFirstMessage];
     
     if (showChat)
         [self showChatAnimated:YES];
@@ -1498,7 +1511,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Not Enabled"
                                                                 message:@"This app is not configured for live help. Please contact the app developer."
                                                                delegate:self
                                                       cancelButtonTitle:nil
@@ -1583,8 +1596,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             killConnectionAfterChatViewDismissal = NO;
             agentsAvailable = YES;
             
-            [altChatViewController hideReconnectionOverlay];
-            //[self showChatAnimated:YES];
+            [self populateChatWithFirstMessage];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Reconnected"
+                                                                message:@"Your chat session has been reconnected."
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Hide", @"Open Chat", nil];
+            alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
         }
         else
         {
@@ -1597,6 +1618,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             firstChatMessageSent = NO;
             resetAfterDisconnect = YES;
             [self killConnection];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Session Ended"
+                                                                message:@"Your chat session could not be resumed. Please start a new session."
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Dismiss", nil];
+            [alertView show];
+            [alertView autorelease];
         }
     }
 }
@@ -2074,6 +2103,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [alertView autorelease];
         
         LIOLog(@"Session forcibly terminated. Reason: reconnection mode terminated due to last activity being too far in the past.");
+        
+        return;
     }
         
     // Guard against the case where we are in the process of reconnecting.
@@ -2129,6 +2160,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)continuationTimerDidFire
 {
     [self sendContinuationReport];
+}
+
+- (void)showReconnectionQuery
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Connection Lost"
+                                                        message:@"Your chat support session has lost its connection. If you would like to continue this session, we can try to reconnect you."
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Close", @"Reconnect", nil];
+    alertView.tag = LIOLookIOManagerReconnectionModeAlertViewTag;
+    [alertView show];
+    [alertView autorelease];
+}
+
+- (void)populateChatWithFirstMessage
+{
+    if (0 == [chatHistory count])
+    {
+        LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
+        firstMessage.kind = LIOChatMessageKindRemote;
+        firstMessage.date = [NSDate date];
+        [chatHistory addObject:firstMessage];
+        
+        if ([lastKnownWelcomeMessage length])
+            firstMessage.text = lastKnownWelcomeMessage;
+        else
+            firstMessage.text = @"Send a message to our live service reps for immediate help.";
+    }
 }
 
 #pragma mark -
@@ -2190,9 +2249,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
-                NSString *message = [NSString stringWithFormat:@"A connection error occurred. Please try again."];
+                NSString *message = [NSString stringWithFormat:@"Couldn't start live chat session. Please try again."];
                 
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Error"
                                                                     message:message
                                                                    delegate:self
                                                           cancelButtonTitle:nil
@@ -2231,6 +2290,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
     if ([lastActivity timeIntervalSinceNow] <= -LIOLookIOManagerReconnectionTimeLimit)
         resetAfterDisconnect = YES;
+    
+    // Just in case...
+    clickView.hidden = YES;
+    [cursorView removeFromSuperview];
+    [cursorView release];
+    cursorView = nil;
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
@@ -2247,11 +2312,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent)
     {
-        LIOLog(@"Unexpected disconnection! Going into resume mode...");
+        LIOLog(@"Unexpected disconnection! Asking user for resume mode...");
+
+        [altChatViewController dismissModalViewControllerAnimated:NO];
+        [altChatViewController.view removeFromSuperview];
+        [altChatViewController release];
+        altChatViewController = nil;
         
-        [self configureReconnectionTimer];
-        [altChatViewController showReconnectionOverlay];
-        resumeMode = YES;
+        [self rejiggerWindows];
+        
+        [self showReconnectionQuery];
     }
 }
 
@@ -2276,7 +2346,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
-
 {
     LIOLog(@"\n\nREAD TIMEOUT\n\n");
     return 0;
@@ -2324,9 +2393,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-#ifdef DEBUG
-    LIOLog(@"Chat packet written to socket (%u bytes):\n    \"%@\"", [chatData length], chat);
-#endif
     
     LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
     newMessage.date = [NSDate date];
@@ -2344,11 +2410,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Are you sure?"
-                                                        message:@"End this session?"
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"End Support Session?"
+                                                        message:@"Would you like to end this customer support session?"
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"No", @"Yes", nil];
+                                              otherButtonTitles:@"Don't End", @"End", nil];
     alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
     [alertView show];
     [alertView autorelease];
@@ -2618,6 +2684,50 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     switch (alertView.tag)
     {
+        case LIOLookIOManagerReconnectionFailedAlertViewTag:
+        {
+            [self reset];
+            break;
+        }
+            
+        case LIOLookIOManagerReconnectionSucceededAlertViewTag:
+        {
+            willAskUserToReconnect = NO;
+            
+            if (1 == buttonIndex)
+                [self showChatAnimated:YES];
+            
+            break;
+        }
+            
+        case LIOLookIOManagerReconnectionCancelAlertViewTag:
+        {
+            if (0 == buttonIndex) // Cancel
+                [self reset];
+            
+            break;
+        }
+            
+        case LIOLookIOManagerReconnectionModeAlertViewTag:
+        {
+            if (1 == buttonIndex) // "Try Reconnect"
+            {
+                [self configureReconnectionTimer];
+                controlButton.currentMode = LIOControlButtonViewModePending;
+                [controlButton layoutSubviews];
+                [self applicationDidChangeStatusBarOrientation:nil]; // update tab to show "Reconnecting", etc
+                resumeMode = YES;
+                
+                willAskUserToReconnect = NO;
+            }
+            else // Close
+            {
+                [self reset];
+            }
+            
+            break;
+        }
+            
         case LIOLookIOManagerDisconnectErrorAlertViewTag:
         {
             [self rejiggerWindows];
@@ -2633,12 +2743,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 if (NO == socketConnected)
                 {
-                    [self reset];
+                    double delayInSeconds = 0.1;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        [self reset];
+                    });
                 }
                 else
                 {
-                    resetAfterDisconnect = YES;
-                    [self killConnection];
+                    double delayInSeconds = 0.1;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        resetAfterDisconnect = YES;
+                        [self killConnection];
+                    });
                 }
             }
             
@@ -2750,12 +2868,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
     
-    [pendingChatText release];
-    pendingChatText = [[altChatViewController currentChatText] retain];
-    [altChatViewController dismissModalViewControllerAnimated:NO];
-    [altChatViewController.view removeFromSuperview];
-    [altChatViewController release];
-    altChatViewController = nil;
+    if (altChatViewController)
+    {
+        [pendingChatText release];
+        pendingChatText = [[altChatViewController currentChatText] retain];
+        [altChatViewController dismissModalViewControllerAnimated:NO];
+        [altChatViewController.view removeFromSuperview];
+        [altChatViewController release];
+        altChatViewController = nil;
+    }
     
     [emailHistoryViewController.view removeFromSuperview];
     [emailHistoryViewController release];
@@ -2856,7 +2977,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     //clickView.transform = transform;
     //cursorView.transform = transform;
     
-    CGSize textSize = [lastKnownButtonText sizeWithFont:controlButton.label.font];
+    CGSize textSize = [controlButton.label.text sizeWithFont:controlButton.label.font];
     textSize.width += 20.0; // 10px padding on each side
     CGFloat extraHeight = 0.0;
     if (textSize.width > LIOLookIOManagerControlButtonMinHeight)
@@ -3119,7 +3240,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonViewWasTapped:(LIOControlButtonView *)aControlButton
 {
-    if (socketConnected && introduced)
+    if (resumeMode)
+    {        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Reconnecting"
+                                                            message:@"We're trying to reconnect you with your chat support session. Continue reconnecting?"
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:@"Stop", @"Continue", nil];
+        alertView.tag = LIOLookIOManagerReconnectionCancelAlertViewTag;
+        [alertView show];
+        [alertView autorelease];
+    }
+    else if (socketConnected && introduced && NO == willAskUserToReconnect)
         [self showChatAnimated:YES];
     else
         [self beginSession];

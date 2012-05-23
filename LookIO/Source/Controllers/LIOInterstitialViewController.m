@@ -204,8 +204,8 @@
 
 - (void)showFailureAlert
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                        message:@"Sorry, but the service is currently unavailable. Please try again later."
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Error"
+                                                        message:@"Sorry, but the live chat service is currently unavailable. Please try again later."
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"Dismiss", nil];

@@ -164,7 +164,7 @@
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    //scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
+    scrollView.contentSize = CGSizeMake(0.0, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
 
 /*
@@ -376,7 +376,7 @@
     if ([inputField.text length])
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"A transcript of this session has been emailed to you."
+                                                            message:@"We just sent you an email with some additional information."
                                                            delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:@"Dismiss", nil];
@@ -394,7 +394,11 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:inputField.text];
+    });
 }
 
 #pragma mark -

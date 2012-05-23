@@ -24,7 +24,7 @@
     {
         self.layer.cornerRadius = 5.0;
         self.layer.masksToBounds = YES;
-        self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
+        self.backgroundColor = [UIColor colorWithWhite:0.15 alpha:0.8];
         
         CGRect aFrame = self.frame;
         aFrame.size.height = 50.0;
@@ -58,6 +58,8 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    delegate = nil;
     
     [textLabel release];
     [keyboardIcon release];
@@ -120,14 +122,14 @@
     
     self.frame = startingFrame;
     
-    [UIView animateWithDuration:0.33
+    [UIView animateWithDuration:0.15
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
                          self.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
+                         [UIView animateWithDuration:0.05
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseIn
                                           animations:^{
