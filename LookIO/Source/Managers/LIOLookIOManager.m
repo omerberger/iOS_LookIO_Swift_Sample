@@ -2743,12 +2743,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 if (NO == socketConnected)
                 {
-                    [self reset];
+                    double delayInSeconds = 0.1;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        [self reset];
+                    });
                 }
                 else
                 {
-                    resetAfterDisconnect = YES;
-                    [self killConnection];
+                    double delayInSeconds = 0.1;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        resetAfterDisconnect = YES;
+                        [self killConnection];
+                    });
                 }
             }
             
