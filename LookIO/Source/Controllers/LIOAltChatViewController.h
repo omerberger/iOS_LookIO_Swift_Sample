@@ -44,7 +44,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
      LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate>
+     LIOToasterViewDelegate, UIPopoverControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;

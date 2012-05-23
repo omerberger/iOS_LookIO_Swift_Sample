@@ -935,6 +935,7 @@
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 460.0);
+        popover.delegate = self;
         [popover presentPopoverFromRect:aboutButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
@@ -957,6 +958,7 @@
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+        popover.delegate = self;
         [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
@@ -1185,7 +1187,7 @@
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
 {
-    if (aboutScreenWasPresentedViaInputBarAdArea)
+    if (aboutScreenWasPresentedViaInputBarAdArea && popover)
     {
         [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
         aboutScreenWasPresentedViaInputBarAdArea = NO;
@@ -1229,6 +1231,11 @@
         CGRect aFrame = dismissalBar.frame;
         aFrame.origin.y = inputBar.frame.origin.y - aFrame.size.height;
         dismissalBar.frame = aFrame;
+    }
+    else
+    {
+        toasterView.yOrigin = inputBar.frame.origin.y - toasterView.frame.size.height - 10.0;
+        [toasterView setNeedsLayout];
     }
     
     [self rejiggerTableViewFrame];
@@ -1307,6 +1314,7 @@
     aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
     
     popover = [[UIPopoverController alloc] initWithContentViewController:aController];
+    popover.delegate = self;
     [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
@@ -1501,6 +1509,15 @@
         pendingNotificationString = nil;
         
     }
+}
+
+#pragma mark -
+#pragma mark UIPopoverControllerDelegate methods
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
+{
+    [popover release];
+    popover = nil;
 }
 
 @end
