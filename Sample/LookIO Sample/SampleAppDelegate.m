@@ -57,8 +57,8 @@
     });
     */
     
-    //[[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
-    //[[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
+    [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
+    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
     
 #if RUN_KIF_TESTS
@@ -66,7 +66,7 @@
         // Exit after the tests complete so that CI knows we're done
         exit([[LIOTestController sharedInstance] failureCount]);
     }];
-#endif    
+#endif
     
     return YES;
 }

@@ -472,15 +472,6 @@
                                              selector:@selector(applicationDidChangeStatusBarOrientation:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
-    
-    if ([initialChatText length])
-    {
-        inputBar.inputField.text = initialChatText;
-        
-        pendingChatText = initialChatText;
-        
-        initialChatText = nil;
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -498,6 +489,14 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [inputBar.inputField becomeFirstResponder];
+        
+        if ([initialChatText length])
+        {
+            inputBar.inputField.text = initialChatText;
+            pendingChatText = initialChatText;
+            initialChatText = nil;
+        }
+        
         [inputBar setNeedsLayout];
     });
 }
@@ -899,6 +898,7 @@
             CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
             CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
             if (result < 0.0) result = 7.0;
+            
             return result;
         }
     }
@@ -1181,7 +1181,7 @@
     // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
     keyboardHeight = 0.0;
     tableView.frame = tableFrame;
-    [self refreshExpandingFooter];
+    //[self refreshExpandingFooter];
     tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y);
 }
 
@@ -1196,11 +1196,7 @@
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
 {
-    if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
-        [self refreshExpandingFooter];
-    
-//    if (aboutScreenWasPresentedViaInputBarAdArea)
-//        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+    [self refreshExpandingFooter];
 }
 
 #pragma mark -
@@ -1323,15 +1319,7 @@
 
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView
 {
-    if (tableView.contentOffset.y > 0)
-    {
-        [UIView animateWithDuration:0.5
-                         animations:^{
-                             tableView.contentOffset = CGPointZero;
-                         }];
-    }
-    
-    
+    [tableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
     [self.view endEditing:YES];
 }
 
@@ -1507,7 +1495,6 @@
         pendingNotificationStringIsTypingNotification = NO;
         [pendingNotificationString release];
         pendingNotificationString = nil;
-        
     }
 }
 
