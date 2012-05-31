@@ -115,6 +115,7 @@
     NSString *pendingEmailAddress;
     NSString *friendlyName;
     NSMutableDictionary *sessionExtras;
+    NSMutableDictionary *proactiveChatRules;
     UIInterfaceOrientation actualInterfaceOrientation;
     NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
     NSString *lastKnownButtonText;
@@ -240,6 +241,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         usesTLS = YES;
         
         sessionExtras = [[NSMutableDictionary alloc] init];
+        proactiveChatRules = [[NSMutableDictionary alloc] init];
         
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
@@ -676,6 +678,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [queuedLaunchReportDates release];
     [dateFormatter release];
     [overriddenEndpoint release];
+    [proactiveChatRules release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -762,6 +765,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     screenSharingStartedDate = nil;
     
     [queuedLaunchReportDates removeAllObjects];
+    [proactiveChatRules removeAllObjects];
     
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
@@ -1874,6 +1878,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
+    }
+    
+    NSDictionary *proactiveChat = [params objectForKey:@"proactive_chat"];
+    if (proactiveChat)
+    {
+        [proactiveChatRules removeAllObjects];
+        [proactiveChatRules addEntriesFromDictionary:proactiveChat];
     }
     
     [self refreshControlButtonVisibility];

@@ -23,6 +23,10 @@
 		D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D4741540BD400045DBFF /* LIOMapAnnotation.m */; };
 		D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */; };
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
+		D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7F71576D60300CF73CC /* LIORulesManager.h */; };
+		D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7F81576D60300CF73CC /* LIORulesManager.m */; };
+		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
+		D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D4868A78155AFE800081164D /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4868A76155AFE800081164D /* AsyncSocket.h */; };
@@ -107,6 +111,10 @@
 		D440D4741540BD400045DBFF /* LIOMapAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMapAnnotation.m; path = Source/Other/LIOMapAnnotation.m; sourceTree = "<group>"; };
 		D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
 		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
+		D454B7F71576D60300CF73CC /* LIORulesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORulesManager.h; path = Source/Managers/LIORulesManager.h; sourceTree = "<group>"; };
+		D454B7F81576D60300CF73CC /* LIORulesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORulesManager.m; path = Source/Managers/LIORulesManager.m; sourceTree = "<group>"; };
+		D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORuleViewVisible.h; path = Source/Other/LIORuleViewVisible.h; sourceTree = "<group>"; };
+		D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORuleViewVisible.m; path = Source/Other/LIORuleViewVisible.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D4868A76155AFE800081164D /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
@@ -223,6 +231,8 @@
 				D403F7B715335CC100101941 /* LIOLogManager.m */,
 				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
+				D454B7F71576D60300CF73CC /* LIORulesManager.h */,
+				D454B7F81576D60300CF73CC /* LIORulesManager.m */,
 			);
 			name = Managers;
 			sourceTree = "<group>";
@@ -261,6 +271,8 @@
 				D4ADC7B514F3218300713F29 /* LIOChatMessage.m */,
 				D440D4731540BD400045DBFF /* LIOMapAnnotation.h */,
 				D440D4741540BD400045DBFF /* LIOMapAnnotation.m */,
+				D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */,
+				D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */,
 				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
 				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
 			);
@@ -426,6 +438,8 @@
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
 				D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */,
+				D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */,
+				D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -536,6 +550,8 @@
 				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
 				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
 				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
+				D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */,
+				D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

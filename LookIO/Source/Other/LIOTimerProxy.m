@@ -10,12 +10,19 @@
 
 @implementation LIOTimerProxy
 
-- (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector
+@synthesize userInfo;
+
+- (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)aUserInfo
 {
     if (self == [super init])
     {
+        userInfo = [aUserInfo retain];
+        
         theTarget = aTarget;
+        
         theSelector = aSelector;
+        NSMethodSignature *sig = [theTarget methodSignatureForSelector:theSelector];
+        selectorTakesArgument = [sig numberOfArguments] == 1;
         
         theTimer = [[NSTimer alloc] initWithFireDate:[NSDate dateWithTimeIntervalSinceNow:ti]
                                             interval:ti
@@ -25,17 +32,14 @@
                                              repeats:YES];
         
         [[NSRunLoop mainRunLoop] addTimer:theTimer forMode:NSRunLoopCommonModes];
-
-        /*
-        theTimer = [[NSTimer scheduledTimerWithTimeInterval:ti
-                                                     target:self
-                                                   selector:@selector(theTimerDidFire:)
-                                                   userInfo:nil
-                                                    repeats:YES] retain];
-        */
     }
     
     return self;
+}
+
+- (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector
+{
+    return [self initWithTimeInterval:ti target:aTarget selector:aSelector userInfo:nil];
 }
 
 - (void)stopTimer
@@ -47,7 +51,17 @@
 
 - (void)theTimerDidFire:(NSTimer *)aTimer
 {
-    [theTarget performSelector:theSelector];
+    if (selectorTakesArgument)
+        [theTarget performSelector:theSelector withObject:self];
+    else
+        [theTarget performSelector:theSelector];
+}
+
+- (void)dealloc
+{
+    [userInfo release];
+    
+    [super dealloc];
 }
 
 @end
