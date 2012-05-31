@@ -13,8 +13,13 @@
     NSTimer *theTimer;
     id theTarget;
     SEL theSelector;
+    BOOL selectorTakesArgument;
+    id userInfo;
 }
 
+@property(nonatomic, readonly) id userInfo;
+
+- (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)aUserInfo;
 - (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector;
 - (void)stopTimer;
 
