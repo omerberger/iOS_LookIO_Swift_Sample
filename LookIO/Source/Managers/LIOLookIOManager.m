@@ -2826,7 +2826,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
-            [self reset];
+            resetAfterDisconnect = YES;
+            [self killConnection];
             break;
         }
             
