@@ -79,6 +79,7 @@
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
 #define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
+#define LIOLookIOManagerLastKnownDefaultAvailabilityKey @"LIOLookIOManagerLastKnownDefaultAvailabilityKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -92,7 +93,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, agentsAvailable, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -121,6 +122,7 @@
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
+    NSNumber *lastKnownDefaultAvailability;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
@@ -135,12 +137,12 @@
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
     UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
+    NSNumber *availability;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
-@property(nonatomic, readonly) BOOL agentsAvailable;
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
@@ -153,6 +155,7 @@
 - (NSString *)dateToStandardizedString:(NSDate *)aDate;
 - (void)showReconnectionQuery;
 - (void)populateChatWithFirstMessage;
+- (BOOL)agentsAvailable;
 
 @end
 
@@ -216,7 +219,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress, agentsAvailable;
+@synthesize touchImage, targetAgentId, usesTLS, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -476,6 +479,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownWelcomeMessage release];
     lastKnownWelcomeMessage = [[userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey] retain];
     
+    [lastKnownDefaultAvailability release];
+    lastKnownDefaultAvailability = [[userDefaults objectForKey:LIOLookIOManagerLastKnownDefaultAvailabilityKey] retain];
+    
     [self applicationDidChangeStatusBarOrientation:nil];
     
     appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
@@ -618,7 +624,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSString *stringValue = [NSString stringWithFormat:@"%@", anObject];
             
             if ([aName length])
-                [result appendFormat:@"%@%%91%@%%93=%@&", [self urlEncodedStringWithString:aName], [self urlEncodedStringWithString:aKey], [self urlEncodedStringWithString:stringValue]];
+                [result appendFormat:@"%@%%5B%@%%5D=%@&", [self urlEncodedStringWithString:aName], [self urlEncodedStringWithString:aKey], [self urlEncodedStringWithString:stringValue]];
             else
                 [result appendFormat:@"%@=%@&", [self urlEncodedStringWithString:aKey], [self urlEncodedStringWithString:stringValue]];
         }
@@ -672,6 +678,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonTextColor release];
     [lastKnownWelcomeMessage release];
     [lastKnownEnabledStatus release];
+    [lastKnownDefaultAvailability release];
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
@@ -679,6 +686,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [dateFormatter release];
     [overriddenEndpoint release];
     [proactiveChatRules release];
+    [availability release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -751,6 +759,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [reintroTimeoutTimer stopTimer];
     [reintroTimeoutTimer release];
     reintroTimeoutTimer = nil;
+    
+    [availability release];
+    availability = nil;
     
     previousReconnectionTimerStep = 2;
     
@@ -1471,16 +1482,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
             NSNumber *online = [data objectForKey:@"online"];
-            if (online && NO == [online boolValue])
-            {
-                // not online case
-                agentsAvailable = NO;
-            }
-            else
-            {
-                // online
-                agentsAvailable = YES;
-            }
+            
+            [availability release];
+            availability = [online retain];
         }
         else if ([action isEqualToString:@"permission"])
         {
@@ -1598,7 +1602,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             resetAfterDisconnect = NO;
             introduced = YES;
             killConnectionAfterChatViewDismissal = NO;
-            agentsAvailable = YES;
             
             [self populateChatWithFirstMessage];
             
@@ -1878,6 +1881,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
+    }
+    
+    NSDictionary *defaultAvailDict = [params objectForKey:@"default_availability"];
+    if ([defaultAvailDict count])
+    {
+        NSNumber *defaultAvailNumber = [defaultAvailDict objectForKey:@"online"];
+        if (defaultAvailNumber)
+        {
+            [userDefaults setObject:defaultAvailNumber forKey:LIOLookIOManagerLastKnownDefaultAvailabilityKey];
+            
+            [lastKnownDefaultAvailability release];
+            lastKnownDefaultAvailability = [defaultAvailNumber retain];
+        }
     }
     
     NSDictionary *proactiveChat = [params objectForKey:@"proactive_chat"];
@@ -2199,6 +2215,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             firstMessage.text = @"Send a message to our live service reps for immediate help.";
     }
+}
+
+- (BOOL)agentsAvailable
+{
+    if (availability)
+        return [availability boolValue];
+    else
+        return [lastKnownDefaultAvailability boolValue];
 }
 
 #pragma mark -
