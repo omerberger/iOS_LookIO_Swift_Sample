@@ -322,9 +322,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
-        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-        [appLaunchRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<LAUNCH> Request: %@", introDictWwwFormEncoded);
+        NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
+        [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+        LIOLog(@"<LAUNCH> Request: %@", introDictJSONEncoded);
         appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
     }
     else
@@ -364,9 +364,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
-        NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-        [appContinueRequest setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictWwwFormEncoded);
+        NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
+        [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+        LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictJSONEncoded);
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
     }
 }
@@ -3107,8 +3107,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 }
                 
                 NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate];
-                NSString *introDictWwwFormEncoded = [self wwwFormEncodedDictionary:introDict withName:nil];
-                [request setHTTPBody:[introDictWwwFormEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+                NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
+                [request setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
                 [request autorelease];
                 LIOLog(@"<QUEUED_LAUNCH> Sent old launch packet for date: %@", aDate);
