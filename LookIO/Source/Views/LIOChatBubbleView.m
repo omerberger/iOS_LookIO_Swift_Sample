@@ -58,6 +58,8 @@ static NSDataDetector *dataDetector = nil;
         links = [[NSMutableArray alloc] init];
         linkButtons = [[NSMutableArray alloc] init];
         linkTypes = [[NSMutableArray alloc] init];
+        intraAppLinkViews = [[NSMutableArray alloc] init];
+        linkSupertypes = [[NSMutableArray alloc] init];
     }
     
     return self;
@@ -74,6 +76,8 @@ static NSDataDetector *dataDetector = nil;
     [linkTypes release];
     [urlBeingLaunched release];
     [rawChatMessage release];
+    [intraAppLinkViews release];
+    [linkSupertypes release];
     
     [super dealloc];
 }
@@ -107,6 +111,23 @@ static NSDataDetector *dataDetector = nil;
             aFrame.size.width = self.bounds.size.width - 40.0;
             aFrame.size.height = 51.0;
             aLinkButton.frame = aFrame;
+            
+            // Intra-link? Check for a custom view.
+            UIView *linkView = [intraAppLinkViews objectAtIndex:i];
+            if (linkView && (id)linkView != [NSNull null])
+            {
+                aFrame = linkView.frame;
+                aFrame.origin.x = 5.0;
+                aFrame.origin.y = 5.0;
+                aFrame.size.width = aLinkButton.frame.size.width - 10.0;
+                aFrame.size.height = aLinkButton.frame.size.height - 12.0;
+                linkView.frame = aFrame;
+                linkView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                linkView.userInteractionEnabled = NO;
+                [aLinkButton addSubview:linkView];
+                
+                [aLinkButton setTitle:[NSString string] forState:UIControlStateNormal];
+            }
             
             relativeFrame = aLinkButton.frame;
             
@@ -169,12 +190,16 @@ static NSDataDetector *dataDetector = nil;
 {
     [links removeAllObjects];
     [linkTypes removeAllObjects];
+    [linkSupertypes removeAllObjects];
     
     [linkMessageViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [linkMessageViews removeAllObjects];
 
     [linkButtons makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [linkButtons removeAllObjects];
+    
+    [intraAppLinkViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [intraAppLinkViews removeAllObjects];
     
     NSMutableArray *textCheckingResults = [NSMutableArray array];
     
@@ -185,6 +210,31 @@ static NSDataDetector *dataDetector = nil;
         [textCheckingResults addObject:result];
         NSString *currentLink = [aString substringWithRange:result.range];
         [links addObject:currentLink];
+        
+        // Special handling for links; could be intra-app!
+        if (NSTextCheckingTypeLink == result.resultType)
+        {
+            NSURL *currentURL = [NSURL URLWithString:currentLink];
+            if ([[LIOLookIOManager sharedLookIOManager] isIntraLink:currentURL])
+            {
+                [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeIntra]];
+                UIView *linkView = [[LIOLookIOManager sharedLookIOManager] linkViewForURL:currentURL];
+                if (linkView)
+                    [intraAppLinkViews addObject:linkView];
+                else
+                    [intraAppLinkViews addObject:[NSNull null]];
+            }
+            else
+            {
+                [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeExtra]];
+                [intraAppLinkViews addObject:[NSNull null]];
+            }
+        }
+        else
+        {
+            [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeExtra]];
+            [intraAppLinkViews addObject:[NSNull null]];
+        }
     }];
     
     NSString *firstString = aString;
@@ -358,28 +408,37 @@ static NSDataDetector *dataDetector = nil;
     
     NSString *aLink = [links objectAtIndex:linkIndex];
     NSTextCheckingType aType = (NSTextCheckingType)[[linkTypes objectAtIndex:linkIndex] longLongValue];
+    int aSupertype = [[linkSupertypes objectAtIndex:linkIndex] intValue];
     if (NSTextCheckingTypeLink == aType)
     {
-        if (NO == [aLink hasPrefix:@"http://"] && NO == [aLink hasPrefix:@"https://"])
+        if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            NSString *result = [@"http://" stringByAppendingString:aLink];
-            [urlBeingLaunched release];
-            urlBeingLaunched = [[NSURL URLWithString:result] retain];
+            if (NO == [aLink hasPrefix:@"http://"] && NO == [aLink hasPrefix:@"https://"])
+            {
+                NSString *result = [@"http://" stringByAppendingString:aLink];
+                [urlBeingLaunched release];
+                urlBeingLaunched = [[NSURL URLWithString:result] retain];
+            }
+            else
+            {
+                [urlBeingLaunched release];
+                urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
+            }
+            
+            NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                                message:alertMessage
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:@"Don't Open", @"Open", nil];
+            [alertView show];
+            [alertView autorelease];
         }
         else
         {
-            [urlBeingLaunched release];
-            urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
+            // Intra-app links don't require a warning.
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:aLink]];
         }
-        
-        NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:alertMessage
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Don't Open", @"Open", nil];
-        [alertView show];
-        [alertView autorelease];
     }
     else if (NSTextCheckingTypePhoneNumber)
     {

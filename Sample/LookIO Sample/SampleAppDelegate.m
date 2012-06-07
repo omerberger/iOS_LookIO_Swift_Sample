@@ -72,6 +72,12 @@
     return YES;
 }
 
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    NSLog(@"\n\n>>> oh hi, I was asked to open a URL: \"%@\"", [url absoluteString]);
+    return YES;
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     /*

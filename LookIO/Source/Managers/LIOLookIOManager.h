@@ -20,6 +20,7 @@
 - (void)lookIOManager:(LIOLookIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled;
 - (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
+- (UIView *)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 @end
 
 @interface LIOLookIOManager : NSObject

@@ -138,6 +138,7 @@
     UIStatusBarStyle originalStatusBarStyle;
     UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
     NSNumber *availability;
+    NSMutableArray *urlSchemes;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -256,6 +257,27 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         jsonParser = [[SBJsonParser_LIO alloc] init];
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
+        
+        urlSchemes = [[NSMutableArray alloc] init];
+        NSArray *cfBundleURLTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+        if ([cfBundleURLTypes isKindOfClass:[NSArray class]])
+        {
+            for (NSDictionary *aURLType in cfBundleURLTypes)
+            {
+                if ([aURLType isKindOfClass:[NSDictionary class]])
+                {
+                    NSArray *cfBundleURLSchemes = [aURLType objectForKey:@"CFBundleURLSchemes"];
+                    if ([cfBundleURLSchemes isKindOfClass:[NSArray class]])
+                    {
+                        for (NSString *aScheme in cfBundleURLSchemes)
+                        {
+                            if (NO == [urlSchemes containsObject:aScheme])
+                                [urlSchemes addObject:aScheme];
+                        }
+                    }
+                }
+            }
+        }
         
         // Start the reachability monitor.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -1603,6 +1625,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             introduced = YES;
             killConnectionAfterChatViewDismissal = NO;
             
+            [availability release];
+            availability = [[NSNumber alloc] initWithInt:1];
+            
             [self populateChatWithFirstMessage];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Reconnected"
@@ -2223,6 +2248,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return [availability boolValue];
     else
         return [lastKnownDefaultAvailability boolValue];
+}
+
+- (BOOL)isIntraLink:(NSURL *)aURL
+{
+    return [urlSchemes containsObject:[aURL scheme]];
+}
+
+- (UIView *)linkViewForURL:(NSURL *)aURL
+{
+    if (NO == [urlSchemes containsObject:[aURL scheme]])
+        return nil;
+    
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:linkViewForURL:)])
+        return [delegate lookIOManager:self linkViewForURL:aURL];
+    
+    return nil;
 }
 
 #pragma mark -

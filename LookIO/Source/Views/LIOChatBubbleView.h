@@ -25,6 +25,12 @@ typedef enum
     LIOChatBubbleViewLinkModeEnabled
 } LIOChatBubbleViewLinkMode;
 
+typedef enum
+{
+    LIOChatBubbleViewLinkSupertypeExtra,
+    LIOChatBubbleViewLinkSupertypeIntra
+} LIOChatBubbleViewLinkSupertype;
+
 @protocol LIOChatBubbleViewDelegate
 - (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView;
 @end
@@ -34,7 +40,7 @@ typedef enum
     LIOChatBubbleViewFormattingMode formattingMode;
     LIOChatBubbleViewLinkMode linkMode;
     TTTAttributedLabel_LIO *mainMessageView;
-    NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes;
+    NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes, *linkSupertypes, *intraAppLinkViews;
     UIImageView *backgroundImage;
     NSString *senderName;
     NSURL *urlBeingLaunched;

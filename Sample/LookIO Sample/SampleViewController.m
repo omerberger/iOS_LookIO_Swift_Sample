@@ -87,6 +87,7 @@
     
 #pragma mark -
 #pragma mark LookIO Delegate
+
 - (void)lookIOManager:(LIOLookIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled
 {
     if (lookioIsEnabled) {
@@ -96,6 +97,13 @@
         [availabilityLabel setText:@"Agents are not available"];
         [liveHelpButton setEnabled:NO];
     }
+}
+
+- (UIView *)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL
+{
+    UIView *fakeView = [[[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)] autorelease];
+    fakeView.backgroundColor = [UIColor redColor];
+    return fakeView;
 }
 
 @end
