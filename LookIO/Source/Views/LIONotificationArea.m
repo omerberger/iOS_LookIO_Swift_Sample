@@ -10,6 +10,7 @@
 #import "LIOBundleManager.h"
 #import "LIOTimerProxy.h"
 #import "LIOAnimatedKeyboardIcon.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation LIONotificationArea
 
@@ -75,6 +76,10 @@
             adLogo.frame = aFrame;
             adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             adLogo.backgroundColor = [UIColor clearColor];
+            adLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
+            adLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
+            adLogo.layer.shadowOpacity = 0.33;
+            adLogo.layer.shadowRadius = 0.75;
             [self addSubview:adLogo];
         }
         else
@@ -104,6 +109,10 @@
             aFrame.origin.y = 8.0;
             aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 5.0;
             tinyLogo.frame = aFrame;
+            tinyLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
+            tinyLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
+            tinyLogo.layer.shadowOpacity = 0.33;
+            tinyLogo.layer.shadowRadius = 0.75;
             
             UIButton *plusButton = [UIButton buttonWithType:UIButtonTypeCustom];
             [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];

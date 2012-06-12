@@ -139,6 +139,7 @@
     UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
     NSNumber *availability;
     NSMutableArray *urlSchemes;
+    NSURL *pendingIntraAppLinkURL;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -510,7 +511,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                     cachePolicy:NSURLCacheStorageNotAllowed
                                                      timeoutInterval:10.0];
     [appLaunchRequest setHTTPMethod:@"POST"];
-    [appLaunchRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    [appLaunchRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     appLaunchRequestData = [[NSMutableData alloc] init];
     appLaunchRequestResponseCode = -1;
     
@@ -518,7 +519,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                       cachePolicy:NSURLCacheStorageNotAllowed
                                                   timeoutInterval:10.0];
     [appContinueRequest setHTTPMethod:@"POST"];
-    [appContinueRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    [appContinueRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     appContinueRequestData = [[NSMutableData alloc] init];
     appContinueRequestResponseCode = -1;
     
@@ -709,6 +710,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [overriddenEndpoint release];
     [proactiveChatRules release];
     [availability release];
+    [pendingIntraAppLinkURL release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -770,7 +772,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [clickView removeFromSuperview];
     [clickView release];
     clickView = nil;
-    
+        
     [backgroundedTime release];
     backgroundedTime = nil;
     
@@ -781,6 +783,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [reintroTimeoutTimer stopTimer];
     [reintroTimeoutTimer release];
     reintroTimeoutTimer = nil;
+    
+    [pendingIntraAppLinkURL release];
+    pendingIntraAppLinkURL = nil;
     
     [availability release];
     availability = nil;
@@ -1003,10 +1008,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     if (NO == socketConnected || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController || interstitialViewController)
+    {
         return;
+    }
     
     if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+    {
         return;
+    }
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
     {
@@ -1080,7 +1089,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              withTimeout:-1
                                      tag:0];
                 
-                LIOLog(@"Sent %dx%d %@ screenshot (%u bytes).\nHeader: %@", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [dataToSend length], header);
+                LIOLog(@"\n\n[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes).\nHeader: %@\n\n", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [dataToSend length], header);
             });
         }
         else
@@ -2266,6 +2275,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return nil;
 }
 
+- (void)beginTransitionWithIntraAppLinkURL:(NSURL *)aURL
+{
+    [pendingIntraAppLinkURL release];
+    pendingIntraAppLinkURL = [aURL retain];
+    
+    [altChatViewController performDismissalAnimation];
+}
+
 #pragma mark -
 #pragma mark AsyncSocketDelegate_LIO methods
 
@@ -2569,6 +2586,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         resetAfterDisconnect = YES;
         [self killConnection];
+        return;
+    }
+    
+    if (pendingIntraAppLinkURL)
+    {
+        [[UIApplication sharedApplication] openURL:pendingIntraAppLinkURL];
+        [pendingIntraAppLinkURL release];
+        pendingIntraAppLinkURL = nil;
     }
 }
 
@@ -2963,6 +2988,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
     
+    [pendingIntraAppLinkURL release];
+    pendingIntraAppLinkURL = nil;
+    
     [self rejiggerWindows];
 }
 
@@ -3051,8 +3079,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
     }
     
-    //clickView.transform = transform;
-    //cursorView.transform = transform;
+    clickView.transform = transform;
+    cursorView.transform = transform;
     
     CGSize textSize = [controlButton.label.text sizeWithFont:controlButton.label.font];
     textSize.width += 20.0; // 10px padding on each side
@@ -3134,7 +3162,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                             cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                                                                         timeoutInterval:10.0];
                 [request setHTTPMethod:@"POST"];
-                [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+                [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
                 
                 if ([overriddenEndpoint length])
                 {

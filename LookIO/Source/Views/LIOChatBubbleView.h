@@ -33,6 +33,7 @@ typedef enum
 
 @protocol LIOChatBubbleViewDelegate
 - (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView;
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL;
 @end
 
 @interface LIOChatBubbleView : UIView <UIAlertViewDelegate>

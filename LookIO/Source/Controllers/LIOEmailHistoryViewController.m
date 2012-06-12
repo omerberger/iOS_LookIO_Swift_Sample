@@ -20,14 +20,8 @@
     [super loadView];
     UIView *rootView = self.view;
     
-    UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
-    
-    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
-    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-    backgroundView.frame = self.view.bounds;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [rootView addSubview:backgroundView];
-    
+    UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
+        
     navBar = [[UINavigationBar alloc] init];
     navBar.barStyle = UIBarStyleBlackOpaque;
     CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
@@ -50,43 +44,27 @@
     scrollView.frame = aFrame;
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
+
+    UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"];
+    texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    /*
-    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutTitle"]] autorelease];
-    aFrame = logoView.frame;
-    aFrame.size.height -= 20.0;
-    aFrame.size.width -= 67.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = 5.0;
-    logoView.frame = aFrame;
-    logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    [scrollView addSubview:logoView];
-    
-    UIImage *separatorImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableSeparator"];
-    UIImage *stretchableSeparatorImage = [separatorImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-    
-    UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
-    aFrame = topSeparator.frame;
-    aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 8.0;
-    aFrame.size.width = rootView.frame.size.width;
-    aFrame.size.height = 3.0;
-    topSeparator.frame = aFrame;
-    topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [scrollView addSubview:topSeparator];
-     */
+    UIImageView *backgroundView = [[UIImageView alloc] init];
+    backgroundView.image = texture;
+    aFrame = CGRectZero;
+    aFrame.size.width = rootView.bounds.size.width;
+    aFrame.size.height = rootView.bounds.size.height * 2.0;
+    backgroundView.frame = aFrame;
+    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [scrollView addSubview:backgroundView];
     
     UILabel *label01 = [[[UILabel alloc] init] autorelease];
     label01.text = @"Need a copy of this chat? No problem!";
-    label01.textColor = [UIColor whiteColor];
+    label01.textColor = textColor;
     label01.backgroundColor = [UIColor clearColor];
-    label01.layer.shadowColor = [UIColor blackColor].CGColor;
-    label01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label01.layer.shadowOpacity = 0.5;
-    label01.layer.shadowRadius = 1.0;
     label01.font = [UIFont boldSystemFontOfSize:14.0];
     [label01 sizeToFit];
     aFrame = label01.frame;
-    aFrame.origin.y = 20.0; //topSeparator.frame.origin.y + topSeparator.frame.size.height + 5.0;
+    aFrame.origin.y = 20.0;
     aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
     label01.frame = aFrame;
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -94,12 +72,8 @@
     
     label02 = [[UILabel alloc] init];
     label02.text = @"Your Email Address:";
-    label02.textColor = altBlue;
+    label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
-    label02.layer.shadowColor = [UIColor blackColor].CGColor;
-    label02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label02.layer.shadowOpacity = 0.5;
-    label02.layer.shadowRadius = 1.0;
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
@@ -109,8 +83,8 @@
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
     
-    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableField"];
-    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
+    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
+    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
     
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     fieldBackground.userInteractionEnabled = YES;
@@ -143,22 +117,19 @@
         inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
-    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableGreenButton"];
-    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableMatteOrangeButton"];
+    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
     [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    submitButton.titleLabel.layer.shadowOpacity = 0.5;
-    submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
     aFrame.size.width = self.view.bounds.size.width - 20.0;
-    aFrame.origin.x = 10.0; //(rootView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = 10.0;
     aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 8.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -166,24 +137,6 @@
     
     scrollView.contentSize = CGSizeMake(0.0, submitButton.frame.origin.y + submitButton.frame.size.height);
 }
-
-/*
-- (void)rejiggerInterface
-{
-    CGRect aFrame = fieldBackground.frame;
-    aFrame.size.width = 290.0;
-    aFrame.size.height = 48.0;
-    aFrame.origin.y = label02.frame.origin.y + label02.frame.size.height + 10.0;
-    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    fieldBackground.frame = aFrame;
-    
-    submitButton.bounds = fieldBackground.bounds;
-    aFrame = submitButton.frame;
-    aFrame.origin.x = (self.view.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 3.0;
-    submitButton.frame = aFrame;
-}
-*/
 
 - (void)viewDidLoad
 {

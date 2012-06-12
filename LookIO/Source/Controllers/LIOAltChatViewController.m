@@ -1476,6 +1476,11 @@
     });
 }
 
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL
+{
+    [[LIOLookIOManager sharedLookIOManager] beginTransitionWithIntraAppLinkURL:aURL];
+}
+
 #pragma mark -
 #pragma mark LIOToasterViewDelegate methods
 

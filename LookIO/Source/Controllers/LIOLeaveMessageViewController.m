@@ -20,12 +20,12 @@
     [super loadView];
     UIView *rootView = self.view;
     
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
     
-    UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
+    UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"];
+    texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
-    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
+    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:texture] autorelease];
     backgroundView.frame = self.view.bounds;
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:backgroundView];
@@ -55,33 +55,10 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
     
-    /*
-    UILabel *label01 = [[[UILabel alloc] init] autorelease];
-    label01.text = @"Sorry, no agents are available.";
-    label01.textColor = [UIColor whiteColor];
-    label01.backgroundColor = [UIColor clearColor];
-    label01.layer.shadowColor = [UIColor blackColor].CGColor;
-    label01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label01.layer.shadowOpacity = 0.5;
-    label01.layer.shadowRadius = 1.0;
-    label01.font = [UIFont boldSystemFontOfSize:14.0];
-    [label01 sizeToFit];
-    aFrame = label01.frame;
-    aFrame.origin.y = 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
-    label01.frame = aFrame;
-    label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    [scrollView addSubview:label01];
-    */
-    
     label02 = [[UILabel alloc] init];
     label02.text = @"Please enter your email and a message for further help:";
-    label02.textColor = altBlue;
+    label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
-    label02.layer.shadowColor = [UIColor blackColor].CGColor;
-    label02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label02.layer.shadowOpacity = 0.5;
-    label02.layer.shadowRadius = 1.0;
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
@@ -91,8 +68,8 @@
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
     
-    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableField"];
-    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
+    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
+    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
     
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     fieldBackground.userInteractionEnabled = YES;
@@ -153,18 +130,14 @@
     if ([initialMessage length])
         messageView.text = initialMessage;
     
-    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableGreenButton"];
-    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableMatteOrangeButton"];
+    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
     [submitButton setTitle:@"Send" forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    submitButton.titleLabel.layer.shadowOpacity = 0.5;
-    submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
     aFrame.origin.x = 10.0;

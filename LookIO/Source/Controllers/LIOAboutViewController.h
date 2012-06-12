@@ -18,8 +18,10 @@
 
 @interface LIOAboutViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 {
+    UIImageView *texturedBackground;
     UILabel *textsplosion01, *textsplosion02, *header01, *header02, *label02;
-    UIImageView *fieldBackground, *bottomSeparator;
+    UIImageView *fieldBackground, *logoView;
+    UIImageView *bottomSeparator, *topSeparator;
     UIScrollView *scrollView;
     UITextField *inputField;
     UIView *p1Container, *p2Container;

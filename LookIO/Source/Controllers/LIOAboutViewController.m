@@ -26,13 +26,9 @@
 
     CGRect rootBounds = self.view.bounds;
     
-    UIColor *altBlue = [UIColor colorWithRed:(156.0/255.0) green:(213.0/255.0) blue:(240.0/255.0) alpha:1.0];
+    UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
     
-    UIImage *backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutBackground"];
-    UIImageView *backgroundView = [[[UIImageView alloc] initWithImage:backgroundImage] autorelease];
-    backgroundView.frame = self.view.bounds;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:backgroundView];
+    self.view.backgroundColor = [UIColor whiteColor];
         
     scrollView = [[UIScrollView alloc] init];
     scrollView.frame = rootBounds;
@@ -53,36 +49,33 @@
     navBar.delegate = self;
     [self.view addSubview:navBar];
     
-    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
+    logoView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]];
     aFrame = logoView.frame;
-    aFrame.size.width = 215.0;
-    aFrame.size.height = 47.0;
+    aFrame.size.width = 206.0;
+    aFrame.size.height = 30.0;
     aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = navBar.frame.size.height + 10.0;
+    aFrame.origin.y = navBar.frame.size.height + 12.0;
     logoView.frame = aFrame;
     logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:logoView];
     
-    UIImage *separatorImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableSeparator"];
-    UIImage *stretchableSeparatorImage = [separatorImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+    UIImage *repeatableSeparator = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableSeparator"];
+    repeatableSeparator = [repeatableSeparator stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    UIImageView *topSeparator = [[[UIImageView alloc] initWithImage:stretchableSeparatorImage] autorelease];
+    topSeparator = [[UIImageView alloc] init];
+    topSeparator.image = repeatableSeparator;
     aFrame = topSeparator.frame;
-    aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 8.0;
+    aFrame.origin.y = logoView.frame.origin.y + logoView.frame.size.height + 12.0;
     aFrame.size.width = rootBounds.size.width;
-    aFrame.size.height = 3.0;
+    aFrame.size.height = 2.5;
     topSeparator.frame = aFrame;
     topSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:topSeparator];
     
     UILabel *label01 = [[[UILabel alloc] init] autorelease];
     label01.text = @"Are you a developer? Join our beta:";
-    label01.textColor = [UIColor whiteColor];
+    label01.textColor = textColor;
     label01.backgroundColor = [UIColor clearColor];
-    label01.layer.shadowColor = [UIColor blackColor].CGColor;
-    label01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label01.layer.shadowOpacity = 0.5;
-    label01.layer.shadowRadius = 1.0;
     label01.font = [UIFont boldSystemFontOfSize:14.0];
     [label01 sizeToFit];
     aFrame = label01.frame;
@@ -94,12 +87,8 @@
     
     label02 = [[UILabel alloc] init];
     label02.text = @"Your Email Address:";
-    label02.textColor = altBlue;
+    label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
-    label02.layer.shadowColor = [UIColor blackColor].CGColor;
-    label02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    label02.layer.shadowOpacity = 0.5;
-    label02.layer.shadowRadius = 1.0;
     label02.font = [UIFont systemFontOfSize:12.0];
     [label02 sizeToFit];
     aFrame = label02.frame;
@@ -109,8 +98,8 @@
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
     
-    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableField"];
-    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:13];
+    UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
+    UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:12 topCapHeight:0];
 
     fieldBackground = [[UIImageView alloc] initWithImage:stretchableFieldImage];
     fieldBackground.userInteractionEnabled = YES;
@@ -143,18 +132,15 @@
         inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
-    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableGreenButton"];
-    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:24];
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableMatteOrangeButton"];
+    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    [submitButton setTitle:@"Learn More" forState:UIControlStateNormal];
+    [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    submitButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    submitButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    submitButton.titleLabel.layer.shadowOpacity = 0.5;
-    submitButton.titleLabel.layer.shadowRadius = 1.0;
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
     aFrame.origin.x = (rootBounds.size.width / 2.0) - (aFrame.size.width / 2.0);
@@ -163,11 +149,12 @@
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:submitButton];
     
-    bottomSeparator = [[UIImageView alloc] initWithImage:stretchableSeparatorImage];
+    bottomSeparator = [[UIImageView alloc] init];
+    bottomSeparator.image = repeatableSeparator;
     aFrame = bottomSeparator.frame;
     aFrame.origin.y = submitButton.frame.origin.y + submitButton.frame.size.height + 8.0;
     aFrame.size.width = rootBounds.size.width;
-    aFrame.size.height = 3.0;
+    aFrame.size.height = 2.5;
     bottomSeparator.frame = aFrame;
     bottomSeparator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [scrollView addSubview:bottomSeparator];
@@ -188,12 +175,8 @@
     
     header01 = [[UILabel alloc] init];
     header01.text = @"About LP Mobile";
-    header01.textColor = [UIColor whiteColor];
+    header01.textColor = textColor;
     header01.backgroundColor = [UIColor clearColor];
-    header01.layer.shadowColor = [UIColor blackColor].CGColor;
-    header01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    header01.layer.shadowOpacity = 0.5;
-    header01.layer.shadowRadius = 1.0;
     header01.font = [UIFont boldSystemFontOfSize:14.0];
     [header01 sizeToFit];
     aFrame = header01.frame;
@@ -203,12 +186,8 @@
     
     textsplosion01 = [[UILabel alloc] init];
     textsplosion01.text = @"LP Mobile enables developers to easily integrate live chat with visual feedback into any mobile application. It is all done with a simple SDK and one line of code.";
-    textsplosion01.textColor = altBlue;
+    textsplosion01.textColor = textColor;
     textsplosion01.backgroundColor = [UIColor clearColor];
-    textsplosion01.layer.shadowColor = [UIColor blackColor].CGColor;
-    textsplosion01.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    textsplosion01.layer.shadowOpacity = 0.5;
-    textsplosion01.layer.shadowRadius = 1.0;
     textsplosion01.font = [UIFont systemFontOfSize:12.0];
     CGSize restrictedSize = [textsplosion01.text sizeWithFont:textsplosion01.font constrainedToSize:CGSizeMake(p1Container.frame.size.width - header01.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame = textsplosion01.frame;
@@ -236,12 +215,8 @@
     
     header02 = [[UILabel alloc] init];
     header02.text = @"Can agents control my device?";
-    header02.textColor = [UIColor whiteColor];
+    header02.textColor = textColor;
     header02.backgroundColor = [UIColor clearColor];
-    header02.layer.shadowColor = [UIColor blackColor].CGColor;
-    header02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    header02.layer.shadowOpacity = 0.5;
-    header02.layer.shadowRadius = 1.0;
     header02.font = [UIFont boldSystemFontOfSize:14.0];
     [header02 sizeToFit];
     aFrame = header02.frame;
@@ -251,12 +226,8 @@
     
     textsplosion02 = [[UILabel alloc] init];
     textsplosion02.text = @"LP Mobile agents are only able to interact with the app that you're in & only if you accept or initiate a help session. Ending the session ends the access the agent has to your app.";
-    textsplosion02.textColor = altBlue;
+    textsplosion02.textColor = textColor;
     textsplosion02.backgroundColor = [UIColor clearColor];
-    textsplosion02.layer.shadowColor = [UIColor blackColor].CGColor;
-    textsplosion02.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-    textsplosion02.layer.shadowOpacity = 0.5;
-    textsplosion02.layer.shadowRadius = 1.0;
     textsplosion02.font = [UIFont systemFontOfSize:12.0];
     restrictedSize = [textsplosion02.text sizeWithFont:textsplosion02.font constrainedToSize:CGSizeMake(p2Container.frame.size.width - header02.frame.origin.x, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame = textsplosion02.frame;
@@ -267,6 +238,16 @@
     textsplosion02.numberOfLines = 0;
     textsplosion02.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [p2Container addSubview:textsplosion02];
+    
+    texturedBackground = [[UIView alloc] init];
+    texturedBackground.backgroundColor = [UIColor colorWithPatternImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"]];
+    aFrame = CGRectZero;
+    aFrame.origin.y = topSeparator.frame.origin.y + topSeparator.frame.size.height;
+    aFrame.size.height = p2Container.frame.origin.y + p2Container.frame.size.height;
+    aFrame.size.width = rootBounds.size.width;
+    texturedBackground.frame = aFrame;
+    texturedBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [scrollView insertSubview:texturedBackground belowSubview:logoView];
     
     scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
@@ -315,6 +296,12 @@
     aFrame.origin.x = header02.frame.origin.x;
     aFrame.origin.y = header02.frame.origin.y + header02.frame.size.height + 3.0;
     textsplosion02.frame = aFrame;
+    
+    aFrame = CGRectZero;
+    aFrame.origin.y = topSeparator.frame.origin.y;
+    aFrame.size.height = p2Container.frame.origin.y + p2Container.frame.size.height;
+    aFrame.size.width = self.view.bounds.size.width;
+    texturedBackground.frame = aFrame;
     
     scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
@@ -365,6 +352,9 @@
     
     [bottomSeparator release];
     bottomSeparator = nil;
+    
+    [topSeparator release];
+    topSeparator = nil;
     
     [navBar release];
     navBar = nil;
@@ -423,6 +413,8 @@
     [label02 release];
     [bottomSeparator release];
     [navBar release];
+    [topSeparator release];
+    [logoView release];
     
     [super dealloc];
 }
@@ -446,6 +438,10 @@
     CGRect aFrame = navBar.frame;
     aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
     navBar.frame = aFrame;
+
+    aFrame = logoView.frame;
+    aFrame.origin.y = navBar.frame.size.height + ((topSeparator.frame.origin.y - (navBar.frame.origin.y + navBar.frame.size.height)) / 2.0) - (aFrame.size.height / 2.0);
+    logoView.frame = aFrame;    
 }
 
 #pragma mark -
