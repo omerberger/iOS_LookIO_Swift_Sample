@@ -206,10 +206,19 @@ static NSDataDetector *dataDetector = nil;
     // Check for links.
     NSRange fullRange = NSMakeRange(0, [aString length]);
     [dataDetector enumerateMatchesInString:aString options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+        NSString *currentLink = [aString substringWithRange:result.range];
+        if (NSTextCheckingTypeLink == result.resultType)
+        {
+            // We filter out links marked as "NSTextCheckingTypeLink" but which
+            // lack any kind of URL scheme at the beginning.
+            NSURL *testURL = [NSURL URLWithString:currentLink];
+            if (0 == [testURL.scheme length])
+                return;
+        }
+        
+        [links addObject:currentLink];
         [linkTypes addObject:[NSNumber numberWithLongLong:result.resultType]];
         [textCheckingResults addObject:result];
-        NSString *currentLink = [aString substringWithRange:result.range];
-        [links addObject:currentLink];
         
         // Special handling for links; could be intra-app!
         if (NSTextCheckingTypeLink == result.resultType)
@@ -413,17 +422,8 @@ static NSDataDetector *dataDetector = nil;
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            if (NO == [aLink hasPrefix:@"http://"] && NO == [aLink hasPrefix:@"https://"])
-            {
-                NSString *result = [@"http://" stringByAppendingString:aLink];
-                [urlBeingLaunched release];
-                urlBeingLaunched = [[NSURL URLWithString:result] retain];
-            }
-            else
-            {
-                [urlBeingLaunched release];
-                urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
-            }
+            [urlBeingLaunched release];
+            urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
             
             NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
