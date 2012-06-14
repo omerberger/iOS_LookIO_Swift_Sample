@@ -280,20 +280,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
         }
         
-        // Start the reachability monitor.
+        // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(reachabilityDidChange:)
                                                      name:LIOAnalyticsManagerReachabilityDidChangeNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
         
-        // Start the location monitor thingy.
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(locationWasDetermined:)
                                                      name:LIOAnalyticsManagerLocationWasDeterminedNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
-        
-        [[LIOAnalyticsManager sharedAnalyticsManager] beginLocationCheck];
     }
     
     return self;
@@ -3202,6 +3199,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [lastKnownLocation release];
     lastKnownLocation = [[userInfo objectForKey:LIOAnalyticsManagerLocationObjectKey] retain];
+    
+    LIOLog(@"\n\nLocation was determined!\n%@\n\n", lastKnownLocation);
 }
 
 #pragma mark -

@@ -53,6 +53,14 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         SCNetworkReachabilityContext context = {0, self, NULL, NULL, NULL};
         SCNetworkReachabilitySetCallback(reachabilityRef, reachabilityCallback, &context);
         SCNetworkReachabilityScheduleWithRunLoop(reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        
+        Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
+        if ($CLLocationManager)
+        {
+            locationManager = [[$CLLocationManager alloc] init];
+            [locationManager setDelegate:self];
+            [self beginLocationCheck];
+        }
     }
     
     return self;
@@ -273,12 +281,6 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     if (NO == [self locationServicesEnabled] || [[[UIDevice currentDevice] systemVersion] floatValue] < 5.0)
         return;
     
-    if (locationManager)
-        [locationManager release];
-
-    Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
-    locationManager = [[$CLLocationManager alloc] init];
-    [locationManager setDelegate:self];
     [locationManager startUpdatingLocation];
 }
 
@@ -293,8 +295,12 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
                                                         object:self
                                                       userInfo:userInfo];
     
-    [locationManager release];
-    locationManager = nil;
+    [locationManager stopUpdatingLocation];
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    [self beginLocationCheck];
 }
 
 @end
