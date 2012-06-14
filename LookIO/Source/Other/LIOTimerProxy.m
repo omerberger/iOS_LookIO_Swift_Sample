@@ -3,7 +3,7 @@
 //  LookIO
 //
 //  Created by Joe Toscano on 9/30/11.
-//  Copyright 2011 LookIO, Inc. All rights reserved.
+//  Copyright 2011 LivePerson, Inc. All rights reserved.
 //
 
 #import "LIOTimerProxy.h"

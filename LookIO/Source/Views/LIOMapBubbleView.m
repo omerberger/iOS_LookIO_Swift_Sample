@@ -3,7 +3,7 @@
 //  LookIO
 //
 //  Created by Joseph Toscano on 4/19/12.
-//  Copyright (c) 2012 LookIO, Inc. All rights reserved.
+//  Copyright (c) 2012 LivePerson, Inc. All rights reserved.
 //
 
 #import "LIOMapBubbleView.h"

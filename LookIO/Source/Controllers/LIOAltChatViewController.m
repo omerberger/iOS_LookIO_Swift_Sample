@@ -3,7 +3,7 @@
 //  LookIO
 //
 //  Created by Joseph Toscano on 12/5/11.
-//  Copyright (c) 2011 LookIO, Inc. All rights reserved.
+//  Copyright (c) 2011 LivePerson, Inc. All rights reserved.
 //
 
 #import "LIOAltChatViewController.h"

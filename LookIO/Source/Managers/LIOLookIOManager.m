@@ -3,7 +3,7 @@
 //  LookIO
 //
 //  Created by Joseph Toscano on 8/19/11.
-//  Copyright (c) 2011 LookIO, Inc. All rights reserved.
+//  Copyright (c) 2011 LivePerson, Inc. All rights reserved.
 //
 
 #import "AsyncSocket.h"
@@ -292,6 +292,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  selector:@selector(locationWasDetermined:)
                                                      name:LIOAnalyticsManagerLocationWasDeterminedNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        
         [[LIOAnalyticsManager sharedAnalyticsManager] beginLocationCheck];
     }
     
