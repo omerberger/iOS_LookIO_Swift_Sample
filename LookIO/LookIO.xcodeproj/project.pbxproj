@@ -11,6 +11,16 @@
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
+		D41F9425158AA40E004BE9A0 /* LIOSurveyManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */; };
+		D41F9426158AA40E004BE9A0 /* LIOSurveyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */; };
+		D41F9436158AA52C004BE9A0 /* LIOSurveyQuestion.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */; };
+		D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */; };
+		D41F9438158AA52C004BE9A0 /* LIOSurveyTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */; };
+		D41F9439158AA52C004BE9A0 /* LIOSurveyTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */; };
+		D41F943C158AA625004BE9A0 /* LIOSurveyPickerEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */; };
+		D41F943D158AA625004BE9A0 /* LIOSurveyPickerEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */; };
+		D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */; };
+		D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */; };
 		D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE7981563274B006DFE81 /* LIONotificationArea.h */; };
 		D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE7991563274B006DFE81 /* LIONotificationArea.m */; };
 		D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE8031565B869006DFE81 /* LIOToasterView.h */; };
@@ -29,12 +39,6 @@
 		D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
-		D46D5834158A892A00D8BD62 /* LIOSurveyManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D46D5832158A892A00D8BD62 /* LIOSurveyManager.h */; };
-		D46D5835158A892A00D8BD62 /* LIOSurveyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D46D5833158A892A00D8BD62 /* LIOSurveyManager.m */; };
-		D46D5839158A8ED200D8BD62 /* LIOSurveyTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = D46D5837158A8ED200D8BD62 /* LIOSurveyTemplate.h */; };
-		D46D583A158A8ED200D8BD62 /* LIOSurveyTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = D46D5838158A8ED200D8BD62 /* LIOSurveyTemplate.m */; };
-		D46D583D158A95F100D8BD62 /* LIOSurveyQuestion.h in Headers */ = {isa = PBXBuildFile; fileRef = D46D583B158A95F100D8BD62 /* LIOSurveyQuestion.h */; };
-		D46D583E158A95F100D8BD62 /* LIOSurveyQuestion.m in Sources */ = {isa = PBXBuildFile; fileRef = D46D583C158A95F100D8BD62 /* LIOSurveyQuestion.m */; };
 		D4868A78155AFE800081164D /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4868A76155AFE800081164D /* AsyncSocket.h */; };
 		D4868A79155AFE800081164D /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4868A77155AFE800081164D /* AsyncSocket.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
@@ -105,6 +109,16 @@
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
 		D403F7B715335CC100101941 /* LIOLogManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLogManager.m; path = Source/Managers/LIOLogManager.m; sourceTree = "<group>"; };
+		D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyManager.h; path = Source/Managers/LIOSurveyManager.h; sourceTree = "<group>"; };
+		D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyManager.m; path = Source/Managers/LIOSurveyManager.m; sourceTree = "<group>"; };
+		D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyQuestion.h; sourceTree = "<group>"; };
+		D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyQuestion.m; sourceTree = "<group>"; };
+		D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyTemplate.h; sourceTree = "<group>"; };
+		D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyTemplate.m; sourceTree = "<group>"; };
+		D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyPickerEntry.h; sourceTree = "<group>"; };
+		D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyPickerEntry.m; sourceTree = "<group>"; };
+		D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicProp.h; sourceTree = "<group>"; };
+		D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicProp.m; sourceTree = "<group>"; };
 		D42DE7981563274B006DFE81 /* LIONotificationArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONotificationArea.h; path = Source/Views/LIONotificationArea.h; sourceTree = "<group>"; };
 		D42DE7991563274B006DFE81 /* LIONotificationArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONotificationArea.m; path = Source/Views/LIONotificationArea.m; sourceTree = "<group>"; };
 		D42DE8031565B869006DFE81 /* LIOToasterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOToasterView.h; path = Source/Views/LIOToasterView.h; sourceTree = "<group>"; };
@@ -123,12 +137,6 @@
 		D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORuleViewVisible.m; path = Source/Other/LIORuleViewVisible.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
-		D46D5832158A892A00D8BD62 /* LIOSurveyManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyManager.h; path = Source/Managers/LIOSurveyManager.h; sourceTree = "<group>"; };
-		D46D5833158A892A00D8BD62 /* LIOSurveyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyManager.m; path = Source/Managers/LIOSurveyManager.m; sourceTree = "<group>"; };
-		D46D5837158A8ED200D8BD62 /* LIOSurveyTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyTemplate.h; path = Source/Other/LIOSurveyTemplate.h; sourceTree = "<group>"; };
-		D46D5838158A8ED200D8BD62 /* LIOSurveyTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyTemplate.m; path = Source/Other/LIOSurveyTemplate.m; sourceTree = "<group>"; };
-		D46D583B158A95F100D8BD62 /* LIOSurveyQuestion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyQuestion.h; path = Source/Other/LIOSurveyQuestion.h; sourceTree = "<group>"; };
-		D46D583C158A95F100D8BD62 /* LIOSurveyQuestion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyQuestion.m; path = Source/Other/LIOSurveyQuestion.m; sourceTree = "<group>"; };
 		D4868A76155AFE800081164D /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
 		D4868A77155AFE800081164D /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
@@ -206,6 +214,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D41F9431158AA52C004BE9A0 /* Survey */ = {
+			isa = PBXGroup;
+			children = (
+				D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */,
+				D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */,
+				D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */,
+				D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */,
+				D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */,
+				D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */,
+				D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */,
+				D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */,
+			);
+			name = Survey;
+			path = Source/Other/Survey;
+			sourceTree = "<group>";
+		};
 		D440D47B1541E8450045DBFF /* TTTAttributedLabel */ = {
 			isa = PBXGroup;
 			children = (
@@ -245,8 +269,8 @@
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
 				D454B7F71576D60300CF73CC /* LIORulesManager.h */,
 				D454B7F81576D60300CF73CC /* LIORulesManager.m */,
-				D46D5832158A892A00D8BD62 /* LIOSurveyManager.h */,
-				D46D5833158A892A00D8BD62 /* LIOSurveyManager.m */,
+				D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */,
+				D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */,
 			);
 			name = Managers;
 			sourceTree = "<group>";
@@ -279,6 +303,7 @@
 		D47C98ED14C9F01900E1223F /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				D41F9431158AA52C004BE9A0 /* Survey */,
 				D4C902491549D04A00B36D68 /* LIOCacheEntry.h */,
 				D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */,
 				D4ADC7B414F3218300713F29 /* LIOChatMessage.h */,
@@ -287,10 +312,6 @@
 				D440D4741540BD400045DBFF /* LIOMapAnnotation.m */,
 				D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */,
 				D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */,
-				D46D583B158A95F100D8BD62 /* LIOSurveyQuestion.h */,
-				D46D583C158A95F100D8BD62 /* LIOSurveyQuestion.m */,
-				D46D5837158A8ED200D8BD62 /* LIOSurveyTemplate.h */,
-				D46D5838158A8ED200D8BD62 /* LIOSurveyTemplate.m */,
 				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
 				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
 			);
@@ -458,9 +479,11 @@
 				D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */,
 				D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */,
 				D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */,
-				D46D5834158A892A00D8BD62 /* LIOSurveyManager.h in Headers */,
-				D46D5839158A8ED200D8BD62 /* LIOSurveyTemplate.h in Headers */,
-				D46D583D158A95F100D8BD62 /* LIOSurveyQuestion.h in Headers */,
+				D41F9425158AA40E004BE9A0 /* LIOSurveyManager.h in Headers */,
+				D41F9436158AA52C004BE9A0 /* LIOSurveyQuestion.h in Headers */,
+				D41F9438158AA52C004BE9A0 /* LIOSurveyTemplate.h in Headers */,
+				D41F943C158AA625004BE9A0 /* LIOSurveyPickerEntry.h in Headers */,
+				D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -573,9 +596,11 @@
 				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
 				D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */,
 				D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */,
-				D46D5835158A892A00D8BD62 /* LIOSurveyManager.m in Sources */,
-				D46D583A158A8ED200D8BD62 /* LIOSurveyTemplate.m in Sources */,
-				D46D583E158A95F100D8BD62 /* LIOSurveyQuestion.m in Sources */,
+				D41F9426158AA40E004BE9A0 /* LIOSurveyManager.m in Sources */,
+				D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */,
+				D41F9439158AA52C004BE9A0 /* LIOSurveyTemplate.m in Sources */,
+				D41F943D158AA625004BE9A0 /* LIOSurveyPickerEntry.m in Sources */,
+				D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

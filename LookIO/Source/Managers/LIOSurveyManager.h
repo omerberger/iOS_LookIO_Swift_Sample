@@ -23,7 +23,7 @@ typedef enum
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
-- (void)populateSurveyWithTemplateDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
+- (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;

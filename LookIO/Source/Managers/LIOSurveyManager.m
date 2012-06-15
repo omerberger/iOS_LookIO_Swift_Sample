@@ -7,6 +7,10 @@
 //
 
 #import "LIOSurveyManager.h"
+#import "LIOSurveyTemplate.h"
+#import "LIOSurveyQuestion.h"
+#import "LIOSurveyPickerEntry.h"
+#import "LIOSurveyLogicProp.h"
 
 static LIOSurveyManager *sharedSurveyManager = nil;
 
@@ -62,21 +66,38 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     ]
 }
 */
-- (void)populateSurveyWithTemplateDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
+- (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
     NSString *headerString = [aDict objectForKey:@"header"];
     
-    
+    LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
+    NSArray *questionsArray = [aDict objectForKey:@"questions"];
+    NSMutableArray *questions = [NSMutableArray array];
+    for (NSDictionary *aQuestionDict in questionsArray)
+    {
+        LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
+        newQuestion.questionId = [[aQuestionDict objectForKey:@"id"] intValue];
+        newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
+        newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
+        newQuestion.label = [aQuestionDict objectForKey:@"label"];
+        //newQuestion.
+    }
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {
         [preChatHeader release];
         preChatHeader = [headerString retain];
+        
+        [preChatTemplate release];
+        preChatTemplate = newTemplate;
     }
     else
     {
         [postChatHeader release];
         postChatHeader = [headerString retain];
+        
+        [postChatTemplate release];
+        postChatTemplate = newTemplate;
     }
 }
 
