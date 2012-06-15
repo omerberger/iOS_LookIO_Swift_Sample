@@ -20,7 +20,8 @@ typedef enum
 {
     LIOSurveyQuestionValidationTypeAlphanumeric,
     LIOSurveyQuestionValidationTypeNumeric,
-    LIOSurveyQuestionValidationTypeEmail
+    LIOSurveyQuestionValidationTypeEmail,
+    LIOSurveyQuestionValidationTypeRegexp
 } LIOSurveyQuestionValidationType;
 
 @interface LIOSurveyQuestion : NSObject

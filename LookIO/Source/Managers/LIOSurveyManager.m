@@ -80,8 +80,41 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
-        //newQuestion.
+        newQuestion.logicId = [[aQuestionDict objectForKey:@"logicId"] intValue];
+        newQuestion.lastKnownTextValue = [aQuestionDict objectForKey:@"lastKnownValue"];
+        
+        NSString *typeString = [aQuestionDict objectForKey:@"type"];
+        if ([typeString isEqualToString:@"picker"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypePicker;
+        else if ([typeString isEqualToString:@"multiselect"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypeMultiselect;
+        else if ([typeString isEqualToString:@"switch"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypeSwitch;
+        else
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+        
+        NSString *validationString = [aQuestionDict objectForKey:@"validationType"];
+        if ([validationString isEqualToString:@"alphanumeric"])
+            newQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
+        else if ([validationString isEqualToString:@"numeric"])
+            newQuestion.validationType = LIOSurveyQuestionValidationTypeNumeric;
+        else if ([validationString isEqualToString:@"email"])
+            newQuestion.validationType = LIOSurveyQuestionValidationTypeEmail;
+        else
+            newQuestion.validationType = LIOSurveyQuestionValidationTypeRegexp;
+        
+        if (LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType || LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType)
+        {
+            NSArray *entryArray = [aQuestionDict objectForKey:@"entries"];
+            for (NSDictionary *anEntryDict in entryArray)
+            {
+                
+            }
+        }
+            
     }
+    
+    newTemplate.questions = questions;
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {
