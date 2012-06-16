@@ -462,6 +462,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [lastKnownButtonVisibility release];
     lastKnownButtonVisibility = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] retain];
+    // Sensible default
+    if (nil == lastKnownButtonVisibility)
+        lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
     
     [lastKnownButtonText release];
     lastKnownButtonText = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey] retain];
@@ -493,6 +496,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [lastKnownEnabledStatus release];
     lastKnownEnabledStatus = [[userDefaults objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey] retain];
+    // Sensible default
+    if (nil == lastKnownEnabledStatus)
+        lastKnownEnabledStatus = [[NSNumber alloc] initWithBool:NO];
     
     [self refreshControlButtonVisibility];
     
