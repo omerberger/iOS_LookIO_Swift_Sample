@@ -11,6 +11,6 @@
 @implementation LIOSurveyQuestion
 
 @synthesize questionId, mandatory, order, label, logicId, displayType;
-@synthesize validationType, lastKnownTextValue, pickerEntries;
+@synthesize validationType, pickerEntries;
 
 @end

@@ -30,6 +30,7 @@
 #import "LIOInterstitialViewController.h"
 #import "LIOLogManager.h"
 #import "LIOTimerProxy.h"
+#import "LIOSurveyManager.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -40,15 +41,15 @@
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerScreenCaptureInterval       0.5
-#define LIOLookIOManagerContinuationReportInterval  300.0 // 5 minutes
+#define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
 #define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
 #define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
 
-#define LIOLookIOManagerDefaultControlEndpoint      @"connect.look.io"
-#define LIOLookIOManagerDefaultControlEndpoint_Dev  @"connect.dev.look.io"
+#define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
+#define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.dev.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
@@ -140,6 +141,10 @@
     NSNumber *availability;
     NSMutableArray *urlSchemes;
     NSURL *pendingIntraAppLinkURL;
+    int currentVisitId;
+    NSString *currentUILocation, *currentRequiredSkill;
+    NSString *lastKnownContinueURL;
+    NSTimeInterval nextTimeInterval;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -241,6 +246,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         originalStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
+        
+        nextTimeInterval = 0.0;
         
         controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
         usesTLS = YES;
@@ -369,23 +376,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appContinueRequestConnection)
         return;
     
-    if ([overriddenEndpoint length])
-    {
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerAppContinueRequestURL]];
-        [appContinueRequest setURL:url];
-    }
-    else
-    {
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppContinueRequestURL]];
-        [appContinueRequest setURL:url];
-    }
-    
     // Send it! ... if we have Internets, that is.
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
+        [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictJSONEncoded);
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
@@ -527,7 +524,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     appContinueRequestData = [[NSMutableData alloc] init];
     appContinueRequestResponseCode = -1;
     
-    continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerContinuationReportInterval
+    if (0.0 == nextTimeInterval)
+        nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
+    
+    continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
                                                              target:self
                                                            selector:@selector(continuationTimerDidFire)];
         
@@ -569,20 +569,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay.hidden = YES;
     if (NO == padUI)
         [keyWindow addSubview:statusBarUnderlay];
-    
-    /*
-    UILabel *vLabel = [[[UILabel alloc] init] autorelease];
-    vLabel.backgroundColor = [UIColor clearColor];
-    vLabel.font = [UIFont boldSystemFontOfSize:14.0];
-    vLabel.textColor = [UIColor whiteColor];
-    vLabel.text = @"V";
-    [vLabel sizeToFit];
-    CGRect aFrame = vLabel.frame;
-    aFrame.origin.x = 200.0;
-    aFrame.origin.y = 0.0;
-    vLabel.frame = aFrame;
-    [statusBarUnderlay addSubview:vLabel];
-    */
     
     statusBarUnderlayBlackout = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
     statusBarUnderlayBlackout.backgroundColor = [UIColor blackColor];
@@ -715,6 +701,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [proactiveChatRules release];
     [availability release];
     [pendingIntraAppLinkURL release];
+    [currentUILocation release];
+    [currentRequiredSkill release];
+    [lastKnownContinueURL release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -795,8 +784,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     availability = nil;
     
     previousReconnectionTimerStep = 2;
-    
     previousScreenshotHash = 0;
+    currentVisitId = 0;
+    nextTimeInterval = 0.0;
+    
+    [currentUILocation release];
+    currentUILocation = nil;
+    
+    [currentRequiredSkill release];
+    currentRequiredSkill = nil;
+    
+    [lastKnownContinueURL release];
+    lastKnownContinueURL = nil;
     
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
@@ -1159,13 +1158,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
     }
-    
-    /*
-    NSString *sessionId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
-    if ([sessionId length] && NO == socketConnected && resumeMode)
-        [altChatViewController showReconnectionOverlay];
-     */
-    
+        
     controlButton.hidden = YES;
 }
 
@@ -1293,6 +1286,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)recordCurrentUILocation:(NSString *)aLocationString
 {
+    [currentUILocation release];
+    currentUILocation = [aLocationString retain];
+    
     NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:aLocationString, @"location_name", nil];
     NSString *uiLocation = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                          @"advisory", @"type",
@@ -1304,6 +1300,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[uiLocation dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
+}
+
+- (void)recordCurrentRequiredSkill:(NSString *)aRequiredSkill
+{
+    [currentRequiredSkill release];
+    currentRequiredSkill = [aRequiredSkill retain];
 }
 
 - (void)handlePacket:(NSDictionary *)aPacket
@@ -1844,7 +1846,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlButton setNeedsDisplay];
 }
 
-- (void)parseAndSaveClientParams:(NSDictionary *)params
+- (void)parseAndSaveSettingsPayload:(NSDictionary *)params
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
@@ -1941,6 +1943,41 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [proactiveChatRules addEntriesFromDictionary:proactiveChat];
     }
     
+    NSNumber *visitIdNumber = [params objectForKey:@"visit_id"];
+    if (visitIdNumber)
+    {
+        currentVisitId = [visitIdNumber intValue];
+    }
+    
+    NSString *continueURLString = [params objectForKey:@"continue_url"];
+    if ([continueURLString length])
+    {
+        [lastKnownContinueURL release];
+        lastKnownContinueURL = [continueURLString retain];
+    }
+    
+    NSNumber *nextIntervalNumber = [params objectForKey:@"next_interval"];
+    if (nextIntervalNumber)
+    {
+        nextTimeInterval = [nextIntervalNumber doubleValue];
+    }
+    
+    //NSDictionary *surveyDict = [params objectForKey:@"surveys"];
+    //NSDictionary *preSurvey = [surveyDict objectForKey:@"pre"];
+    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]}]}";
+    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+    if (preSurvey)
+    {
+        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+    }
+    /*
+    NSDictionary *postSurvey = [surveyDict objectForKey:@"post"];
+    if (postSurvey)
+    {
+        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+    }
+    */
+    
     [self refreshControlButtonVisibility];
     [self applicationDidChangeStatusBarOrientation:nil];
 }
@@ -2018,6 +2055,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       [[UIDevice currentDevice] systemVersion], @"platform_version",
                                       LOOKIO_VERSION_STRING, @"sdk_version",
                                       nil];
+    
+    if (currentVisitId)
+        [introDict setObject:[NSNumber numberWithInt:currentVisitId] forKey:@"visit_id"];
     
     if (includesType)
         [introDict setObject:@"intro" forKey:@"type"];
@@ -2224,6 +2264,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)continuationTimerDidFire
 {
+    [continuationTimer stopTimer];
+    [continuationTimer release];
+    
+    if (0.0 == nextTimeInterval)
+        nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
+    
+    continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
+                                                             target:self
+                                                           selector:@selector(continuationTimerDidFire)];
+    
     [self sendContinuationReport];
 }
 
@@ -3277,7 +3327,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
         
         NSDictionary *params = [responseDict objectForKey:@"response"];
-        [self parseAndSaveClientParams:params];
+        [self parseAndSaveSettingsPayload:params];
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;
@@ -3290,7 +3340,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseDict);
         
         NSDictionary *params = [responseDict objectForKey:@"response"];
-        [self parseAndSaveClientParams:params];
+        [self parseAndSaveSettingsPayload:params];
         
         [appContinueRequestConnection release];
         appContinueRequestConnection = nil;

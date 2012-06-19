@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
+// User defaults keys
+#define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastKnownPreChatSurveyDictKey"
+#define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastKnownPostChatSurveyDictKey"
+
 @class LIOSurveyManager, LIOSurveyTemplate;
 
 typedef enum
@@ -20,12 +24,16 @@ typedef enum
 {
     NSString *preChatHeader, *postChatHeader;
     LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
+    NSMutableDictionary *preChatResponses, *postChatResponses;
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
+- (void)registerAnswerString:(NSString *)anAnswerString forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
+- (NSString *)answerStringForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
+
 
 @end

@@ -35,6 +35,7 @@
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
 - (void)recordCurrentUILocation:(NSString *)aLocationString;
+- (void)recordCurrentRequiredSkill:(NSString *)aRequiredSkill;
 - (void)beginSession;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey;
 - (id)sessionExtraForKey:(NSString *)aKey;

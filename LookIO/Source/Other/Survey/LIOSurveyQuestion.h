@@ -33,7 +33,6 @@ typedef enum
     int logicId;
     LIOSurveyQuestionDisplayType displayType;
     LIOSurveyQuestionValidationType validationType;
-    NSString *lastKnownTextValue;
     NSArray *pickerEntries;
 }
 
@@ -44,7 +43,6 @@ typedef enum
 @property(nonatomic, assign) int logicId;
 @property(nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
 @property(nonatomic, assign) LIOSurveyQuestionValidationType validationType;
-@property(nonatomic, retain) NSString *lastKnownTextValue;
 @property(nonatomic, retain) NSArray *pickerEntries;
 
 @end
