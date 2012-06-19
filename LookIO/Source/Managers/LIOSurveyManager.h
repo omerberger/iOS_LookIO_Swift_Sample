@@ -31,6 +31,7 @@ typedef enum
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
 - (void)registerAnswerString:(NSString *)anAnswerString forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
 - (NSString *)answerStringForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
+- (BOOL)responsesRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;

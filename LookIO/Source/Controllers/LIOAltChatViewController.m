@@ -22,6 +22,7 @@
 #import "TTTAttributedLabel.h"
 #import "LIONotificationArea.h"
 #import "LIOToasterView.h"
+#import "LIOSurveyManager.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -44,7 +45,7 @@
 
 @implementation LIOAltChatViewController
 
-@synthesize delegate, dataSource, initialChatText;
+@synthesize delegate, dataSource, initialChatText, currentMode;
 @dynamic agentTyping;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -392,6 +393,8 @@
     
     [toasterView release];
     toasterView = nil;
+    
+    currentMessages = nil;
 }
 
 - (void)dealloc
@@ -405,7 +408,8 @@
     [background release];
     [pendingChatText release];
     [initialChatText release];
-    [messages release];
+    [chatMessages release];
+    [surveyMessages release];
     [headerBar release];
     [inputBar release];
     [functionHeader release];
@@ -440,7 +444,7 @@
     
     [self reloadMessages];
     
-    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] - 1 inSection:0];
+    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] - 1 inSection:0];
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
     if (NO == padUI)
@@ -705,30 +709,35 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(){
             if (myScrollId == currentScrollId)
             {
-                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
+                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] inSection:0];
                 [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
             }
         });
     }
     else
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[messages count] inSection:0];
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
 
 - (void)reloadMessages
 {
-    [messages release];
-    messages = [[dataSource altChatViewControllerChatMessages:self] retain];
+    [chatMessages release];
+    chatMessages = [[dataSource altChatViewControllerChatMessages:self] retain];
+    
+    if (LIOAltChatViewControllerModeChat == currentMode)
+        currentMessages = chatMessages;
+    else
+        currentMessages = surveyMessages;
     
     // Pre-calculate all bubble heights. D:
     [chatBubbleHeights removeAllObjects];
-    for (int i=0; i<[messages count]; i++)
+    for (int i=0; i<[currentMessages count]; i++)
     {
         LIOChatBubbleView *tempView = [[LIOChatBubbleView alloc] init];
         
-        LIOChatMessage *aMessage = [messages objectAtIndex:i];
+        LIOChatMessage *aMessage = [currentMessages objectAtIndex:i];
         if (LIOChatMessageKindLocal == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
@@ -785,7 +794,7 @@
 
 - (void)refreshExpandingFooter
 {
-    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([messages count] + 1) inSection:0];
+    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([currentMessages count] + 1) inSection:0];
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
 }
 
@@ -794,7 +803,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [messages count] + 2;
+    return [currentMessages count] + 2;
 }
 
 /*
@@ -809,7 +818,7 @@
     if (0 == indexPath.row)
         return functionHeader;
     
-    if ([messages count] + 1 == indexPath.row)
+    if ([currentMessages count] + 1 == indexPath.row)
     {
         UITableViewCell *expandingFooter = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
         expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -841,7 +850,7 @@
     aBubble.index = indexPath.row;
     [aCell.contentView addSubview:aBubble];
     
-    LIOChatMessage *aMessage = [messages objectAtIndex:(indexPath.row - 1)];
+    LIOChatMessage *aMessage = [currentMessages objectAtIndex:(indexPath.row - 1)];
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
@@ -877,17 +886,17 @@
     if (0 == indexPath.row)
         return 64.0;
     
-    if ([messages count] + 1 == indexPath.row)
+    if ([currentMessages count] + 1 == indexPath.row)
     {
         if (padUI)
         {
             // We want to show more bubbles on iPad. Thus, a smaller expanding footer vs. iPhone.
             CGFloat heightAccum = 0.0;
-            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
-            if ([messages count] >= 1)
-                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 1) inSection:0]];
-            if ([messages count] >= 2)
-                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([messages count] - 2) inSection:0]];
+            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[currentMessages count] inSection:0]];
+            if ([currentMessages count] >= 1)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([currentMessages count] - 1) inSection:0]];
+            if ([currentMessages count] >= 2)
+                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([currentMessages count] - 2) inSection:0]];
             
             CGFloat result = tableView.bounds.size.height - heightAccum;
             if (result < 0.0) result = 7.0 - 10.0;
@@ -895,7 +904,7 @@
         }
         else
         {
-            CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[messages count] inSection:0]];
+            CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[currentMessages count] inSection:0]];
             CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
             if (result < 0.0) result = 7.0;
             
@@ -914,7 +923,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == [messages count] + 1)
+    if (indexPath.row == [currentMessages count] + 1)
         [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 

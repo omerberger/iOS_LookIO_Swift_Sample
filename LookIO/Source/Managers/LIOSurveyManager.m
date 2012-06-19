@@ -11,6 +11,7 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOSurveyPickerEntry.h"
 #import "LIOSurveyLogicProp.h"
+#import "LIOLogManager.h"
 
 static LIOSurveyManager *sharedSurveyManager = nil;
 
@@ -85,6 +86,25 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     }
 }
 
+- (BOOL)responsesRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType
+{
+    LIOSurveyTemplate *aSurvey;
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        aSurvey = preChatTemplate;
+    else
+        aSurvey = postChatTemplate;
+    
+    int unansweredMandatoryQuestions = 0;
+    for (LIOSurveyQuestion *aQuestion in aSurvey.questions)
+    {
+        NSString *anAnswer = [self answerStringForSurveyType:surveyType withQuestionIndex:aQuestion.questionId];
+        if (aQuestion.mandatory && 0 == [anAnswer length])
+            unansweredMandatoryQuestions++;
+    }
+    
+    return unansweredMandatoryQuestions > 0;
+}
+
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -147,6 +167,8 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 }
             }
         }
+        
+        [questions addObject:newQuestion];
     }
     
     newTemplate.questions = questions;

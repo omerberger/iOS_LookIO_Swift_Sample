@@ -1137,6 +1137,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     altChatViewController.delegate = self;
     altChatViewController.dataSource = self;
     altChatViewController.initialChatText = pendingChatText;
+    
+    // We might need to be in survey mode...
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
+        altChatViewController.currentMode = LIOAltChatViewControllerModePreChatSurvey;
+    
     [lookioWindow addSubview:altChatViewController.view];
     [self rejiggerWindows];
     
@@ -1144,7 +1150,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [altChatViewController performRevealAnimation];
     
     [pendingChatText release];
-    pendingChatText = nil;
+    pendingChatText = nil;    
     
     if (introduced)
     {

@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum
+{
+    LIOAltChatViewControllerModeChat,
+    LIOAltChatViewControllerModePreChatSurvey,
+    LIOAltChatViewControllerModePostChatSurvey
+} LIOAltChatViewControllerMode;
+
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView;
 
 @protocol LIOInputBarViewDelegate;
@@ -50,7 +57,7 @@
     UIView *background;
     UIView *reconnectionOverlay;
     UITableView *tableView;
-    NSArray *messages;
+    NSArray *currentMessages, *chatMessages, *surveyMessages;
     NSUInteger previousTextLength;
     NSString *pendingChatText, *initialChatText;
     BOOL agentTyping, keyboardShowing, leavingMessage;
@@ -69,6 +76,7 @@
     NSString *pendingNotificationString;
     BOOL pendingNotificationStringIsTypingNotification;
     BOOL aboutScreenWasPresentedViaInputBarAdArea;
+    LIOAltChatViewControllerMode currentMode;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
@@ -77,6 +85,7 @@
 @property(nonatomic, assign) id<LIOAltChatViewControllerDataSource> dataSource;
 @property(nonatomic, retain) NSString *initialChatText;
 @property(nonatomic, assign, getter=isAgentTyping) BOOL agentTyping;
+@property(nonatomic, assign) LIOAltChatViewControllerMode currentMode;
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;
