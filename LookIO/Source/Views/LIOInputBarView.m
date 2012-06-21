@@ -298,7 +298,7 @@
 
 - (void)sendButtonWasTapped
 {
-    [inputField resignFirstResponder];
+    //[inputField resignFirstResponder];
     NSString *text = inputField.text;
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];

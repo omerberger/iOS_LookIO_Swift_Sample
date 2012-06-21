@@ -7,15 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOSurveyManager.h" // for LIOSurveyManagerSurveyType
 
 typedef enum
 {
     LIOAltChatViewControllerModeChat,
-    LIOAltChatViewControllerModePreChatSurvey,
-    LIOAltChatViewControllerModePostChatSurvey
+    LIOAltChatViewControllerModeSurvey
 } LIOAltChatViewControllerMode;
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView;
+@class LIOSurveyPickerView, LIOSurveyValidationView;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -25,6 +26,7 @@ typedef enum
 @protocol LIOLeaveMessageViewControllerDelegate;
 @protocol LIOChatBubbleViewDelegate;
 @protocol LIOToasterViewDelegate;
+@protocol LIOSurveyPickerViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -51,13 +53,14 @@ typedef enum
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
      LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate, UIPopoverControllerDelegate>
+     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
     UIView *reconnectionOverlay;
     UITableView *tableView;
-    NSArray *currentMessages, *chatMessages, *surveyMessages;
+    NSArray *currentMessages, *chatMessages;
+    NSMutableArray *surveyMessages;
     NSUInteger previousTextLength;
     NSString *pendingChatText, *initialChatText;
     BOOL agentTyping, keyboardShowing, leavingMessage;
@@ -77,6 +80,11 @@ typedef enum
     BOOL pendingNotificationStringIsTypingNotification;
     BOOL aboutScreenWasPresentedViaInputBarAdArea;
     LIOAltChatViewControllerMode currentMode;
+    int currentSurveyQuestionIndex;
+    LIOSurveyManagerSurveyType currentSurveyType;
+    NSString *currentSurveyValidationErrorString;
+    LIOSurveyPickerView *surveyPicker;
+    LIOSurveyValidationView *validationView;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
@@ -86,6 +94,7 @@ typedef enum
 @property(nonatomic, retain) NSString *initialChatText;
 @property(nonatomic, assign, getter=isAgentTyping) BOOL agentTyping;
 @property(nonatomic, assign) LIOAltChatViewControllerMode currentMode;
+@property(nonatomic, assign) LIOSurveyManagerSurveyType currentSurveyType;
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;

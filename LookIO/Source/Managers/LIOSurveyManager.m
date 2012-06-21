@@ -62,19 +62,19 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     [super dealloc];
 }
 
-- (void)registerAnswerString:(NSString *)anAnswerString forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex
+- (void)registerAnswerObject:(id)anAnswerObj forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex
 {
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {
-        [preChatResponses setObject:anAnswerString forKey:[NSNumber numberWithInt:anIndex]];
+        [preChatResponses setObject:anAnswerObj forKey:[NSNumber numberWithInt:anIndex]];
     }
     else
     {
-        [postChatResponses setObject:anAnswerString forKey:[NSNumber numberWithInt:anIndex]];
+        [postChatResponses setObject:anAnswerObj forKey:[NSNumber numberWithInt:anIndex]];
     }
 }
 
-- (NSString *)answerStringForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex
+- (id)answerObjectForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex
 {
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {
@@ -97,12 +97,24 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     int unansweredMandatoryQuestions = 0;
     for (LIOSurveyQuestion *aQuestion in aSurvey.questions)
     {
-        NSString *anAnswer = [self answerStringForSurveyType:surveyType withQuestionIndex:aQuestion.questionId];
-        if (aQuestion.mandatory && 0 == [anAnswer length])
+        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:aQuestion.questionId];
+        if (aQuestion.mandatory && nil == anAnswer)
             unansweredMandatoryQuestions++;
     }
     
     return unansweredMandatoryQuestions > 0;
+}
+
+- (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType
+{
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+    {
+        [preChatResponses removeAllObjects];
+    }
+    else
+    {
+        [postChatResponses removeAllObjects];
+    }
 }
 
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
@@ -147,8 +159,9 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         else
             newQuestion.validationType = LIOSurveyQuestionValidationTypeRegexp;
         
-        if (LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType || LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType)
+        if (LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType || LIOSurveyQuestionDisplayTypeMultiselect == newQuestion.displayType)
         {
+            NSMutableArray *entries = [NSMutableArray array];
             NSArray *entryArray = [aQuestionDict objectForKey:@"entries"];
             for (NSDictionary *anEntryDict in entryArray)
             {
@@ -156,6 +169,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 newPickerEntry.initiallyChecked = [[anEntryDict objectForKey:@"checked"] boolValue];
                 newPickerEntry.label = [anEntryDict objectForKey:@"value"];
                 
+                NSMutableArray *logicProps = [NSMutableArray array];
                 NSDictionary *logicDict = [anEntryDict objectForKey:@"logic"];
                 for (NSString *aKey in logicDict)
                 {
@@ -164,8 +178,17 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                         newLogicProp.propType = LIOSurveyLogicPropTypeShow;
                     
                     newLogicProp.targetLogicId = [[logicDict objectForKey:aKey] intValue];
+                    
+                    [logicProps addObject:newLogicProp];
                 }
+                
+                if ([logicProps count])
+                    newPickerEntry.logicProps = logicProps;
+                
+                [entries addObject:newPickerEntry];
             }
+            
+            newQuestion.pickerEntries = entries;
         }
         
         [questions addObject:newQuestion];

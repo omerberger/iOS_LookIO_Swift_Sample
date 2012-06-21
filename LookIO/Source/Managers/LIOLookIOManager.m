@@ -81,6 +81,7 @@
 #define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
 #define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
 #define LIOLookIOManagerLastKnownDefaultAvailabilityKey @"LIOLookIOManagerLastKnownDefaultAvailabilityKey"
+#define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -141,7 +142,7 @@
     NSNumber *availability;
     NSMutableArray *urlSchemes;
     NSURL *pendingIntraAppLinkURL;
-    int currentVisitId;
+    NSString *currentVisitId;
     NSString *currentUILocation, *currentRequiredSkill;
     NSString *lastKnownContinueURL;
     NSTimeInterval nextTimeInterval;
@@ -341,7 +342,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@:8800/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
         [appLaunchRequest setURL:url];
     }
     
@@ -380,7 +381,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:NO includingType:NO includingWhen:nil];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
@@ -704,6 +705,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentUILocation release];
     [currentRequiredSkill release];
     [lastKnownContinueURL release];
+    [currentVisitId release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -785,8 +787,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     previousReconnectionTimerStep = 2;
     previousScreenshotHash = 0;
-    currentVisitId = 0;
     nextTimeInterval = 0.0;
+    
+    [currentVisitId release];
+    currentVisitId = nil;
     
     [currentUILocation release];
     currentUILocation = nil;
@@ -1141,7 +1145,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // We might need to be in survey mode...
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
-        altChatViewController.currentMode = LIOAltChatViewControllerModePreChatSurvey;
+    {
+        altChatViewController.currentMode = LIOAltChatViewControllerModeSurvey;
+        altChatViewController.currentSurveyType = LIOSurveyManagerSurveyTypePre;
+    }
     
     [lookioWindow addSubview:altChatViewController.view];
     [self rejiggerWindows];
@@ -1856,7 +1863,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
-    NSNumber *buttonVisibility = [params objectForKey:@"buttonVisibility"];
+    NSNumber *visitorIdNumber = [params objectForKey:@"visitor_id"];
+    if (visitorIdNumber)
+    {
+        [userDefaults setObject:visitorIdNumber forKey:LIOLookIOManagerLastKnownVisitorIdKey];
+    }
+    
+    NSNumber *buttonVisibility = [params objectForKey:@"button_visibility"];
     if (buttonVisibility)
     {
         [lastKnownButtonVisibility release];
@@ -1867,7 +1880,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self refreshControlButtonVisibility];
     }
     
-    NSString *buttonText = [params objectForKey:@"buttonText"];
+    NSString *buttonText = [params objectForKey:@"button_text"];
     if ([buttonText length])
     {
         controlButton.labelText = buttonText;
@@ -1878,7 +1891,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
     }
     
-    NSString *welcomeText = [params objectForKey:@"welcomeText"];
+    NSString *welcomeText = [params objectForKey:@"welcome_text"];
     if ([welcomeText length])
     {
         [lastKnownWelcomeMessage release];
@@ -1887,7 +1900,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [userDefaults setObject:lastKnownWelcomeMessage forKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
     }
     
-    NSString *buttonTint = [params objectForKey:@"buttonTint"];
+    NSString *buttonTint = [params objectForKey:@"button_tint"];
     if ([buttonTint length])
     {
         [userDefaults setObject:buttonTint forKey:LIOLookIOManagerLastKnownButtonTintColorKey];
@@ -1902,7 +1915,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lastKnownButtonTintColor = [color retain];
     }
     
-    NSString *buttonTextColor = [params objectForKey:@"buttonTextColor"];
+    NSString *buttonTextColor = [params objectForKey:@"button_text_color"];
     if ([buttonTextColor length])
     {
         [userDefaults setObject:buttonTextColor forKey:LIOLookIOManagerLastKnownButtonTextColorKey];
@@ -1949,10 +1962,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [proactiveChatRules addEntriesFromDictionary:proactiveChat];
     }
     
-    NSNumber *visitIdNumber = [params objectForKey:@"visit_id"];
-    if (visitIdNumber)
+    NSString *visitIdString = [params objectForKey:@"visit_id"];
+    if ([visitIdString length])
     {
-        currentVisitId = [visitIdNumber intValue];
+        [currentVisitId release];
+        currentVisitId = [visitIdString retain];
     }
     
     NSString *continueURLString = [params objectForKey:@"continue_url"];
@@ -1970,7 +1984,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     //NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     //NSDictionary *preSurvey = [surveyDict objectForKey:@"pre"];
-    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]}]}";
+    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
     if (preSurvey)
     {
@@ -2062,8 +2076,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       LOOKIO_VERSION_STRING, @"sdk_version",
                                       nil];
     
-    if (currentVisitId)
-        [introDict setObject:[NSNumber numberWithInt:currentVisitId] forKey:@"visit_id"];
+    if ([currentVisitId length])
+        [introDict setObject:currentVisitId forKey:@"visit_id"];
+    
+    NSNumber *visitorId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
+    if (visitorId)
+        [introDict setObject:visitorId forKey:@"visitor_id"];
     
     if (includesType)
         [introDict setObject:@"intro" forKey:@"type"];
@@ -3329,11 +3347,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease]];
+        NSString *responseString = [[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease];
+        NSDictionary *responseDict = [jsonParser objectWithString:responseString];
         LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
         
-        NSDictionary *params = [responseDict objectForKey:@"response"];
-        [self parseAndSaveSettingsPayload:params];
+        [self parseAndSaveSettingsPayload:responseDict];
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;
@@ -3345,8 +3363,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease]];
         LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseDict);
         
-        NSDictionary *params = [responseDict objectForKey:@"response"];
-        [self parseAndSaveSettingsPayload:params];
+        [self parseAndSaveSettingsPayload:responseDict];
         
         [appContinueRequestConnection release];
         appContinueRequestConnection = nil;

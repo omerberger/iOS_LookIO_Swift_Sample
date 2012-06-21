@@ -29,9 +29,10 @@ typedef enum
 
 + (LIOSurveyManager *)sharedSurveyManager;
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
-- (void)registerAnswerString:(NSString *)anAnswerString forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
-- (NSString *)answerStringForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
+- (void)registerAnswerObject:(id)anAnswerObj forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
+- (id)answerObjectForSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
 - (BOOL)responsesRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
