@@ -164,6 +164,7 @@
 - (void)showReconnectionQuery;
 - (void)populateChatWithFirstMessage;
 - (BOOL)agentsAvailable;
+- (void)overrideControlEndpoint:(NSString *)newEndpoint;
 
 @end
 
@@ -1984,12 +1985,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     //NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     //NSDictionary *preSurvey = [surveyDict objectForKey:@"pre"];
-    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
-    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
-    if (preSurvey)
-    {
-        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-    }
+    //NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
+    //NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+    //if (preSurvey)
+    //{
+    //    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+    //}
     /*
     NSDictionary *postSurvey = [surveyDict objectForKey:@"post"];
     if (postSurvey)
@@ -2359,6 +2360,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     pendingIntraAppLinkURL = [aURL retain];
     
     [altChatViewController performDismissalAnimation];
+}
+
+- (void)overrideControlEndpoint:(NSString *)newEndpoint
+{
+    [controlEndpoint release];
+    controlEndpoint = [newEndpoint retain];
 }
 
 #pragma mark -
