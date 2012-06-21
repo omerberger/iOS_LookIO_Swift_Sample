@@ -343,7 +343,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
-        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@:8800/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
+        NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
         [appLaunchRequest setURL:url];
     }
     
@@ -1275,6 +1275,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chosenPort = LIOLookIOManagerControlEndpointPort;
     
     NSString *chosenEndpoint = [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
+    
+    // Get rid of any port specifier at the end.
+    NSRange aRange = [chosenEndpoint rangeOfString:@":"];
+    if (aRange.location != NSNotFound)
+        chosenEndpoint = [chosenEndpoint substringToIndex:aRange.location];
+                          
     BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
                                                onPort:chosenPort
                                                 error:anError];
