@@ -164,7 +164,6 @@
 - (void)showReconnectionQuery;
 - (void)populateChatWithFirstMessage;
 - (BOOL)agentsAvailable;
-- (void)overrideControlEndpoint:(NSString *)newEndpoint;
 
 @end
 
@@ -396,6 +395,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
     
     delegate = aDelegate;
+    
+    // - (NSString *)lookIOManagerControlEndpointOverride:(LIOLookIOManager *)aManager;
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerControlEndpointOverride:)])
+    {
+        [controlEndpoint release];
+        controlEndpoint = [[delegate lookIOManagerControlEndpointOverride:self] retain];
+    }
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -2375,12 +2381,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     pendingIntraAppLinkURL = [aURL retain];
     
     [altChatViewController performDismissalAnimation];
-}
-
-- (void)overrideControlEndpoint:(NSString *)newEndpoint
-{
-    [controlEndpoint release];
-    controlEndpoint = [newEndpoint retain];
 }
 
 #pragma mark -
