@@ -136,7 +136,6 @@
 		490E956414C3E25E007BFD8C = {
 			isa = PBXGroup;
 			children = (
-				D489590D1566F22500F62C0C /* CoreLocation.framework */,
 				D4B07E8614F5CB92000B1622 /* KIFTestScenario+LIOChat.h */,
 				D4B07E8714F5CB92000B1622 /* KIFTestScenario+LIOChat.m */,
 				D4B07E8314F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.h */,
@@ -163,6 +162,7 @@
 		490E957214C3E25E007BFD8C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D489590D1566F22500F62C0C /* CoreLocation.framework */,
 				D4868A6F155AF7990081164D /* Security.framework */,
 				D440D4701540B1790045DBFF /* MapKit.framework */,
 				D403F7A9152BB69100101941 /* Accounts.framework */,

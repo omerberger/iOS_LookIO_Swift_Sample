@@ -60,7 +60,7 @@
     
     [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
     [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
-    [[LIOLookIOManager sharedLookIOManager] overrideControlEndpoint:@"dispatch.dev.look.io:8800"];
+    [[LIOLookIOManager sharedLookIOManager] overrideControlEndpoint:@"199.192.241.221:8800"];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
     
 #if RUN_KIF_TESTS

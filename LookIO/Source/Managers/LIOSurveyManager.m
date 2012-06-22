@@ -120,6 +120,38 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    // Delete current survey if aDict is empty.
+    if (0 == [aDict count])
+    {
+        if (LIOSurveyManagerSurveyTypePre == surveyType)
+        {
+            [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
+            
+            [preChatHeader release];
+            preChatHeader = nil;
+            
+            [preChatTemplate release];
+            preChatTemplate = nil;
+            
+            [preChatResponses removeAllObjects];
+        }
+        else
+        {
+            [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
+            
+            [postChatHeader release];
+            postChatHeader = nil;
+            
+            [postChatTemplate release];
+            postChatTemplate = nil;
+            
+            [postChatResponses removeAllObjects];
+        }
+        
+        return;
+    }
+    
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         [userDefaults setObject:aDict forKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
     else
@@ -138,6 +170,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logicId"] intValue];
+        newQuestion.validationRegexp = [aQuestionDict objectForKey:@"validationRegexp"];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
         if ([typeString isEqualToString:@"picker"])
@@ -150,7 +183,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
         
         NSString *validationString = [aQuestionDict objectForKey:@"validationType"];
-        if ([validationString isEqualToString:@"alphanumeric"])
+        if ([validationString isEqualToString:@"alpha_numeric"])
             newQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
         else if ([validationString isEqualToString:@"numeric"])
             newQuestion.validationType = LIOSurveyQuestionValidationTypeNumeric;

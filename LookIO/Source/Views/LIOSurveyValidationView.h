@@ -12,6 +12,7 @@
 {
     UILabel *label;
     UIImageView *cautionSign;
+    UIImageView *backgroundImage;
 }
 
 @property(nonatomic, readonly) UILabel *label;

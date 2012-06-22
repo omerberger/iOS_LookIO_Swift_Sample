@@ -606,6 +606,15 @@
         aFrame.origin.y = self.view.bounds.size.height - aFrame.size.height;
         surveyPicker.frame = aFrame;
     }
+    
+    if (validationView)
+    {
+        CGRect aFrame = validationView.frame;
+        aFrame.size.width = self.view.bounds.size.width;
+        validationView.frame = aFrame;
+        
+        [validationView layoutSubviews];
+    }
 }
 
 - (void)processSurvey
@@ -623,6 +632,10 @@
         [surveyPicker removeFromSuperview];
         [surveyPicker release];
         surveyPicker = nil;
+        
+        [validationView removeFromSuperview];
+        [validationView release];
+        validationView = nil;
         
         currentMode = LIOAltChatViewControllerModeChat;
         [self reloadMessages];
@@ -685,21 +698,20 @@
         
         if ([currentSurveyValidationErrorString length])
         {
-            CGFloat yOrigin = surveyPicker.frame.origin.y - 35.0;
-            if (nil == surveyPicker)
-                yOrigin = inputBar.frame.origin.y - 35.0;
-            
             validationView = [[LIOSurveyValidationView alloc] init];
             validationView.label.text = currentSurveyValidationErrorString;
+            [validationView layoutSubviews];
+            
+            CGFloat yOrigin = surveyPicker.frame.origin.y - validationView.frame.size.height;
+            if (nil == surveyPicker)
+                yOrigin = inputBar.frame.origin.y - validationView.frame.size.height;
+            
             CGRect aFrame = validationView.frame;
-            aFrame.size.height = 35.0;
-            aFrame.size.width = self.view.bounds.size.width;
             aFrame.origin.x = 0.0;
             aFrame.origin.y = yOrigin;
+            aFrame.size.width = self.view.bounds.size.width;
             validationView.frame = aFrame;
             [self.view addSubview:validationView];
-            
-            [validationView layoutSubviews];
             
             [currentSurveyValidationErrorString release];
             currentSurveyValidationErrorString = nil;
@@ -747,15 +759,58 @@
         }
         else
         {
-            // TODO: Perform validation.
-            [surveyManager registerAnswerObject:stringResponse forSurveyType:currentSurveyType withQuestionIndex:currentSurveyQuestionIndex];
-            currentSurveyQuestionIndex++;
+            BOOL validated = NO;
             
-            LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-            newChatMessage.date = [NSDate date];
-            newChatMessage.kind = LIOChatMessageKindLocal;
-            newChatMessage.text = aResponse;
-            [surveyMessages addObject:newChatMessage];
+            [currentSurveyValidationErrorString release];
+            currentSurveyValidationErrorString = nil;
+            
+            if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType)
+            {
+                // Kinda weird. This is just a passthrough, I guess.
+                validated = YES;
+            }
+            else if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
+            {
+                // Cheap e-mail validation: does the string contain one @ symbol?
+                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"@" options:0 error:nil];
+                if (1 == [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
+                    validated = YES;
+                else
+                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a valid e-mail address."];
+            }
+            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
+            {
+                // TODO: Make this better. Currently just looks for any digit and says OK! THAT'S NUMERIC! if there is one.
+                NSRegularExpression *numericRegex = [NSRegularExpression regularExpressionWithPattern:@"\\d+" options:0 error:nil];
+                NSArray *matches = [numericRegex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
+                if ([matches count])
+                    validated = YES;
+                else
+                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a valid number."];
+            }
+            else if ([currentQuestion.validationRegexp length])
+            {
+                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
+                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
+                if ([matches count])
+                    validated = YES;
+                else
+                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please check your input and try again."];
+            }
+            
+            if (validated)
+            {
+                [surveyManager registerAnswerObject:stringResponse forSurveyType:currentSurveyType withQuestionIndex:currentSurveyQuestionIndex];
+                currentSurveyQuestionIndex++;
+                
+                LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
+                newChatMessage.date = [NSDate date];
+                newChatMessage.kind = LIOChatMessageKindLocal;
+                newChatMessage.text = aResponse;
+                [surveyMessages addObject:newChatMessage];
+            }
+            else if (NO == currentQuestion.mandatory)
+                currentSurveyQuestionIndex++;
         }
     }
     else if (indexArrayResponse)
@@ -1770,7 +1825,7 @@
 #pragma mark -
 #pragma mark LIOSurveyPickerViewDelegate methods
 
-- (void)surveyPickerView:(LIOSurveyPickerView *)aView didFinishSelectingIndices:(NSArray *)anArrayOfIndices
+- (void)surveyPickerView:(LIOSurveyPickerView *)aView wasDismissedWithSelectedIndices:(NSArray *)anArrayOfIndices
 {
     [self processSurveyResponse:anArrayOfIndices];
 }

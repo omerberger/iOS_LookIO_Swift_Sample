@@ -12,4 +12,12 @@
 
 @synthesize headerString, questions;
 
+- (void)dealloc
+{
+    [headerString release];
+    [questions release];
+    
+    [super dealloc];
+}
+
 @end

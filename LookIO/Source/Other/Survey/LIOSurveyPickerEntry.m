@@ -12,4 +12,12 @@
 
 @synthesize initiallyChecked, label, logicProps;
 
+- (void)dealloc
+{
+    [label release];
+    [logicProps release];
+    
+    [super dealloc];
+}
+
 @end

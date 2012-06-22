@@ -799,9 +799,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentRequiredSkill release];
     currentRequiredSkill = nil;
     
-    [lastKnownContinueURL release];
-    lastKnownContinueURL = nil;
-    
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
@@ -1987,24 +1984,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nextIntervalNumber)
     {
         nextTimeInterval = [nextIntervalNumber doubleValue];
+        
+        [continuationTimer stopTimer];
+        [continuationTimer release];
+        continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
+                                                                 target:self
+                                                               selector:@selector(continuationTimerDidFire)];
     }
     
-    //NSDictionary *surveyDict = [params objectForKey:@"surveys"];
-    //NSDictionary *preSurvey = [surveyDict objectForKey:@"pre"];
-    //NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alphanumeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alphanumeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
-    //NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
-    //if (preSurvey)
-    //{
-    //    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-    //}
-    /*
-    NSDictionary *postSurvey = [surveyDict objectForKey:@"post"];
-    if (postSurvey)
+    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
+    if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
-        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
-    }
-    */
+        NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
     
+        if (preSurvey)
+        {
+            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+        }
+        NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
+        if (postSurvey)
+        {
+            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+        }
+    }
+
+    /*
+    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
+    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+    */
+        
     [self refreshControlButtonVisibility];
     [self applicationDidChangeStatusBarOrientation:nil];
 }

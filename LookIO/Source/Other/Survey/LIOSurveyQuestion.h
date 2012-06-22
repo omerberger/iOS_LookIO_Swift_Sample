@@ -31,6 +31,7 @@ typedef enum
     int order;
     NSString *label;
     int logicId;
+    NSString *validationRegexp;
     LIOSurveyQuestionDisplayType displayType;
     LIOSurveyQuestionValidationType validationType;
     NSArray *pickerEntries;
@@ -44,5 +45,6 @@ typedef enum
 @property(nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
 @property(nonatomic, assign) LIOSurveyQuestionValidationType validationType;
 @property(nonatomic, retain) NSArray *pickerEntries;
+@property(nonatomic, retain) NSString *validationRegexp;
 
 @end

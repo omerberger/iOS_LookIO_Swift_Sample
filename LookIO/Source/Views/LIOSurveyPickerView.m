@@ -10,6 +10,7 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOSurveyPickerEntry.h"
 #import "LIOBundleManager.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation LIOSurveyPickerView
 
@@ -21,11 +22,17 @@
     
     if (self)
     {
-        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];
-        sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
+        UIImage *toolbarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableEtchedGlassToolbar"];
+        toolbarImage = [toolbarImage stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+        
+        toolbarImageView = [[UIImageView alloc] initWithImage:toolbarImage];
+        [self addSubview:toolbarImageView];
+        
+        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonBlue"];
+        sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:0];
         
         doneButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [doneButton setTitle:@"Done" forState:UIControlStateNormal];
+        [doneButton setTitle:@"Select" forState:UIControlStateNormal];
         [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         doneButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
         [doneButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
@@ -33,6 +40,7 @@
         [self addSubview:doneButton];
         
         self.backgroundColor = [UIColor darkGrayColor];
+        self.clipsToBounds = NO;
         
         selectedIndices = [[NSMutableSet alloc] init];
     }
@@ -78,7 +86,16 @@
         tableView.delegate = self;
         tableView.dataSource = self;
         [tableView reloadData];
+        tableView.layer.cornerRadius = 5.0;
+        tableView.layer.masksToBounds = YES;
+        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [self addSubview:tableView];
+        
+        UIImage *tableWell = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableTableWell"];
+        tableWell = [tableWell stretchableImageWithLeftCapWidth:19 topCapHeight:30];
+        tableWellImage = [[UIImageView alloc] initWithImage:tableWell];
+        tableWellImage.backgroundColor = [UIColor clearColor];
+        [self addSubview:tableWellImage];
     }
 }
 
@@ -103,15 +120,22 @@
         }
         else
         {
-            CGRect aFrame = tableView.frame;
+            CGRect aFrame = tableWellImage.frame;
             aFrame.origin.x = 0.0;
             aFrame.origin.y = 40.0;
             aFrame.size.width = self.bounds.size.width;
-            aFrame.size.height = 216.0;
+            aFrame.size.height= 216.0;
+            tableWellImage.frame = aFrame;
+            
+            aFrame = tableView.frame;
+            aFrame.origin.x = 5.0; // border offset
+            aFrame.origin.y = 40.0 + 14.0; // border offset
+            aFrame.size.width = self.bounds.size.width - 10.0;
+            aFrame.size.height = 216.0 - 28.0;
             tableView.frame = aFrame;
             
             aFrame = self.frame;
-            aFrame.size.height = tableView.bounds.size.height + 40.0;
+            aFrame.size.height = 216.0 + 40.0;
             self.frame = aFrame;
         }
     }
@@ -132,22 +156,36 @@
         }
         else
         {
-            CGRect aFrame = tableView.frame;
+            CGRect aFrame = tableWellImage.frame;
             aFrame.origin.x = 0.0;
             aFrame.origin.y = 40.0;
             aFrame.size.width = self.bounds.size.width;
-            aFrame.size.height = 162.0;
+            aFrame.size.height= 162.0;
+            tableWellImage.frame = aFrame;
+            
+            aFrame = tableView.frame;
+            aFrame.origin.x = 5.0; // border offset
+            aFrame.origin.y = 40.0 + 14.0; // border offset
+            aFrame.size.width = self.bounds.size.width - 10.0;
+            aFrame.size.height = 162.0 - 28.0;
             tableView.frame = aFrame;
             
             aFrame = self.frame;
-            aFrame.size.height = tableView.bounds.size.height + 40.0;
+            aFrame.size.height = 162.0 + 40.0;
             self.frame = aFrame;
         }
     }
     
+    // toolbar shadow spills above 8.5 points
+    CGRect aFrame = toolbarImageView.frame;
+    aFrame.origin.x = 0.0;
+    aFrame.origin.y = -8.5;
+    aFrame.size.width = self.bounds.size.width;
+    toolbarImageView.frame = aFrame;
+    
     [doneButton sizeToFit];
-    CGRect aFrame = doneButton.frame;
-    aFrame.size.width += 20.0;
+    aFrame = doneButton.frame;
+    aFrame.size.width += 10.0;
     aFrame.origin.x = self.bounds.size.width - aFrame.size.width - 10.0;
     aFrame.origin.y = 20.0 - (aFrame.size.height / 2.0);
     doneButton.frame = aFrame;
@@ -166,14 +204,13 @@
     [tableView release];
     [doneButton release];
     [selectedIndices release];
+    [toolbarImageView release];
+    [tableWellImage release];
     
     [super dealloc];
 }
 
-#pragma mark -
-#pragma mark UIControl actions
-
-- (void)doneButtonWasTapped
+- (void)finishUp
 {
     NSMutableArray *results = [NSMutableArray array];
     
@@ -192,7 +229,26 @@
         }
     }
     
-    [delegate surveyPickerView:self didFinishSelectingIndices:results];
+    [delegate surveyPickerView:self wasDismissedWithSelectedIndices:results];
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)doneButtonWasTapped
+{
+    CGRect targetFrame = self.frame;
+    targetFrame.origin.y += targetFrame.size.height;
+    
+    [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         self.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                         [self finishUp];
+                     }];
 }
 
 #pragma mark -
@@ -228,13 +284,38 @@
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:@"balls"];
+    UILabel *cellLabel = nil;
     if (nil == aCell)
     {
         aCell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"balls"] autorelease];
+        aCell.backgroundView.backgroundColor = [UIColor clearColor];
+        aCell.backgroundColor = [UIColor clearColor];
+
+        cellLabel = [[[UILabel alloc] init] autorelease];
+        cellLabel.backgroundColor = [UIColor clearColor];
+        cellLabel.textColor = [UIColor blackColor];
+        cellLabel.font = [UIFont systemFontOfSize:16.0];
+        cellLabel.tag = 2742;
+        [aCell.contentView addSubview:cellLabel];
+        
+        UIImage *paperTextureImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOTablePaperTexture"];
+        UIImageView *paperTexture = [[[UIImageView alloc] initWithImage:paperTextureImage] autorelease];
+        paperTexture.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        paperTexture.frame = aCell.contentView.bounds;
+        [aCell.contentView addSubview:paperTexture];
+        [aCell.contentView sendSubviewToBack:paperTexture];
     }
     
     LIOSurveyPickerEntry *anEntry = [surveyQuestion.pickerEntries objectAtIndex:indexPath.row];
-    aCell.textLabel.text = anEntry.label;
+    
+    cellLabel = (UILabel *)[aCell.contentView viewWithTag:2742];
+    cellLabel.text = anEntry.label;
+    [cellLabel sizeToFit];
+    CGRect aFrame = cellLabel.frame;
+    aFrame.origin.x = 60.0;
+    aFrame.origin.y = (aCell.contentView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.size.width = aCell.contentView.frame.size.width - 40.0;
+    cellLabel.frame = aFrame;
     
     if ([selectedIndices containsObject:indexPath])
         aCell.accessoryType = UITableViewCellAccessoryCheckmark;
