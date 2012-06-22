@@ -17,7 +17,8 @@ typedef enum
 @class LIOSurveyQuestion, LIOSurveyPickerView;
 
 @protocol LIOSurveyPickerViewDelegate
-- (void)surveyPickerView:(LIOSurveyPickerView *)aView wasDismissedWithSelectedIndices:(NSArray *)anArrayOfIndices;
+- (void)surveyPickerView:(LIOSurveyPickerView *)aView didSelectIndices:(NSArray *)anArrayOfIndices;
+- (void)surveyPickerViewDidFinishDismissalAnimation:(LIOSurveyPickerView *)aView;
 @end
 
 @interface LIOSurveyPickerView : UIView <UITableViewDelegate, UITableViewDataSource, UIPickerViewDataSource, UIPickerViewDelegate>
@@ -36,5 +37,8 @@ typedef enum
 @property(nonatomic, assign) LIOSurveyPickerViewMode currentMode;
 @property(nonatomic, retain) LIOSurveyQuestion *surveyQuestion;
 @property(nonatomic, assign) id<LIOSurveyPickerViewDelegate> delegate;
+
+- (void)showAnimated;
+- (void)hideAnimated;
 
 @end

@@ -11,7 +11,7 @@
 
 @implementation LIOSurveyValidationView
 
-@synthesize label;
+@synthesize label, delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -46,6 +46,8 @@
 
 - (void)dealloc
 {
+    [self.layer removeAllAnimations];
+    
     [label release];
     [cautionSign release];
     [backgroundImage release];
@@ -78,6 +80,33 @@
     aFrame = self.frame;
     aFrame.size.height = 22.5;
     self.frame = aFrame;
+}
+
+- (void)showAnimated
+{
+    self.alpha = 0.0;
+    
+    [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         self.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+}
+
+- (void)hideAnimated
+{
+    [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         self.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
+                         [delegate surveyValidationViewDidFinishDismissalAnimation:self];
+                     }];
 }
 
 @end

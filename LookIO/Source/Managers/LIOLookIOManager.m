@@ -354,7 +354,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<LAUNCH> Request: %@", introDictJSONEncoded);
+        LIOLog(@"<LAUNCH> Endpoint: \"%@\"\n    Request: %@", [appLaunchRequest.URL absoluteString], introDictJSONEncoded);
         appLaunchRequestConnection = [[NSURLConnection alloc] initWithRequest:appLaunchRequest delegate:self];
     }
     else

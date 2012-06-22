@@ -85,6 +85,7 @@ typedef enum
     NSString *currentSurveyValidationErrorString;
     LIOSurveyPickerView *surveyPicker;
     LIOSurveyValidationView *validationView;
+    id pendingSurveyResponse;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

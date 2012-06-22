@@ -609,8 +609,13 @@
     
     if (validationView)
     {
+        CGFloat yOrigin = surveyPicker.frame.origin.y - validationView.frame.size.height;
+        if (nil == surveyPicker)
+            yOrigin = inputBar.frame.origin.y - validationView.frame.size.height;
+        
         CGRect aFrame = validationView.frame;
         aFrame.size.width = self.view.bounds.size.width;
+        aFrame.origin.y = yOrigin;
         validationView.frame = aFrame;
         
         [validationView layoutSubviews];
@@ -694,6 +699,8 @@
             CGRect aFrame = surveyPicker.frame;
             aFrame.origin.y = self.view.bounds.size.height - aFrame.size.height;
             surveyPicker.frame = aFrame;
+            
+            [surveyPicker showAnimated];
         }
         
         if ([currentSurveyValidationErrorString length])
@@ -715,6 +722,8 @@
             
             [currentSurveyValidationErrorString release];
             currentSurveyValidationErrorString = nil;
+            
+            [validationView showAnimated];
         }
     }
 }
@@ -810,7 +819,11 @@
                 [surveyMessages addObject:newChatMessage];
             }
             else if (NO == currentQuestion.mandatory)
+            {
+                [currentSurveyValidationErrorString release];
+                currentSurveyValidationErrorString = nil;
                 currentSurveyQuestionIndex++;
+            }
         }
     }
     else if (indexArrayResponse)
@@ -968,6 +981,9 @@
 - (void)performDismissalAnimation
 {
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
+    
+    [validationView removeFromSuperview];
+    [surveyPicker removeFromSuperview];
     
     background.alpha = 1.0;
     
@@ -1825,9 +1841,19 @@
 #pragma mark -
 #pragma mark LIOSurveyPickerViewDelegate methods
 
-- (void)surveyPickerView:(LIOSurveyPickerView *)aView wasDismissedWithSelectedIndices:(NSArray *)anArrayOfIndices
+- (void)surveyPickerView:(LIOSurveyPickerView *)aView didSelectIndices:(NSArray *)anArrayOfIndices
 {
-    [self processSurveyResponse:anArrayOfIndices];
+    [pendingSurveyResponse release];
+    pendingSurveyResponse = [anArrayOfIndices retain];
+    
+    [surveyPicker hideAnimated];
+    [validationView hideAnimated];
+}
+
+- (void)surveyPickerViewDidFinishDismissalAnimation:(LIOSurveyPickerView *)aView
+{
+    [self processSurveyResponse:[pendingSurveyResponse autorelease]];
+    pendingSurveyResponse = nil;
 }
 
 @end

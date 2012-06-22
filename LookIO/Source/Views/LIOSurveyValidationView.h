@@ -8,13 +8,24 @@
 
 #import <UIKit/UIKit.h>
 
+@class LIOSurveyValidationView;
+
+@protocol LIOSurveyValidationViewDelegate
+- (void)surveyValidationViewDidFinishDismissalAnimation:(LIOSurveyValidationView *)aView;
+@end
+
 @interface LIOSurveyValidationView : UIView
 {
     UILabel *label;
     UIImageView *cautionSign;
     UIImageView *backgroundImage;
+    id<LIOSurveyValidationViewDelegate> delegate;
 }
 
 @property(nonatomic, readonly) UILabel *label;
+@property(nonatomic, assign) id<LIOSurveyValidationViewDelegate> delegate;
+
+- (void)showAnimated;
+- (void)hideAnimated;
 
 @end

@@ -11,6 +11,7 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOBundleManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOLogManager.h"
 
 @implementation LIOSurveyPickerView
 
@@ -88,7 +89,7 @@
         [tableView reloadData];
         tableView.layer.cornerRadius = 5.0;
         tableView.layer.masksToBounds = YES;
-        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        //tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         [self addSubview:tableView];
         
         UIImage *tableWell = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableTableWell"];
@@ -133,7 +134,7 @@
             aFrame.size.width = self.bounds.size.width - 10.0;
             aFrame.size.height = 216.0 - 28.0;
             tableView.frame = aFrame;
-            
+                        
             aFrame = self.frame;
             aFrame.size.height = 216.0 + 40.0;
             self.frame = aFrame;
@@ -199,6 +200,8 @@
     tableView.delegate = nil;
     tableView.dataSource = nil;
     
+    [self.layer removeAllAnimations];
+    
     [surveyQuestion release];
     [pickerView release];
     [tableView release];
@@ -210,7 +213,44 @@
     [super dealloc];
 }
 
-- (void)finishUp
+- (void)showAnimated
+{
+    CGRect targetFrame = self.frame;
+    
+    CGRect aFrame = self.frame;
+    aFrame.origin.y += aFrame.size.height;
+    self.frame = aFrame;
+    
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         self.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+}
+
+- (void)hideAnimated
+{
+    CGRect targetFrame = self.frame;
+    targetFrame.origin.y += targetFrame.size.height;
+    
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         self.frame = targetFrame;
+                     }
+                     completion:^(BOOL finished) {
+                         [delegate surveyPickerViewDidFinishDismissalAnimation:self];
+                     }];
+}
+
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)doneButtonWasTapped
 {
     NSMutableArray *results = [NSMutableArray array];
     
@@ -228,27 +268,8 @@
             [results addObject:result];
         }
     }
-    
-    [delegate surveyPickerView:self wasDismissedWithSelectedIndices:results];
-}
 
-#pragma mark -
-#pragma mark UIControl actions
-
-- (void)doneButtonWasTapped
-{
-    CGRect targetFrame = self.frame;
-    targetFrame.origin.y += targetFrame.size.height;
-    
-    [UIView animateWithDuration:0.33
-                          delay:0.0
-                        options:UIViewAnimationOptionCurveEaseOut
-                     animations:^{
-                         self.frame = targetFrame;
-                     }
-                     completion:^(BOOL finished) {
-                         [self finishUp];
-                     }];
+    [delegate surveyPickerView:self didSelectIndices:results];
 }
 
 #pragma mark -
@@ -284,16 +305,19 @@
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *aCell = [tableView dequeueReusableCellWithIdentifier:@"balls"];
-    UILabel *cellLabel = nil;
+    //UILabel *cellLabel = nil;
     if (nil == aCell)
     {
         aCell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"balls"] autorelease];
+        aCell.textLabel.textColor = [UIColor colorWithWhite:(96.0/255.0) alpha:1.0];
+        
+        /*
         aCell.backgroundView.backgroundColor = [UIColor clearColor];
         aCell.backgroundColor = [UIColor clearColor];
 
         cellLabel = [[[UILabel alloc] init] autorelease];
         cellLabel.backgroundColor = [UIColor clearColor];
-        cellLabel.textColor = [UIColor blackColor];
+        cellLabel.textColor = [UIColor colorWithWhite:(96.0/255.0) alpha:1.0];
         cellLabel.font = [UIFont systemFontOfSize:16.0];
         cellLabel.tag = 2742;
         [aCell.contentView addSubview:cellLabel];
@@ -304,10 +328,12 @@
         paperTexture.frame = aCell.contentView.bounds;
         [aCell.contentView addSubview:paperTexture];
         [aCell.contentView sendSubviewToBack:paperTexture];
+        */
     }
     
     LIOSurveyPickerEntry *anEntry = [surveyQuestion.pickerEntries objectAtIndex:indexPath.row];
     
+    /*
     cellLabel = (UILabel *)[aCell.contentView viewWithTag:2742];
     cellLabel.text = anEntry.label;
     [cellLabel sizeToFit];
@@ -316,6 +342,9 @@
     aFrame.origin.y = (aCell.contentView.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
     aFrame.size.width = aCell.contentView.frame.size.width - 40.0;
     cellLabel.frame = aFrame;
+    */
+    
+    aCell.textLabel.text = anEntry.label;
     
     if ([selectedIndices containsObject:indexPath])
         aCell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -339,5 +368,12 @@
     
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
 }
+
+/*
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 40.0;
+}
+*/
 
 @end
