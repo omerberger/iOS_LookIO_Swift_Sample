@@ -143,9 +143,10 @@
     NSMutableArray *urlSchemes;
     NSURL *pendingIntraAppLinkURL;
     NSString *currentVisitId;
-    NSString *currentUILocation, *currentRequiredSkill;
+    NSString *currentRequiredSkill;
     NSString *lastKnownContinueURL;
     NSTimeInterval nextTimeInterval;
+    NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -154,7 +155,7 @@
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate;
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 - (void)handleCallEvent:(CTCall *)aCall;
 - (void)configureReconnectionTimer;
@@ -255,6 +256,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         sessionExtras = [[NSMutableDictionary alloc] init];
         proactiveChatRules = [[NSMutableDictionary alloc] init];
+        fullNavigationHistory = [[NSMutableArray alloc] init];
+        partialNavigationHistory = [[NSMutableArray alloc] init];
         
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
@@ -350,7 +353,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:YES];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<LAUNCH> Endpoint: \"%@\"\n    Request: %@", [appLaunchRequest.URL absoluteString], introDictJSONEncoded);
@@ -381,12 +384,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictJSONEncoded);
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
+        
+        [partialNavigationHistory removeAllObjects];
     }
 }
 
@@ -709,10 +714,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [proactiveChatRules release];
     [availability release];
     [pendingIntraAppLinkURL release];
-    [currentUILocation release];
     [currentRequiredSkill release];
     [lastKnownContinueURL release];
     [currentVisitId release];
+    [fullNavigationHistory release];
+    [partialNavigationHistory release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -799,9 +805,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentVisitId release];
     currentVisitId = nil;
     
-    [currentUILocation release];
-    currentUILocation = nil;
-    
     [currentRequiredSkill release];
     currentRequiredSkill = nil;
     
@@ -815,6 +818,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [queuedLaunchReportDates removeAllObjects];
     [proactiveChatRules removeAllObjects];
+    [partialNavigationHistory removeAllObjects];
+    [fullNavigationHistory removeAllObjects];
     
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
@@ -1309,20 +1314,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)recordCurrentUILocation:(NSString *)aLocationString
 {
-    [currentUILocation release];
-    currentUILocation = [aLocationString retain];
-    
-    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:aLocationString, @"location_name", nil];
-    NSString *uiLocation = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                         @"advisory", @"type",
-                                                         @"ui_location", @"action",
-                                                         dataDict, @"data",
-                                                         nil]];
-    uiLocation = [uiLocation stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[uiLocation dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
+    [fullNavigationHistory addObject:aLocationString];
+    [partialNavigationHistory addObject:aLocationString];
 }
 
 - (void)recordCurrentRequiredSkill:(NSString *)aRequiredSkill
@@ -1727,7 +1720,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil includingFullNavigationHistory:YES];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -2078,7 +2071,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [sessionExtras removeAllObjects];
 }
 
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
@@ -2163,12 +2156,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [detectedDict setObject:location forKey:@"location"];
         }
         
+        NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
+        if ([localeId length])
+            [detectedDict setObject:localeId forKey:@"locale"];
+                               
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
         if ([sessionExtras count])
             [extrasDict setDictionary:sessionExtras];
         
         if ([detectedDict count])
             [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        
+        if (fullNavHistory && [fullNavigationHistory count])
+            [extrasDict setObject:fullNavigationHistory forKey:@"navigation_history"];
+        else if ([partialNavigationHistory count])
+            [extrasDict setObject:partialNavigationHistory forKey:@"navigation_history"];
         
         if ([extrasDict count])
         {
@@ -3275,7 +3277,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [request setURL:url];
                 }
                 
-                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate];
+                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate includingFullNavigationHistory:YES];
                 NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
                 [request setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
