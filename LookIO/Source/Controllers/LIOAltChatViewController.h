@@ -38,6 +38,8 @@ typedef enum
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;
+- (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict;
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
@@ -53,7 +55,7 @@ typedef enum
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
      LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate>
+     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate, UIAlertViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -66,8 +68,8 @@ typedef enum
     BOOL agentTyping, keyboardShowing, leavingMessage;
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
-    UITableViewCell *functionHeader;
-    UIButton *aboutButton, *emailConvoButton, *dismissButton;
+    UITableViewCell *functionHeaderChat, *functionHeaderSurvey;
+    UIButton *aboutButton, *emailConvoButton, *dismissButton, *leaveSurveyButton;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;
@@ -86,6 +88,9 @@ typedef enum
     LIOSurveyPickerView *surveyPicker;
     LIOSurveyValidationView *validationView;
     id pendingSurveyResponse;
+    int numPreviousMessagesToShowInScrollback;
+    int previousSurveyQuestionBubbleGenerated;
+    BOOL pickerIsBeingUsed;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
@@ -96,6 +101,7 @@ typedef enum
 @property(nonatomic, assign, getter=isAgentTyping) BOOL agentTyping;
 @property(nonatomic, assign) LIOAltChatViewControllerMode currentMode;
 @property(nonatomic, assign) LIOSurveyManagerSurveyType currentSurveyType;
+@property(nonatomic, assign) int currentSurveyQuestionIndex;
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;

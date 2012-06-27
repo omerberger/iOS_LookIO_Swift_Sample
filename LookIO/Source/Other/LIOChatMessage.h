@@ -14,7 +14,8 @@ typedef enum
     LIOChatMessageKindLocal,
     LIOChatMessageKindMapLocation,
     LIOChatMessageKindLink,
-    LIOChatMessageKindPhoneNumber
+    LIOChatMessageKindPhoneNumber,
+    LIOChatMessageKindHeader
 } LIOChatMessageKind;
 
 @interface LIOChatMessage : NSObject
@@ -23,12 +24,14 @@ typedef enum
     NSString *text;
     NSDate *date;
     NSString *senderName;
+    int sequence;
 }
 
 @property(nonatomic, assign) LIOChatMessageKind kind;
 @property(nonatomic, retain) NSString *text;
 @property(nonatomic, retain) NSDate *date;
 @property(nonatomic, retain) NSString *senderName;
+@property(nonatomic, assign) int sequence;
 
 + (LIOChatMessage *)chatMessage;
 

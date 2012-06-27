@@ -10,7 +10,7 @@
 
 @implementation LIOChatMessage
 
-@synthesize kind, text, date, senderName;
+@synthesize kind, text, date, senderName, sequence;
 
 + (LIOChatMessage *)chatMessage
 {

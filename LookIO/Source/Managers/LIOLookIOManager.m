@@ -31,6 +31,8 @@
 #import "LIOLogManager.h"
 #import "LIOTimerProxy.h"
 #import "LIOSurveyManager.h"
+#import "LIOSurveyTemplate.h"
+#import "LIOSurveyQuestion.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -95,7 +97,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -147,6 +149,7 @@
     NSString *lastKnownContinueURL;
     NSTimeInterval nextTimeInterval;
     NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
+    NSDictionary *surveyResponsesToBeSent;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -155,7 +158,7 @@
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory;
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 - (void)handleCallEvent:(CTCall *)aCall;
 - (void)configureReconnectionTimer;
@@ -353,7 +356,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:YES];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<LAUNCH> Endpoint: \"%@\"\n    Request: %@", [appLaunchRequest.URL absoluteString], introDictJSONEncoded);
@@ -384,7 +387,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:NO includingSurveyResponses:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
@@ -719,6 +722,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentVisitId release];
     [fullNavigationHistory release];
     [partialNavigationHistory release];
+    [surveyResponsesToBeSent release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -750,6 +754,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)reset
 {
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+    
     [altChatViewController dismissModalViewControllerAnimated:NO];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
@@ -795,6 +802,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingIntraAppLinkURL release];
     pendingIntraAppLinkURL = nil;
     
+    [surveyResponsesToBeSent release];
+    surveyResponsesToBeSent = nil;
+    
     [availability release];
     availability = nil;
     
@@ -811,7 +821,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    socketConnected = NO, willAskUserToReconnect = NO;
+    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1155,8 +1165,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
     {
+        int questionIndex = [surveyManager nextQuestionWithResponseRequiredForSurveyType:LIOSurveyManagerSurveyTypePre];
+        
         altChatViewController.currentMode = LIOAltChatViewControllerModeSurvey;
         altChatViewController.currentSurveyType = LIOSurveyManagerSurveyTypePre;
+        altChatViewController.currentSurveyQuestionIndex = questionIndex;
     }
     
     [lookioWindow addSubview:altChatViewController.view];
@@ -1204,6 +1217,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
+    // Survey needed? We need to wait until it's done before we try to connect.
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
+    {
+        [self showChatAnimated:YES];
+        return;
+    }
+    
     // Waiting for the "do you want to reconnect?" alert view.
     if (willAskUserToReconnect)
         return;
@@ -1720,7 +1741,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil includingFullNavigationHistory:YES];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:YES];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -1990,7 +2011,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                  target:self
                                                                selector:@selector(continuationTimerDidFire)];
     }
-    
+
     NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
@@ -2006,9 +2027,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
         }
     }
-
+    
     /*
-    NSString *fakePreJSON = @"{\"header\":\"Welcome! Tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
+    NSString *fakePreJSON = @"{\"header\":\"Welcome! Please tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
     */
@@ -2071,7 +2092,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [sessionExtras removeAllObjects];
 }
 
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
@@ -2103,6 +2124,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (aDate)
         [introDict setObject:[self dateToStandardizedString:aDate] forKey:@"when"];
+    
+    if (fullNavHistory && [fullNavigationHistory count])
+        [introDict setObject:fullNavigationHistory forKey:@"navigation_history"];
+    else if ([partialNavigationHistory count])
+        [introDict setObject:partialNavigationHistory forKey:@"navigation_history"];
+    
+    if (includesSurveyResponses && [surveyResponsesToBeSent count])
+    {
+        NSString *surveyJSON = [jsonWriter stringWithObject:surveyResponsesToBeSent];
+        [introDict setObject:surveyJSON forKey:@"prechat_survey"];
+        
+        [surveyResponsesToBeSent release];
+        surveyResponsesToBeSent = nil;
+    }
     
     if (includeExtras)
     {
@@ -2166,11 +2201,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if ([detectedDict count])
             [extrasDict setObject:detectedDict forKey:@"detected_settings"];
-        
-        if (fullNavHistory && [fullNavigationHistory count])
-            [extrasDict setObject:fullNavigationHistory forKey:@"navigation_history"];
-        else if ([partialNavigationHistory count])
-            [extrasDict setObject:partialNavigationHistory forKey:@"navigation_history"];
         
         if ([extrasDict count])
         {
@@ -2672,22 +2702,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [altChatViewController release];
     altChatViewController = nil;
     
-    NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                       @"advisory", @"type",
-                                                       @"chat_down", @"action",
-                                                       nil]];
-    chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[chatDown dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-    
     [self rejiggerWindows];
+    
+    if (socketConnected)
+    {
+        NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                           @"advisory", @"type",
+                                                           @"chat_down", @"action",
+                                                           nil]];
+        chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[chatDown dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
     
     if (killConnectionAfterChatViewDismissal)
     {
         resetAfterDisconnect = YES;
         [self killConnection];
+        return;
+    }
+    else if (resetAfterChatViewDismissal)
+    {
+        [self reset];
         return;
     }
     
@@ -2812,6 +2850,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [self reset];
     }
+}
+
+- (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController
+{
+    resetAfterChatViewDismissal = YES;
+    [altChatViewController performDismissalAnimation];
+}
+
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict
+{
+    [surveyResponsesToBeSent release];
+    surveyResponsesToBeSent = [aResponseDict retain];
+
+    [self beginSession];
+    
+    LIOChatMessage *surveyOutro = [LIOChatMessage chatMessage];
+    surveyOutro.date = [NSDate date];
+    surveyOutro.text = @"Thank you for your responses! A live support agent will be available to assist you shortly.";
+    surveyOutro.kind = LIOChatMessageKindRemote;
+    [chatHistory insertObject:surveyOutro atIndex:0];
 }
 
 #pragma mark -
@@ -3277,7 +3335,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [request setURL:url];
                 }
                 
-                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate includingFullNavigationHistory:YES];
+                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate includingFullNavigationHistory:YES includingSurveyResponses:NO];
                 NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
                 [request setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];

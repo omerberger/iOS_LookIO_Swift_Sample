@@ -23,8 +23,8 @@
 #define LIOInputBarViewMaxLinesLandscape    2
 #define LIOInputBarViewMaxTextLength        150
 #define LIOInputBarViewMaxTextLength_iPad   300
-#define LIOInputBarViewMinHeight            37.0
-#define LIOInputBarViewMinHeightPad         50.0
+#define LIOInputBarViewMinHeight            41.0
+#define LIOInputBarViewMinHeightPad         54.0
 
 @interface LIOInputBarView : UIView <UITextViewDelegate>
 {
@@ -33,7 +33,7 @@
     //UIView *adArea;
     UIButton *sendButton;
     UITextView *inputField;
-    UIImageView *inputFieldBackground;
+    UIImageView *inputFieldBackground, *inputFieldBackgroundGlowing;
     CGFloat singleLineHeight;
     NSInteger totalLines;
     CGFloat desiredHeight;
@@ -44,6 +44,8 @@
 }
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
+- (void)startPulseAnimation;
+- (void)stopPulseAnimation;
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;

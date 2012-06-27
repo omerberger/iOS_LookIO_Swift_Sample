@@ -16,7 +16,8 @@
 typedef enum
 {
     LIOChatBubbleViewFormattingModeRemote,
-    LIOChatBubbleViewFormattingModeLocal
+    LIOChatBubbleViewFormattingModeLocal,
+    LIOChatBubbleViewFormattingModeHeader
 } LIOChatBubbleViewFormattingMode;
 
 typedef enum
@@ -31,6 +32,12 @@ typedef enum
     LIOChatBubbleViewLinkSupertypeIntra
 } LIOChatBubbleViewLinkSupertype;
 
+typedef enum
+{
+    LIOChatBubbleViewBubbleStyleChat,
+    LIOChatBubbleViewBubbleStyleSurvey
+} LIOChatBubbleViewBubbleStyle;
+
 @protocol LIOChatBubbleViewDelegate
 - (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView;
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL;
@@ -40,6 +47,7 @@ typedef enum
 {
     LIOChatBubbleViewFormattingMode formattingMode;
     LIOChatBubbleViewLinkMode linkMode;
+    LIOChatBubbleViewBubbleStyle bubbleStyle;
     TTTAttributedLabel_LIO *mainMessageView;
     NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes, *linkSupertypes, *intraAppLinkViews;
     UIImageView *backgroundImage;
@@ -51,6 +59,7 @@ typedef enum
 }
 
 @property(nonatomic, assign) LIOChatBubbleViewFormattingMode formattingMode;
+@property(nonatomic, assign) LIOChatBubbleViewBubbleStyle bubbleStyle;
 @property(nonatomic, readonly) LIOChatBubbleViewLinkMode linkMode;
 @property(nonatomic, readonly) NSMutableArray *linkMessageViews, *linkButtons, *links;
 @property(nonatomic, retain) NSString *senderName;

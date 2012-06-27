@@ -95,14 +95,34 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         aSurvey = postChatTemplate;
     
     int unansweredMandatoryQuestions = 0;
-    for (LIOSurveyQuestion *aQuestion in aSurvey.questions)
+    for (int i=0; i<[aSurvey.questions count]; i++)
     {
-        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:aQuestion.questionId];
+        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
         if (aQuestion.mandatory && nil == anAnswer)
             unansweredMandatoryQuestions++;
     }
     
-    return unansweredMandatoryQuestions > 0;
+    return unansweredMandatoryQuestions;
+}
+
+- (int)nextQuestionWithResponseRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType
+{
+    LIOSurveyTemplate *aSurvey;
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        aSurvey = preChatTemplate;
+    else
+        aSurvey = postChatTemplate;
+    
+    for (int i=0; i<[aSurvey.questions count]; i++)
+    {
+        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+        if (aQuestion.mandatory && nil == anAnswer)
+            return i;
+    }
+    
+    return -1;
 }
 
 - (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType

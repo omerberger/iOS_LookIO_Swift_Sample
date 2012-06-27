@@ -11,6 +11,7 @@
 #import "LIOBundleManager.h"
 #import "LIOLogManager.h"
 #import "LIONotificationArea.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation LIOInputBarView
 
@@ -73,25 +74,31 @@
         CGRect inputFieldBackgroundFrame = CGRectZero;
         if (padUI)
         {
-            inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width/* + 20.0*/;
+            inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width;
             inputFieldBackgroundFrame.size.width = 450.0;
             inputFieldBackgroundFrame.size.height = 50.0;
             inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
         }
         else
         {
-            inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 15.0;
-            inputFieldBackgroundFrame.size.height = 37.0;
-            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 4.0;
-            inputFieldBackgroundFrame.origin.x = 5.0;
+            inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 13.0;
+            inputFieldBackgroundFrame.size.height = 39.0;
+            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 3.0;
+            inputFieldBackgroundFrame.origin.x = 3.0;
         }
         
         inputFieldBackground = [[UIImageView alloc] initWithFrame:inputFieldBackgroundFrame];
         inputFieldBackground.userInteractionEnabled = YES;
-        inputFieldBackground.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableInputBar"] stretchableImageWithLeftCapWidth:8 topCapHeight:8];
+        inputFieldBackground.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableInputBar"] stretchableImageWithLeftCapWidth:10 topCapHeight:10];
         inputFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputFieldBackground.clipsToBounds = YES;
         [self addSubview:inputFieldBackground];
+        
+        inputFieldBackgroundGlowing = [[UIImageView alloc] initWithImage:[[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableInputBarGlowing"] stretchableImageWithLeftCapWidth:10 topCapHeight:10]];
+        inputFieldBackgroundGlowing.frame = inputFieldBackground.bounds;
+        inputFieldBackgroundGlowing.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        inputFieldBackgroundGlowing.hidden = YES;
+        [inputFieldBackground addSubview:inputFieldBackgroundGlowing];
                 
         CGFloat fontSize = 14.0;
         if (padUI)
@@ -143,11 +150,7 @@
     [sendButton release];
     [inputField release];
     [inputFieldBackground release];
-    /*
-    [adLabel release];
-    [adLogo release];
-    [adArea release];
-    */
+    [inputFieldBackgroundGlowing release];
     [characterCount release];
     [placeholderText release];
     
@@ -187,7 +190,7 @@
     if ([stringToMeasure length] && [[stringToMeasure substringFromIndex:[stringToMeasure length] - 1] isEqualToString:@"\n"])
         [stringToMeasure replaceCharactersInRange:NSMakeRange([stringToMeasure length] - 1, 1) withString:@"\n "];
     
-    CGFloat backgroundHeightMod = 12.0; // im not even really sure what this
+    CGFloat backgroundHeightMod = 14.0; // im not even really sure what this
     
     CGFloat maxWidth = inputField.frame.size.width - 16.0;
     CGSize newSize = [stringToMeasure sizeWithFont:inputField.font constrainedToSize:CGSizeMake(maxWidth, FLT_MAX)];
@@ -198,7 +201,7 @@
         if (NO == inputField.scrollEnabled)
             inputField.scrollEnabled = YES;
         
-        backgroundHeightMod = 24.0;
+        backgroundHeightMod = 28.0;
     }
     else if (calculatedNumLines < 1)
     {
@@ -291,6 +294,27 @@
 {
     notificationArea.keyboardIconVisible = animated;
     [notificationArea revealNotificationString:aString permanently:permanent];
+}
+
+- (void)startPulseAnimation
+{
+    inputFieldBackgroundGlowing.hidden = NO;
+    inputFieldBackgroundGlowing.alpha = 0.0;
+    
+    [UIView animateWithDuration:0.5
+                          delay:0.0
+                        options:(UIViewAnimationOptionRepeat | UIViewAnimationOptionAutoreverse)
+                     animations:^{
+                         inputFieldBackgroundGlowing.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+}
+
+- (void)stopPulseAnimation
+{
+    [inputFieldBackgroundGlowing.layer removeAllAnimations];
+    inputFieldBackgroundGlowing.hidden = YES;
 }
 
 #pragma mark -

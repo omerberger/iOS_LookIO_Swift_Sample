@@ -51,7 +51,7 @@
 
 @implementation LIOAltChatViewController
 
-@synthesize delegate, dataSource, initialChatText, currentMode, currentSurveyType;
+@synthesize delegate, dataSource, initialChatText, currentMode, currentSurveyType, currentSurveyQuestionIndex;
 @dynamic agentTyping;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -60,6 +60,9 @@
     
     if (self)
     {
+        previousSurveyQuestionBubbleGenerated = -1;
+        numPreviousMessagesToShowInScrollback = 1;
+        currentSurveyQuestionIndex = -1;
         chatBubbleHeights = [[NSMutableArray alloc] init];
     }
     
@@ -278,11 +281,31 @@
     endSessionButton.frame = aFrame;
     endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
     
-    functionHeader = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    functionHeader.selectionStyle = UITableViewCellSelectionStyleNone;
-    [functionHeader.contentView addSubview:aboutButton];
-    [functionHeader.contentView addSubview:emailConvoButton];
-    [functionHeader.contentView addSubview:endSessionButton];
+    functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
+    [functionHeaderChat.contentView addSubview:aboutButton];
+    [functionHeaderChat.contentView addSubview:emailConvoButton];
+    [functionHeaderChat.contentView addSubview:endSessionButton];
+    
+    leaveSurveyButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [leaveSurveyButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    leaveSurveyButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    leaveSurveyButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    leaveSurveyButton.titleLabel.layer.shadowOpacity = 0.8;
+    leaveSurveyButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    [leaveSurveyButton setTitle:@"Exit Chat" forState:UIControlStateNormal];
+    [leaveSurveyButton addTarget:self action:@selector(leaveSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    aFrame = leaveSurveyButton.frame;
+    aFrame.size.width = tableView.bounds.size.width - 60.0;
+    aFrame.size.height = 32.0;
+    aFrame.origin.x = 30.0;
+    aFrame.origin.y = 16.0;
+    leaveSurveyButton.frame = aFrame;
+    leaveSurveyButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    
+    functionHeaderSurvey = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    functionHeaderSurvey.selectionStyle = UITableViewCellSelectionStyleNone;
+    [functionHeaderSurvey.contentView addSubview:leaveSurveyButton];
     
     reconnectionOverlay = [[UIView alloc] initWithFrame:self.view.bounds];
     reconnectionOverlay.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
@@ -375,12 +398,13 @@
             surveyMessages = [[NSMutableArray alloc] init];
             
             LIOChatMessage *headerMessage = [LIOChatMessage chatMessage];
-            headerMessage.kind = LIOChatMessageKindRemote;
+            headerMessage.kind = LIOChatMessageKindHeader;
             headerMessage.date = [NSDate date];
             headerMessage.text = aSurveyHeader;
             [surveyMessages addObject:headerMessage];
             
-            currentSurveyQuestionIndex = 0;
+            if (-1 == currentSurveyQuestionIndex)
+                currentSurveyQuestionIndex = 0;
             
             [self processSurvey];
         }
@@ -410,8 +434,11 @@
     [headerBar release];
     headerBar = nil;
     
-    [functionHeader release];
-    functionHeader = nil;
+    [functionHeaderChat release];
+    functionHeaderChat = nil;
+    
+    [functionHeaderSurvey release];
+    functionHeaderSurvey = nil;
     
     [vertGradient release];
     vertGradient = nil;
@@ -430,6 +457,9 @@
     
     [emailConvoButton release];
     emailConvoButton = nil;
+    
+    [leaveSurveyButton release];
+    leaveSurveyButton = nil;
     
     [dismissButton release];
     dismissButton = nil;
@@ -451,10 +481,6 @@
     tableView.dataSource = nil;
     [tableView release];
     
-    // This should probably go somewhere else...
-    if (LIOAltChatViewControllerModeSurvey == currentMode)
-        [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:currentSurveyType];
-    
     [background release];
     [pendingChatText release];
     [initialChatText release];
@@ -462,7 +488,7 @@
     [surveyMessages release];
     [headerBar release];
     [inputBar release];
-    [functionHeader release];
+    [functionHeaderChat release];
     [vertGradient release];
     [horizGradient release];
     [reconnectionOverlay release];
@@ -475,6 +501,8 @@
     [toasterView release];
     [currentSurveyValidationErrorString release];
     [validationView release];
+    [functionHeaderSurvey release];
+    [leaveSurveyButton release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -500,7 +528,18 @@
     [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     
     if (NO == padUI)
+    {
+        if (LIOAltChatViewControllerModeSurvey == currentMode)
+            numPreviousMessagesToShowInScrollback = 2;
+        else
+            numPreviousMessagesToShowInScrollback = 1;
+        
         [self scrollToBottomDelayed:YES];
+    }
+    else
+    {
+        numPreviousMessagesToShowInScrollback = 3;
+    }
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
@@ -544,7 +583,9 @@
     
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [inputBar.inputField becomeFirstResponder];
+        
+        if (NO == pickerIsBeingUsed)
+            [inputBar.inputField becomeFirstResponder];
         
         if ([initialChatText length])
         {
@@ -634,6 +675,8 @@
     // TODO: Handle end of survey.
     if (currentSurveyQuestionIndex >= [surveyTemplate.questions count])
     {
+        pickerIsBeingUsed = NO;
+        
         [surveyPicker removeFromSuperview];
         [surveyPicker release];
         surveyPicker = nil;
@@ -642,9 +685,25 @@
         [validationView release];
         validationView = nil;
         
+        numPreviousMessagesToShowInScrollback = 1;
+                
+        // Collect responses for submission.
+        NSMutableDictionary *responses = [NSMutableDictionary dictionary];
+        for (int i=0; i<[surveyTemplate.questions count]; i++)
+        {
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[surveyTemplate.questions objectAtIndex:i];
+            id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:i];
+            if (aResponse != nil)
+                [responses setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+        }
+        [delegate altChatViewController:self didFinishSurveyWithResponses:responses];
+        
         currentMode = LIOAltChatViewControllerModeChat;
         [self reloadMessages];
         
+        [self scrollToBottomDelayed:YES];
+        
+        [inputBar stopPulseAnimation];
         inputBar.inputField.userInteractionEnabled = YES;
         [inputBar.inputField becomeFirstResponder];
         
@@ -657,11 +716,17 @@
     {
         LIOSurveyQuestion *currentQuestion = [surveyTemplate.questions objectAtIndex:currentSurveyQuestionIndex];
         
-        LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-        newChatMessage.kind = LIOChatMessageKindRemote;
-        newChatMessage.date = [NSDate date];
-        newChatMessage.text = currentQuestion.label;
-        [surveyMessages addObject:newChatMessage];
+        if (previousSurveyQuestionBubbleGenerated != currentSurveyQuestionIndex)
+        {
+            LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
+            newChatMessage.kind = LIOChatMessageKindRemote;
+            newChatMessage.date = [NSDate date];
+            newChatMessage.text = currentQuestion.label;
+            newChatMessage.sequence = currentSurveyQuestionIndex + 1;
+            [surveyMessages addObject:newChatMessage];
+        }
+        
+        previousSurveyQuestionBubbleGenerated = currentSurveyQuestionIndex;
         
         [self reloadMessages];
         
@@ -676,11 +741,15 @@
         // We need either the keyboard, or a picker.
         if (LIOSurveyQuestionDisplayTypeText == currentQuestion.displayType)
         {
+            pickerIsBeingUsed = NO;
+            
             inputBar.inputField.userInteractionEnabled = YES;
             [inputBar.inputField becomeFirstResponder];
         }
         else
         {
+            pickerIsBeingUsed = YES;
+            
             inputBar.inputField.userInteractionEnabled = NO;
             [self.view endEditing:YES];
             
@@ -705,6 +774,8 @@
         
         if ([currentSurveyValidationErrorString length])
         {
+            [inputBar startPulseAnimation];
+            
             validationView = [[LIOSurveyValidationView alloc] init];
             validationView.label.text = currentSurveyValidationErrorString;
             [validationView layoutSubviews];
@@ -724,6 +795,10 @@
             currentSurveyValidationErrorString = nil;
             
             [validationView showAnimated];
+        }
+        else
+        {
+            [inputBar stopPulseAnimation];
         }
     }
 }
@@ -818,12 +893,15 @@
                 newChatMessage.text = aResponse;
                 [surveyMessages addObject:newChatMessage];
             }
+            
+            /*
             else if (NO == currentQuestion.mandatory)
             {
                 [currentSurveyValidationErrorString release];
                 currentSurveyValidationErrorString = nil;
                 currentSurveyQuestionIndex++;
             }
+            */
         }
     }
     else if (indexArrayResponse)
@@ -855,6 +933,13 @@
         }
     }
         
+    // After the first question, we want to only show one bubble at a time on iPhone.
+    if (currentSurveyQuestionIndex > 0 && UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
+        [self scrollToBottomDelayed:NO];
+        numPreviousMessagesToShowInScrollback = 1;
+    }
+    
     [self processSurvey];
     [self scrollToBottomDelayed:YES];
 }
@@ -1035,7 +1120,7 @@
 - (void)reloadMessages
 {
     [chatMessages release];
-    chatMessages = [[dataSource altChatViewControllerChatMessages:self] retain];
+    chatMessages = [[dataSource altChatViewControllerChatMessages:self] copy];
     
     if (LIOAltChatViewControllerModeChat == currentMode)
         currentMessages = chatMessages;
@@ -1052,15 +1137,25 @@
         if (LIOChatMessageKindLocal == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-            tempView.senderName = @"Me";
+            
+            if (currentMode != LIOAltChatViewControllerModeSurvey)
+                tempView.senderName = @"Me";
         }
-        else
+        else if (LIOChatMessageKindRemote == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeRemote;
             tempView.senderName = aMessage.senderName;
         }
+        else if (LIOChatMessageKindHeader == aMessage.kind)
+        {
+            tempView.formattingMode = LIOChatBubbleViewFormattingModeHeader;
+        }
+        
+        if (LIOAltChatViewControllerModeSurvey == currentMode)
+            tempView.bubbleStyle = LIOChatBubbleViewBubbleStyleSurvey;
         
         [tempView populateMessageViewWithText:aMessage.text];
+        [tempView layoutSubviews];
         
         NSNumber *aHeight = [NSNumber numberWithFloat:tempView.frame.size.height];
         [chatBubbleHeights addObject:aHeight];
@@ -1127,7 +1222,12 @@
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (0 == indexPath.row)
-        return functionHeader;
+    {
+        if (currentMode == LIOAltChatViewControllerModeChat)
+            return functionHeaderChat;
+        else if (currentMode == LIOAltChatViewControllerModeSurvey)
+            return functionHeaderSurvey;
+    }
     
     if ([currentMessages count] + 1 == indexPath.row)
     {
@@ -1154,6 +1254,8 @@
     [tappableDummyView addGestureRecognizer:tapper];
     [aCell.contentView addSubview:tappableDummyView];
     
+    // ... this kinda defeats the purpose of reusable cells.
+    // OH WELL
     LIOChatBubbleView *aBubble = [[[LIOChatBubbleView alloc] initWithFrame:CGRectZero] autorelease];
     aBubble.backgroundColor = [UIColor clearColor];
     aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
@@ -1165,24 +1267,36 @@
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-        aBubble.senderName = @"Me";
+        
+        if (currentMode != LIOAltChatViewControllerModeSurvey)
+            aBubble.senderName = @"Me";
     }
-    else
+    else if (LIOChatMessageKindRemote == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
         aBubble.senderName = aMessage.senderName;
     }
+    else if (LIOChatMessageKindHeader == aMessage.kind)
+    {
+        aBubble.formattingMode = LIOChatBubbleViewFormattingModeHeader;
+    }
     
-    [aBubble populateMessageViewWithText:aMessage.text];
+    if (LIOAltChatViewControllerModeSurvey == currentMode)
+        aBubble.bubbleStyle = LIOChatBubbleViewBubbleStyleSurvey;
+    
     aBubble.rawChatMessage = aMessage;
+    [aBubble populateMessageViewWithText:aMessage.text];
+    
     
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
-    else
+    else if (LIOChatBubbleViewFormattingModeLocal == aBubble.formattingMode)
         aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
+    else if (LIOChatBubbleViewFormattingModeHeader == aBubble.formattingMode)
+        aBubble.frame = CGRectMake(0.0, 0.0, aCell.contentView.bounds.size.width, 0.0);
     
     [aBubble setNeedsLayout];
-    [aBubble setNeedsDisplay];    
+    [aBubble setNeedsDisplay];
     
     return aCell;
 }
@@ -1199,26 +1313,23 @@
     
     if ([currentMessages count] + 1 == indexPath.row)
     {
+        CGFloat heightAccum = 0.0;
+        for (int i=0; i<numPreviousMessagesToShowInScrollback; i++)
+        {
+            int row = [currentMessages count] - i;
+            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0]];
+        }
+        
         if (padUI)
         {
-            // We want to show more bubbles on iPad. Thus, a smaller expanding footer vs. iPhone.
-            CGFloat heightAccum = 0.0;
-            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[currentMessages count] inSection:0]];
-            if ([currentMessages count] >= 1)
-                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([currentMessages count] - 1) inSection:0]];
-            if ([currentMessages count] >= 2)
-                heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:([currentMessages count] - 2) inSection:0]];
-            
             CGFloat result = tableView.bounds.size.height - heightAccum;
             if (result < 0.0) result = 7.0 - 10.0;
             return result;
         }
         else
         {
-            CGFloat heightOfLastBubble = [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:[currentMessages count] inSection:0]];
-            CGFloat result = tableView.bounds.size.height - heightOfLastBubble - 10.0;
+            CGFloat result = tableView.bounds.size.height - heightAccum - 10.0;
             if (result < 0.0) result = 7.0;
-            
             return result;
         }
     }
@@ -1226,10 +1337,17 @@
     NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(indexPath.row - 1)];
     CGFloat height = [aHeight floatValue];
     
-    if (height < LIOChatBubbleViewMinTextHeight)
-        height = LIOChatBubbleViewMinTextHeight;
+    // Headers can be short. All else must be minimum height.
+    CGFloat bottomPadding = 0.0;
+    LIOChatMessage *currentMessage = [currentMessages objectAtIndex:(indexPath.row - 1)];
+    if (LIOChatMessageKindHeader != currentMessage.kind)
+    {
+        bottomPadding = 5.0;
+        if (height < LIOChatBubbleViewMinTextHeight)
+            height = LIOChatBubbleViewMinTextHeight;
+    }
     
-    return height + 10.0;
+    return height + bottomPadding;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -1256,7 +1374,7 @@
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 460.0);
         popover.delegate = self;
-        [popover presentPopoverFromRect:aboutButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+        [popover presentPopoverFromRect:aboutButton.frame inView:functionHeaderChat.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
     {
@@ -1279,7 +1397,7 @@
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
-        [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeader.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+        [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeaderChat.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
     {
@@ -1290,6 +1408,19 @@
 - (void)endSessionButtonWasTapped
 {
     [delegate altChatViewControllerDidTapEndSessionButton:self];
+}
+
+- (void)leaveSurveyButtonWasTapped
+{
+    [self.view endEditing:YES];
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Exit Chat?"
+                                                        message:@"Would you like to exit this chat?"
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:@"Don't Exit", @"Exit", nil];
+    [alertView show];
+    [alertView autorelease];
 }
 
 #pragma mark -
@@ -1854,6 +1985,15 @@
 {
     [self processSurveyResponse:[pendingSurveyResponse autorelease]];
     pendingSurveyResponse = nil;
+}
+
+#pragma mark -
+#pragma mark UIAlertViewDelegate methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (1 == buttonIndex)
+        [delegate altChatViewControllerWantsToLeaveSurvey:self];
 }
 
 @end

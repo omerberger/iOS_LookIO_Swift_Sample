@@ -18,7 +18,7 @@ static NSDataDetector *dataDetector = nil;
 
 @implementation LIOChatBubbleView
 
-@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage, delegate, index;
+@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage, delegate, index, bubbleStyle;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -27,13 +27,8 @@ static NSDataDetector *dataDetector = nil;
     
     if (self)
     {
-        UIImage *stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:36];
-        backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
-        [self addSubview:backgroundImage];
-        
         mainMessageView = [[TTTAttributedLabel_LIO alloc] initWithFrame:self.bounds];
         mainMessageView.dataDetectorTypes = UIDataDetectorTypeNone;
-        mainMessageView.font = [UIFont systemFontOfSize:16.0];
         mainMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
         mainMessageView.layer.shadowRadius = 1.0;
         mainMessageView.layer.shadowOpacity = 1.0;
@@ -85,15 +80,52 @@ static NSDataDetector *dataDetector = nil;
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-        
+
+    if (nil == backgroundImage && LIOChatBubbleViewFormattingModeHeader != formattingMode)
+    {
+        UIImage *stretchableBubble = nil;
+        if (LIOChatBubbleViewBubbleStyleChat == bubbleStyle)
+        {
+            stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
+        }
+        else if (LIOChatBubbleViewBubbleStyleSurvey == bubbleStyle)
+        {
+            if (LIOChatBubbleViewFormattingModeRemote == formattingMode)
+            {
+                stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyBubbleRemote"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
+            }
+            else
+            {
+                stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyBubbleLocal"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
+            }
+        }
+            
+        backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
+        [self insertSubview:backgroundImage belowSubview:mainMessageView];
+    }
+
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
     CGFloat bottom;
+    
+    // Some additional modifications for header mode.
+    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
+        maxSize = CGSizeMake(300.0, FLT_MAX);
     
     if (LIOChatBubbleViewLinkModeDisabled == linkMode)
     {
         CGSize boxSize = [mainMessageView sizeThatFits:maxSize];
-        mainMessageView.frame = CGRectMake(20.0, 10.0, boxSize.width, boxSize.height);
-        bottom = boxSize.height;
+        bottom = boxSize.height + 10.0;
+        
+        if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
+        {
+            CGRect aFrame;
+            aFrame.size = boxSize;
+            aFrame.origin.y = 5.0;
+            aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+            mainMessageView.frame = aFrame;
+        }
+        else
+            mainMessageView.frame = CGRectMake(20.0, 10.0, boxSize.width, boxSize.height);
     }
     else
     {
@@ -148,10 +180,15 @@ static NSDataDetector *dataDetector = nil;
         }
     }
     
+    CGFloat bottomPadding = 30.0;
+    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
+        bottomPadding = 3.0;
+    
     // FIXME: This really shouldn't be here.
     CGRect aFrame = self.frame;
-    aFrame.size.height = bottom + 30.0;
-    if (aFrame.size.height < LIOChatBubbleViewMinTextHeight) aFrame.size.height = LIOChatBubbleViewMinTextHeight;
+    aFrame.size.height = bottom + bottomPadding;
+    if (LIOChatBubbleViewFormattingModeHeader != formattingMode && aFrame.size.height < LIOChatBubbleViewMinTextHeight)
+        aFrame.size.height = LIOChatBubbleViewMinTextHeight;
     self.frame = aFrame;
     
     backgroundImage.frame = self.bounds;    
@@ -160,7 +197,7 @@ static NSDataDetector *dataDetector = nil;
 - (UILabel *)createMessageView
 {
     UILabel *newMessageView = [[UILabel alloc] initWithFrame:self.bounds];
-    newMessageView.font = [UIFont systemFontOfSize:16.0];
+    newMessageView.font = [UIFont systemFontOfSize:15.0];
     newMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
     newMessageView.layer.shadowRadius = 1.0;
     newMessageView.layer.shadowOpacity = 1.0;
@@ -188,6 +225,17 @@ static NSDataDetector *dataDetector = nil;
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
+    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
+    {
+        mainMessageView.font = [UIFont boldSystemFontOfSize:14.0];
+        mainMessageView.textAlignment = UITextAlignmentCenter;
+    }
+    else
+    {
+        mainMessageView.font = [UIFont systemFontOfSize:15.0];
+        mainMessageView.textAlignment = UITextAlignmentLeft;
+    }
+    
     [links removeAllObjects];
     [linkTypes removeAllObjects];
     [linkSupertypes removeAllObjects];
@@ -255,22 +303,42 @@ static NSDataDetector *dataDetector = nil;
     }
     
     [mainMessageView setText:firstString afterInheritingLabelAttributesAndConfiguringWithBlock:^ NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
-        
-        if (0 == [senderName length])
-            return mutableAttributedString;
-        
-        NSAttributedString *nameCallout = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]] autorelease];
-        [mutableAttributedString insertAttributedString:nameCallout atIndex:0];
-        
-        NSRange boldRange = NSMakeRange(0, [nameCallout length]);
-        
-        UIFont *boldSystemFont = [UIFont boldSystemFontOfSize:16.0]; 
-        CTFontRef font = CTFontCreateWithName((CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
-        if (font && boldRange.location != NSNotFound)
+                
+        if (LIOChatBubbleViewBubbleStyleSurvey == bubbleStyle && LIOChatBubbleViewFormattingModeRemote == formattingMode)
         {
-            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)font range:boldRange];
-            [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
-            CFRelease(font);
+            int seq = rawChatMessage.sequence;
+            NSString *headerString = [NSString stringWithFormat:@"Question %d:\n", seq];
+            NSAttributedString *questionHeader = [[[NSAttributedString alloc] initWithString:headerString] autorelease];
+            [mutableAttributedString insertAttributedString:questionHeader atIndex:0];
+            NSRange boldRange = NSMakeRange(0, [questionHeader length]);
+            
+            UIFont *boldNameFont = [UIFont boldSystemFontOfSize:15.0];
+            CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
+            
+            if (boldRange.location != NSNotFound)
+            {
+                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)boldNameCTFont range:boldRange];
+                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
+            }
+            
+            CFRelease(boldNameCTFont);
+        }
+        else if ([senderName length])
+        {
+            NSAttributedString *nameCallout = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]] autorelease];
+            [mutableAttributedString insertAttributedString:nameCallout atIndex:0];
+            NSRange boldRange = NSMakeRange(0, [nameCallout length]);
+            
+            UIFont *boldNameFont = [UIFont boldSystemFontOfSize:15.0];
+            CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
+            
+            if (boldRange.location != NSNotFound)
+            {
+                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)boldNameCTFont range:boldRange];
+                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
+            }
+            
+            CFRelease(boldNameCTFont);
         }
         
         return mutableAttributedString;
