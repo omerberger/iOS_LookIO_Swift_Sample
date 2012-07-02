@@ -58,7 +58,8 @@
     });
     */
     
-    [[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
+    //[[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
+    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
     
 #if RUN_KIF_TESTS

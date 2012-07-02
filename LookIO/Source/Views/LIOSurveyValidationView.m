@@ -8,6 +8,7 @@
 
 #import "LIOSurveyValidationView.h"
 #import "LIOBundleManager.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation LIOSurveyValidationView
 
@@ -57,17 +58,24 @@
 
 - (void)layoutSubviews
 {
+    CGRect aFrame = self.frame;
+    aFrame.size.height = 22.5;
+    self.frame = aFrame;
+    
+    CGFloat maxLabelWidth = self.bounds.size.width - 40.0;
+    CGSize labelSize = [label.text sizeWithFont:label.font forWidth:maxLabelWidth lineBreakMode:UILineBreakModeTailTruncation];
+    
     [label sizeToFit];
-    CGRect aFrame = label.frame;
-    aFrame.origin.x = 50.0;
-    aFrame.size.width = self.bounds.size.width - 50.0;
+    aFrame = label.frame;
+    aFrame.size.width = labelSize.width;
+    aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0) + 7.0;
     aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
     label.frame = aFrame;
     
     aFrame = cautionSign.frame;
     aFrame.size.width = 15.0;
     aFrame.size.height = 13.0;
-    aFrame.origin.x = 10.0;
+    aFrame.origin.x = label.frame.origin.x - 20.0;
     aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
     cautionSign.frame = aFrame;
     
@@ -76,10 +84,6 @@
     aFrame.origin.y = -4.5; // Shadow spills over top.
     aFrame.size.width = self.bounds.size.width;
     backgroundImage.frame = aFrame;
-    
-    aFrame = self.frame;
-    aFrame.size.height = 22.5;
-    self.frame = aFrame;
 }
 
 - (void)showAnimated

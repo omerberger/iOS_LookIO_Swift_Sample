@@ -178,6 +178,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         [userDefaults setObject:aDict forKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
     
     NSString *headerString = [aDict objectForKey:@"header"];
+    NSNumber *idNumber = [aDict objectForKey:@"id"];
     
     LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
     NSArray *questionsArray = [aDict objectForKey:@"questions"];
@@ -247,6 +248,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         [questions addObject:newQuestion];
     }
     
+    newTemplate.surveyId = idNumber;
     newTemplate.questions = questions;
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)

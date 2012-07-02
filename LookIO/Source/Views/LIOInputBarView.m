@@ -35,7 +35,7 @@
         if (padUI)
         {
             sendButtonFrame.origin.x = self.bounds.size.width - 59.0 - 57.0;
-            sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 25.0;
+            sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 22.0;
             sendButtonFrame.size.width = 75.0;
             sendButtonFrame.size.height = 47.0;
             sendButtonFont = [UIFont boldSystemFontOfSize:16.0];
@@ -239,7 +239,7 @@
     if (padUI)
     {
         aFrame = inputField.frame;
-        if (1 == totalLines) aFrame.origin.y = 14.0;
+        if (1 == totalLines) aFrame.origin.y = 17.0;
         else if (inputField.scrollEnabled)
         {
             aFrame.origin.y = 14.0;
@@ -343,7 +343,10 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
     if ([text isEqualToString:@"\n"])
+    {
         [self sendButtonWasTapped];
+        return NO;
+    }
     
     return YES;
 }

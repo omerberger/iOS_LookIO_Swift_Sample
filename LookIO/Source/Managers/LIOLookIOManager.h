@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define LOOKIO_VERSION_STRING @"TEST1001"
+#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
 
 @class LIOLookIOManager;
 
@@ -27,7 +27,6 @@
 
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
-@property(nonatomic, assign) BOOL usesTLS;
 @property(nonatomic, retain) UIWindow *mainWindow;
 @property(nonatomic, readonly) BOOL enabled;
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;

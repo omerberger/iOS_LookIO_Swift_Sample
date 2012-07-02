@@ -10,10 +10,12 @@
 
 @interface LIOSurveyTemplate : NSObject
 {
+    NSNumber *surveyId;
     NSString *headerString;
     NSArray *questions;
 }
 
+@property(nonatomic, retain) NSNumber *surveyId;
 @property(nonatomic, retain) NSString *headerString;
 @property(nonatomic, retain) NSArray *questions;
 

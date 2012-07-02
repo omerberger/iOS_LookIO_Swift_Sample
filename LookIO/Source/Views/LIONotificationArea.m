@@ -69,10 +69,10 @@
             
             UIImageView *adLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
             aFrame = adLogo.frame;
-            aFrame.size.width = 107.0;
-            aFrame.size.height = 23.0;
+            aFrame.size.width = 106.0;
+            aFrame.size.height = 15.0;
             aFrame.origin.x = 27.0;//adLabel.frame.origin.x + adLabel.frame.size.width + 3.0;
-            aFrame.origin.y = 27.0;//(lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            aFrame.origin.y = 32.0;//(lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
             adLogo.frame = aFrame;
             adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             adLogo.backgroundColor = [UIColor clearColor];

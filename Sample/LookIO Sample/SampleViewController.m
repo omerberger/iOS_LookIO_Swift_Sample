@@ -106,9 +106,11 @@
     return fakeView;
 }
 
+/*
 - (NSString *)lookIOManagerControlEndpointOverride:(LIOLookIOManager *)aManager
 {
     return @"199.192.241.221:8800";
 }
+*/
 
 @end

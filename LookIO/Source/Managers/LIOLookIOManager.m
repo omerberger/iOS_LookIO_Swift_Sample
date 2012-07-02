@@ -155,6 +155,7 @@
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
+@property(nonatomic, assign) BOOL usesTLS;
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
@@ -2012,6 +2013,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                selector:@selector(continuationTimerDidFire)];
     }
 
+    /*
     NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
@@ -2027,12 +2029,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
         }
     }
+    */
     
-    /*
     NSString *fakePreJSON = @"{\"header\":\"Welcome! Please tell us a little about yourself.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-    */
         
     [self refreshControlButtonVisibility];
     [self applicationDidChangeStatusBarOrientation:nil];
@@ -2132,8 +2133,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (includesSurveyResponses && [surveyResponsesToBeSent count])
     {
-        NSString *surveyJSON = [jsonWriter stringWithObject:surveyResponsesToBeSent];
-        [introDict setObject:surveyJSON forKey:@"prechat_survey"];
+        [introDict setObject:surveyResponsesToBeSent forKey:@"prechat_survey"];
         
         [surveyResponsesToBeSent release];
         surveyResponsesToBeSent = nil;
@@ -2865,11 +2865,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     [self beginSession];
     
+    /*
     LIOChatMessage *surveyOutro = [LIOChatMessage chatMessage];
     surveyOutro.date = [NSDate date];
     surveyOutro.text = @"Thank you for your responses! A live support agent will be available to assist you shortly.";
     surveyOutro.kind = LIOChatMessageKindRemote;
     [chatHistory insertObject:surveyOutro atIndex:0];
+    */
 }
 
 #pragma mark -

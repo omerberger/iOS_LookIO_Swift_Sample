@@ -665,6 +665,8 @@
 
 - (void)processSurvey
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOSurveyTemplate *surveyTemplate;
     if (LIOSurveyManagerSurveyTypePre == currentSurveyType)
@@ -672,9 +674,20 @@
     else
         surveyTemplate = surveyManager.postChatTemplate;
     
-    // TODO: Handle end of survey.
     if (currentSurveyQuestionIndex >= [surveyTemplate.questions count])
-    {
+    {        
+        // Collect responses for submission.
+        NSMutableDictionary *responses = [NSMutableDictionary dictionary];
+        for (int i=0; i<[surveyTemplate.questions count]; i++)
+        {
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[surveyTemplate.questions objectAtIndex:i];
+            id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:i];
+            if (aResponse != nil)
+                [responses setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+        }
+        NSDictionary *surveyDict = [NSDictionary dictionaryWithObjectsAndKeys:surveyTemplate.surveyId, @"id", responses, @"responses", nil];
+        [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
+        
         pickerIsBeingUsed = NO;
         
         [surveyPicker removeFromSuperview];
@@ -685,24 +698,16 @@
         [validationView release];
         validationView = nil;
         
-        numPreviousMessagesToShowInScrollback = 1;
-                
-        // Collect responses for submission.
-        NSMutableDictionary *responses = [NSMutableDictionary dictionary];
-        for (int i=0; i<[surveyTemplate.questions count]; i++)
-        {
-            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[surveyTemplate.questions objectAtIndex:i];
-            id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:i];
-            if (aResponse != nil)
-                [responses setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
-        }
-        [delegate altChatViewController:self didFinishSurveyWithResponses:responses];
+        if (padUI)
+            numPreviousMessagesToShowInScrollback = 3;
+        else
+            numPreviousMessagesToShowInScrollback = 1;
         
         currentMode = LIOAltChatViewControllerModeChat;
         [self reloadMessages];
-        
         [self scrollToBottomDelayed:YES];
         
+        inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
         [inputBar stopPulseAnimation];
         inputBar.inputField.userInteractionEnabled = YES;
         [inputBar.inputField becomeFirstResponder];
@@ -743,7 +748,17 @@
         {
             pickerIsBeingUsed = NO;
             
+            /*
+            if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
+                inputBar.inputField.keyboardType = UIKeyboardTypeEmailAddress;
+            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
+                inputBar.inputField.keyboardType = UIKeyboardTypeNumberPad;
+            else
+                inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
+            */
+            
             inputBar.inputField.userInteractionEnabled = YES;
+            //[inputBar.inputField resignFirstResponder];
             [inputBar.inputField becomeFirstResponder];
         }
         else
@@ -805,6 +820,8 @@
 
 - (void)processSurveyResponse:(id)aResponse
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     NSString *stringResponse = nil;
     NSArray *indexArrayResponse = nil;
     if ([aResponse isKindOfClass:[NSString class]])
@@ -892,6 +909,16 @@
                 newChatMessage.kind = LIOChatMessageKindLocal;
                 newChatMessage.text = aResponse;
                 [surveyMessages addObject:newChatMessage];
+                
+                if (NO == padUI && 1 == currentSurveyQuestionIndex)
+                {
+                    int prev = numPreviousMessagesToShowInScrollback;
+                    [self reloadMessages];
+                    numPreviousMessagesToShowInScrollback = 1;
+                    [self refreshExpandingFooter];
+                    [self scrollToBottomDelayed:NO];
+                    numPreviousMessagesToShowInScrollback = prev;
+                }
             }
             
             /*
@@ -930,6 +957,16 @@
             [surveyMessages addObject:newChatMessage];
             
             currentSurveyQuestionIndex++;
+            
+            if (1 == currentSurveyQuestionIndex)
+            {
+                int prev = numPreviousMessagesToShowInScrollback;
+                [self reloadMessages];
+                numPreviousMessagesToShowInScrollback = 1;
+                [self refreshExpandingFooter];
+                [self scrollToBottomDelayed:NO];
+                numPreviousMessagesToShowInScrollback = prev;
+            }
         }
     }
         
@@ -1308,16 +1345,21 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (0 == indexPath.row)
+    int row = indexPath.row;
+    
+    if (0 > row)
+        return 0.0;
+    
+    if (0 == row)
         return 64.0;
     
-    if ([currentMessages count] + 1 == indexPath.row)
+    if ([currentMessages count] + 1 == row)
     {
         CGFloat heightAccum = 0.0;
         for (int i=0; i<numPreviousMessagesToShowInScrollback; i++)
         {
-            int row = [currentMessages count] - i;
-            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0]];
+            int aRow = [currentMessages count] - i;
+            heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
         }
         
         if (padUI)
@@ -1334,12 +1376,12 @@
         }
     }
     
-    NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(indexPath.row - 1)];
+    NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(row - 1)];
     CGFloat height = [aHeight floatValue];
     
     // Headers can be short. All else must be minimum height.
     CGFloat bottomPadding = 0.0;
-    LIOChatMessage *currentMessage = [currentMessages objectAtIndex:(indexPath.row - 1)];
+    LIOChatMessage *currentMessage = [currentMessages objectAtIndex:(row - 1)];
     if (LIOChatMessageKindHeader != currentMessage.kind)
     {
         bottomPadding = 5.0;
