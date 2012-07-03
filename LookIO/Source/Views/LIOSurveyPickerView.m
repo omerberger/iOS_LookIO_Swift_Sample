@@ -257,8 +257,11 @@
     if (LIOSurveyPickerViewModeSingle == currentMode)
     {
         int selectedRow = [pickerView selectedRowInComponent:0];
-        NSNumber *result = [NSNumber numberWithInt:selectedRow];
-        [results addObject:result];
+        if (selectedRow > 0)
+        {
+            NSNumber *result = [NSNumber numberWithInt:(selectedRow - 1)];
+            [results addObject:result];
+        }
     }
     else
     {
@@ -282,7 +285,7 @@
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
-    return [surveyQuestion.pickerEntries count];
+    return [surveyQuestion.pickerEntries count] + 1;
 }
 
 #pragma mark -
@@ -290,7 +293,10 @@
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
-    LIOSurveyPickerEntry *entry = [surveyQuestion.pickerEntries objectAtIndex:row];
+    if (0 == row)
+        return @"Choose an option below:";
+    
+    LIOSurveyPickerEntry *entry = [surveyQuestion.pickerEntries objectAtIndex:row - 1];
     return entry.label;
 }
 

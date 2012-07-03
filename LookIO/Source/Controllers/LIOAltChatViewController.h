@@ -27,6 +27,7 @@ typedef enum
 @protocol LIOChatBubbleViewDelegate;
 @protocol LIOToasterViewDelegate;
 @protocol LIOSurveyPickerViewDelegate;
+@protocol LIOSurveyValidationViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -55,7 +56,7 @@ typedef enum
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
      LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate, UIAlertViewDelegate>
+     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate, UIAlertViewDelegate, LIOSurveyValidationViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOInputBarView, LIONotificationArea;
+@class LIOInputBarView, LIONotificationArea, LIOTimerProxy;
 
 @protocol LIOInputBarViewDelegate
 - (void)inputBarView:(LIOInputBarView *)aView didChangeNumberOfLines:(NSInteger)numLinesDelta;
@@ -16,6 +16,7 @@
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString;
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView;
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView;
+- (void)inputBarViewDidStopPulseAnimation:(LIOInputBarView *)aView;
 @end
 
 // Misc. constants
@@ -40,6 +41,7 @@
     UILabel *characterCount;
     UILabel *placeholderText;
     LIONotificationArea *notificationArea;
+    LIOTimerProxy *pulseTimer;
     id<LIOInputBarViewDelegate> delegate;
 }
 

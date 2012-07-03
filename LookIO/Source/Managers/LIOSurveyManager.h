@@ -25,6 +25,7 @@ typedef enum
     NSString *preChatHeader, *postChatHeader;
     LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
     NSMutableDictionary *preChatResponses, *postChatResponses;
+    int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
@@ -37,6 +38,6 @@ typedef enum
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
-
+@property(nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
 
 @end

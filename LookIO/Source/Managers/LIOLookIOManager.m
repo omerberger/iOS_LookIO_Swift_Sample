@@ -755,6 +755,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)reset
 {
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
     
@@ -1164,13 +1166,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // We might need to be in survey mode...
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
+    if (surveyManager.preChatTemplate)
     {
-        int questionIndex = [surveyManager nextQuestionWithResponseRequiredForSurveyType:LIOSurveyManagerSurveyTypePre];
-        
-        altChatViewController.currentMode = LIOAltChatViewControllerModeSurvey;
-        altChatViewController.currentSurveyType = LIOSurveyManagerSurveyTypePre;
-        altChatViewController.currentSurveyQuestionIndex = questionIndex;
+        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
+        if (lastIndexCompleted < finalIndex)
+        {
+            altChatViewController.currentMode = LIOAltChatViewControllerModeSurvey;
+            altChatViewController.currentSurveyType = LIOSurveyManagerSurveyTypePre;
+            altChatViewController.currentSurveyQuestionIndex = surveyManager.lastCompletedQuestionIndexPre + 1;
+        }
     }
     
     [lookioWindow addSubview:altChatViewController.view];
@@ -1220,10 +1225,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     // Survey needed? We need to wait until it's done before we try to connect.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && [surveyManager responsesRequiredForSurveyType:LIOSurveyManagerSurveyTypePre])
+    if (surveyManager.preChatTemplate)
     {
-        [self showChatAnimated:YES];
-        return;
+        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
+        if (lastIndexCompleted < finalIndex)
+        {
+            [self showChatAnimated:YES];
+            return;
+        }
     }
     
     // Waiting for the "do you want to reconnect?" alert view.

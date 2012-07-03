@@ -12,6 +12,7 @@
 #import "LIOLogManager.h"
 #import "LIONotificationArea.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOTimerProxy.h"
 
 @implementation LIOInputBarView
 
@@ -147,6 +148,10 @@
 
 - (void)dealloc
 {
+    [pulseTimer stopTimer];
+    [pulseTimer release];
+    pulseTimer = nil;
+    
     [sendButton release];
     [inputField release];
     [inputFieldBackground release];
@@ -298,6 +303,10 @@
 
 - (void)startPulseAnimation
 {
+    [pulseTimer stopTimer];
+    [pulseTimer release];
+    pulseTimer = [[LIOTimerProxy alloc] initWithTimeInterval:5.0 target:self selector:@selector(pulseTimerDidFire)];
+    
     inputFieldBackgroundGlowing.hidden = NO;
     inputFieldBackgroundGlowing.alpha = 0.0;
     
@@ -313,8 +322,19 @@
 
 - (void)stopPulseAnimation
 {
+    [pulseTimer stopTimer];
+    [pulseTimer release];
+    pulseTimer = nil;
+    
     [inputFieldBackgroundGlowing.layer removeAllAnimations];
     inputFieldBackgroundGlowing.hidden = YES;
+    
+    [delegate inputBarViewDidStopPulseAnimation:self];
+}
+
+- (void)pulseTimerDidFire
+{
+    [self stopPulseAnimation];
 }
 
 #pragma mark -

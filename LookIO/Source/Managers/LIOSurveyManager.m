@@ -17,7 +17,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 
 @implementation LIOSurveyManager
 
-@synthesize preChatHeader, postChatHeader, preChatTemplate, postChatTemplate;
+@synthesize preChatHeader, postChatHeader, preChatTemplate, postChatTemplate, lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
 
 + (LIOSurveyManager *)sharedSurveyManager
 {
@@ -45,6 +45,8 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         
         preChatResponses = [[NSMutableDictionary alloc] init];
         postChatResponses = [[NSMutableDictionary alloc] init];
+        
+        lastCompletedQuestionIndexPre = lastCompletedQuestionIndexPost = -1;
     }
     
     return self;

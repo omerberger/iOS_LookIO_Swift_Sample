@@ -88,13 +88,19 @@
 
 - (void)showAnimated
 {
-    self.alpha = 0.0;
+    [self layoutSubviews];
+    
+    CGRect endingFrame = self.frame;
+    
+    CGRect startingFrame = self.frame;
+    startingFrame.origin.y += startingFrame.size.height;
+    self.frame = startingFrame;
     
     [UIView animateWithDuration:0.33
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
-                         self.alpha = 1.0;
+                         self.frame = endingFrame;
                      }
                      completion:^(BOOL finished) {
                      }];
@@ -102,11 +108,16 @@
 
 - (void)hideAnimated
 {
+    [self layoutSubviews];
+    
+    CGRect endingFrame = self.frame;
+    endingFrame.origin.y += endingFrame.size.height;
+        
     [UIView animateWithDuration:0.33
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         self.alpha = 0.0;
+                         self.frame = endingFrame;
                      }
                      completion:^(BOOL finished) {
                          [delegate surveyValidationViewDidFinishDismissalAnimation:self];
