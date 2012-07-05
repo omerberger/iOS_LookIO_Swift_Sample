@@ -16,7 +16,7 @@ typedef enum
 } LIOAltChatViewControllerMode;
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView;
-@class LIOSurveyPickerView, LIOSurveyValidationView;
+@class LIOSurveyPickerView, LIOSurveyValidationView, LIOTimerProxy;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -92,6 +92,7 @@ typedef enum
     int numPreviousMessagesToShowInScrollback;
     int previousSurveyQuestionBubbleGenerated;
     BOOL pickerIsBeingUsed;
+    LIOTimerProxy *surveyOutroTimer;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

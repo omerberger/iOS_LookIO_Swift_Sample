@@ -15,7 +15,8 @@ typedef enum
     LIOChatMessageKindMapLocation,
     LIOChatMessageKindLink,
     LIOChatMessageKindPhoneNumber,
-    LIOChatMessageKindHeader
+    LIOChatMessageKindHeader,
+    LIOChatMessageKindSurveyOutro
 } LIOChatMessageKind;
 
 @interface LIOChatMessage : NSObject

@@ -106,6 +106,8 @@
 		D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */; };
 		D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C902491549D04A00B36D68 /* LIOCacheEntry.h */; };
 		D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */; };
+		D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */; };
+		D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -209,6 +211,8 @@
 		D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
 		D4C902491549D04A00B36D68 /* LIOCacheEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOCacheEntry.h; path = Source/Other/LIOCacheEntry.h; sourceTree = "<group>"; };
 		D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOCacheEntry.m; path = Source/Other/LIOCacheEntry.m; sourceTree = "<group>"; };
+		D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedCogView.h; path = Source/Views/LIOAnimatedCogView.h; sourceTree = "<group>"; };
+		D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAnimatedCogView.m; path = Source/Views/LIOAnimatedCogView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -308,6 +312,8 @@
 				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
+				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
+				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -498,6 +504,7 @@
 				D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */,
 				D4137A10159148F30097E385 /* LIOSurveyPickerView.h in Headers */,
 				D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */,
+				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -617,6 +624,7 @@
 				D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */,
 				D4137A11159148F30097E385 /* LIOSurveyPickerView.m in Sources */,
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
+				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

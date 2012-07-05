@@ -28,6 +28,8 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOSurveyPickerView.h"
 #import "LIOSurveyValidationView.h"
+#import "LIOAnimatedCogView.h"
+#import "LIOTimerProxy.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -548,6 +550,9 @@
     tableView.dataSource = nil;
     [tableView release];
     
+    [surveyOutroTimer stopTimer];
+    [surveyOutroTimer release];
+    
     [background release];
     [pendingChatText release];
     [initialChatText release];
@@ -719,6 +724,22 @@
     }
 }
 
+- (void)surveyOutroTimerDidFire
+{
+    [surveyOutroTimer stopTimer];
+    [surveyOutroTimer release];
+    surveyOutroTimer = nil;
+    
+    currentMode = LIOAltChatViewControllerModeChat;
+    [self reloadMessages];
+    [self scrollToBottomDelayed:YES];
+    
+    inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
+    [inputBar stopPulseAnimation];
+    inputBar.inputField.userInteractionEnabled = YES;
+    [inputBar.inputField becomeFirstResponder];    
+}
+
 - (void)processSurvey
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -759,14 +780,17 @@
         else
             numPreviousMessagesToShowInScrollback = 1;
         
-        currentMode = LIOAltChatViewControllerModeChat;
+        LIOChatMessage *surveyOutro = [LIOChatMessage chatMessage];
+        surveyOutro.kind = LIOChatMessageKindSurveyOutro;
+        surveyOutro.date = [NSDate date];
+        surveyOutro.text = @"lollerchutes";
+        [surveyMessages addObject:surveyOutro];
         [self reloadMessages];
         [self scrollToBottomDelayed:YES];
         
-        inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
-        [inputBar stopPulseAnimation];
-        inputBar.inputField.userInteractionEnabled = YES;
-        [inputBar.inputField becomeFirstResponder];
+        [self revealNotificationString:@"Please wait while we find someone to help you..." withAnimatedKeyboard:NO];
+        
+        surveyOutroTimer = [[LIOTimerProxy alloc] initWithTimeInterval:5.0 target:self selector:@selector(surveyOutroTimerDidFire)];
         
         return;
     }
@@ -1360,7 +1384,6 @@
     aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
     aBubble.delegate = self;
     aBubble.index = indexPath.row;
-    [aCell.contentView addSubview:aBubble];
     
     LIOChatMessage *aMessage = [currentMessages objectAtIndex:(indexPath.row - 1)];
     if (LIOChatMessageKindLocal == aMessage.kind)
@@ -1380,12 +1403,27 @@
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeHeader;
     }
     
+    if (LIOChatMessageKindSurveyOutro == aMessage.kind)
+    {
+        // Survey outro only has an animated cog/signal doodad in it. No bubble.
+        LIOAnimatedCogView *cogView = [[[LIOAnimatedCogView alloc] init] autorelease];
+        [cogView layoutSubviews];
+        CGRect aFrame = cogView.frame;
+        aFrame.origin.y = 30.0;
+        aFrame.origin.x = (aCell.contentView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        cogView.frame = aFrame;
+        [aCell.contentView addSubview:cogView];
+        
+        [cogView fadeIn];
+    }
+    else
+        [aCell.contentView addSubview:aBubble];
+    
     if (LIOAltChatViewControllerModeSurvey == currentMode)
         aBubble.bubbleStyle = LIOChatBubbleViewBubbleStyleSurvey;
     
     aBubble.rawChatMessage = aMessage;
     [aBubble populateMessageViewWithText:aMessage.text];
-    
     
     if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
