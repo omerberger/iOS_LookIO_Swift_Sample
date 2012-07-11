@@ -28,6 +28,7 @@ typedef enum
 @protocol LIOToasterViewDelegate;
 @protocol LIOSurveyPickerViewDelegate;
 @protocol LIOSurveyValidationViewDelegate;
+@protocol LIOSurveyViewControllerDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -56,7 +57,8 @@ typedef enum
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
      LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate, UIAlertViewDelegate, LIOSurveyValidationViewDelegate>
+     LIOToasterViewDelegate, UIPopoverControllerDelegate, LIOSurveyPickerViewDelegate, UIAlertViewDelegate, LIOSurveyValidationViewDelegate,
+     LIOSurveyViewControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -92,6 +94,7 @@ typedef enum
     int numPreviousMessagesToShowInScrollback;
     int previousSurveyQuestionBubbleGenerated;
     BOOL pickerIsBeingUsed;
+    BOOL surveyWasCanceled;
     LIOTimerProxy *surveyOutroTimer;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;

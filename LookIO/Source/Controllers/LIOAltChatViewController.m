@@ -30,6 +30,7 @@
 #import "LIOSurveyValidationView.h"
 #import "LIOAnimatedCogView.h"
 #import "LIOTimerProxy.h"
+#import "LIOSurveyViewController.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -633,6 +634,32 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    // We might need to exit chat due to a canceled survey.
+    if (surveyWasCanceled)
+    {
+        [self performDismissalAnimation];
+        return;
+    }
+    
+    // We might need to show the survey modal.
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.preChatTemplate)
+    {
+        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
+        if (lastIndexCompleted < finalIndex)
+        {
+            LIOSurveyViewController *surveyController = [[[LIOSurveyViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+            surveyController.delegate = self;
+            surveyController.headerString = surveyManager.preChatHeader;
+            surveyController.currentQuestionIndex = lastIndexCompleted;
+            surveyController.currentSurvey = surveyManager.preChatTemplate;
+            [self presentModalViewController:surveyController animated:YES];
+            
+            return;
+        }
+    }
     
     if (leavingMessage)
         return;
@@ -2165,6 +2192,39 @@
     [validationView removeFromSuperview];
     [validationView release];
     validationView = nil;
+}
+
+#pragma mark -
+#pragma mark LIOSurveyViewControllerDelegate methods
+
+- (BOOL)surveyViewController:(LIOSurveyViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
+}
+
+- (void)surveyViewControllerDidCancel:(LIOSurveyViewController *)aController
+{
+    surveyWasCanceled = YES;
+    [self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController
+{
+    // Collect responses for submission.
+    NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
+    for (int i=0; i<[aController.currentSurvey.questions count]; i++)
+    {
+        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aController.currentSurvey.questions objectAtIndex:i];
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
+        if (aResponse != nil)
+            [finalDict setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+    }
+    NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
+    [surveyDict setObject:aController.currentSurvey.surveyId forKey:@"id"];
+    [surveyDict setObject:finalDict forKey:@"responses"];
+    [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
+    
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 @end

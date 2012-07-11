@@ -37,6 +37,8 @@
 		D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D4741540BD400045DBFF /* LIOMapAnnotation.m */; };
 		D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */; };
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
+		D446F41915AB435D00E40B19 /* LIOSurveyViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D446F41715AB435D00E40B19 /* LIOSurveyViewController.h */; };
+		D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D446F41815AB435D00E40B19 /* LIOSurveyViewController.m */; };
 		D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7F71576D60300CF73CC /* LIORulesManager.h */; };
 		D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7F81576D60300CF73CC /* LIORulesManager.m */; };
 		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
@@ -141,6 +143,8 @@
 		D440D4741540BD400045DBFF /* LIOMapAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMapAnnotation.m; path = Source/Other/LIOMapAnnotation.m; sourceTree = "<group>"; };
 		D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
 		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
+		D446F41715AB435D00E40B19 /* LIOSurveyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewController.h; path = Source/Controllers/LIOSurveyViewController.h; sourceTree = "<group>"; };
+		D446F41815AB435D00E40B19 /* LIOSurveyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewController.m; path = Source/Controllers/LIOSurveyViewController.m; sourceTree = "<group>"; };
 		D454B7F71576D60300CF73CC /* LIORulesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORulesManager.h; path = Source/Managers/LIORulesManager.h; sourceTree = "<group>"; };
 		D454B7F81576D60300CF73CC /* LIORulesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORulesManager.m; path = Source/Managers/LIORulesManager.m; sourceTree = "<group>"; };
 		D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORuleViewVisible.h; path = Source/Other/LIORuleViewVisible.h; sourceTree = "<group>"; };
@@ -264,6 +268,8 @@
 				D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */,
 				D4ADC7A214F3211800713F29 /* LIOLeaveMessageViewController.h */,
 				D4ADC7A314F3211800713F29 /* LIOLeaveMessageViewController.m */,
+				D446F41715AB435D00E40B19 /* LIOSurveyViewController.h */,
+				D446F41815AB435D00E40B19 /* LIOSurveyViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -505,6 +511,7 @@
 				D4137A10159148F30097E385 /* LIOSurveyPickerView.h in Headers */,
 				D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */,
 				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
+				D446F41915AB435D00E40B19 /* LIOSurveyViewController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -625,6 +632,7 @@
 				D4137A11159148F30097E385 /* LIOSurveyPickerView.m in Sources */,
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
+				D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

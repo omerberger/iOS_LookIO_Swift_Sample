@@ -15,7 +15,7 @@
 
 @implementation LIOSurveyPickerView
 
-@synthesize currentMode, surveyQuestion, delegate;
+@synthesize currentMode, surveyQuestion, delegate, results;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -33,7 +33,7 @@
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:0];
         
         doneButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [doneButton setTitle:@"Select" forState:UIControlStateNormal];
+        [doneButton setTitle:@"Next" forState:UIControlStateNormal];
         [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         doneButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
         [doneButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
@@ -247,12 +247,9 @@
                      }];
 }
 
-#pragma mark -
-#pragma mark UIControl actions
-
-- (void)doneButtonWasTapped
+- (void)recalculateResults
 {
-    NSMutableArray *results = [NSMutableArray array];
+    NSMutableArray *temp = [NSMutableArray array];
     
     if (LIOSurveyPickerViewModeSingle == currentMode)
     {
@@ -260,7 +257,7 @@
         if (selectedRow > 0)
         {
             NSNumber *result = [NSNumber numberWithInt:(selectedRow - 1)];
-            [results addObject:result];
+            [temp addObject:result];
         }
     }
     else
@@ -268,11 +265,21 @@
         for (NSIndexPath *anIndexPath in selectedIndices)
         {
             NSNumber *result = [NSNumber numberWithInt:anIndexPath.row];
-            [results addObject:result];
+            [temp addObject:result];
         }
     }
+ 
+    [results release];
+    results = [temp retain];
+}
 
-    [delegate surveyPickerView:self didSelectIndices:results];
+#pragma mark -
+#pragma mark UIControl actions
+
+- (void)doneButtonWasTapped
+{
+    [self recalculateResults];
+    [delegate surveyPickerViewDidTapSelect:self];
 }
 
 #pragma mark -
@@ -298,6 +305,11 @@
     
     LIOSurveyPickerEntry *entry = [surveyQuestion.pickerEntries objectAtIndex:row - 1];
     return entry.label;
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
+{
+    [self recalculateResults];
 }
 
 #pragma mark -
@@ -373,6 +385,8 @@
         [selectedIndices addObject:indexPath];
     
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
+    
+    [self recalculateResults];
 }
 
 /*
