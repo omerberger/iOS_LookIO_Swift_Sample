@@ -28,8 +28,11 @@
     LIOSurveyTemplate *currentSurvey;
     UILabel *currentQuestionLabel;
     UITextField *currentInputField;
+    UIImageView *currentInputFieldBackground;
     LIOSurveyPickerView *currentPickerView, *oldPickerView;
     int currentQuestionIndex;
+    CGFloat keyboardHeight;
+    BOOL keyboardShown;
     id<LIOSurveyViewControllerDelegate> delegate;
 }
 

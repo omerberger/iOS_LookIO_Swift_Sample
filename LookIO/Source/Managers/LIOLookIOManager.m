@@ -330,6 +330,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [uploadLogRequest addValue:udid forHTTPHeaderField:@"X-Lookio-DeviceID"];
     [uploadLogRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [uploadLogRequest setHTTPBody:[logBody dataUsingEncoding:NSUTF8StringEncoding]];
+    [uploadLogRequest setHTTPMethod:@"POST"];
     
     [NSURLConnection connectionWithRequest:uploadLogRequest delegate:nil];
     

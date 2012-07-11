@@ -81,6 +81,31 @@
     [super viewDidUnload];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidHide:)
+                                                 name:UIKeyboardDidHideNotification
+                                               object:nil];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [currentScrollView release];
+    [headerString release];
+    [currentSurvey release];
+    [currentPickerView release];
+    
+    [super dealloc];
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return [delegate surveyViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
@@ -119,7 +144,8 @@
     backgroundView.backgroundColor = [UIColor colorWithPatternImage:texture];
     aFrame = CGRectZero;
     aFrame.size.width = self.view.bounds.size.width;
-    aFrame.size.height = self.view.bounds.size.height * 2.0;
+    aFrame.origin.y = self.view.bounds.size.height * -2.0;
+    aFrame.size.height = self.view.bounds.size.height * 4.0;
     backgroundView.frame = aFrame;
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [nextScrollView addSubview:backgroundView];
@@ -197,6 +223,8 @@
         fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [nextScrollView addSubview:fieldBackground];
         
+        currentInputFieldBackground = fieldBackground;
+        
         UITextField *inputField = [[[UITextField alloc] init] autorelease];
         inputField.delegate = self;
         inputField.backgroundColor = [UIColor clearColor];
@@ -254,8 +282,7 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    if (currentInputField)
-        currentScrollView.contentSize = CGSizeMake(0.0, currentInputField.frame.origin.y + currentInputField.frame.size.height);    
+    [self rejiggerInterface];
 }
 
 - (void)switchToNextQuestion
@@ -323,6 +350,40 @@
                                               otherButtonTitles:@"Dismiss", nil];
     [alertView show];
     [alertView autorelease];
+}
+
+- (void)rejiggerInterface
+{
+    CGRect aFrame = navBar.frame;
+    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
+    navBar.frame = aFrame;
+    
+    aFrame = currentScrollView.frame;
+    aFrame.origin.y = navBar.bounds.size.height;
+    if (keyboardShown)
+    {
+        aFrame.size.height = self.view.bounds.size.height - keyboardHeight - navBar.bounds.size.height;
+    }
+    else if (currentPickerView)
+    {
+        aFrame.size.height = self.view.bounds.size.height - currentPickerView.bounds.size.height - navBar.bounds.size.height;
+    }
+    else
+    {
+        aFrame.size.height = self.view.bounds.size.height - navBar.bounds.size.height;
+    }
+    currentScrollView.frame = aFrame;
+    
+    if (currentInputField)
+    {
+        CGSize blah = CGSizeMake(0.0, currentInputFieldBackground.frame.origin.y + currentInputFieldBackground.frame.size.height + 10.0);
+        currentScrollView.contentSize = blah;
+    }
+    else if (currentQuestionLabel)
+    {
+        CGSize blah = CGSizeMake(0.0, currentQuestionLabel.frame.origin.y + currentQuestionLabel.frame.size.height + 10.0);
+        currentScrollView.contentSize = blah;
+    }
 }
 
 #pragma mark - Navigation bar button actions -
@@ -461,6 +522,59 @@
         [oldPickerView removeFromSuperview];
         oldPickerView = nil;
     }
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)keyboardDidShow:(NSNotification *)aNotification
+{
+    if (keyboardShown)
+        return;
+    
+    keyboardShown = YES;
+        
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    
+    keyboardHeight = keyboardBounds.size.height;
+    
+    [self rejiggerInterface];
+}
+
+- (void)keyboardDidHide:(NSNotification *)aNotification
+{
+    if (NO == keyboardShown)
+        return;
+    
+    keyboardShown = NO;
+    
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    
+    keyboardHeight = 0.0;
+    
+    [self rejiggerInterface];
 }
 
 @end
