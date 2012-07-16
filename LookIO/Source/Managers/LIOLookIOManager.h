@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define LOOKIO_VERSION_STRING @"TEST1006"
+#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
 
 @class LIOLookIOManager;
 
