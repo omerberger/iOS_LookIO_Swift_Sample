@@ -597,8 +597,11 @@
     
     [self reloadMessages];
     
-    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] - 1 inSection:0];
-    [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
+    if ([currentMessages count])
+    {
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] - 1 inSection:0];
+        [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
+    }
     
     if (NO == padUI)
         [self scrollToBottomDelayed:YES];

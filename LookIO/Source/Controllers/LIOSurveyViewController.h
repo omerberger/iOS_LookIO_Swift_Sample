@@ -31,8 +31,9 @@
     UIImageView *currentInputFieldBackground;
     LIOSurveyPickerView *currentPickerView, *oldPickerView;
     int currentQuestionIndex;
-    CGFloat keyboardHeight;
+    CGRect keyboardFrame;
     BOOL keyboardShown;
+    UIView *keyboardUnderlay;
     id<LIOSurveyViewControllerDelegate> delegate;
 }
 

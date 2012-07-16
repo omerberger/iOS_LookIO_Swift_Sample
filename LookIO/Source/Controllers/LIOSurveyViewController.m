@@ -64,8 +64,12 @@
 
     [self.view addSubview:currentScrollView];
 
-    if (currentInputField)
-        [currentInputField becomeFirstResponder];
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (currentInputField)
+            [currentInputField becomeFirstResponder];
+    });
     
     if (currentPickerView)
         [self.view bringSubviewToFront:currentPickerView];
@@ -89,6 +93,11 @@
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidHide:)
                                                  name:UIKeyboardDidHideNotification
                                                object:nil];
@@ -101,7 +110,6 @@
     [currentScrollView release];
     [headerString release];
     [currentSurvey release];
-    [currentPickerView release];
     
     [super dealloc];
 }
@@ -207,6 +215,9 @@
     
     currentQuestionLabel = questionLabel;
     
+    if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
+        navBar.topItem.rightBarButtonItem.title = @"Start Chat";
+    
     if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
     {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
@@ -254,6 +265,9 @@
             inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         }
         
+        if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
+            inputField.returnKeyType = UIReturnKeyDone;
+        
         currentInputField = inputField;
         
         nextScrollView.contentSize = CGSizeMake(0.0, inputField.frame.origin.y + inputField.frame.size.height);
@@ -277,12 +291,26 @@
         currentPickerView.frame = aFrame;
         
         [currentPickerView showAnimated];
+        
+        if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
+        {
+            [currentPickerView.doneButton setTitle:@"Start Chat" forState:UIControlStateNormal];
+        }
     }
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    if (keyboardUnderlay)
+        keyboardUnderlay.hidden = YES;
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     [self rejiggerInterface];
+    
+    if (keyboardUnderlay)
+        keyboardUnderlay.hidden = NO;
 }
 
 - (void)switchToNextQuestion
@@ -357,15 +385,22 @@
     CGRect aFrame = navBar.frame;
     aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
     navBar.frame = aFrame;
-    
+
     aFrame = currentScrollView.frame;
     aFrame.origin.y = navBar.bounds.size.height;
     if (keyboardShown)
     {
-        aFrame.size.height = self.view.bounds.size.height - keyboardHeight - navBar.bounds.size.height;
+        aFrame.size.height = self.view.bounds.size.height - keyboardFrame.size.height - navBar.bounds.size.height;
     }
     else if (currentPickerView)
     {
+        [currentPickerView layoutSubviews];
+        CGRect pickerFrame = currentPickerView.frame;
+        pickerFrame.origin.y = self.view.bounds.size.height - pickerFrame.size.height;
+        pickerFrame.origin.x = 0.0;
+        pickerFrame.size.width = self.view.bounds.size.width;
+        currentPickerView.frame = pickerFrame;
+        
         aFrame.size.height = self.view.bounds.size.height - currentPickerView.bounds.size.height - navBar.bounds.size.height;
     }
     else
@@ -378,12 +413,19 @@
     {
         CGSize blah = CGSizeMake(0.0, currentInputFieldBackground.frame.origin.y + currentInputFieldBackground.frame.size.height + 10.0);
         currentScrollView.contentSize = blah;
+        
+        [currentScrollView scrollRectToVisible:currentInputFieldBackground.frame animated:NO];
     }
     else if (currentQuestionLabel)
     {
         CGSize blah = CGSizeMake(0.0, currentQuestionLabel.frame.origin.y + currentQuestionLabel.frame.size.height + 10.0);
         currentScrollView.contentSize = blah;
+        
+        [currentScrollView scrollRectToVisible:currentQuestionLabel.frame animated:NO];
     }
+    
+    if (keyboardUnderlay)
+        keyboardUnderlay.frame = keyboardFrame;
 }
 
 #pragma mark - Navigation bar button actions -
@@ -399,7 +441,10 @@
     if (currentInputField)
         aResponse = currentInputField.text;
     else if (currentPickerView)
+    {
+        [currentPickerView recalculateResults];
         aResponse = currentPickerView.results;
+    }
     
     NSString *stringResponse = nil;
     NSArray *indexArrayResponse = nil;
@@ -546,10 +591,25 @@
     
     NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
     CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
+    keyboardFrame = keyboardBounds;
     
-    keyboardHeight = keyboardBounds.size.height;
+    if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
+    {
+        keyboardUnderlay = [[[UIView alloc] initWithFrame:keyboardFrame] autorelease];
+        keyboardUnderlay.backgroundColor = [UIColor blackColor];
+        [self.view addSubview:keyboardUnderlay];
+    }
     
     [self rejiggerInterface];
+}
+
+- (void)keyboardWillHide:(NSNotification *)aNotification
+{
+    if (NO == keyboardShown)
+        return;
+    
+    [keyboardUnderlay removeFromSuperview];
+    keyboardUnderlay = nil;
 }
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
@@ -569,10 +629,7 @@
     NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
     [animationCurveValue getValue:&animationCurve];
     
-    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
-    
-    keyboardHeight = 0.0;
+    //NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
     
     [self rejiggerInterface];
 }

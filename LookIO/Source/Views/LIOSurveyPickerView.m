@@ -15,7 +15,7 @@
 
 @implementation LIOSurveyPickerView
 
-@synthesize currentMode, surveyQuestion, delegate, results;
+@synthesize currentMode, surveyQuestion, delegate, results, doneButton;
 
 - (id)initWithFrame:(CGRect)frame
 {

@@ -38,9 +38,11 @@ typedef enum
 @property(nonatomic, assign) LIOSurveyPickerViewMode currentMode;
 @property(nonatomic, retain) LIOSurveyQuestion *surveyQuestion;
 @property(nonatomic, readonly) NSArray *results;
+@property(nonatomic, readonly) UIButton *doneButton;
 @property(nonatomic, assign) id<LIOSurveyPickerViewDelegate> delegate;
 
 - (void)showAnimated;
 - (void)hideAnimated;
+- (void)recalculateResults;
 
 @end
