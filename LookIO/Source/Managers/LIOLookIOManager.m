@@ -924,15 +924,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Save skin, blow it away for now.
             if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
             {
-                savedNavBarSkinNormal = [[[UINavigationBar appearance] backgroundImageForBarMetrics:UIBarMetricsDefault] retain];
-                savedNavBarSkinLandscape = [[[UINavigationBar appearance] backgroundImageForBarMetrics:UIBarMetricsLandscapePhone] retain];
-                savedBackButtonSkinNormal = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:UIBarMetricsDefault] retain];
-                savedBackButtonSkinLandscape = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone] retain];
+                // As of 7/16/12:
+                // UIBarMetricsDefault == 0
+                // UIBarMetricsLandscapePhone == 1
                 
-                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault];
-                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:UIBarMetricsLandscapePhone];
-                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+                savedNavBarSkinNormal = [[[UINavigationBar appearance] backgroundImageForBarMetrics:0] retain];
+                savedNavBarSkinLandscape = [[[UINavigationBar appearance] backgroundImageForBarMetrics:1] retain];
+                savedBackButtonSkinNormal = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:0] retain];
+                savedBackButtonSkinLandscape = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:1] retain];
+                
+                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:0];
+                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:1];
+                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:0];
+                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:1];
             }
         }
     }
