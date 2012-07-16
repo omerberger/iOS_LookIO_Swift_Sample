@@ -968,10 +968,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Restore skin.
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
         {
-            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinNormal forBarMetrics:UIBarMetricsDefault];
-            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinLandscape forBarMetrics:UIBarMetricsLandscapePhone];
-            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinNormal forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinLandscape forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            // As of 7/16/12:
+            // UIBarMetricsDefault == 0
+            // UIBarMetricsLandscapePhone == 1
+            
+            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinNormal forBarMetrics:0];
+            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinLandscape forBarMetrics:1];
+            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinNormal forState:UIControlStateNormal barMetrics:0];
+            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinLandscape forState:UIControlStateNormal barMetrics:1];
             
             [savedNavBarSkinNormal release];
             savedNavBarSkinNormal = nil;
