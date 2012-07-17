@@ -2160,7 +2160,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerAppIdOverride:)])
-        bundleId = [delegate lookIOManagerAppIdOverride:self];
+    {
+        NSString *overriddenBundleId = [delegate lookIOManagerAppIdOverride:self];
+        if ([overriddenBundleId length])
+            bundleId = overriddenBundleId;
+    }
     
     NSString *udid = uniqueIdentifier();
     NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
