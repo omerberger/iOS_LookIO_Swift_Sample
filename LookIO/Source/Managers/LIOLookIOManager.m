@@ -2202,6 +2202,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         surveyResponsesToBeSent = nil;
     }
     
+    if ([currentRequiredSkill length])
+        [introDict setObject:currentRequiredSkill forKey:@"skill"];
+    
     if (includeExtras)
     {
         if ([targetAgentId length])
