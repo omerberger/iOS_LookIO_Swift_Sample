@@ -43,6 +43,8 @@
 		D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7F81576D60300CF73CC /* LIORulesManager.m */; };
 		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
 		D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */; };
+		D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */ = {isa = PBXBuildFile; fileRef = D462795915B9E98E00AEDE2D /* LIONavigationBar.h */; };
+		D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */; };
 		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
 		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
 		D4868A78155AFE800081164D /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4868A76155AFE800081164D /* AsyncSocket.h */; };
@@ -149,6 +151,8 @@
 		D454B7F81576D60300CF73CC /* LIORulesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORulesManager.m; path = Source/Managers/LIORulesManager.m; sourceTree = "<group>"; };
 		D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORuleViewVisible.h; path = Source/Other/LIORuleViewVisible.h; sourceTree = "<group>"; };
 		D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORuleViewVisible.m; path = Source/Other/LIORuleViewVisible.m; sourceTree = "<group>"; };
+		D462795915B9E98E00AEDE2D /* LIONavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONavigationBar.h; path = Source/Views/LIONavigationBar.h; sourceTree = "<group>"; };
+		D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONavigationBar.m; path = Source/Views/LIONavigationBar.m; sourceTree = "<group>"; };
 		D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODismissalBarView.h; path = Source/Views/LIODismissalBarView.h; sourceTree = "<group>"; };
 		D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODismissalBarView.m; path = Source/Views/LIODismissalBarView.m; sourceTree = "<group>"; };
 		D4868A76155AFE800081164D /* AsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncSocket.h; sourceTree = "<group>"; };
@@ -296,6 +300,8 @@
 		D47C98EC14C9F01000E1223F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
+				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
 				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,
 				D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */,
 				D4ADC7BE14F322B500713F29 /* LIOChatBubbleView.h */,
@@ -310,6 +316,8 @@
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
 				D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */,
 				D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */,
+				D462795915B9E98E00AEDE2D /* LIONavigationBar.h */,
+				D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
 				D4137A0E159148F30097E385 /* LIOSurveyPickerView.h */,
@@ -318,8 +326,6 @@
 				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
-				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
-				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -512,6 +518,7 @@
 				D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */,
 				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
 				D446F41915AB435D00E40B19 /* LIOSurveyViewController.h in Headers */,
+				D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -633,6 +640,7 @@
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
 				D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */,
+				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,6 +9,9 @@
 #import <UIKit/UIKit.h>
 
 @class LIOEmailHistoryViewController;
+@class LIONavigationBar;
+
+@protocol LIONavigationBarDelegate;
 
 @protocol LIOEmailHistoryViewControllerDelegate
 - (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController;
@@ -16,9 +19,9 @@
 - (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 
-@interface LIOEmailHistoryViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
+@interface LIOEmailHistoryViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIONavigationBarDelegate>
 {
-    UINavigationBar *navBar;
+    LIONavigationBar *navBar;
     UIScrollView *scrollView;
     UIImageView *fieldBackground;
     UITextField *inputField;

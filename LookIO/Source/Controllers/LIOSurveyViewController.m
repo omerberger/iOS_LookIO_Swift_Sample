@@ -15,6 +15,7 @@
 #import "LIOSurveyPickerView.h"
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLogManager.h"
+#import "LIONavigationBar.h"
 
 @interface LIOSurveyViewController ()
 - (void)prepareNextScrollView;
@@ -39,21 +40,15 @@
 {
     [super loadView];
     
-    navBar = [[UINavigationBar alloc] init];
-    navBar.barStyle = UIBarStyleBlackOpaque;
-    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
+    navBar = [[LIONavigationBar alloc] init];
     CGRect aFrame = navBar.frame;
     aFrame.size.width = self.view.frame.size.width;
-    aFrame.size.height = navBarHeight;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:nil] autorelease];
-    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStyleBordered target:self action:@selector(cancelButtonWasTapped)] autorelease];
-    UIBarButtonItem *nextItem = [[[UIBarButtonItem alloc] initWithTitle:@"Next" style:UIBarButtonItemStyleBordered target:self action:@selector(nextButtonWasTapped)] autorelease];
-    anItem.leftBarButtonItem = closeItem;
-    anItem.rightBarButtonItem = nextItem;
-    [navBar pushNavigationItem:anItem animated:NO];
-    //navBar.delegate = self;
+    navBar.leftButtonText = @"Cancel";
+    navBar.rightButtonText = @"Next";
+    navBar.delegate = self;
+    [navBar layoutSubviews];
     [self.view addSubview:navBar];
     
     [self prepareNextScrollView];
@@ -73,6 +68,8 @@
     
     if (currentPickerView)
         [self.view bringSubviewToFront:currentPickerView];
+    
+    [self.view bringSubviewToFront:navBar];
 }
 
 - (void)viewDidLoad
@@ -216,7 +213,10 @@
     currentQuestionLabel = questionLabel;
     
     if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
-        navBar.topItem.rightBarButtonItem.title = @"Start Chat";
+    {
+        navBar.rightButtonText = @" Start Chat "; // FIXME: aaaaaaaahahahaha
+        [navBar layoutSubviews];
+    }
     
     if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
     {
@@ -365,6 +365,8 @@
                          if (currentInputField)
                              [currentInputField becomeFirstResponder];
                      }];
+    
+    [self.view bringSubviewToFront:navBar];
 }
 
 - (void)showAlertWithMessage:(NSString *)aMessage
@@ -382,11 +384,9 @@
 
 - (void)rejiggerInterface
 {
-    CGRect aFrame = navBar.frame;
-    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
-    navBar.frame = aFrame;
+    [navBar layoutSubviews];
 
-    aFrame = currentScrollView.frame;
+    CGRect aFrame = currentScrollView.frame;
     aFrame.origin.y = navBar.bounds.size.height;
     if (keyboardShown)
     {
@@ -428,120 +428,11 @@
         keyboardUnderlay.frame = keyboardFrame;
 }
 
-#pragma mark - Navigation bar button actions -
-
-- (void)cancelButtonWasTapped
-{
-    [delegate surveyViewControllerDidCancel:self];
-}
-
-- (void)nextButtonWasTapped
-{
-    id aResponse = nil;
-    if (currentInputField)
-        aResponse = currentInputField.text;
-    else if (currentPickerView)
-    {
-        [currentPickerView recalculateResults];
-        aResponse = currentPickerView.results;
-    }
-    
-    NSString *stringResponse = nil;
-    NSArray *indexArrayResponse = nil;
-    if ([aResponse isKindOfClass:[NSString class]])
-        stringResponse = (NSString *)aResponse;
-    else if ([aResponse isKindOfClass:[NSArray class]])
-        indexArrayResponse = (NSArray *)aResponse;
-    else
-    {
-        LIOLog(@"what: %@", NSStringFromClass([aResponse class]));
-        return;
-    }
-    
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
-    
-    if (stringResponse)
-    {
-        if (0 == [stringResponse length])
-        {
-            // An empty response is okay for optional questions.
-            if (NO == currentQuestion.mandatory)
-            {
-                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
-                [self switchToNextQuestion];
-            }
-            else
-            {
-                [self showAlertWithMessage:@"Please enter a response for this question."];
-            }
-        }
-        else
-        {
-            BOOL validated = NO;
-                        
-            if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType)
-            {
-                // Kinda weird. This is just a passthrough, I guess.
-                validated = YES;
-            }
-            else if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
-            {
-                // Cheap e-mail validation: does the string contain one @ symbol?
-                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"@" options:0 error:nil];
-                if (1 == [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
-                    validated = YES;
-                else
-                    [self showAlertWithMessage:@"Please enter a valid e-mail address."];
-            }
-            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
-            {
-                // TODO: Make this better. Currently just looks for any digit and says OK! THAT'S NUMERIC! if there is one.
-                NSRegularExpression *numericRegex = [NSRegularExpression regularExpressionWithPattern:@"\\d+" options:0 error:nil];
-                NSArray *matches = [numericRegex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    [self showAlertWithMessage:@"Please enter a valid number."];
-            }
-            else if ([currentQuestion.validationRegexp length])
-            {
-                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
-                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    [self showAlertWithMessage:@"Please check your input and try again."];
-            }
-            
-            if (validated)
-            {
-                [surveyManager registerAnswerObject:stringResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
-                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
-                [self switchToNextQuestion];                
-            }
-        }
-    }
-    else if (indexArrayResponse)
-    {
-        if (currentQuestion.mandatory && 0 == [indexArrayResponse count])
-        {
-            [self showAlertWithMessage:@"Please enter a response for this question."];
-        }
-        else
-        {
-            [surveyManager registerAnswerObject:indexArrayResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
-            surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
-            [self switchToNextQuestion];
-        }
-    }
-}
-
 #pragma mark - UITextFieldDelegate methods -
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [self nextButtonWasTapped];
+    [self navigationBarDidTapRightButton:navBar];
     return NO;
 }
 
@@ -557,7 +448,7 @@
 
 - (void)surveyPickerViewDidTapSelect:(LIOSurveyPickerView *)aView;
 {
-    [self nextButtonWasTapped];
+    [self navigationBarDidTapRightButton:navBar];
 }
 
 - (void)surveyPickerViewDidFinishDismissalAnimation:(LIOSurveyPickerView *)aView
@@ -632,6 +523,115 @@
     //NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
     
     [self rejiggerInterface];
+}
+
+#pragma mark - LIONavigationBarDelegate methods -
+
+- (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
+{
+    [delegate surveyViewControllerDidCancel:self];
+}
+
+- (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar
+{
+    id aResponse = nil;
+    if (currentInputField)
+        aResponse = currentInputField.text;
+    else if (currentPickerView)
+    {
+        [currentPickerView recalculateResults];
+        aResponse = currentPickerView.results;
+    }
+    
+    NSString *stringResponse = nil;
+    NSArray *indexArrayResponse = nil;
+    if ([aResponse isKindOfClass:[NSString class]])
+        stringResponse = (NSString *)aResponse;
+    else if ([aResponse isKindOfClass:[NSArray class]])
+        indexArrayResponse = (NSArray *)aResponse;
+    else
+    {
+        LIOLog(@"what: %@", NSStringFromClass([aResponse class]));
+        return;
+    }
+    
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    
+    if (stringResponse)
+    {
+        if (0 == [stringResponse length])
+        {
+            // An empty response is okay for optional questions.
+            if (NO == currentQuestion.mandatory)
+            {
+                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                [self switchToNextQuestion];
+            }
+            else
+            {
+                [self showAlertWithMessage:@"Please enter a response for this question."];
+            }
+        }
+        else
+        {
+            BOOL validated = NO;
+            
+            if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType)
+            {
+                // Kinda weird. This is just a passthrough, I guess.
+                validated = YES;
+            }
+            else if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
+            {
+                // Cheap e-mail validation: does the string contain one @ symbol?
+                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"@" options:0 error:nil];
+                if (1 == [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:@"Please enter a valid e-mail address."];
+            }
+            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
+            {
+                // TODO: Make this better. Currently just looks for any digit and says OK! THAT'S NUMERIC! if there is one.
+                NSRegularExpression *numericRegex = [NSRegularExpression regularExpressionWithPattern:@"\\d+" options:0 error:nil];
+                NSArray *matches = [numericRegex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
+                if ([matches count])
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:@"Please enter a valid number."];
+            }
+            else if ([currentQuestion.validationRegexp length])
+            {
+                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
+                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
+                if ([matches count])
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:@"Please check your input and try again."];
+            }
+            
+            if (validated)
+            {
+                [surveyManager registerAnswerObject:stringResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                [self switchToNextQuestion];                
+            }
+        }
+    }
+    else if (indexArrayResponse)
+    {
+        if (currentQuestion.mandatory && 0 == [indexArrayResponse count])
+        {
+            [self showAlertWithMessage:@"Please enter a response for this question."];
+        }
+        else
+        {
+            [surveyManager registerAnswerObject:indexArrayResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+            surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+            [self switchToNextQuestion];
+        }
+    }
 }
 
 @end

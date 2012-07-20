@@ -10,6 +10,7 @@
 #import "LIOEmailHistoryViewController.h"
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
+#import "LIONavigationBar.h"
 
 @implementation LIOEmailHistoryViewController
 
@@ -22,19 +23,15 @@
     
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
         
-    navBar = [[UINavigationBar alloc] init];
-    navBar.barStyle = UIBarStyleBlackOpaque;
-    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
+    navBar = [[LIONavigationBar alloc] init];
     CGRect aFrame = navBar.frame;
     aFrame.size.width = rootView.frame.size.width;
-    aFrame.size.height = navBarHeight;
     navBar.frame = aFrame;
-    navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"Email Conversation"] autorelease];
-    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
-    anItem.leftBarButtonItem = closeItem;
-    [navBar pushNavigationItem:anItem animated:NO];
+    navBar.titleString = @"Email Conversation";
+    navBar.leftButtonText = @"Close";
     navBar.delegate = self;
+    [navBar layoutSubviews];
+    navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [rootView addSubview:navBar];
     
     scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
@@ -136,6 +133,8 @@
     [scrollView addSubview:submitButton];
     
     scrollView.contentSize = CGSizeMake(0.0, submitButton.frame.origin.y + submitButton.frame.size.height);
+    
+    [self.view bringSubviewToFront:navBar];
 }
 
 - (void)viewDidLoad
@@ -225,12 +224,9 @@
 {
     [scrollView scrollRectToVisible:fieldBackground.frame animated:NO];
     
-    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
-    CGRect aFrame = navBar.frame;
-    aFrame.size.height = navBarHeight;
-    navBar.frame = aFrame;
+    [navBar layoutSubviews];
     
-    aFrame = scrollView.frame;
+    CGRect aFrame = scrollView.frame;
     aFrame.origin.y = navBar.frame.origin.y + navBar.frame.size.height;
     CGFloat diff = aFrame.origin.y - scrollView.frame.origin.y;
     aFrame.size.height -= diff;
@@ -363,6 +359,18 @@
     [self submitButtonWasTapped];
     
     return NO;
+}
+
+#pragma mark -
+#pragma mark LIONavigationBarDelegate methods
+
+- (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
+{
+    [delegate emailHistoryViewControllerWasDismissed:self];
+}
+
+- (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar
+{
 }
 
 @end

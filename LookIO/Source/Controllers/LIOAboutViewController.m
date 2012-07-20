@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
+#import "LIONavigationBar.h"
 
 @interface LIOAboutViewController ()
 - (void)rejiggerInterface;
@@ -35,18 +36,16 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:scrollView];
     
-    navBar = [[UINavigationBar alloc] init];
-    navBar.barStyle = UIBarStyleBlackOpaque;
-    CGRect aFrame = navBar.frame;
-    aFrame.size.width = rootBounds.size.width;
-    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
-    navBar.frame = aFrame;
+    navBar = [[LIONavigationBar alloc] init];
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"About LP Mobile"] autorelease];
-    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
-    anItem.leftBarButtonItem = closeItem;
-    [navBar pushNavigationItem:anItem animated:NO];
+    navBar.titleString = @"About LP Mobile";
+    navBar.leftButtonText = @"Close";
     navBar.delegate = self;
+    CGRect aFrame = navBar.frame;
+    aFrame.origin = CGPointZero;
+    aFrame.size.width = self.view.bounds.size.width;
+    navBar.frame = aFrame;
+    [navBar layoutSubviews];
     [self.view addSubview:navBar];
     
     logoView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]];
@@ -250,6 +249,8 @@
     [scrollView insertSubview:texturedBackground belowSubview:logoView];
     
     scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
+    
+    [self.view bringSubviewToFront:navBar];
 }
 
 // iPad only.
@@ -302,6 +303,12 @@
     aFrame.size.height = p2Container.frame.origin.y + p2Container.frame.size.height;
     aFrame.size.width = self.view.bounds.size.width;
     texturedBackground.frame = aFrame;
+    
+    aFrame = navBar.frame;
+    aFrame.origin = CGPointZero;
+    aFrame.size.width = self.view.bounds.size.width;
+    navBar.frame = aFrame;
+    [navBar layoutSubviews];
     
     scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, p2Container.frame.origin.y + p2Container.frame.size.height + 10.0);
 }
@@ -434,12 +441,10 @@
     
     if (UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom])
         [self rejiggerInterface];
-    
-    CGRect aFrame = navBar.frame;
-    aFrame.size.height = [navBar sizeThatFits:self.view.bounds.size].height;
-    navBar.frame = aFrame;
 
-    aFrame = logoView.frame;
+    [navBar layoutSubviews];
+
+    CGRect aFrame = logoView.frame;
     aFrame.origin.y = navBar.frame.size.height + ((topSeparator.frame.origin.y - (navBar.frame.origin.y + navBar.frame.size.height)) / 2.0) - (aFrame.size.height / 2.0);
     logoView.frame = aFrame;    
 }
@@ -550,6 +555,18 @@
         [delegate aboutViewController:self wasDismissedWithEmail:inputField.text];
     });
     
+}
+
+#pragma mark -
+#pragma mark LIONavigationBarDelegate methods
+
+- (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
+{
+    [delegate aboutViewControllerWasDismissed:self];
+}
+
+- (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar
+{
 }
 
 @end

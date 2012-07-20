@@ -9,6 +9,9 @@
 #import <UIKit/UIKit.h>
 
 @class LIOLeaveMessageViewController;
+@class LIONavigationBar;
+
+@protocol LIONavigationBarDelegate;
 
 @protocol LIOLeaveMessageViewControllerDelegate
 - (void)leaveMessageViewControllerWasCancelled:(LIOLeaveMessageViewController *)aController;
@@ -16,9 +19,9 @@
 - (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 
-@interface LIOLeaveMessageViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate, UIAlertViewDelegate>
+@interface LIOLeaveMessageViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate, UIAlertViewDelegate, LIONavigationBarDelegate>
 {
-    UINavigationBar *navBar;
+    LIONavigationBar *navBar;
     UIScrollView *scrollView;
     UITextField *emailField;
     UITextView *messageView;

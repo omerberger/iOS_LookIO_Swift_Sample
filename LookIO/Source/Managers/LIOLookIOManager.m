@@ -150,7 +150,6 @@
     NSTimeInterval nextTimeInterval;
     NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
     NSDictionary *surveyResponsesToBeSent;
-    UIImage *savedNavBarSkinNormal, *savedNavBarSkinLandscape, *savedBackButtonSkinNormal, *savedBackButtonSkinLandscape;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -725,10 +724,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [fullNavigationHistory release];
     [partialNavigationHistory release];
     [surveyResponsesToBeSent release];
-    [savedNavBarSkinNormal release];
-    [savedNavBarSkinLandscape release];
-    [savedBackButtonSkinNormal release];
-    [savedBackButtonSkinLandscape release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -812,19 +807,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [surveyResponsesToBeSent release];
     surveyResponsesToBeSent = nil;
-    
-    [savedNavBarSkinNormal release];
-    savedNavBarSkinNormal = nil;
-    
-    [savedNavBarSkinLandscape release];
-    savedNavBarSkinLandscape = nil;
-    
-    [savedBackButtonSkinNormal release];
-    savedBackButtonSkinNormal = nil;
-    
-    [savedBackButtonSkinLandscape release];
-    savedBackButtonSkinLandscape = nil;
-    
+        
     [availability release];
     availability = nil;
     
@@ -920,24 +903,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
-
-            // Save skin, blow it away for now.
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
-            {
-                // As of 7/16/12:
-                // UIBarMetricsDefault == 0
-                // UIBarMetricsLandscapePhone == 1
-                
-                savedNavBarSkinNormal = [[[UINavigationBar appearance] backgroundImageForBarMetrics:0] retain];
-                savedNavBarSkinLandscape = [[[UINavigationBar appearance] backgroundImageForBarMetrics:1] retain];
-                savedBackButtonSkinNormal = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:0] retain];
-                savedBackButtonSkinLandscape = [[[UIBarButtonItem appearance] backButtonBackgroundImageForState:UIControlStateNormal barMetrics:1] retain];
-                
-                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:0];
-                [[UINavigationBar appearance] setBackgroundImage:nil forBarMetrics:1];
-                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:0];
-                [[UIBarButtonItem appearance] setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:1];
-            }
         }
     }
     else
@@ -963,31 +928,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 statusBarUnderlay.hidden = YES;
                 [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
             }
-        }
-        
-        // Restore skin.
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0)
-        {
-            // As of 7/16/12:
-            // UIBarMetricsDefault == 0
-            // UIBarMetricsLandscapePhone == 1
-            
-            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinNormal forBarMetrics:0];
-            [[UINavigationBar appearance] setBackgroundImage:savedNavBarSkinLandscape forBarMetrics:1];
-            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinNormal forState:UIControlStateNormal barMetrics:0];
-            [[UIBarButtonItem appearance] setBackButtonBackgroundImage:savedBackButtonSkinLandscape forState:UIControlStateNormal barMetrics:1];
-            
-            [savedNavBarSkinNormal release];
-            savedNavBarSkinNormal = nil;
-            
-            [savedNavBarSkinLandscape release];
-            savedNavBarSkinLandscape = nil;
-            
-            [savedBackButtonSkinNormal release];
-            savedBackButtonSkinNormal = nil;
-            
-            [savedBackButtonSkinLandscape release];
-            savedBackButtonSkinLandscape = nil;
         }
     }
 }
@@ -2089,7 +2029,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-     */
+    */
         
     [self refreshControlButtonVisibility];
     [self applicationDidChangeStatusBarOrientation:nil];

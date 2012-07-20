@@ -9,6 +9,9 @@
 #import <UIKit/UIKit.h>
 
 @class LIOAboutViewController;
+@class LIONavigationBar;
+
+@protocol LIONavigationBarDelegate;
 
 @protocol LIOAboutViewControllerDelegate
 - (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController;
@@ -16,7 +19,7 @@
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
 
-@interface LIOAboutViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
+@interface LIOAboutViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIONavigationBarDelegate>
 {
     UIImageView *texturedBackground;
     UILabel *textsplosion01, *textsplosion02, *header01, *header02, *label02;
@@ -26,7 +29,7 @@
     UITextField *inputField;
     UIView *p1Container, *p2Container;
     UIButton *submitButton;
-    UINavigationBar *navBar;
+    LIONavigationBar *navBar;
     BOOL keyboardShown;
     id<LIOAboutViewControllerDelegate> delegate;
 }

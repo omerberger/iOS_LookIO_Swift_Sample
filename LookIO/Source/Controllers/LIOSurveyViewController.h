@@ -11,8 +11,10 @@
 @class LIOSurveyTemplate;
 @class LIOSurveyViewController;
 @class LIOSurveyPickerView;
+@class LIONavigationBar;
 
 @protocol LIOSurveyPickerViewDelegate;
+@protocol LIONavigationBarDelegate;
 
 @protocol LIOSurveyViewControllerDelegate
 - (BOOL)surveyViewController:(LIOSurveyViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -20,9 +22,9 @@
 - (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController;
 @end
 
-@interface LIOSurveyViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIOSurveyPickerViewDelegate>
+@interface LIOSurveyViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIOSurveyPickerViewDelegate, LIONavigationBarDelegate>
 {
-    UINavigationBar *navBar;
+    LIONavigationBar *navBar;
     UIScrollView *currentScrollView, *nextScrollView;
     NSString *headerString;
     LIOSurveyTemplate *currentSurvey;

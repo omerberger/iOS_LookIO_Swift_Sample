@@ -10,6 +10,7 @@
 #import "LIOLeaveMessageViewController.h"
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
+#import "LIONavigationBar.h"
 
 @implementation LIOLeaveMessageViewController
 
@@ -30,19 +31,15 @@
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:backgroundView];
     
-    navBar = [[UINavigationBar alloc] init];
-    navBar.barStyle = UIBarStyleBlackOpaque;
-    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
+    navBar = [[LIONavigationBar alloc] init];
     CGRect aFrame = navBar.frame;
     aFrame.size.width = rootView.frame.size.width;
-    aFrame.size.height = navBarHeight;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    UINavigationItem *anItem = [[[UINavigationItem alloc] initWithTitle:@"No Agents Available"] autorelease];
-    UIBarButtonItem *closeItem = [[[UIBarButtonItem alloc] initWithTitle:@"Close" style:UIBarButtonItemStyleBordered target:self action:@selector(closeButtonWasTapped)] autorelease];
-    anItem.leftBarButtonItem = closeItem;
-    [navBar pushNavigationItem:anItem animated:NO];
+    navBar.titleString = @"No Agents Available";
+    navBar.leftButtonText = @"Close";
     navBar.delegate = self;
+    [navBar layoutSubviews];
     [rootView addSubview:navBar];
     
     scrollView = [[UIScrollView alloc] init];
@@ -148,6 +145,8 @@
     [scrollView addSubview:submitButton];
     
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
+    
+    [self.view bringSubviewToFront:navBar];
 }
 
 - (void)rejiggerInterface
@@ -301,12 +300,9 @@
     
     scrollView.contentSize = CGSizeMake(self.view.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);
     
-    CGFloat navBarHeight = [navBar sizeThatFits:self.view.bounds.size].height;
-    CGRect aFrame = navBar.frame;
-    aFrame.size.height = navBarHeight;
-    navBar.frame = aFrame;
+    [navBar layoutSubviews];
     
-    aFrame = scrollView.frame;
+    CGRect aFrame = scrollView.frame;
     aFrame.origin.y = navBar.frame.origin.y + navBar.frame.size.height;
     CGFloat diff = aFrame.origin.y - scrollView.frame.origin.y;
     aFrame.size.height -= diff;
@@ -490,6 +486,18 @@
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [delegate leaveMessageViewControllerWasCancelled:self];
     });
+}
+
+#pragma mark -
+#pragma mark LIONavigationBarDelegate methods
+
+- (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
+{
+    [delegate leaveMessageViewControllerWasCancelled:self];
+}
+
+- (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar
+{
 }
 
 @end
