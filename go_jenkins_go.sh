@@ -22,9 +22,8 @@ fi
 
 # Publish!
 pushd ../LookIO-Libraries
-echo "git checkout ."
 git checkout .
-echo "git checkout dev"
+rm -rf iOS/release/*
 git checkout dev
 rm -rf iOS/release/*
 cp -v -f -R  ../ios_lib/_LOOKIO_$1_/libLookIO.a ../ios_lib/_LOOKIO_$1_/LookIO.bundle ../ios_lib/_LOOKIO_$1_/LIOLookIOManager.h iOS/release
