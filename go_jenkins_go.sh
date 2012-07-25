@@ -56,7 +56,7 @@ git push origin $2
 #
 if [ $2 == "master" ]
 then
-    echo Uploading LookIO.bundle (as bundle.zip) to CDN... 
+    echo "Uploading LookIO.bundle (as bundle.zip) to CDN..."
     popd
     zip -j ./bundle.zip ~/Development/LookIO-Libraries/iOS/LookIO.bundle/*
     python ./upload_bundle.py --version $1 --key AKIAIKCREXYCWO5PI2AA --secret 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
