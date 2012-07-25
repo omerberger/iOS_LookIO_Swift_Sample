@@ -51,7 +51,10 @@ git add iOS/LookIO.bundle/*
 git commit -a -m "${COMMIT_DESCRIPTION}"
 git push origin $2
 
-if [ $2 == "master" -o $2 == "unstable" ]
+#
+# Only non-enterprise release builds have their bundle uploaded to the CDN.
+#
+if [ $2 == "master" ]
 then
     echo Uploading LookIO.bundle (as bundle.zip) to CDN... 
     popd
