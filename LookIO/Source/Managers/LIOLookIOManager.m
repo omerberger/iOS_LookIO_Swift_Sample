@@ -47,6 +47,9 @@
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
+#define LIOLookIOManagerRealtimeExtrasTimeInterval 5.0
+#define LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold 0.0001 // Sort of like walking to a new room...?M
+
 #define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
 #define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
 
@@ -97,7 +100,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -120,6 +123,7 @@
     NSString *pendingEmailAddress;
     NSString *friendlyName;
     NSMutableDictionary *sessionExtras;
+    NSDictionary *realtimeExtrasPreviousSessionExtras;
     NSMutableDictionary *proactiveChatRules;
     UIInterfaceOrientation actualInterfaceOrientation;
     NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
@@ -134,9 +138,9 @@
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
     NSDate *backgroundedTime;
-    CLLocation *lastKnownLocation;
+    CLLocation *lastKnownLocation, *realtimeExtrasChangedLocation;
     NSString *overriddenEndpoint;
-    LIOTimerProxy *reconnectionTimer, *reintroTimeoutTimer, *continuationTimer;
+    LIOTimerProxy *reconnectionTimer, *reintroTimeoutTimer, *continuationTimer, *realtimeExtrasTimer;
     NSUInteger previousReconnectionTimerStep;
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
@@ -626,6 +630,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
     
+    realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
+    
     LIOLog(@"Loaded.");    
 }
 
@@ -730,6 +736,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [fullNavigationHistory release];
     [partialNavigationHistory release];
     [surveyResponsesToBeSent release];
+    [lastKnownLocation release];
+    [realtimeExtrasPreviousSessionExtras release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -738,6 +746,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [continuationTimer stopTimer];
     [continuationTimer release];
     continuationTimer = nil;
+    
+    [realtimeExtrasTimer stopTimer];
+    [realtimeExtrasTimer release];
+    realtimeExtrasTimer = nil;
     
     [leaveMessageViewController release];
     leaveMessageViewController = nil;
@@ -808,6 +820,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [reintroTimeoutTimer release];
     reintroTimeoutTimer = nil;
     
+    [realtimeExtrasTimer stopTimer];
+    [realtimeExtrasTimer release];
+    realtimeExtrasTimer = nil;
+    
+    [realtimeExtrasChangedLocation release];
+    realtimeExtrasChangedLocation = nil;
+    
+    [realtimeExtrasPreviousSessionExtras release];
+    realtimeExtrasPreviousSessionExtras = nil;
+    
     [pendingIntraAppLinkURL release];
     pendingIntraAppLinkURL = nil;
     
@@ -830,7 +852,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO;
+    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO;
+    realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1383,6 +1406,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
             [userDefaults setObject:sessionIdString forKey:LIOLookIOManagerLastKnownSessionIdKey];
             [userDefaults synchronize];
+            
+            // Well, we've got a session. Start the realtime extras timer.
+            [realtimeExtrasTimer stopTimer];
+            [realtimeExtrasTimer release];
+            realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
         }
     }
     else if ([type isEqualToString:@"chat"])
@@ -2371,6 +2399,65 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                            selector:@selector(continuationTimerDidFire)];
     
     [self sendContinuationReport];
+}
+
+- (void)realtimeExtrasTimerDidFire
+{
+    // We watch for changes to:
+    // 1) the extras dictionary
+    // 2) network: wifi / cell
+    // 3) location
+    
+    // Run a location check?
+    if (NO == realtimeExtrasWaitingForLocation && [[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled] && nil == realtimeExtrasChangedLocation)
+    {
+        // We don't ask for a location update if we've already got a pending changed location that we need to submit.
+        realtimeExtrasWaitingForLocation = YES;
+        [[LIOAnalyticsManager sharedAnalyticsManager] beginLocationCheck];
+    }
+    
+    if (nil == realtimeExtrasPreviousSessionExtras)
+        realtimeExtrasPreviousSessionExtras = [sessionExtras copy];
+    
+    BOOL significantChangeWasDetected = NO;
+    
+    if (NO == [sessionExtras isEqualToDictionary:realtimeExtrasPreviousSessionExtras])
+    {
+        [realtimeExtrasPreviousSessionExtras release];
+        realtimeExtrasPreviousSessionExtras = [sessionExtras copy];
+        
+        significantChangeWasDetected = YES;
+    }
+    
+    if (realtimeExtrasChangedLocation)
+        significantChangeWasDetected = YES;
+    
+    if (realtimeExtrasLastKnownCellNetworkInUse != [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
+    {
+        realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
+        significantChangeWasDetected = YES;
+    }
+    
+    if (significantChangeWasDetected)
+    {
+        [realtimeExtrasChangedLocation release];
+        realtimeExtrasChangedLocation = nil;
+
+        // Send an update.
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:NO includingFullNavigationHistory:NO includingSurveyResponses:NO];
+        NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"advisory", @"type", @"analytics_update", @"action", introDict, @"data", nil];
+        
+        NSString *analyticsUpdate = [jsonWriter stringWithObject:avisoryDict];
+        analyticsUpdate = [analyticsUpdate stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[analyticsUpdate dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];
+    }
 }
 
 - (void)showReconnectionQuery
@@ -3383,11 +3470,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)locationWasDetermined:(NSNotification *)aNotification
 {
     NSDictionary *userInfo = [aNotification userInfo];
+    CLLocation *newLocation = [userInfo objectForKey:LIOAnalyticsManagerLocationObjectKey];
+
+    if (realtimeExtrasWaitingForLocation)
+    {
+        realtimeExtrasWaitingForLocation = NO;
+        if (lastKnownLocation)
+        {
+            CGFloat latDelta = fabsf(newLocation.coordinate.latitude - lastKnownLocation.coordinate.latitude);
+            CGFloat lonDelta = fabsf(newLocation.coordinate.longitude - lastKnownLocation.coordinate.longitude);
+            
+            if (latDelta >= LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold || lonDelta >= LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold)
+            {
+                // There was indeed a significant change...!
+                [realtimeExtrasChangedLocation release];
+                realtimeExtrasChangedLocation = [newLocation retain];
+            }
+        }
+    }
     
     [lastKnownLocation release];
-    lastKnownLocation = [[userInfo objectForKey:LIOAnalyticsManagerLocationObjectKey] retain];
+    lastKnownLocation = [newLocation retain];
     
-    LIOLog(@"\n\nLocation was determined!\n%@\n\n", lastKnownLocation);
+    //LIOLog(@"\n\nLocation was determined!\n%@\n\n", lastKnownLocation);
 }
 
 #pragma mark -

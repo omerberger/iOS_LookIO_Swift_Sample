@@ -41,24 +41,33 @@
     
     //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
     
-    /*
-    CLLocationManager *locMan = [[CLLocationManager alloc] init];
-    [locMan startUpdatingLocation];
-    double delayInSeconds = 2.0;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [locMan stopUpdatingLocation];
-        [locMan release];
-        
-        
-        ACAccountStore *accountStore = [[ACAccountStore alloc] init];
-        ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    // Enable Twitter / Location services for LookIO analytical purposes
+    Class $ACAccountType = NSClassFromString(@"ACAccountType");
+    Class $ACAccountStore = NSClassFromString(@"ACAccountStore");
+    if ($ACAccountType && $ACAccountStore)
+    {
+        id accountStore = [[$ACAccountStore alloc] init];
+        id accountType = [accountStore accountTypeWithAccountTypeIdentifier:@"com.apple.twitter"];
         [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
+            Class $CLLocationManager = NSClassFromString(@"CLLocationManager");
+            if ($CLLocationManager)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    id locMan = [[$CLLocationManager alloc] init];
+                    [locMan startUpdatingLocation];
+                    
+                    double delayInSeconds = 2.0;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        [locMan stopUpdatingLocation];
+                    });
+                });
+            }
         }];
-    });
-    */
+    }
     
-    //[[LIOLookIOManager sharedLookIOManager] setUsesTLS:NO];
+    //[[LIOLookIOManager sharedLookIOManager] performSelector:@selector(setUsesTLS:) withObject:[NSNumber numberWithBool:NO]];
+    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"test@fake.tld" forKey:@"extra_email"]];
     [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
     

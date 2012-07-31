@@ -81,8 +81,11 @@
 
 - (IBAction)crashButtonSelected:(id)sender
 {
+    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"12345abcdefgskdjgskdjg" forKey:@"nonsense"]];
+    /*
     NSString *badPointer = (NSString *)0xcafebabe;
     [badPointer length];
+     */
 }
     
 #pragma mark -

@@ -146,7 +146,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     {
         // kCLAuthorizationStatusAuthorized is 3 as of 11/7/11
         int status = [$CLLocationManager authorizationStatus];
-        LIOLog(@"Location services authorization status: %d", status);
+        //LIOLog(@"Location services authorization status: %d", status);
         return status == 3;
     }
     
