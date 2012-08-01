@@ -20,7 +20,7 @@
 - (void)lookIOManager:(LIOLookIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled;
 - (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
-- (UIView *)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
+- (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 @end
 
 @interface LIOLookIOManager : NSObject
@@ -33,8 +33,8 @@
 
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
-- (void)recordCurrentUILocation:(NSString *)aLocationString;
-- (void)recordCurrentRequiredSkill:(NSString *)aRequiredSkill;
+- (void)setUILocation:(NSString *)aLocationString;
+- (void)setSkill:(NSString *)aRequiredSkill;
 - (void)beginSession;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey;
 - (id)sessionExtraForKey:(NSString *)aKey;

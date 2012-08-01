@@ -48,7 +48,7 @@
 #define LIOLookIOManagerWriteTimeout            5.0
 
 #define LIOLookIOManagerRealtimeExtrasTimeInterval 5.0
-#define LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold 0.0001 // Sort of like walking to a new room...?M
+#define LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold 0.0001 // Sort of like walking to a new room...?
 
 #define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
 #define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
@@ -940,8 +940,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         lookioWindow.hidden = YES;
         
-        if (screenshotsAllowed && cursorView)
+        if (screenshotsAllowed)
             cursorView.alpha = 1.0;
+        else
+            cursorView.alpha = 0.0;
         
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
@@ -1362,13 +1364,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket disconnectAfterWriting];
 }
 
-- (void)recordCurrentUILocation:(NSString *)aLocationString
+- (void)setUILocation:(NSString *)aLocationString
 {
     [fullNavigationHistory addObject:aLocationString];
     [partialNavigationHistory addObject:aLocationString];
 }
 
-- (void)recordCurrentRequiredSkill:(NSString *)aRequiredSkill
+- (void)setSkill:(NSString *)aRequiredSkill
 {
     [currentRequiredSkill release];
     currentRequiredSkill = [aRequiredSkill retain];
@@ -1455,6 +1457,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"cursor"])
     {
+        if (altChatViewController)
+            return;
+        
         if (nil == touchImage)
             self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
         
@@ -1647,6 +1652,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"click"])
     {
+        if (altChatViewController)
+            return;
+        
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
         if (nil == clickView)
@@ -2444,8 +2452,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         realtimeExtrasChangedLocation = nil;
 
         // Send an update.
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:NO includingFullNavigationHistory:NO includingSurveyResponses:NO];
-        NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"advisory", @"type", @"analytics_update", @"action", introDict, @"data", nil];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:NO includingFullNavigationHistory:YES includingSurveyResponses:NO];
+        NSDictionary *extrasDict = [introDict objectForKey:@"extras"];
+        NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"extras", @"type", extrasDict, @"extras", nil];
         
         NSString *analyticsUpdate = [jsonWriter stringWithObject:avisoryDict];
         analyticsUpdate = [analyticsUpdate stringByAppendingString:LIOLookIOManagerMessageSeparator];
@@ -2501,7 +2510,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [urlSchemes containsObject:[aURL scheme]];
 }
 
-- (UIView *)linkViewForURL:(NSURL *)aURL
+- (id)linkViewForURL:(NSURL *)aURL
 {
     if (NO == [urlSchemes containsObject:[aURL scheme]])
         return nil;

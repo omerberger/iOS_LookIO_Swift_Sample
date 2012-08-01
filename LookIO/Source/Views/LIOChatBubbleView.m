@@ -275,9 +275,22 @@ static NSDataDetector *dataDetector = nil;
             if ([[LIOLookIOManager sharedLookIOManager] isIntraLink:currentURL])
             {
                 [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeIntra]];
-                UIView *linkView = [[LIOLookIOManager sharedLookIOManager] linkViewForURL:currentURL];
-                if (linkView)
-                    [intraAppLinkViews addObject:linkView];
+                id linkView = [[LIOLookIOManager sharedLookIOManager] linkViewForURL:currentURL];
+                if (linkView && ([linkView isKindOfClass:[UIView class]] || [linkView isKindOfClass:[NSString class]]))
+                {
+                    if ([linkView isKindOfClass:[UIView class]])
+                        [intraAppLinkViews addObject:linkView];
+                    else
+                    {
+                        NSString *aString = (NSString *)linkView;
+                        UILabel *aLabel = [[[UILabel alloc] init] autorelease];
+                        aLabel.backgroundColor = [UIColor clearColor];
+                        aLabel.textColor = [UIColor whiteColor];
+                        aLabel.text = aString;
+                        aLabel.textAlignment = UITextAlignmentCenter;
+                        [intraAppLinkViews addObject:aLabel];
+                    }
+                }
                 else
                     [intraAppLinkViews addObject:[NSNull null]];
             }

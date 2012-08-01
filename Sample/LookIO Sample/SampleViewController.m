@@ -102,11 +102,9 @@
     }
 }
 
-- (UIView *)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL
+- (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL
 {
-    UIView *fakeView = [[[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)] autorelease];
-    fakeView.backgroundColor = [UIColor redColor];
-    return fakeView;
+    return @"lol";
 }
 
 /*
