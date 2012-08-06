@@ -32,7 +32,7 @@
     UITextField *currentInputField;
     UIImageView *currentInputFieldBackground;
     LIOSurveyPickerView *currentPickerView, *oldPickerView;
-    int currentQuestionIndex;
+    int currentQuestionIndex, nextQuestionIndex;
     CGRect keyboardFrame;
     BOOL keyboardShown;
     UIView *keyboardUnderlay;

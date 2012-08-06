@@ -590,6 +590,17 @@
     if (leavingMessage)
         return;
     
+    // If a survey is going to be shown, we want to hide the chat elements that are animating in.
+    // They will be revealed after the survey is complete.
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.preChatTemplate)
+    {
+        dismissalBar.alpha = 0.0;
+        inputBar.alpha = 0.0;
+        tableView.alpha = 0.0;
+        headerBar.alpha = 0.0;
+    }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
@@ -2226,6 +2237,11 @@
     [surveyDict setObject:aController.currentSurvey.surveyId forKey:@"id"];
     [surveyDict setObject:finalDict forKey:@"responses"];
     [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
+    
+    dismissalBar.alpha = 1.0;
+    inputBar.alpha = 1.0;
+    tableView.alpha = 1.0;
+    headerBar.alpha = 1.0;
     
     [self dismissModalViewControllerAnimated:YES];
 }

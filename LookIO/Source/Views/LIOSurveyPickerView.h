@@ -32,6 +32,7 @@ typedef enum
     UIImageView *toolbarImageView;
     UIImageView *tableWellImage;
     NSArray *results;
+    NSArray *initialSelection;
     id<LIOSurveyPickerViewDelegate> delegate;
 }
 
@@ -39,6 +40,7 @@ typedef enum
 @property(nonatomic, retain) LIOSurveyQuestion *surveyQuestion;
 @property(nonatomic, readonly) NSArray *results;
 @property(nonatomic, readonly) UIButton *doneButton;
+@property(nonatomic, retain) NSArray *initialSelection;
 @property(nonatomic, assign) id<LIOSurveyPickerViewDelegate> delegate;
 
 - (void)showAnimated;

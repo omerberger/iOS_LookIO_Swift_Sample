@@ -15,7 +15,7 @@
 
 @implementation LIOSurveyPickerView
 
-@synthesize currentMode, surveyQuestion, delegate, results, doneButton;
+@synthesize currentMode, surveyQuestion, delegate, results, doneButton, initialSelection;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -51,6 +51,13 @@
 
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
+    if (initialSelection)
+    {
+        [selectedIndices addObjectsFromArray:initialSelection];
+        [initialSelection release];
+        initialSelection = nil;
+    }
+    
     pickerView.delegate = nil;
     pickerView.dataSource = nil;
     [pickerView removeFromSuperview];
@@ -80,6 +87,13 @@
         pickerView.showsSelectionIndicator = YES;
         [pickerView reloadAllComponents];
         [self addSubview:pickerView];
+        
+        if ([selectedIndices count])
+        {
+            NSNumber *selectedIndex = [selectedIndices anyObject];
+            int index = [selectedIndex intValue] + 1;
+            [pickerView selectRow:index inComponent:0 animated:NO];
+        }
     }
     else
     {
@@ -209,6 +223,7 @@
     [selectedIndices release];
     [toolbarImageView release];
     [tableWellImage release];
+    [initialSelection release];
     
     [super dealloc];
 }

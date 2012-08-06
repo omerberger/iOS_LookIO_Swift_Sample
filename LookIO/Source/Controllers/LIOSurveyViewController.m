@@ -51,6 +51,7 @@
     [navBar layoutSubviews];
     [self.view addSubview:navBar];
     
+    nextQuestionIndex = currentQuestionIndex + 1;
     [self prepareNextScrollView];
     currentQuestionIndex++;
     
@@ -58,6 +59,10 @@
     nextScrollView = nil;
 
     [self.view addSubview:currentScrollView];
+    
+    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
+    else navBar.leftButtonText = @"Back";
+    [navBar layoutSubviews];
 
     double delayInSeconds = 0.1;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -122,13 +127,11 @@
         return;
     
     int numQuestions = [currentSurvey.questions count];
-    if (currentQuestionIndex >= numQuestions - 1)
+    if (nextQuestionIndex > numQuestions - 1 || nextQuestionIndex < 0)
         return;
     
     currentInputField = nil;
     currentQuestionLabel = nil;
-    
-    int nextQuestionIndex = currentQuestionIndex + 1;
     
     LIOSurveyQuestion *nextQuestion = [currentSurvey.questions objectAtIndex:nextQuestionIndex];
     
@@ -161,7 +164,7 @@
     headerLabel.backgroundColor = [UIColor clearColor];
     headerLabel.font = [UIFont systemFontOfSize:14.0];
     headerLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    headerLabel.textAlignment = UITextAlignmentCenter;
+    //headerLabel.textAlignment = UITextAlignmentCenter;
     headerLabel.numberOfLines = 0;
     headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     headerLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
@@ -213,10 +216,10 @@
     currentQuestionLabel = questionLabel;
     
     if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
-    {
         navBar.rightButtonText = @" Start Chat "; // FIXME: aaaaaaaahahahaha
-        [navBar layoutSubviews];
-    }
+    else
+        navBar.rightButtonText = @"Next";
+    [navBar layoutSubviews];
     
     if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
     {
@@ -271,6 +274,14 @@
         currentInputField = inputField;
         
         nextScrollView.contentSize = CGSizeMake(0.0, inputField.frame.origin.y + inputField.frame.size.height);
+        
+        // Fill in the current response value, if any.
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:nextQuestionIndex];
+        if (aResponse && [aResponse isKindOfClass:[NSString class]])
+        {
+            NSString *responseString = (NSString *)aResponse;
+            currentInputField.text = responseString;
+        }
     }
     else if (LIOSurveyQuestionDisplayTypePicker == nextQuestion.displayType || LIOSurveyQuestionDisplayTypeMultiselect == nextQuestion.displayType)
     {
@@ -282,6 +293,14 @@
             currentPickerView.currentMode = LIOSurveyPickerViewModeSingle;
         else if (LIOSurveyQuestionDisplayTypeMultiselect == nextQuestion.displayType)
             currentPickerView.currentMode = LIOSurveyPickerViewModeMulti;
+        
+        // Fill in the current selection, if any.
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:nextQuestionIndex];
+        if (aResponse && [aResponse isKindOfClass:[NSArray class]])
+        {
+            NSArray *arrayResponse = (NSArray *)aResponse;
+            currentPickerView.initialSelection = arrayResponse;
+        }
         
         [self.view addSubview:currentPickerView];
         [currentPickerView layoutSubviews];
@@ -326,14 +345,17 @@
     {
         [currentPickerView hideAnimated];
         oldPickerView = currentPickerView;
+        currentPickerView = nil;
     }
+    
+    nextQuestionIndex = currentQuestionIndex + 1;
     
     UIScrollView *oldScrollView = currentScrollView;
     [self prepareNextScrollView];
     currentScrollView = nextScrollView;
     nextScrollView = nil;
     
-    currentQuestionIndex++;
+    currentQuestionIndex = nextQuestionIndex;
     
     CGRect startingFrame = currentScrollView.frame;
     startingFrame.origin.x = self.view.bounds.size.width;
@@ -365,6 +387,66 @@
                          if (currentInputField)
                              [currentInputField becomeFirstResponder];
                      }];
+    
+    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
+    else navBar.leftButtonText = @"Back";
+    [navBar layoutSubviews];
+    
+    [self.view bringSubviewToFront:navBar];
+}
+
+- (void)switchToPreviousQuestion
+{    
+    if (currentPickerView)
+    {
+        [currentPickerView hideAnimated];
+        oldPickerView = currentPickerView;
+        currentPickerView = nil;
+    }
+    
+    nextQuestionIndex = currentQuestionIndex - 1;
+    
+    UIScrollView *oldScrollView = currentScrollView;
+    [self prepareNextScrollView];
+    currentScrollView = nextScrollView;
+    nextScrollView = nil;
+    
+    currentQuestionIndex = nextQuestionIndex;
+    
+    CGRect startingFrame = currentScrollView.frame;
+    startingFrame.origin.x = -self.view.bounds.size.width;
+    currentScrollView.frame = startingFrame;
+    
+    [self.view addSubview:currentScrollView];
+    if (currentPickerView)
+    {
+        [self.view endEditing:YES];
+        [self.view bringSubviewToFront:currentPickerView];
+    }
+    
+    CGRect targetFrameForNew = currentScrollView.frame;
+    targetFrameForNew.origin.x = 0.0;
+    
+    CGRect targetFrameForOld = oldScrollView.frame;
+    targetFrameForOld.origin.x = self.view.bounds.size.width;
+    
+    [UIView animateWithDuration:0.33
+                          delay:0.0
+                        options:UIViewAnimationCurveEaseInOut
+                     animations:^{
+                         currentScrollView.frame = targetFrameForNew;
+                         oldScrollView.frame = targetFrameForOld;
+                     } completion:^(BOOL finished) {
+                         [oldScrollView removeFromSuperview];
+                         [oldScrollView release];
+                         
+                         if (currentInputField)
+                             [currentInputField becomeFirstResponder];
+                     }];
+    
+    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
+    else navBar.leftButtonText = @"Back";
+    [navBar layoutSubviews];
     
     [self.view bringSubviewToFront:navBar];
 }
@@ -529,7 +611,10 @@
 
 - (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
 {
-    [delegate surveyViewControllerDidCancel:self];
+    if (currentQuestionIndex == 0)
+        [delegate surveyViewControllerDidCancel:self];
+    else
+        [self switchToPreviousQuestion];
 }
 
 - (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar
