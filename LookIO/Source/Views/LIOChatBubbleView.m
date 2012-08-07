@@ -18,7 +18,7 @@ static NSDataDetector *dataDetector = nil;
 
 @implementation LIOChatBubbleView
 
-@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage, delegate, index, bubbleStyle;
+@synthesize senderName, linkMode, linkMessageViews, linkButtons, mainMessageView, links, rawChatMessage, delegate, index;
 @dynamic formattingMode;
 
 - (id)initWithFrame:(CGRect)frame
@@ -55,6 +55,7 @@ static NSDataDetector *dataDetector = nil;
         linkTypes = [[NSMutableArray alloc] init];
         intraAppLinkViews = [[NSMutableArray alloc] init];
         linkSupertypes = [[NSMutableArray alloc] init];
+        linkURLStrings = [[NSMutableArray alloc] init];
     }
     
     return self;
@@ -73,6 +74,7 @@ static NSDataDetector *dataDetector = nil;
     [rawChatMessage release];
     [intraAppLinkViews release];
     [linkSupertypes release];
+    [linkURLStrings release];
     
     [super dealloc];
 }
@@ -81,24 +83,9 @@ static NSDataDetector *dataDetector = nil;
 {
     [super layoutSubviews];
 
-    if (nil == backgroundImage && LIOChatBubbleViewFormattingModeHeader != formattingMode)
+    if (nil == backgroundImage)
     {
-        UIImage *stretchableBubble = nil;
-        if (LIOChatBubbleViewBubbleStyleChat == bubbleStyle)
-        {
-            stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
-        }
-        else if (LIOChatBubbleViewBubbleStyleSurvey == bubbleStyle)
-        {
-            if (LIOChatBubbleViewFormattingModeRemote == formattingMode)
-            {
-                stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyBubbleRemote"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
-            }
-            else
-            {
-                stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyBubbleLocal"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
-            }
-        }
+        UIImage *stretchableBubble = stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
             
         backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
         [self insertSubview:backgroundImage belowSubview:mainMessageView];
@@ -107,25 +94,11 @@ static NSDataDetector *dataDetector = nil;
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
     CGFloat bottom;
     
-    // Some additional modifications for header mode.
-    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
-        maxSize = CGSizeMake(300.0, FLT_MAX);
-    
     if (LIOChatBubbleViewLinkModeDisabled == linkMode)
     {
         CGSize boxSize = [mainMessageView sizeThatFits:maxSize];
         bottom = boxSize.height + 10.0;
-        
-        if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
-        {
-            CGRect aFrame;
-            aFrame.size = boxSize;
-            aFrame.origin.y = 5.0;
-            aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-            mainMessageView.frame = aFrame;
-        }
-        else
-            mainMessageView.frame = CGRectMake(20.0, 10.0, boxSize.width, boxSize.height);
+        mainMessageView.frame = CGRectMake(20.0, 10.0, boxSize.width, boxSize.height);
     }
     else
     {
@@ -181,13 +154,11 @@ static NSDataDetector *dataDetector = nil;
     }
     
     CGFloat bottomPadding = 30.0;
-    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
-        bottomPadding = 3.0;
     
     // FIXME: This really shouldn't be here.
     CGRect aFrame = self.frame;
     aFrame.size.height = bottom + bottomPadding;
-    if (LIOChatBubbleViewFormattingModeHeader != formattingMode && aFrame.size.height < LIOChatBubbleViewMinTextHeight)
+    if (aFrame.size.height < LIOChatBubbleViewMinTextHeight)
         aFrame.size.height = LIOChatBubbleViewMinTextHeight;
     self.frame = aFrame;
     
@@ -225,16 +196,8 @@ static NSDataDetector *dataDetector = nil;
 
 - (void)populateMessageViewWithText:(NSString *)aString
 {
-    if (LIOChatBubbleViewFormattingModeHeader == formattingMode)
-    {
-        mainMessageView.font = [UIFont boldSystemFontOfSize:14.0];
-        mainMessageView.textAlignment = UITextAlignmentCenter;
-    }
-    else
-    {
-        mainMessageView.font = [UIFont systemFontOfSize:15.0];
-        mainMessageView.textAlignment = UITextAlignmentLeft;
-    }
+    mainMessageView.font = [UIFont systemFontOfSize:15.0];
+    mainMessageView.textAlignment = UITextAlignmentLeft;
     
     [links removeAllObjects];
     [linkTypes removeAllObjects];
@@ -254,24 +217,28 @@ static NSDataDetector *dataDetector = nil;
     // Check for links.
     NSRange fullRange = NSMakeRange(0, [aString length]);
     [dataDetector enumerateMatchesInString:aString options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+        
         NSString *currentLink = [aString substringWithRange:result.range];
+        NSString *currentLinkURLString = [[currentLink copy] autorelease];
+        
         if (NSTextCheckingTypeLink == result.resultType)
         {
-            // We filter out links marked as "NSTextCheckingTypeLink" but which
-            // lack any kind of URL scheme at the beginning.
+            // We modify links marked as "NSTextCheckingTypeLink" but which
+            // lack any kind of URL scheme at the beginning by adding "http://"
             NSURL *testURL = [NSURL URLWithString:currentLink];
             if (0 == [testURL.scheme length])
-                return;
+                currentLinkURLString = [NSString stringWithFormat:@"http://%@", currentLinkURLString];
         }
         
         [links addObject:currentLink];
+        [linkURLStrings addObject:currentLinkURLString];
         [linkTypes addObject:[NSNumber numberWithLongLong:result.resultType]];
         [textCheckingResults addObject:result];
         
         // Special handling for links; could be intra-app!
         if (NSTextCheckingTypeLink == result.resultType)
         {
-            NSURL *currentURL = [NSURL URLWithString:currentLink];
+            NSURL *currentURL = [NSURL URLWithString:currentLinkURLString];
             if ([[LIOLookIOManager sharedLookIOManager] isIntraLink:currentURL])
             {
                 [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeIntra]];
@@ -317,26 +284,7 @@ static NSDataDetector *dataDetector = nil;
     
     [mainMessageView setText:firstString afterInheritingLabelAttributesAndConfiguringWithBlock:^ NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
                 
-        if (LIOChatBubbleViewBubbleStyleSurvey == bubbleStyle && LIOChatBubbleViewFormattingModeRemote == formattingMode)
-        {
-            int seq = rawChatMessage.sequence;
-            NSString *headerString = [NSString stringWithFormat:@"Question %d:\n", seq];
-            NSAttributedString *questionHeader = [[[NSAttributedString alloc] initWithString:headerString] autorelease];
-            [mutableAttributedString insertAttributedString:questionHeader atIndex:0];
-            NSRange boldRange = NSMakeRange(0, [questionHeader length]);
-            
-            UIFont *boldNameFont = [UIFont boldSystemFontOfSize:15.0];
-            CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
-            
-            if (boldRange.location != NSNotFound)
-            {
-                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)boldNameCTFont range:boldRange];
-                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
-            }
-            
-            CFRelease(boldNameCTFont);
-        }
-        else if ([senderName length])
+        if ([senderName length])
         {
             NSAttributedString *nameCallout = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", senderName]] autorelease];
             [mutableAttributedString insertAttributedString:nameCallout atIndex:0];
@@ -497,6 +445,7 @@ static NSDataDetector *dataDetector = nil;
         return;
     
     NSString *aLink = [links objectAtIndex:linkIndex];
+    NSString *aLinkURLString = [linkURLStrings objectAtIndex:linkIndex];
     NSTextCheckingType aType = (NSTextCheckingType)[[linkTypes objectAtIndex:linkIndex] longLongValue];
     int aSupertype = [[linkSupertypes objectAtIndex:linkIndex] intValue];
     if (NSTextCheckingTypeLink == aType)
@@ -504,7 +453,7 @@ static NSDataDetector *dataDetector = nil;
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
             [urlBeingLaunched release];
-            urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
+            urlBeingLaunched = [[NSURL URLWithString:aLinkURLString] retain];
             
             NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil

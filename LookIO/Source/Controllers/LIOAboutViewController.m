@@ -446,7 +446,7 @@
 
     CGRect aFrame = logoView.frame;
     aFrame.origin.y = navBar.frame.size.height + ((topSeparator.frame.origin.y - (navBar.frame.origin.y + navBar.frame.size.height)) / 2.0) - (aFrame.size.height / 2.0);
-    logoView.frame = aFrame;    
+    logoView.frame = aFrame;
 }
 
 #pragma mark -
@@ -464,7 +464,7 @@
 
 - (void)closeButtonWasTapped
 {
-    [delegate aboutViewControllerWasDismissed:self];
+    [delegate aboutViewController:self wasDismissedWithEmail:nil];
 }
 
 - (void)submitButtonWasTapped
@@ -562,7 +562,7 @@
 
 - (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
 {
-    [delegate aboutViewControllerWasDismissed:self];
+    [delegate aboutViewController:self wasDismissedWithEmail:nil];
 }
 
 - (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar

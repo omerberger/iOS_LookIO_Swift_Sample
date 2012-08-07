@@ -317,7 +317,7 @@
 
 - (void)closeButtonWasTapped
 {
-    [delegate emailHistoryViewControllerWasDismissed:self];
+    [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:nil];
 }
 
 - (void)submitButtonWasTapped
@@ -366,7 +366,7 @@
 
 - (void)navigationBarDidTapLeftButton:(LIONavigationBar *)aBar
 {
-    [delegate emailHistoryViewControllerWasDismissed:self];
+    [delegate emailHistoryViewController:self wasDismissedWithEmailAddress:nil];
 }
 
 - (void)navigationBarDidTapRightButton:(LIONavigationBar *)aBar

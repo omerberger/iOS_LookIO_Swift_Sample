@@ -26,9 +26,6 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyPickerEntry.h"
-#import "LIOSurveyPickerView.h"
-#import "LIOSurveyValidationView.h"
-#import "LIOAnimatedCogView.h"
 #import "LIOTimerProxy.h"
 #import "LIOSurveyViewController.h"
 
@@ -54,7 +51,7 @@
 
 @implementation LIOAltChatViewController
 
-@synthesize delegate, dataSource, initialChatText, currentMode, currentSurveyType, currentSurveyQuestionIndex;
+@synthesize delegate, dataSource, initialChatText;
 @dynamic agentTyping;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -63,9 +60,7 @@
     
     if (self)
     {
-        previousSurveyQuestionBubbleGenerated = -1;
         numPreviousMessagesToShowInScrollback = 1;
-        currentSurveyQuestionIndex = -1;
         chatBubbleHeights = [[NSMutableArray alloc] init];
     }
     
@@ -381,108 +376,8 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (NO == padUI)
-    {
-        if (LIOAltChatViewControllerModeSurvey == currentMode)
-            numPreviousMessagesToShowInScrollback = 2;
-        else
-            numPreviousMessagesToShowInScrollback = 1;    
-    }
-    else
-        numPreviousMessagesToShowInScrollback = 3;    
-    
-    if (LIOAltChatViewControllerModeSurvey == currentMode)
-    {
-        LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-        LIOSurveyTemplate *aSurvey = nil;
-        NSString *aSurveyHeader = nil;
-        if (LIOSurveyManagerSurveyTypePre == currentSurveyType)
-        {
-            aSurvey = surveyManager.preChatTemplate;
-            aSurveyHeader = surveyManager.preChatHeader;
-        }
-        else if (LIOSurveyManagerSurveyTypePost == currentSurveyType)
-        {
-            aSurvey = surveyManager.postChatTemplate;
-            aSurveyHeader = surveyManager.postChatHeader;
-        }
-        
-        if (aSurvey)
-        {
-            [surveyMessages release];
-            surveyMessages = [[NSMutableArray alloc] init];
-            
-            LIOChatMessage *headerMessage = [LIOChatMessage chatMessage];
-            headerMessage.kind = LIOChatMessageKindHeader;
-            headerMessage.date = [NSDate date];
-            headerMessage.text = aSurveyHeader;
-            [surveyMessages addObject:headerMessage];
-            
-            if (-1 == currentSurveyQuestionIndex)
-                currentSurveyQuestionIndex = 0;
-            
-            // Might need to restore old questions and answers.
-            if (currentSurveyQuestionIndex > 0)
-            {
-                for (int i=0; i<currentSurveyQuestionIndex; i++)
-                {
-                    LIOSurveyQuestion *currentQuestion = [aSurvey.questions objectAtIndex:i];
-                    
-                    LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-                    newChatMessage.kind = LIOChatMessageKindRemote;
-                    newChatMessage.date = [NSDate date];
-                    newChatMessage.text = currentQuestion.label;
-                    newChatMessage.sequence = i + 1;
-                    [surveyMessages addObject:newChatMessage];
-                    
-                    id aResponse = [surveyManager answerObjectForSurveyType:currentSurveyType withQuestionIndex:i];
-                    if ([aResponse isKindOfClass:[NSArray class]])
-                    {
-                        NSArray *indexArrayResponse = (NSArray *)aResponse;
-                        
-                        NSMutableString *result = [NSMutableString string];
-                        for (NSNumber *anIndexNumber in indexArrayResponse)
-                        {
-                            int anIndex = [anIndexNumber intValue];
-                            LIOSurveyPickerEntry *anEntry = [currentQuestion.pickerEntries objectAtIndex:anIndex];
-                            [result appendFormat:@"%@\n", anEntry.label];
-                        }
-                        
-                        LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-                        newChatMessage.date = [NSDate date];
-                        newChatMessage.kind = LIOChatMessageKindLocal;
-                        newChatMessage.text = result;
-                        [surveyMessages addObject:newChatMessage];
-                    }
-                    else if ([aResponse isKindOfClass:[NSString class]])
-                    {
-                        LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-                        newChatMessage.date = [NSDate date];
-                        newChatMessage.kind = LIOChatMessageKindLocal;
-                        newChatMessage.text = (NSString *)aResponse;
-                        [surveyMessages addObject:newChatMessage];
-                    }
-                }
-                
-                [self processSurvey];
-                
-                if (NO == padUI)
-                {
-                    numPreviousMessagesToShowInScrollback = 1;
-                    [self refreshExpandingFooter];
-                    [self scrollToBottomDelayed:YES];
-                }
-            }
-            else
-            {
-                [self processSurvey];
-            }
-        }
-        else
-        {
-            currentMode = LIOAltChatViewControllerModeChat;
-        }
-    }
+    if (padUI)
+        numPreviousMessagesToShowInScrollback = 3;
 }
 
 - (void)viewDidUnload
@@ -536,11 +431,6 @@
     
     [toasterView release];
     toasterView = nil;
-    
-    [validationView release];
-    validationView = nil;
-    
-    currentMessages = nil;
 }
 
 - (void)dealloc
@@ -551,14 +441,10 @@
     tableView.dataSource = nil;
     [tableView release];
     
-    [surveyOutroTimer stopTimer];
-    [surveyOutroTimer release];
-    
     [background release];
     [pendingChatText release];
     [initialChatText release];
     [chatMessages release];
-    [surveyMessages release];
     [headerBar release];
     [inputBar release];
     [functionHeaderChat release];
@@ -572,8 +458,6 @@
     [tappableDismissalAreaForPadUI release];
     [pendingNotificationString release];
     [toasterView release];
-    [currentSurveyValidationErrorString release];
-    [validationView release];
     [functionHeaderSurvey release];
     [leaveSurveyButton release];
     
@@ -608,9 +492,9 @@
     
     [self reloadMessages];
     
-    if ([currentMessages count])
+    if ([chatMessages count])
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] - 1 inSection:0];
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] - 1 inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }
     
@@ -686,8 +570,7 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         
-        if (NO == pickerIsBeingUsed)
-            [inputBar.inputField becomeFirstResponder];
+        [inputBar.inputField becomeFirstResponder];
         
         if ([initialChatText length])
         {
@@ -735,377 +618,6 @@
     
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
-    
-    if (surveyPicker)
-    {
-        CGRect aFrame = surveyPicker.frame;
-        aFrame.origin.x = 0.0;
-        aFrame.size.width = self.view.bounds.size.width;
-        surveyPicker.frame = aFrame;
-        
-        [surveyPicker layoutSubviews];
-        
-        aFrame = surveyPicker.frame;
-        aFrame.origin.y = self.view.bounds.size.height - aFrame.size.height;
-        surveyPicker.frame = aFrame;
-    }
-    
-    if (validationView)
-    {
-        CGFloat yOrigin = surveyPicker.frame.origin.y - validationView.frame.size.height;
-        if (nil == surveyPicker)
-            yOrigin = inputBar.frame.origin.y - validationView.frame.size.height;
-        
-        CGRect aFrame = validationView.frame;
-        aFrame.size.width = self.view.bounds.size.width;
-        aFrame.origin.y = yOrigin;
-        validationView.frame = aFrame;
-        
-        [validationView layoutSubviews];
-    }
-}
-
-- (void)surveyOutroTimerDidFire
-{
-    [surveyOutroTimer stopTimer];
-    [surveyOutroTimer release];
-    surveyOutroTimer = nil;
-    
-    currentMode = LIOAltChatViewControllerModeChat;
-    [self reloadMessages];
-    [self scrollToBottomDelayed:YES];
-    
-    inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
-    [inputBar stopPulseAnimation];
-    inputBar.inputField.userInteractionEnabled = YES;
-    [inputBar.inputField becomeFirstResponder];    
-}
-
-- (void)processSurvey
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOSurveyTemplate *surveyTemplate;
-    if (LIOSurveyManagerSurveyTypePre == currentSurveyType)
-        surveyTemplate = surveyManager.preChatTemplate;
-    else
-        surveyTemplate = surveyManager.postChatTemplate;
-    
-    if (currentSurveyQuestionIndex >= [surveyTemplate.questions count])
-    {        
-        // Collect responses for submission.
-        NSMutableDictionary *responses = [NSMutableDictionary dictionary];
-        for (int i=0; i<[surveyTemplate.questions count]; i++)
-        {
-            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[surveyTemplate.questions objectAtIndex:i];
-            id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:i];
-            if (aResponse != nil)
-                [responses setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
-        }
-        NSDictionary *surveyDict = [NSDictionary dictionaryWithObjectsAndKeys:surveyTemplate.surveyId, @"id", responses, @"responses", nil];
-        [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
-        
-        pickerIsBeingUsed = NO;
-        
-        [surveyPicker removeFromSuperview];
-        [surveyPicker release];
-        surveyPicker = nil;
-        
-        [validationView removeFromSuperview];
-        [validationView release];
-        validationView = nil;
-        
-        if (padUI)
-            numPreviousMessagesToShowInScrollback = 3;
-        else
-            numPreviousMessagesToShowInScrollback = 1;
-        
-        LIOChatMessage *surveyOutro = [LIOChatMessage chatMessage];
-        surveyOutro.kind = LIOChatMessageKindSurveyOutro;
-        surveyOutro.date = [NSDate date];
-        surveyOutro.text = @"lollerchutes";
-        [surveyMessages addObject:surveyOutro];
-        [self reloadMessages];
-        [self scrollToBottomDelayed:YES];
-        
-        [self revealNotificationString:@"Please wait while we find someone to help you..." withAnimatedKeyboard:NO];
-        
-        surveyOutroTimer = [[LIOTimerProxy alloc] initWithTimeInterval:5.0 target:self selector:@selector(surveyOutroTimerDidFire)];
-        
-        return;
-    }
-    
-    // Do we have a valid response for the current question?
-    id aResponse = [surveyManager answerObjectForSurveyType:currentSurveyType withQuestionIndex:currentSurveyQuestionIndex];
-    if (nil == aResponse)
-    {
-        LIOSurveyQuestion *currentQuestion = [surveyTemplate.questions objectAtIndex:currentSurveyQuestionIndex];
-        
-        if (previousSurveyQuestionBubbleGenerated != currentSurveyQuestionIndex)
-        {
-            LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-            newChatMessage.kind = LIOChatMessageKindRemote;
-            newChatMessage.date = [NSDate date];
-            newChatMessage.text = currentQuestion.label;
-            newChatMessage.sequence = currentSurveyQuestionIndex + 1;
-            [surveyMessages addObject:newChatMessage];
-        }
-        
-        previousSurveyQuestionBubbleGenerated = currentSurveyQuestionIndex;
-        
-        [self reloadMessages];
-        
-        [surveyPicker removeFromSuperview];
-        [surveyPicker release];
-        surveyPicker = nil;
-        
-        [validationView removeFromSuperview];
-        [validationView release];
-        validationView = nil;
-        
-        // We need either the keyboard, or a picker.
-        if (LIOSurveyQuestionDisplayTypeText == currentQuestion.displayType)
-        {
-            pickerIsBeingUsed = NO;
-            
-            /*
-            if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
-                inputBar.inputField.keyboardType = UIKeyboardTypeEmailAddress;
-            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
-                inputBar.inputField.keyboardType = UIKeyboardTypeNumberPad;
-            else
-                inputBar.inputField.keyboardType = UIKeyboardTypeDefault;
-            */
-            
-            inputBar.inputField.userInteractionEnabled = YES;
-            //[inputBar.inputField resignFirstResponder];
-            [inputBar.inputField becomeFirstResponder];
-        }
-        else
-        {
-            pickerIsBeingUsed = YES;
-            
-            inputBar.inputField.userInteractionEnabled = NO;
-            [self.view endEditing:YES];
-            
-            surveyPicker = [[LIOSurveyPickerView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.bounds.size.width, 0.0)];
-            surveyPicker.surveyQuestion = currentQuestion;
-            surveyPicker.delegate = self;
-            
-            if (LIOSurveyQuestionDisplayTypePicker == currentQuestion.displayType)
-                surveyPicker.currentMode = LIOSurveyPickerViewModeSingle;
-            else if (LIOSurveyQuestionDisplayTypeMultiselect == currentQuestion.displayType)
-                surveyPicker.currentMode = LIOSurveyPickerViewModeMulti;
-
-            [self.view addSubview:surveyPicker];
-            [surveyPicker layoutSubviews];
-            
-            CGRect aFrame = surveyPicker.frame;
-            aFrame.origin.y = self.view.bounds.size.height - aFrame.size.height;
-            surveyPicker.frame = aFrame;
-            
-            [surveyPicker showAnimated];
-        }
-        
-        if ([currentSurveyValidationErrorString length])
-        {
-            [inputBar startPulseAnimation];
-            
-            validationView = [[LIOSurveyValidationView alloc] init];
-            validationView.delegate = self;
-            validationView.label.text = currentSurveyValidationErrorString;
-            [validationView layoutSubviews];
-            
-            CGFloat yOrigin = surveyPicker.frame.origin.y - validationView.frame.size.height;
-            if (nil == surveyPicker)
-                yOrigin = inputBar.frame.origin.y - validationView.frame.size.height;
-            
-            CGRect aFrame = validationView.frame;
-            aFrame.origin.x = 0.0;
-            aFrame.origin.y = yOrigin;
-            aFrame.size.width = self.view.bounds.size.width;
-            validationView.frame = aFrame;
-            [self.view insertSubview:validationView belowSubview:inputBar];
-            
-            [currentSurveyValidationErrorString release];
-            currentSurveyValidationErrorString = nil;
-            
-            [validationView showAnimated];
-        }
-        else
-        {
-            [inputBar stopPulseAnimation];
-        }
-    }
-}
-
-- (void)processSurveyResponse:(id)aResponse
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    NSString *stringResponse = nil;
-    NSArray *indexArrayResponse = nil;
-    if ([aResponse isKindOfClass:[NSString class]])
-        stringResponse = (NSString *)aResponse;
-    else if ([aResponse isKindOfClass:[NSArray class]])
-        indexArrayResponse = (NSArray *)aResponse;
-    else
-    {
-        LIOLog(@"what: %@", NSStringFromClass([aResponse class]));
-        return;
-    }
-    
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOSurveyTemplate *surveyTemplate;
-    if (LIOSurveyManagerSurveyTypePre == currentSurveyType)
-        surveyTemplate = surveyManager.preChatTemplate;
-    else
-        surveyTemplate = surveyManager.postChatTemplate;
-    
-    LIOSurveyQuestion *currentQuestion = [surveyTemplate.questions objectAtIndex:currentSurveyQuestionIndex];
-    
-    if (stringResponse)
-    {
-        if (0 == [stringResponse length])
-        {
-            // An empty response is okay for optional questions.
-            if (NO == currentQuestion.mandatory)
-            {
-                if (LIOSurveyManagerSurveyTypePre == currentSurveyType) surveyManager.lastCompletedQuestionIndexPre = currentSurveyQuestionIndex; else surveyManager.lastCompletedQuestionIndexPost = currentSurveyQuestionIndex;
-                currentSurveyQuestionIndex++;
-            }
-            else
-            {
-                [currentSurveyValidationErrorString release];
-                currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a response for this question."];
-            }
-        }
-        else
-        {
-            BOOL validated = NO;
-            
-            [currentSurveyValidationErrorString release];
-            currentSurveyValidationErrorString = nil;
-            
-            if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType)
-            {
-                // Kinda weird. This is just a passthrough, I guess.
-                validated = YES;
-            }
-            else if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
-            {
-                // Cheap e-mail validation: does the string contain one @ symbol?
-                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"@" options:0 error:nil];
-                if (1 == [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
-                    validated = YES;
-                else
-                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a valid e-mail address."];
-            }
-            else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
-            {
-                // TODO: Make this better. Currently just looks for any digit and says OK! THAT'S NUMERIC! if there is one.
-                NSRegularExpression *numericRegex = [NSRegularExpression regularExpressionWithPattern:@"\\d+" options:0 error:nil];
-                NSArray *matches = [numericRegex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a valid number."];
-            }
-            else if ([currentQuestion.validationRegexp length])
-            {
-                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
-                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please check your input and try again."];
-            }
-            
-            if (validated)
-            {
-                if (LIOSurveyManagerSurveyTypePre == currentSurveyType) surveyManager.lastCompletedQuestionIndexPre = currentSurveyQuestionIndex; else surveyManager.lastCompletedQuestionIndexPost = currentSurveyQuestionIndex;
-                
-                [surveyManager registerAnswerObject:stringResponse forSurveyType:currentSurveyType withQuestionIndex:currentSurveyQuestionIndex];
-                currentSurveyQuestionIndex++;
-                
-                LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-                newChatMessage.date = [NSDate date];
-                newChatMessage.kind = LIOChatMessageKindLocal;
-                newChatMessage.text = aResponse;
-                [surveyMessages addObject:newChatMessage];
-                
-                if (NO == padUI && 1 == currentSurveyQuestionIndex)
-                {
-                    int prev = numPreviousMessagesToShowInScrollback;
-                    [self reloadMessages];
-                    numPreviousMessagesToShowInScrollback = 1;
-                    [self refreshExpandingFooter];
-                    [self scrollToBottomDelayed:NO];
-                    numPreviousMessagesToShowInScrollback = prev;
-                }
-            }
-            
-            /*
-            else if (NO == currentQuestion.mandatory)
-            {
-                [currentSurveyValidationErrorString release];
-                currentSurveyValidationErrorString = nil;
-                currentSurveyQuestionIndex++;
-            }
-            */
-        }
-    }
-    else if (indexArrayResponse)
-    {
-        if (currentQuestion.mandatory && 0 == [indexArrayResponse count])
-        {
-            [currentSurveyValidationErrorString release];
-            currentSurveyValidationErrorString = [[NSString alloc] initWithString:@"Please enter a response for this question."];
-        }
-        else
-        {
-            [surveyManager registerAnswerObject:indexArrayResponse forSurveyType:currentSurveyType withQuestionIndex:currentSurveyQuestionIndex];
-            
-            NSMutableString *result = [NSMutableString string];
-            for (NSNumber *anIndexNumber in indexArrayResponse)
-            {
-                int anIndex = [anIndexNumber intValue];
-                LIOSurveyPickerEntry *anEntry = [currentQuestion.pickerEntries objectAtIndex:anIndex];
-                [result appendFormat:@"%@\n", anEntry.label];
-            }
-            
-            LIOChatMessage *newChatMessage = [LIOChatMessage chatMessage];
-            newChatMessage.date = [NSDate date];
-            newChatMessage.kind = LIOChatMessageKindLocal;
-            newChatMessage.text = result;
-            [surveyMessages addObject:newChatMessage];
-            
-            if (LIOSurveyManagerSurveyTypePre == currentSurveyType) surveyManager.lastCompletedQuestionIndexPre = currentSurveyQuestionIndex; else surveyManager.lastCompletedQuestionIndexPost = currentSurveyQuestionIndex;
-            
-            currentSurveyQuestionIndex++;
-            
-            if (1 == currentSurveyQuestionIndex)
-            {
-                int prev = numPreviousMessagesToShowInScrollback;
-                [self reloadMessages];
-                numPreviousMessagesToShowInScrollback = 1;
-                [self refreshExpandingFooter];
-                [self scrollToBottomDelayed:NO];
-                numPreviousMessagesToShowInScrollback = prev;
-            }
-        }
-    }
-        
-    // After the first question, we want to only show one bubble at a time on iPhone.
-    if (currentSurveyQuestionIndex > 0 && UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        [self scrollToBottomDelayed:NO];
-        numPreviousMessagesToShowInScrollback = 1;
-    }
-    
-    [self processSurvey];
-    [self scrollToBottomDelayed:YES];
 }
 
 - (void)rejiggerTableViewFrame
@@ -1231,9 +743,6 @@
 {
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     
-    [validationView removeFromSuperview];
-    [surveyPicker removeFromSuperview];
-    
     background.alpha = 1.0;
     
     [UIView animateWithDuration:0.33
@@ -1269,14 +778,14 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(){
             if (myScrollId == currentScrollId)
             {
-                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] inSection:0];
+                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] inSection:0];
                 [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
             }
         });
     }
     else
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[currentMessages count] inSection:0];
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
@@ -1286,37 +795,22 @@
     [chatMessages release];
     chatMessages = [[dataSource altChatViewControllerChatMessages:self] copy];
     
-    if (LIOAltChatViewControllerModeChat == currentMode)
-        currentMessages = chatMessages;
-    else
-        currentMessages = surveyMessages;
-    
     // Pre-calculate all bubble heights. D:
     [chatBubbleHeights removeAllObjects];
-    for (int i=0; i<[currentMessages count]; i++)
+    for (int i=0; i<[chatMessages count]; i++)
     {
         LIOChatBubbleView *tempView = [[LIOChatBubbleView alloc] init];
         
-        LIOChatMessage *aMessage = [currentMessages objectAtIndex:i];
+        LIOChatMessage *aMessage = [chatMessages objectAtIndex:i];
         if (LIOChatMessageKindLocal == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-            
-            if (currentMode != LIOAltChatViewControllerModeSurvey)
-                tempView.senderName = @"Me";
         }
         else if (LIOChatMessageKindRemote == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeRemote;
             tempView.senderName = aMessage.senderName;
         }
-        else if (LIOChatMessageKindHeader == aMessage.kind)
-        {
-            tempView.formattingMode = LIOChatBubbleViewFormattingModeHeader;
-        }
-        
-        if (LIOAltChatViewControllerModeSurvey == currentMode)
-            tempView.bubbleStyle = LIOChatBubbleViewBubbleStyleSurvey;
         
         [tempView populateMessageViewWithText:aMessage.text];
         [tempView layoutSubviews];
@@ -1364,7 +858,7 @@
 
 - (void)refreshExpandingFooter
 {
-    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([currentMessages count] + 1) inSection:0];
+    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([chatMessages count] + 1) inSection:0];
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
 }
 
@@ -1373,7 +867,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [currentMessages count] + 2;
+    return [chatMessages count] + 2;
 }
 
 /*
@@ -1386,14 +880,9 @@
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (0 == indexPath.row)
-    {
-        if (currentMode == LIOAltChatViewControllerModeChat)
-            return functionHeaderChat;
-        else if (currentMode == LIOAltChatViewControllerModeSurvey)
-            return functionHeaderSurvey;
-    }
+        return functionHeaderChat;
     
-    if ([currentMessages count] + 1 == indexPath.row)
+    if ([chatMessages count] + 1 == indexPath.row)
     {
         UITableViewCell *expandingFooter = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
         expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -1426,42 +915,19 @@
     aBubble.delegate = self;
     aBubble.index = indexPath.row;
     
-    LIOChatMessage *aMessage = [currentMessages objectAtIndex:(indexPath.row - 1)];
+    LIOChatMessage *aMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-        
-        if (currentMode != LIOAltChatViewControllerModeSurvey)
-            aBubble.senderName = @"Me";
+        aBubble.senderName = @"Me";
     }
     else if (LIOChatMessageKindRemote == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
         aBubble.senderName = aMessage.senderName;
     }
-    else if (LIOChatMessageKindHeader == aMessage.kind)
-    {
-        aBubble.formattingMode = LIOChatBubbleViewFormattingModeHeader;
-    }
-    
-    if (LIOChatMessageKindSurveyOutro == aMessage.kind)
-    {
-        // Survey outro only has an animated cog/signal doodad in it. No bubble.
-        LIOAnimatedCogView *cogView = [[[LIOAnimatedCogView alloc] init] autorelease];
-        [cogView layoutSubviews];
-        CGRect aFrame = cogView.frame;
-        aFrame.origin.y = 30.0;
-        aFrame.origin.x = (aCell.contentView.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-        cogView.frame = aFrame;
-        [aCell.contentView addSubview:cogView];
-        
-        [cogView fadeIn];
-    }
-    else
-        [aCell.contentView addSubview:aBubble];
-    
-    if (LIOAltChatViewControllerModeSurvey == currentMode)
-        aBubble.bubbleStyle = LIOChatBubbleViewBubbleStyleSurvey;
+
+    [aCell.contentView addSubview:aBubble];
     
     aBubble.rawChatMessage = aMessage;
     [aBubble populateMessageViewWithText:aMessage.text];
@@ -1470,8 +936,6 @@
         aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
     else if (LIOChatBubbleViewFormattingModeLocal == aBubble.formattingMode)
         aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
-    else if (LIOChatBubbleViewFormattingModeHeader == aBubble.formattingMode)
-        aBubble.frame = CGRectMake(0.0, 0.0, aCell.contentView.bounds.size.width, 0.0);
     
     [aBubble setNeedsLayout];
     [aBubble setNeedsDisplay];
@@ -1494,12 +958,12 @@
     if (0 == row)
         return 64.0;
     
-    if ([currentMessages count] + 1 == row)
+    if ([chatMessages count] + 1 == row)
     {
         CGFloat heightAccum = 0.0;
         for (int i=0; i<numPreviousMessagesToShowInScrollback; i++)
         {
-            int aRow = [currentMessages count] - i;
+            int aRow = [chatMessages count] - i;
             heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
         }
         
@@ -1521,21 +985,16 @@
     CGFloat height = [aHeight floatValue];
     
     // Headers can be short. All else must be minimum height.
-    CGFloat bottomPadding = 0.0;
-    LIOChatMessage *currentMessage = [currentMessages objectAtIndex:(row - 1)];
-    if (LIOChatMessageKindHeader != currentMessage.kind)
-    {
-        bottomPadding = 5.0;
-        if (height < LIOChatBubbleViewMinTextHeight)
-            height = LIOChatBubbleViewMinTextHeight;
-    }
+    CGFloat bottomPadding = 5.0;
+    if (height < LIOChatBubbleViewMinTextHeight)
+        height = LIOChatBubbleViewMinTextHeight;
     
     return height + bottomPadding;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == [currentMessages count] + 1)
+    if (indexPath.row == [chatMessages count] + 1)
         [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
@@ -1561,7 +1020,13 @@
     }
     else
     {
-        [self presentModalViewController:aController animated:YES];
+        [self.view endEditing:YES];
+        
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self presentModalViewController:aController animated:YES];
+        });
     }
 }
 
@@ -1584,7 +1049,13 @@
     }
     else
     {
-        [self presentModalViewController:aController animated:YES];
+        [self.view endEditing:YES];
+        
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self presentModalViewController:aController animated:YES];
+        });
     }
 }
 
@@ -1730,13 +1201,6 @@
         }
     [UIView commitAnimations];
     
-    if (validationView)
-    {
-        [validationView removeFromSuperview];
-        [validationView release];
-        validationView = nil;
-    }
-
     [self reloadMessages];
     
     if (nil == popover)
@@ -1819,13 +1283,6 @@
         }
     [UIView commitAnimations];
     
-    if (validationView)
-    {
-        [validationView removeFromSuperview];
-        [validationView release];
-        validationView = nil;
-    }    
-
     // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
     keyboardHeight = 0.0;
     tableView.frame = tableFrame;
@@ -1910,12 +1367,6 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (LIOAltChatViewControllerModeSurvey == currentMode)
-    {
-        [self processSurveyResponse:aString];
-        return;
-    }
-    
     if ([aString length])
     {
         [delegate altChatViewControllerTypingDidStop:self];
@@ -1970,7 +1421,6 @@
 
 - (void)inputBarViewDidStopPulseAnimation:(LIOInputBarView *)aView
 {
-    [validationView hideAnimated];
 }
 
 #pragma mark -
@@ -1984,20 +1434,6 @@
 
 #pragma mark -
 #pragma mark LIOAboutViewControllerDelegate methods
-
-- (void)aboutViewControllerWasDismissed:(LIOAboutViewController *)aController
-{
-    if (popover)
-    {
-        aboutScreenWasPresentedViaInputBarAdArea = NO;
-        
-        [popover dismissPopoverAnimated:NO];
-        [popover autorelease];
-        popover = nil;
-    }
-    else
-        [self dismissModalViewControllerAnimated:YES];
-}
 
 - (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
 {
@@ -2013,7 +1449,15 @@
         popover = nil;
     }
     else
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self didRotateFromInterfaceOrientation:0];
+        });
+        
         [self dismissModalViewControllerAnimated:YES];
+    }
 }
 
 - (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -2024,18 +1468,6 @@
 #pragma mark -
 #pragma mark LIOEmailHistoryViewControllerDelegate methods
 
-- (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController
-{
-    if (popover)
-    {
-        [popover dismissPopoverAnimated:NO];
-        [popover autorelease];
-        popover = nil;
-    }
-    else
-        [self dismissModalViewControllerAnimated:YES];
-}
-
 - (void)emailHistoryViewController:(LIOEmailHistoryViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail
 {
     if (popover)
@@ -2045,7 +1477,15 @@
         popover = nil;
     }
     else
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self didRotateFromInterfaceOrientation:0];
+        });
+        
         [self dismissModalViewControllerAnimated:YES];
+    }
     
     if ([anEmail length])
         [delegate altChatViewController:self didEnterTranscriptEmail:anEmail];
@@ -2172,40 +1612,12 @@
 }
 
 #pragma mark -
-#pragma mark LIOSurveyPickerViewDelegate methods
-
-- (void)surveyPickerView:(LIOSurveyPickerView *)aView didSelectIndices:(NSArray *)anArrayOfIndices
-{
-    [pendingSurveyResponse release];
-    pendingSurveyResponse = [anArrayOfIndices retain];
-    
-    [surveyPicker hideAnimated];
-    [validationView hideAnimated];
-}
-
-- (void)surveyPickerViewDidFinishDismissalAnimation:(LIOSurveyPickerView *)aView
-{
-    [self processSurveyResponse:[pendingSurveyResponse autorelease]];
-    pendingSurveyResponse = nil;
-}
-
-#pragma mark -
 #pragma mark UIAlertViewDelegate methods
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     if (1 == buttonIndex)
         [delegate altChatViewControllerWantsToLeaveSurvey:self];
-}
-
-#pragma mark -
-#pragma mark LIOSurveyValidationViewDelegate methods
-
-- (void)surveyValidationViewDidFinishDismissalAnimation:(LIOSurveyValidationView *)aView
-{
-    [validationView removeFromSuperview];
-    [validationView release];
-    validationView = nil;
 }
 
 #pragma mark -

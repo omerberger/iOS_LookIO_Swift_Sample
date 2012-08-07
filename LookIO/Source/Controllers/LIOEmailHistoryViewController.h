@@ -14,7 +14,6 @@
 @protocol LIONavigationBarDelegate;
 
 @protocol LIOEmailHistoryViewControllerDelegate
-- (void)emailHistoryViewControllerWasDismissed:(LIOEmailHistoryViewController *)aController;
 - (void)emailHistoryViewController:(LIOEmailHistoryViewController *)aController wasDismissedWithEmailAddress:(NSString *)anEmail;
 - (BOOL)emailHistoryViewController:(LIOEmailHistoryViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 @end
