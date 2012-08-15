@@ -1598,6 +1598,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [availability release];
             availability = [online retain];
+            
+            if (firstChatMessageSent && NO == [availability boolValue])
+                [altChatViewController forceLeaveMessageScreen];
         }
         else if ([action isEqualToString:@"permission"])
         {
@@ -2500,6 +2503,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return [availability boolValue];
     else
         return [lastKnownDefaultAvailability boolValue];
+}
+
+- (BOOL)actualAgentAvailabilityKnown
+{
+    return availability != nil;
 }
 
 - (BOOL)isIntraLink:(NSURL *)aURL
@@ -3567,7 +3575,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSString *responseString = [[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease];
         NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-        LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseDict);
+        LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseString);
         
         [self parseAndSaveSettingsPayload:responseDict];
         
@@ -3578,8 +3586,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (appContinueRequestConnection == connection)
     {
-        NSDictionary *responseDict = [jsonParser objectWithString:[[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease]];
-        LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseDict);
+        NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
+        NSDictionary *responseDict = [jsonParser objectWithString:responseString];
+        LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseString);
         
         [self parseAndSaveSettingsPayload:responseDict];
         

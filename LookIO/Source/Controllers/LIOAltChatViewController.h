@@ -73,9 +73,10 @@
     NSString *pendingNotificationString;
     BOOL pendingNotificationStringIsTypingNotification;
     BOOL aboutScreenWasPresentedViaInputBarAdArea;
-    BOOL surveyWasCanceled;
+    BOOL surveyWasCanceled, surveyWasFinished;
     id pendingSurveyResponse;
     int numPreviousMessagesToShowInScrollback;
+    NSMutableArray *messagesSentBeforeAvailabilityKnown;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
@@ -93,5 +94,6 @@
 - (void)hideReconnectionOverlay;
 - (NSString *)currentChatText;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
+- (void)forceLeaveMessageScreen;
 
 @end

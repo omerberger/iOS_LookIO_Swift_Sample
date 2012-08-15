@@ -48,6 +48,7 @@
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 - (void)startPulseAnimation;
 - (void)stopPulseAnimation;
+- (void)forceAcceptanceOfAutocorrect;
 
 @property(nonatomic, assign) id<LIOInputBarViewDelegate> delegate;
 @property(nonatomic, readonly) CGFloat singleLineHeight;

@@ -337,12 +337,19 @@
     [self stopPulseAnimation];
 }
 
+- (void)forceAcceptanceOfAutocorrect
+{
+    NSRange end = NSMakeRange([inputField.text length], 0);
+    inputField.selectedRange = end;
+}
+
 #pragma mark -
 #pragma mark UIControl actions
 
 - (void)sendButtonWasTapped
 {
     //[inputField resignFirstResponder];
+    [self forceAcceptanceOfAutocorrect];
     NSString *text = inputField.text;
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];

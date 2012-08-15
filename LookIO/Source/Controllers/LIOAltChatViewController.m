@@ -62,6 +62,7 @@
     {
         numPreviousMessagesToShowInScrollback = 1;
         chatBubbleHeights = [[NSMutableArray alloc] init];
+        messagesSentBeforeAvailabilityKnown = [[NSMutableArray alloc] init];
     }
     
     return self;
@@ -477,7 +478,7 @@
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate)
+    if (surveyManager.preChatTemplate && NO == surveyWasFinished)
     {
         dismissalBar.alpha = 0.0;
         inputBar.alpha = 0.0;
@@ -860,6 +861,37 @@
 {
     NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([chatMessages count] + 1) inSection:0];
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)forceLeaveMessageScreen
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    NSString *pendingEmailAddress = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
+    
+    LIOLeaveMessageViewController *aController = [[[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+    aController.delegate = self;
+    
+    if ([pendingEmailAddress length])
+        aController.initialEmailAddress = pendingEmailAddress;
+    
+    if ([messagesSentBeforeAvailabilityKnown count])
+    {
+        NSMutableString *initialMessage = [NSMutableString string];
+        for (NSString *aMessage in messagesSentBeforeAvailabilityKnown)
+            [initialMessage appendFormat:@"%@\n", aMessage];
+        
+        aController.initialMessage = initialMessage;
+    }
+    else if ([pendingChatText length])
+        aController.initialMessage = pendingChatText;
+    
+    if (padUI)
+        aController.modalPresentationStyle = UIModalPresentationFormSheet;
+    
+    leavingMessage = YES;
+    
+    [self presentModalViewController:aController animated:YES];
 }
 
 #pragma mark -
@@ -1372,27 +1404,15 @@
         [delegate altChatViewControllerTypingDidStop:self];
         
         if ([[LIOLookIOManager sharedLookIOManager] agentsAvailable])
-            [delegate altChatViewController:self didChatWithText:aString];
-        else
         {
-            NSString *pendingEmailAddress = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
+            [delegate altChatViewController:self didChatWithText:aString];
             
-            LIOLeaveMessageViewController *aController = [[[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-            aController.delegate = self;
-            
-            if ([pendingEmailAddress length])
-                aController.initialEmailAddress = pendingEmailAddress;
-            
-            if ([pendingChatText length])
-                aController.initialMessage = pendingChatText;
-            
-            if (padUI)
-                aController.modalPresentationStyle = UIModalPresentationFormSheet;
-            
-            leavingMessage = YES;            
-            
-            [self presentModalViewController:aController animated:YES];
+            if (NO == [[LIOLookIOManager sharedLookIOManager] actualAgentAvailabilityKnown])
+                [messagesSentBeforeAvailabilityKnown addObject:aString];
+                
         }
+        else
+            [self forceLeaveMessageScreen];
     }
     
     [pendingChatText release];
@@ -1654,6 +1674,8 @@
     inputBar.alpha = 1.0;
     tableView.alpha = 1.0;
     headerBar.alpha = 1.0;
+    
+    surveyWasFinished = YES;
     
     [self dismissModalViewControllerAnimated:YES];
 }
