@@ -2057,7 +2057,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                selector:@selector(continuationTimerDidFire)];
     }
 
-    NSDictionary *surveyDict = [NSDictionary dictionaryWithObject:[NSDictionary dictionary] forKey:@"prechat"];
+    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
         NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
