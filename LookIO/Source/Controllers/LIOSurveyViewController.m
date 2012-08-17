@@ -16,6 +16,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOLogManager.h"
 #import "LIONavigationBar.h"
+#import "LIOSurveyValidationView.h"
+#import "LIOTimerProxy.h"
 
 @interface LIOSurveyViewController ()
 - (void)prepareNextScrollView;
@@ -47,6 +49,7 @@
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     navBar.leftButtonText = @"Cancel";
     navBar.rightButtonText = @"Next";
+    navBar.titleImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"];
     navBar.delegate = self;
     [navBar layoutSubviews];
     [self.view addSubview:navBar];
@@ -105,13 +108,50 @@
                                                object:nil];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (padUI)
+    {
+        CGRect aFrame = currentScrollView.frame;
+        aFrame.origin.y = navBar.frame.size.height;
+        aFrame.size.height -= aFrame.origin.y;
+        currentScrollView.frame = aFrame;
+        
+        CGSize headerLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(self.view.bounds.size.width - 20.0, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+        aFrame = headerLabel.frame;
+        aFrame.size = headerLabelSize;
+        aFrame.origin.y = 10.0;
+        aFrame.origin.x = 10.0;
+        headerLabel.frame = aFrame;
+        
+        [questionNumberLabel sizeToFit];
+        aFrame = questionNumberLabel.frame;
+        aFrame.origin.x = 10.0;
+        aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 10.0;
+        questionNumberLabel.frame = aFrame;
+        
+        CGSize questionLabelSize = [currentQuestionLabel.text sizeWithFont:currentQuestionLabel.font constrainedToSize:CGSizeMake(self.view.bounds.size.width - 20.0, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+        aFrame = currentQuestionLabel.frame;
+        aFrame.size = questionLabelSize;
+        aFrame.origin.x = 10.0;
+        aFrame.origin.y = questionNumberLabel.frame.origin.y + questionNumberLabel.frame.size.height;
+        currentQuestionLabel.frame = aFrame;
+    }
+}
+
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    [validationTimer stopTimer];
+    [validationTimer release];
+    
     [currentScrollView release];
     [headerString release];
     [currentSurvey release];
+    [validationView release];
     
     [super dealloc];
 }
@@ -135,30 +175,17 @@
     
     LIOSurveyQuestion *nextQuestion = [currentSurvey.questions objectAtIndex:nextQuestionIndex];
     
-    UIColor *textColor = [UIColor colorWithWhite:0.25 alpha:1.0];
+    UIColor *textColor = [UIColor colorWithWhite:0.58 alpha:1.0];
     
     nextScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    nextScrollView.backgroundColor = [UIColor colorWithWhite:0.89 alpha:1.0];
     CGRect aFrame = nextScrollView.frame;
     aFrame.origin.y = navBar.frame.size.height;
     aFrame.size.height -= aFrame.origin.y;
     nextScrollView.frame = aFrame;
     nextScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
-    UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableSurveyBackgroundTexture"];
-    //texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-    
-    UIImageView *backgroundView = [[[UIImageView alloc] init] autorelease];
-    //backgroundView.image = texture;
-    backgroundView.backgroundColor = [UIColor colorWithPatternImage:texture];
-    aFrame = CGRectZero;
-    aFrame.size.width = self.view.bounds.size.width;
-    aFrame.origin.y = self.view.bounds.size.height * -2.0;
-    aFrame.size.height = self.view.bounds.size.height * 4.0;
-    backgroundView.frame = aFrame;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [nextScrollView addSubview:backgroundView];
-    
-    UILabel *headerLabel = [[[UILabel alloc] init] autorelease];
+    headerLabel = [[[UILabel alloc] init] autorelease];
     headerLabel.text = headerString;
     headerLabel.textColor = textColor;
     headerLabel.backgroundColor = [UIColor clearColor];
@@ -166,10 +193,10 @@
     headerLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     //headerLabel.textAlignment = UITextAlignmentCenter;
     headerLabel.numberOfLines = 0;
-    headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    headerLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
-    headerLabel.layer.shadowOpacity = 0.33;
-    headerLabel.layer.shadowRadius = 0.75;
+//    headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+//    headerLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
+//    headerLabel.layer.shadowOpacity = 0.33;
+//    headerLabel.layer.shadowRadius = 0.75;
     CGSize headerLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(self.view.bounds.size.width - 20.0, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame = headerLabel.frame;
     aFrame.size = headerLabelSize;
@@ -178,16 +205,16 @@
     headerLabel.frame = aFrame;
     [nextScrollView addSubview:headerLabel];
     
-    UILabel *questionNumberLabel = [[[UILabel alloc] init] autorelease];
+    questionNumberLabel = [[[UILabel alloc] init] autorelease];
     questionNumberLabel.font = [UIFont boldSystemFontOfSize:14.0];
     questionNumberLabel.textColor = textColor;
     questionNumberLabel.backgroundColor = [UIColor clearColor];
     questionNumberLabel.numberOfLines = 1;
     questionNumberLabel.text = [NSString stringWithFormat:@"Question %d of %d:", nextQuestionIndex + 1, currentSurvey.questions.count];
-    questionNumberLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    questionNumberLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
-    questionNumberLabel.layer.shadowOpacity = 0.33;
-    questionNumberLabel.layer.shadowRadius = 0.75;
+//    questionNumberLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+//    questionNumberLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
+//    questionNumberLabel.layer.shadowOpacity = 0.33;
+//    questionNumberLabel.layer.shadowRadius = 0.75;
     [questionNumberLabel sizeToFit];
     aFrame = questionNumberLabel.frame;
     aFrame.origin.x = 10.0;
@@ -201,10 +228,10 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     questionLabel.font = [UIFont systemFontOfSize:16.0];
     questionLabel.numberOfLines = 0;
-    questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    questionLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
-    questionLabel.layer.shadowOpacity = 0.33;
-    questionLabel.layer.shadowRadius = 0.75;
+//    questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+//    questionLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
+//    questionLabel.layer.shadowOpacity = 0.33;
+//    questionLabel.layer.shadowRadius = 0.75;
     CGSize questionLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(self.view.bounds.size.width - 20.0, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame = questionLabel.frame;
     aFrame.size = questionLabelSize;
@@ -320,6 +347,14 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
+    
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = nil;
+    
     if (keyboardUnderlay)
         keyboardUnderlay.hidden = YES;
 }
@@ -334,6 +369,14 @@
 
 - (void)switchToNextQuestion
 {
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
+    
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = nil;
+    
     if (currentQuestionIndex + 1 >= [currentSurvey.questions count])
     {
         [self.view endEditing:YES];
@@ -396,7 +439,15 @@
 }
 
 - (void)switchToPreviousQuestion
-{    
+{
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
+    
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = nil;
+    
     if (currentPickerView)
     {
         [currentPickerView hideAnimated];
@@ -453,15 +504,27 @@
 
 - (void)showAlertWithMessage:(NSString *)aMessage
 {
-    [self.view endEditing:YES];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                        message:aMessage
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"Dismiss", nil];
-    [alertView show];
-    [alertView autorelease];
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = [[LIOSurveyValidationView alloc] init];
+    CGRect aFrame = validationView.frame;
+    aFrame.origin.y = navBar.frame.origin.y + navBar.frame.size.height;
+    validationView.verticallyMirrored = YES;
+    aFrame.size.width = self.view.frame.size.width;
+    validationView.frame = aFrame;
+    validationView.label.text = aMessage;
+    validationView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [self.view insertSubview:validationView belowSubview:navBar];
+    [validationView layoutSubviews];
+    [validationView showAnimated];
+    
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOSurveyViewControllerValidationDuration
+                                                           target:self
+                                                         selector:@selector(validationTimerDidFire)];
 }
 
 - (void)rejiggerInterface
@@ -510,6 +573,16 @@
         keyboardUnderlay.frame = keyboardFrame;
 }
 
+- (void)validationTimerDidFire
+{
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
+    
+    validationView.delegate = self;
+    [validationView hideAnimated];
+}
+
 #pragma mark - UITextFieldDelegate methods -
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
@@ -547,7 +620,9 @@
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
 {
-    if (keyboardShown)
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (keyboardShown || padUI)
         return;
     
     keyboardShown = YES;
@@ -566,19 +641,18 @@
     CGRect keyboardBounds = [self.view convertRect:[keyboardBoundsValue CGRectValue] fromView:nil];
     keyboardFrame = keyboardBounds;
     
-    if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom])
-    {
-        keyboardUnderlay = [[[UIView alloc] initWithFrame:keyboardFrame] autorelease];
-        keyboardUnderlay.backgroundColor = [UIColor blackColor];
-        [self.view addSubview:keyboardUnderlay];
-    }
+    keyboardUnderlay = [[[UIView alloc] initWithFrame:keyboardFrame] autorelease];
+    keyboardUnderlay.backgroundColor = [UIColor blackColor];
+    [self.view addSubview:keyboardUnderlay];
     
     [self rejiggerInterface];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
-    if (NO == keyboardShown)
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (NO == keyboardShown || padUI)
         return;
     
     [keyboardUnderlay removeFromSuperview];
@@ -587,7 +661,9 @@
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
 {
-    if (NO == keyboardShown)
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (NO == keyboardShown || padUI)
         return;
     
     keyboardShown = NO;
@@ -717,6 +793,19 @@
             [self switchToNextQuestion];
         }
     }
+}
+
+#pragma mark LIOSurveyValidationViewDelegate methods
+
+- (void)surveyValidationViewDidFinishDismissalAnimation:(LIOSurveyValidationView *)aView
+{
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [validationView removeFromSuperview];
+        [validationView release];
+        validationView = nil;
+    });
 }
 
 @end

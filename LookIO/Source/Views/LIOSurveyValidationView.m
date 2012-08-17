@@ -12,7 +12,7 @@
 
 @implementation LIOSurveyValidationView
 
-@synthesize label, delegate;
+@synthesize label, delegate, verticallyMirrored;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -81,9 +81,14 @@
     
     aFrame = backgroundImage.frame;
     aFrame.origin.x = 0.0;
-    aFrame.origin.y = -4.5; // Shadow spills over top.
+    aFrame.origin.y = verticallyMirrored ? 0.0 : -4.5; // Shadow spills over top. Or bottom!
     aFrame.size.width = self.bounds.size.width;
     backgroundImage.frame = aFrame;
+    
+    if (verticallyMirrored)
+        backgroundImage.transform = CGAffineTransformMakeScale(1.0, -1.0);
+    else
+        backgroundImage.transform = CGAffineTransformIdentity;
 }
 
 - (void)showAnimated
@@ -93,7 +98,7 @@
     CGRect endingFrame = self.frame;
     
     CGRect startingFrame = self.frame;
-    startingFrame.origin.y += startingFrame.size.height;
+    startingFrame.origin.y += startingFrame.size.height * (verticallyMirrored ? -1.0 : 1.0);
     self.frame = startingFrame;
     
     [UIView animateWithDuration:0.33
@@ -111,7 +116,7 @@
     [self layoutSubviews];
     
     CGRect endingFrame = self.frame;
-    endingFrame.origin.y += endingFrame.size.height;
+    endingFrame.origin.y += endingFrame.size.height * (verticallyMirrored ? -1.0 : 1.0);
         
     [UIView animateWithDuration:0.33
                           delay:0.0

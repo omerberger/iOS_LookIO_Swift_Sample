@@ -38,6 +38,7 @@
         [self addSubview:backgroundImageView];
         
         titleImageView = [[UIImageView alloc] init];
+        titleImageView.contentMode = UIViewContentModeScaleAspectFit;
         [self addSubview:titleImageView];
         
         leftButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -178,9 +179,17 @@
     titleImageView.hidden = nil == titleImage;
     if (NO == titleImageView.hidden)
     {
+        CGFloat maxWidth = FLT_MAX;
+        if (NO == rightButton.hidden && NO == leftButton.hidden)
+            maxWidth = (rightButton.frame.origin.x - 5.0) - (leftButton.frame.origin.x + leftButton.frame.size.width + 5.0);
+        
+        CGFloat maxHeight = self.bounds.size.height - 10.0;
+        
         titleImageView.image = titleImage;
         [titleImageView sizeToFit];
         aFrame = titleImageView.frame;
+        if (aFrame.size.width > maxWidth) aFrame.size.width = maxWidth;
+        if (aFrame.size.height > maxHeight) aFrame.size.height = maxHeight;
         aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
         aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
         titleImageView.frame = aFrame;

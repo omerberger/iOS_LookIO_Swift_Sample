@@ -478,12 +478,17 @@
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && NO == surveyWasFinished)
+    if (surveyManager.preChatTemplate)
     {
-        dismissalBar.alpha = 0.0;
-        inputBar.alpha = 0.0;
-        tableView.alpha = 0.0;
-        headerBar.alpha = 0.0;
+        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
+        if (lastIndexCompleted < finalIndex)
+        {
+            dismissalBar.hidden = YES;
+            inputBar.hidden = YES;
+            tableView.hidden = YES;
+            headerBar.hidden = YES;
+        }
     }
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -534,8 +539,10 @@
 {
     [super viewDidAppear:animated];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     // We might need to exit chat due to a canceled survey.
-    if (surveyWasCanceled)
+    if (NO == padUI && surveyWasCanceled)
     {
         [self performDismissalAnimation];
         return;
@@ -554,6 +561,10 @@
             surveyController.headerString = surveyManager.preChatHeader;
             surveyController.currentQuestionIndex = lastIndexCompleted;
             surveyController.currentSurvey = surveyManager.preChatTemplate;
+            
+            if (padUI)
+                surveyController.modalPresentationStyle = UIModalPresentationFormSheet;
+            
             [self presentModalViewController:surveyController animated:YES];
             
             return;
@@ -562,8 +573,6 @@
     
     if (leavingMessage)
         return;
-    
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     double delayInSeconds = 0.6;
     if (NO == padUI) delayInSeconds = 0.1;
@@ -1652,6 +1661,14 @@
 {
     surveyWasCanceled = YES;
     [self dismissModalViewControllerAnimated:YES];
+    
+    // viewDidAppear doesn't trigger on iPad, so we have to manually dismiss the chat here.
+    
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [self performDismissalAnimation];
+    });
 }
 
 - (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController
@@ -1670,12 +1687,10 @@
     [surveyDict setObject:finalDict forKey:@"responses"];
     [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
     
-    dismissalBar.alpha = 1.0;
-    inputBar.alpha = 1.0;
-    tableView.alpha = 1.0;
-    headerBar.alpha = 1.0;
-    
-    surveyWasFinished = YES;
+    dismissalBar.hidden = NO;
+    inputBar.hidden = NO;
+    tableView.hidden = NO;
+    headerBar.hidden = NO;
     
     [self dismissModalViewControllerAnimated:YES];
 }

@@ -73,7 +73,7 @@
     NSString *pendingNotificationString;
     BOOL pendingNotificationStringIsTypingNotification;
     BOOL aboutScreenWasPresentedViaInputBarAdArea;
-    BOOL surveyWasCanceled, surveyWasFinished;
+    BOOL surveyWasCanceled;
     id pendingSurveyResponse;
     int numPreviousMessagesToShowInScrollback;
     NSMutableArray *messagesSentBeforeAvailabilityKnown;

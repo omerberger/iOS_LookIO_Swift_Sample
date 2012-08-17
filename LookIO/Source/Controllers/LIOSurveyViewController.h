@@ -8,13 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
+#define LIOSurveyViewControllerValidationDuration 7.5
+
 @class LIOSurveyTemplate;
 @class LIOSurveyViewController;
 @class LIOSurveyPickerView;
 @class LIONavigationBar;
+@class LIOSurveyValidationView;
+@class LIOTimerProxy;
 
 @protocol LIOSurveyPickerViewDelegate;
 @protocol LIONavigationBarDelegate;
+@protocol LIOSurveyValidationViewDelegate;
 
 @protocol LIOSurveyViewControllerDelegate
 - (BOOL)surveyViewController:(LIOSurveyViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -36,7 +41,11 @@
     CGRect keyboardFrame;
     BOOL keyboardShown;
     UIView *keyboardUnderlay;
+    LIOSurveyValidationView *validationView;
+    LIOTimerProxy *validationTimer;
     id<LIOSurveyViewControllerDelegate> delegate;
+    
+    UILabel *headerLabel, *questionNumberLabel; // also currentQuestionLabel
 }
 
 @property(nonatomic, assign) id<LIOSurveyViewControllerDelegate> delegate;
