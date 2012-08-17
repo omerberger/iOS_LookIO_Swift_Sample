@@ -1659,20 +1659,26 @@
 
 - (void)surveyViewControllerDidCancel:(LIOSurveyViewController *)aController
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     surveyWasCanceled = YES;
     [self dismissModalViewControllerAnimated:YES];
     
     // viewDidAppear doesn't trigger on iPad, so we have to manually dismiss the chat here.
-    
-    double delayInSeconds = 0.1;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [self performDismissalAnimation];
-    });
+    if (padUI)
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self performDismissalAnimation];
+        });
+    }
 }
 
 - (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     // Collect responses for submission.
     NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
     for (int i=0; i<[aController.currentSurvey.questions count]; i++)
@@ -1693,6 +1699,17 @@
     headerBar.hidden = NO;
     
     [self dismissModalViewControllerAnimated:YES];
+    
+    // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
+    // We manually invoke it here.
+    if (padUI)
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self viewDidAppear:NO];
+        });
+    }
 }
 
 @end
