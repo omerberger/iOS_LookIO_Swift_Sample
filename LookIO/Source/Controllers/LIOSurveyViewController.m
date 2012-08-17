@@ -342,6 +342,8 @@
         {
             [currentPickerView.doneButton setTitle:@"Start Chat" forState:UIControlStateNormal];
         }
+        
+        [self.view endEditing:YES];
     }
 }
 
@@ -581,6 +583,11 @@
     
     validationView.delegate = self;
     [validationView hideAnimated];
+}
+
+- (BOOL)disablesAutomaticKeyboardDismissal
+{
+    return NO;
 }
 
 #pragma mark - UITextFieldDelegate methods -
