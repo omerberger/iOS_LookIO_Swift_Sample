@@ -100,7 +100,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -254,6 +254,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
+        self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
+        cursorView = [[UIImageView alloc] initWithImage:touchImage];
+        cursorView.frame = CGRectMake(-cursorView.frame.size.width, -cursorView.frame.size.height, cursorView.frame.size.width, cursorView.frame.size.height);
+        [keyWindow addSubview:cursorView];
+        clickView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOClickIndicator"]];
+        clickView.frame = CGRectMake(-clickView.frame.size.width, -clickView.frame.size.height, clickView.frame.size.width, clickView.frame.size.height);
+        [keyWindow addSubview:clickView];
+        cursorView.hidden = YES;
+        clickView.hidden = YES;
+        cursorEnded = YES;
+        
         originalStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
         
         nextTimeInterval = 0.0;
@@ -778,7 +791,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
     
-    [altChatViewController dismissModalViewControllerAnimated:NO];
+    [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
@@ -801,13 +814,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [chatHistory release];
     chatHistory = [[NSMutableArray alloc] init];
     
-    [cursorView removeFromSuperview];
-    [cursorView release];
-    cursorView = nil;
-    
-    [clickView removeFromSuperview];
-    [clickView release];
-    clickView = nil;
+    cursorView.hidden = YES;
+    clickView.hidden = YES;
         
     [backgroundedTime release];
     backgroundedTime = nil;
@@ -852,7 +860,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO;
+    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO,
+    cursorEnded = YES;
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
     [screenSharingStartedDate release];
@@ -939,11 +948,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOLog(@"Hiding LookIO (0x%08X), restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
         
         lookioWindow.hidden = YES;
+        [lookioWindow.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
         
-        if (screenshotsAllowed)
-            cursorView.alpha = 1.0;
-        else
-            cursorView.alpha = 0.0;
+        cursorView.hidden = clickView.hidden = NO == screenshotsAllowed || cursorEnded;
         
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
@@ -1460,17 +1467,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (altChatViewController)
             return;
         
-        if (nil == touchImage)
-            self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
-        
-        if (nil == cursorView)
-        {
-            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-            cursorView = [[UIImageView alloc] initWithImage:touchImage];
-            [keyWindow addSubview:cursorView];
-        }
-        
-        [lookioWindow bringSubviewToFront:cursorView];
+        cursorView.hidden = NO == screenshotsAllowed || cursorEnded;
         
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
@@ -1509,18 +1506,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"cursor_start"])
         {
-            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+            cursorEnded = NO;
             
-            if (nil == touchImage)
-                self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
-            
-            if (nil == cursorView)
+            if (altChatViewController)
             {
-                cursorView = [[UIImageView alloc] initWithImage:touchImage];
-                [keyWindow addSubview:cursorView];
+                cursorView.hidden = YES;
+                return;
             }
             
-            [keyWindow bringSubviewToFront:cursorView];
+            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
             
             CGRect aFrame = CGRectZero;
             aFrame.size.width = cursorView.image.size.width * 8.0;
@@ -1573,7 +1567,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              }
                              completion:nil];
              */
-            cursorView.alpha = 0.0;
+            cursorEnded = YES;
+            cursorView.hidden = YES;
         }
         else if ([action isEqualToString:@"connected"])
         {
@@ -1658,15 +1653,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (altChatViewController)
             return;
         
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        
-        if (nil == clickView)
-        {
-            clickView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOClickIndicator"]];
-            [keyWindow addSubview:clickView];
-        }
-        
-        [keyWindow bringSubviewToFront:clickView];
+        clickView.hidden = NO == screenshotsAllowed || cursorEnded;
         
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
@@ -2072,12 +2059,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
         }
     }
-
-    /*
+     
+     /*
     NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-    */ 
+     */
     
     [self refreshControlButtonVisibility];
     [self applicationDidChangeStatusBarOrientation:nil];
@@ -2642,9 +2629,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // Just in case...
     clickView.hidden = YES;
-    [cursorView removeFromSuperview];
-    [cursorView release];
-    cursorView = nil;
+    cursorView.hidden = YES;
 }
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock
@@ -2663,7 +2648,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         LIOLog(@"Unexpected disconnection! Asking user for resume mode...");
 
-        [altChatViewController dismissModalViewControllerAnimated:NO];
+        [altChatViewController bailOnSecondaryViews];
         [altChatViewController.view removeFromSuperview];
         [altChatViewController release];
         altChatViewController = nil;
@@ -2821,7 +2806,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [pendingChatText release];
     pendingChatText = [[altChatViewController currentChatText] retain];
-    [altChatViewController dismissModalViewControllerAnimated:NO];
+    [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
@@ -3164,7 +3149,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 {
                     [pendingChatText release];
                     pendingChatText = [[altChatViewController currentChatText] retain];
-                    [altChatViewController dismissModalViewControllerAnimated:NO];
+                    [altChatViewController bailOnSecondaryViews];
                     [altChatViewController.view removeFromSuperview];
                     [altChatViewController release];
                     altChatViewController = nil;
@@ -3260,7 +3245,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [pendingChatText release];
         pendingChatText = [[altChatViewController currentChatText] retain];
-        [altChatViewController dismissModalViewControllerAnimated:NO];
+        [altChatViewController bailOnSecondaryViews];
         [altChatViewController.view removeFromSuperview];
         [altChatViewController release];
         altChatViewController = nil;
@@ -3276,8 +3261,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [pendingIntraAppLinkURL release];
     pendingIntraAppLinkURL = nil;
-    
-    [self rejiggerWindows];
+
+    // The delayed execution here is required to avoid stuck keyboard issues. -_-
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [self rejiggerWindows];
+    });
 }
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification

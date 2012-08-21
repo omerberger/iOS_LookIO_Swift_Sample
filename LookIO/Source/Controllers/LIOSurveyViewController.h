@@ -27,7 +27,7 @@
 - (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController;
 @end
 
-@interface LIOSurveyViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIOSurveyPickerViewDelegate, LIONavigationBarDelegate>
+@interface LIOSurveyViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, LIOSurveyPickerViewDelegate, LIONavigationBarDelegate, LIOSurveyValidationViewDelegate>
 {
     LIONavigationBar *navBar;
     UIScrollView *currentScrollView, *nextScrollView;

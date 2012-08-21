@@ -245,9 +245,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             }
             
             newQuestion.pickerEntries = entries;
+            
+            if ([newQuestion.pickerEntries count])
+                [questions addObject:newQuestion];
         }
-        
-        [questions addObject:newQuestion];
+        else
+        {
+            [questions addObject:newQuestion];
+        }
     }
     
     newTemplate.surveyId = idNumber;

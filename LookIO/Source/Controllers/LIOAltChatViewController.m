@@ -903,6 +903,22 @@
     [self presentModalViewController:aController animated:YES];
 }
 
+- (void)bailOnSecondaryViews
+{
+    if (popover)
+    {
+        [popover dismissPopoverAnimated:NO];
+        [popover release];
+        popover = nil;
+    }
+    
+    if (self.modalViewController)
+    {
+        [self.modalViewController.view endEditing:YES];
+        [self dismissModalViewControllerAnimated:NO];
+    }
+}
+
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 

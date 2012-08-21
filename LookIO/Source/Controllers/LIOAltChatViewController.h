@@ -95,5 +95,6 @@
 - (NSString *)currentChatText;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
+- (void)bailOnSecondaryViews;
 
 @end
