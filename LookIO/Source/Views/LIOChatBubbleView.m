@@ -223,11 +223,22 @@ static NSDataDetector *dataDetector = nil;
         
         if (NSTextCheckingTypeLink == result.resultType)
         {
-            // We modify links marked as "NSTextCheckingTypeLink" but which
-            // lack any kind of URL scheme at the beginning by adding "http://"
-            NSURL *testURL = [NSURL URLWithString:currentLink];
-            if (0 == [testURL.scheme length])
-                currentLinkURLString = [NSString stringWithFormat:@"http://%@", currentLinkURLString];
+            // First, is this actually an e-mail? Those are for some reason marked as links. >_<
+            NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"^[\\w\\d]+@[\\w\\d]+\\.[\\w\\d]{2,}$" options:0 error:nil];
+            if (0 < [emailRegex numberOfMatchesInString:currentLink options:0 range:NSMakeRange(0, [currentLink length])])
+            {
+                // This IS an e-mail, so... slap a mailto: on it, I guess.
+                currentLinkURLString = [NSString stringWithFormat:@"mailto://%@", currentLinkURLString];
+            }
+            else
+            {
+                // NOT an e-mail. Probably a web address.
+                // We modify links marked as "NSTextCheckingTypeLink" but which
+                // lack any kind of URL scheme at the beginning by adding "http://"
+                NSURL *testURL = [NSURL URLWithString:currentLink];
+                if (0 == [testURL.scheme length])
+                    currentLinkURLString = [NSString stringWithFormat:@"http://%@", currentLinkURLString];
+            }
         }
         
         [links addObject:currentLink];

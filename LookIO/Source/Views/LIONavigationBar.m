@@ -181,7 +181,7 @@
     {
         CGFloat maxWidth = FLT_MAX;
         if (NO == rightButton.hidden && NO == leftButton.hidden)
-            maxWidth = (rightButton.frame.origin.x - 5.0) - (leftButton.frame.origin.x + leftButton.frame.size.width + 5.0);
+            maxWidth = (rightButton.frame.origin.x - 20.0) - (leftButton.frame.origin.x + leftButton.frame.size.width + 20.0);
         
         CGFloat maxHeight = self.bounds.size.height - 10.0;
         
