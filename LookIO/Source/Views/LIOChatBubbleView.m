@@ -56,6 +56,12 @@ static NSDataDetector *dataDetector = nil;
         intraAppLinkViews = [[NSMutableArray alloc] init];
         linkSupertypes = [[NSMutableArray alloc] init];
         linkURLStrings = [[NSMutableArray alloc] init];
+        linkSubtypes = [[NSMutableArray alloc] init];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive:)
+                                                     name:UIApplicationWillResignActiveNotification
+                                                   object:nil];
     }
     
     return self;
@@ -63,6 +69,12 @@ static NSDataDetector *dataDetector = nil;
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [alertView dismissWithClickedButtonIndex:0 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
+    
     [mainMessageView release];
     [backgroundImage release];
     [senderName release];
@@ -202,6 +214,7 @@ static NSDataDetector *dataDetector = nil;
     [links removeAllObjects];
     [linkTypes removeAllObjects];
     [linkSupertypes removeAllObjects];
+    [linkSubtypes removeAllObjects];
     
     [linkMessageViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [linkMessageViews removeAllObjects];
@@ -229,6 +242,7 @@ static NSDataDetector *dataDetector = nil;
             {
                 // This IS an e-mail, so... slap a mailto: on it, I guess.
                 currentLinkURLString = [NSString stringWithFormat:@"mailto://%@", currentLinkURLString];
+                [linkSubtypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSubtypeMail]];
             }
             else
             {
@@ -238,6 +252,8 @@ static NSDataDetector *dataDetector = nil;
                 NSURL *testURL = [NSURL URLWithString:currentLink];
                 if (0 == [testURL.scheme length])
                     currentLinkURLString = [NSString stringWithFormat:@"http://%@", currentLinkURLString];
+                
+                [linkSubtypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSubtypeWeb]];
             }
         }
         
@@ -463,17 +479,22 @@ static NSDataDetector *dataDetector = nil;
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
+            int aSubtype = [[linkSubtypes objectAtIndex:linkIndex] intValue];
+            NSString *alertMessage = nil;
+            if (LIOChatBubbleViewLinkSubtypeWeb == aSubtype)
+                alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
+            else
+                alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and e-mail \"%@\"?", aLink];
+            
             [urlBeingLaunched release];
             urlBeingLaunched = [[NSURL URLWithString:aLinkURLString] retain];
             
-            NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                                message:alertMessage
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Don't Open", @"Open", nil];
+            alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                   message:alertMessage
+                                                  delegate:self
+                                         cancelButtonTitle:nil
+                                         otherButtonTitles:@"Don't Open", @"Open", nil];
             [alertView show];
-            [alertView autorelease];
         }
         else
         {
@@ -491,20 +512,19 @@ static NSDataDetector *dataDetector = nil;
         urlBeingLaunched = [result retain];
         
         NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and call \"%@\"?", aLink];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:alertMessage
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Don't Call", @"Call", nil];
+        alertView = [[UIAlertView alloc] initWithTitle:nil
+                                               message:alertMessage
+                                              delegate:self
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:@"Don't Call", @"Call", nil];
         [alertView show];
-        [alertView autorelease];
     }
 }
 
 #pragma mark -
 #pragma mark UIAlertViewDelegate methods
 
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)alertView:(UIAlertView *)anAlertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     if (1 == buttonIndex && urlBeingLaunched)
     {
@@ -513,6 +533,19 @@ static NSDataDetector *dataDetector = nil;
     
     [urlBeingLaunched release];
     urlBeingLaunched = nil;
+    
+    [alertView autorelease];
+    alertView = nil;
+}
+
+#pragma mark -
+#pragma mark Notification handlers
+
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
+    [alertView dismissWithClickedButtonIndex:0 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
 }
 
 @end

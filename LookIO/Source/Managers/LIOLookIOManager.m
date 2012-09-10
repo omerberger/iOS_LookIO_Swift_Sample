@@ -54,7 +54,7 @@
 #define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
-#define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.dev.look.io"
+#define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
