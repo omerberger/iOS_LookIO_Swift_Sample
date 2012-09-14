@@ -27,7 +27,7 @@ then
 fi
 
 cd /Users/marc/Development/ios_lib
-./build_lio_41.sh $1
+./build_lio.sh $1
 
 if [ $? -ne 0 ]
 then

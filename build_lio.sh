@@ -20,7 +20,7 @@ echo "Building LookIO v$1 ($CONFIGURATION), please wait..."
 sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager.h
 
 rm -rf LookIO/build
-xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration $CONFIGURATION &>$LOG_FILE
+PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration $CONFIGURATION &>$LOG_FILE
 
 if [ $? -ne 0 ]
 then
