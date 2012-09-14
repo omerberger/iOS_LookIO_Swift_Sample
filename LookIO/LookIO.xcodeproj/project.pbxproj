@@ -653,7 +653,7 @@
 				ARCHS = (
 					i386,
 					armv7,
-					armv6,
+					armv7s,
 				);
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -683,7 +683,7 @@
 				ARCHS = (
 					i386,
 					armv7,
-					armv6,
+					armv7s,
 				);
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
