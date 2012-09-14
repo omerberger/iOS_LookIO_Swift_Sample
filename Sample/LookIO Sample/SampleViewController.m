@@ -69,6 +69,16 @@
 	[super viewDidDisappear:animated];
 }
 
+- (BOOL)shouldAutorotate
+{
+    return YES;
+}
+
+- (NSInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;

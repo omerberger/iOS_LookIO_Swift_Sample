@@ -1204,8 +1204,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     altChatViewController.delegate = self;
     altChatViewController.dataSource = self;
     altChatViewController.initialChatText = pendingChatText;
-        
-    [lookioWindow addSubview:altChatViewController.view];
+    
+    lookioWindow.rootViewController = altChatViewController;
     [self rejiggerWindows];
     
     if (animated)
@@ -2089,6 +2089,40 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
 }
 
+- (BOOL)shouldAutorotate // iOS >= 6.0
+{
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (previousKeyWindow && previousKeyWindow != hostAppWindow)
+        hostAppWindow = previousKeyWindow;
+    
+    // Ask delegate.
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerShouldAutorotate:)])
+        return [delegate lookIOManagerShouldAutorotate:self];
+    
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController shouldAutorotate];
+    
+    return NO;
+}
+
+- (NSInteger)supportedInterfaceOrientations // iOS >= 6.0
+{
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (previousKeyWindow && previousKeyWindow != hostAppWindow)
+        hostAppWindow = previousKeyWindow;
+    
+    // Ask delegate.
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerSupportedInterfaceOrientations:)])
+        return [delegate lookIOManagerSupportedInterfaceOrientations:self];
+    
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController supportedInterfaceOrientations];
+    
+    return UIInterfaceOrientationMaskPortrait;
+}
+
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey
 {
     if (anObject)
@@ -2098,7 +2132,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([test length])
             [sessionExtras setObject:anObject forKey:aKey];
         else
-            LIOLog(@"Can't add object of class \"%@\" to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+            LIOLog(@"Can't add object of class \"%@\" to session extras! Use simple classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
     }
     else
         [sessionExtras removeObjectForKey:aKey];
@@ -2876,6 +2910,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
     }
+}
+
+// iOS >= 6.0
+- (BOOL)altChatViewControllerShouldAutorotate:(LIOAltChatViewController *)aController
+{
+    return [self shouldAutorotate];
+}
+
+// iOS >= 6.0
+- (NSInteger)altChatViewControllerSupportedInterfaceOrientations:(LIOAltChatViewController *)aController
+{
+    return [self supportedInterfaceOrientations];
 }
 
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation

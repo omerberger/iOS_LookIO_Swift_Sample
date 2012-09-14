@@ -606,6 +606,33 @@
     popover = nil;
 }
 
+// iOS >= 6.0
+- (BOOL)shouldAutorotate
+{
+    return [delegate altChatViewControllerShouldAutorotate:self];
+}
+
+// iOS >= 6.0
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return [delegate altChatViewControllerSupportedInterfaceOrientations:self];
+}
+
+- (void)viewWillLayoutSubviews
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    vertGradient.frame = self.view.bounds;
+    horizGradient.frame = self.view.bounds;
+    
+    [self rejiggerTableViewFrame];
+    
+    [self reloadMessages];
+    
+    if (NO == padUI)
+        [self scrollToBottomDelayed:NO];
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
@@ -617,17 +644,7 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-        
-    vertGradient.frame = self.view.bounds;
-    horizGradient.frame = self.view.bounds;
-    
-    [self rejiggerTableViewFrame];
-    
-    [self reloadMessages];
-    
-    if (NO == padUI)
-        [self scrollToBottomDelayed:NO];
+    [self viewWillLayoutSubviews];
 }
 
 - (void)rejiggerTableViewFrame

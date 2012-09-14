@@ -17,6 +17,8 @@
 @optional
 - (UIWindow *)lookIOManagerMainWindowForHostApp:(LIOLookIOManager *)aManager;
 - (BOOL)lookIOManager:(LIOLookIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
+- (BOOL)lookIOManagerShouldAutorotate:(LIOLookIOManager *)aManager;
+- (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOLookIOManager *)aManager;
 - (void)lookIOManager:(LIOLookIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled;
 - (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
