@@ -771,7 +771,7 @@
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     
     background.alpha = 1.0;
-    
+        
     [UIView animateWithDuration:0.33
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseIn
@@ -779,10 +779,15 @@
                          background.alpha = 0.0;
                          toasterView.alpha = 0.0;
                          
-                         tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
-                         headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
-                         inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
-                         dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
+                         // I don't know why, but iOS 6 broke this animation.
+                         // Manually setting its frame doesn't work either. o_O
+                         // Hence, we just fade it out instead of moving it.
+                         //tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+                         tableView.alpha = 0.0;
+                         
+                         headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+                         inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
+                         dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
                      }
                      completion:^(BOOL finished) {
                          double delayInSeconds = 0.1;
@@ -832,6 +837,7 @@
         if (LIOChatMessageKindLocal == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
+            tempView.senderName = @"Me";
         }
         else if (LIOChatMessageKindRemote == aMessage.kind)
         {
@@ -839,6 +845,7 @@
             tempView.senderName = aMessage.senderName;
         }
         
+        tempView.rawChatMessage = aMessage;
         [tempView populateMessageViewWithText:aMessage.text];
         [tempView layoutSubviews];
         
@@ -1063,7 +1070,9 @@
     if (height < LIOChatBubbleViewMinTextHeight)
         height = LIOChatBubbleViewMinTextHeight;
     
-    return height + bottomPadding;
+    CGFloat returnValue = height + bottomPadding;
+    
+    return returnValue;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -1172,9 +1181,16 @@
     CGPoint touchLocation = [aPanner locationInView:inputBar];
     if (touchLocation.y > 0.0)
     {
+        aPanner.enabled = NO;
         [self.view endEditing:YES];
         currentScrollId = 0;
         //[self reloadMessages];
+        
+        int64_t delayInSeconds = 1.0;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            aPanner.enabled = YES;
+        });
     }
 }
 
