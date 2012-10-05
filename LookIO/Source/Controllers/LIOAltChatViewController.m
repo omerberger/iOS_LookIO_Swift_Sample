@@ -1186,7 +1186,7 @@
         currentScrollId = 0;
         //[self reloadMessages];
         
-        int64_t delayInSeconds = 1.0;
+        int64_t delayInSeconds = 0.1;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             aPanner.enabled = YES;
