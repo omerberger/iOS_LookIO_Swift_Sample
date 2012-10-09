@@ -1359,6 +1359,8 @@
         tableFrame.size.height += keyboardHeight;
     }
     
+    CGPoint previousOffset = tableView.contentOffset;
+    
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
@@ -1375,6 +1377,7 @@
     keyboardHeight = 0.0;
     tableView.frame = tableFrame;
     //[self refreshExpandingFooter];
+    tableView.contentOffset = previousOffset;
 }
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
