@@ -618,19 +618,9 @@
     return [delegate altChatViewControllerSupportedInterfaceOrientations:self];
 }
 
+// I guess this is also called when the keyboard is hidden? o_O
 - (void)viewWillLayoutSubviews
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    vertGradient.frame = self.view.bounds;
-    horizGradient.frame = self.view.bounds;
-    
-    [self rejiggerTableViewFrame];
-    
-    [self reloadMessages];
-    
-    if (NO == padUI)
-        [self scrollToBottomDelayed:NO];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -644,7 +634,17 @@
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [self viewWillLayoutSubviews];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    vertGradient.frame = self.view.bounds;
+    horizGradient.frame = self.view.bounds;
+    
+    [self rejiggerTableViewFrame];
+    
+    [self reloadMessages];
+    
+    if (NO == padUI)
+        [self scrollToBottomDelayed:NO];
 }
 
 - (void)rejiggerTableViewFrame
@@ -1359,8 +1359,6 @@
         tableFrame.size.height += keyboardHeight;
     }
     
-    CGPoint previousOffset = tableView.contentOffset;
-    
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
@@ -1377,7 +1375,6 @@
     keyboardHeight = 0.0;
     tableView.frame = tableFrame;
     //[self refreshExpandingFooter];
-    tableView.contentOffset = CGPointMake(previousOffset.x, previousOffset.y);
 }
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
