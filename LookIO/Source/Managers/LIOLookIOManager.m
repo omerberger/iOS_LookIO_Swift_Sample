@@ -55,14 +55,14 @@
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
-#define LIOLookIOManagerControlEndpointPort         8101
-#define LIOLookIOManagerControlEndpointPortTLS      9001
+#define LIOLookIOManagerControlEndpointPort         8100
+#define LIOLookIOManagerControlEndpointPortTLS      9000
 
 #define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
 #define LIOLookIOManagerAppContinueRequestURL   @"api/v1/app/continue"
 #define LIOLookIOManagerLogUploadRequestURL     @"api/v1/app/log"
 
-#define LIOLookIOManagerMessageSeparator        @"\x1E"
+#define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
 #define LIOLookIOManagerDisconnectConfirmAlertViewTag       1
 #define LIOLookIOManagerScreenshotPermissionAlertViewTag    2
@@ -100,8 +100,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded;
-    NSString *pendingIntroPacketId;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -163,7 +162,7 @@
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
-- (NSDictionary *)buildIntroDictionaryIncludingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses;
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 - (void)handleCallEvent:(CTCall *)aCall;
 - (void)configureReconnectionTimer;
@@ -218,7 +217,7 @@ NSString *uniqueIdentifier()
     ifm = (struct if_msghdr *)buf;
     sdl = (struct sockaddr_dl *)(ifm + 1);
     ptr = (unsigned char *)LLADDR(sdl);
-    NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X",
+    NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
                            *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
     free(buf);
     
@@ -381,7 +380,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingType:NO includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<LAUNCH> Endpoint: \"%@\"\n    Request: %@", [appLaunchRequest.URL absoluteString], introDictJSONEncoded);
@@ -412,7 +411,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingType:NO includingWhen:nil includingFullNavigationHistory:NO includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:NO includingSurveyResponses:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
@@ -421,42 +420,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [partialNavigationHistory removeAllObjects];
     }
-}
-
-- (NSString *)generateRandomStringId
-{
-    uint8_t bytes[3];
-    SecRandomCopyBytes(kSecRandomDefault, 3, bytes);
-    NSMutableString *result = [NSMutableString string];
-    for (int i=0; i<3; i++)
-        [result appendFormat:@"%02x", bytes[i]];
-    
-    return result;
-}
-
-- (NSString *)sendToBackendWithType:(NSString *)aType payload:(NSDictionary *)aPayload
-{
-    NSDictionary *actualPayload = aPayload;
-    if (0 == [aPayload count])
-        actualPayload = @{};
-    
-    NSString *anId = [self generateRandomStringId];
-    NSDictionary *result = @{@"id": anId, @"type": aType, @"payload": actualPayload};
-    
-    NSString *resultJSON = [jsonWriter stringWithObject:result];
-    [[LIOLogManager sharedLogManager] logFormat:@"Sent to backend: %@", resultJSON];
-    resultJSON = [resultJSON stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[resultJSON dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-
-    // ... I guess this is necessary?
-    [controlSocket readDataToData:messageSeparatorData
-                      withTimeout:-1
-                              tag:0];
-    
-    return anId;
 }
 
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
@@ -894,15 +857,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentRequiredSkill release];
     currentRequiredSkill = nil;
     
-    waitingForScreenshotAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
+    waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
     socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO,
     cursorEnded = YES;
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
-    
-    [pendingIntroPacketId release];
-    pendingIntroPacketId = nil;
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -1247,8 +1207,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     pendingChatText = nil;    
     
     if (introduced)
-        [self sendToBackendWithType:@"chat_up" payload:nil];
-    
+    {
+        NSString *chatUp = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                         @"advisory", @"type",
+                                                         @"chat_up", @"action",
+                                                         nil]];
+        chatUp = [chatUp stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[chatUp dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+        
     controlButton.hidden = YES;
 }
 
@@ -1381,7 +1351,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)killConnection
 {
-    [self sendToBackendWithType:@"outro" payload:nil];
+    NSString *outro = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                    @"outro", @"type",
+                                                    nil]];
+    outro = [outro stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[outro dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
     
     [controlSocket disconnectAfterWriting];
 }
@@ -1404,18 +1381,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *type = [aPacket objectForKey:@"type"];
     
-    if ([type isEqualToString:@"reply"])
+    if ([type isEqualToString:@"ack"])
     {
-        NSString *anId = [aPacket objectForKey:@"id"];
-        
-        if ([pendingIntroPacketId length] && [pendingIntroPacketId isEqualToString:anId])
+        if (waitingForIntroAck)
         {
             LIOLog(@"Introduction complete.");
             introduced = YES;
+            waitingForIntroAck = NO;
             enqueued = YES;
-            
-            [pendingIntroPacketId release];
-            pendingIntroPacketId = nil;
             
             [self sendCapabilitiesPacket];
         }
@@ -1771,30 +1744,63 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *sessionId = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length])
     {
-        NSDictionary *reintroDict = @{ @"session_id": sessionId };
-        [self sendToBackendWithType:@"reintro" payload:reintroDict];
+        NSDictionary *reintroDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"reintro", @"type",
+                                  sessionId, @"session_id",
+                                  nil];
         
-        reintroTimeoutTimer = [[LIOTimerProxy alloc] initWithTimeInterval:10.0
-                                                                   target:self
-                                                                 selector:@selector(reintroTimeoutTimerDidFire)];
+        NSString *reintro = [jsonWriter stringWithObject:reintroDict];
+        reintro = [reintro stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[reintro dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];    
+        
+        reintroTimeoutTimer = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(reintroTimeoutTimerDidFire)];
         
         return;
     }
     
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingType:NO
-                                                        includingWhen:nil
-                                       includingFullNavigationHistory:YES
-                                             includingSurveyResponses:YES];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:YES];
     
-    pendingIntroPacketId = [self sendToBackendWithType:@"intro" payload:introDict];
-    [pendingIntroPacketId retain];
+    NSString *intro = [jsonWriter stringWithObject:introDict];
+    
+#ifdef DEBUG
+    LIOLog(@"Intro JSON: %@", intro);
+#endif // DEBUG
+    
+    intro = [intro stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    waitingForIntroAck = YES;
+    
+    [controlSocket writeData:[intro dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];    
 }
 
 - (void)sendCapabilitiesPacket
 {
-    NSArray *capsArray = @[@"receive_leavemessage"];
-    NSDictionary *capsDict = @{ @"capabilities": capsArray };
-    [self sendToBackendWithType:@"capabilities" payload:capsDict];
+    NSArray *capsArray = [NSArray arrayWithObjects:@"receive_leavemessage", nil];
+    
+    NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"capabilities", @"type",
+                              capsArray, @"capabilities",
+                              nil];
+    
+    NSString *caps = [jsonWriter stringWithObject:capsDict];
+    caps = [caps stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[caps dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
 }
 
 - (void)refreshControlButtonVisibility
@@ -2145,7 +2151,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [sessionExtras removeAllObjects];
 }
 
-- (NSDictionary *)buildIntroDictionaryIncludingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
@@ -2201,7 +2207,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([currentRequiredSkill length])
         [introDict setObject:currentRequiredSkill forKey:@"skill"];
     
-//    if (includeExtras)
+    if (includeExtras)
     {
         if ([targetAgentId length])
             [introDict setObject:targetAgentId forKey:@"agent_id"];
@@ -2220,9 +2226,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
         
         if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
-            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"location_services"];
+            [detectedDict setObject:@"enabled"/*[NSNumber numberWithBool:YES]*/ forKey:@"location_services"];
         else
-            [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"location_services"];
+            [detectedDict setObject:@"disabled"/*[NSNumber numberWithBool:NO]*/ forKey:@"location_services"];
         
         if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
             [detectedDict setObject:@"cellular" forKey:@"connection_type"];
@@ -2262,7 +2268,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [extrasDict setDictionary:sessionExtras];
         
         if ([detectedDict count])
-            [introDict setObject:detectedDict forKey:@"detected_settings"];
+            [extrasDict setObject:detectedDict forKey:@"detected_settings"];
         
         if ([extrasDict count])
         {
@@ -2282,16 +2288,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)handleCallEvent:(CTCall *)aCall
 {
-    NSString *aState = nil;
-    
     if ([[aCall callState] isEqualToString:@"CTCallStateConnected"])
-        aState = @"connected";
+    {
+        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"connected", @"state", nil];
+        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"advisory", @"type",
+                                  @"call", @"action",
+                                  dataDict, @"data",
+                                  nil];
+        
+        NSString *call = [jsonWriter stringWithObject:callDict];
+        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
     else
-        aState = @"disconnected";
-    
-    NSDictionary *callDict = @{ @"state": aState };
-    
-    [self sendToBackendWithType:@"call" payload:callDict];
+    {
+        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"disconnected", @"state", nil];
+        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  @"advisory", @"type",
+                                  @"call", @"action",
+                                  dataDict, @"data",
+                                  nil];
+        
+        NSString *call = [jsonWriter stringWithObject:callDict];
+        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
 }
 
 - (void)configureReconnectionTimer
@@ -2438,11 +2466,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         realtimeExtrasChangedLocation = nil;
 
         // Send an update.
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingType:NO includingWhen:NO includingFullNavigationHistory:YES includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:NO includingFullNavigationHistory:YES includingSurveyResponses:NO];
         NSDictionary *extrasDict = [introDict objectForKey:@"extras"];
-        NSDictionary *dictToSend = @{ @"extras": extrasDict };
+        NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"extras", @"type", extrasDict, @"extras", nil];
         
-        [self sendToBackendWithType:@"extras" payload:dictToSend];
+        NSString *analyticsUpdate = [jsonWriter stringWithObject:avisoryDict];
+        analyticsUpdate = [analyticsUpdate stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[analyticsUpdate dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+        
+        [controlSocket readDataToData:messageSeparatorData
+                          withTimeout:-1
+                                  tag:0];
     }
 }
 
@@ -2706,8 +2743,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
     [userDefaults synchronize];
     
-    NSDictionary *chatDict = @{ @"text": aString };
-    [self sendToBackendWithType:@"chat" payload:chatDict];
+    NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                    @"chat", @"type",
+                                                    aString, @"text",
+                                                    nil]];
+    
+    chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    NSData *chatData = [chat dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [controlSocket writeData:chatData
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
     
     LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
     newMessage.date = [NSDate date];
@@ -2743,8 +2789,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlayBlackout.hidden = YES;
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    NSDictionary *permissionDict = @{ @"permission": @"screenshot" };
-    [self sendToBackendWithType:@"permission_revoked" payload:permissionDict];
+    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
+    NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    @"advisory", @"type",
+                                    @"permission_revoked", @"action",
+                                    dataDict, @"data",
+                                    nil];
+    
+    NSString *permissionRevoked = [jsonWriter stringWithObject:permissionDict];
+    permissionRevoked = [permissionRevoked stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[permissionRevoked dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -2784,7 +2841,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
     
     if (socketConnected)
-        [self sendToBackendWithType:@"chat_down" payload:nil];
+    {
+        NSString *chatDown = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                           @"advisory", @"type",
+                                                           @"chat_down", @"action",
+                                                           nil]];
+        chatDown = [chatDown stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[chatDown dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
     
     if (killConnectionAfterChatViewDismissal)
     {
@@ -2809,13 +2876,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)altChatViewControllerTypingDidStart:(LIOAltChatViewController *)aController
 {
     if (introduced)
-        [self sendToBackendWithType:@"typing_start" payload:nil];
+    {
+        NSString *typingStart = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                              @"advisory", @"type",
+                                                              @"typing_start", @"action",
+                                                              nil]];
+        typingStart = [typingStart stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[typingStart dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
 }
 
 - (void)altChatViewControllerTypingDidStop:(LIOAltChatViewController *)aController
 {
     if (introduced)
-        [self sendToBackendWithType:@"typing_stop" payload:nil];
+    {
+        NSString *typingStop = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                             @"advisory", @"type",
+                                                             @"typing_stop", @"action",
+                                                             nil]];
+        typingStop = [typingStop stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[typingStop dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
 }
 
 // iOS >= 6.0
@@ -2839,15 +2926,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if ([anEmail length])
     {
-        NSDictionary *emailDict = @{ @"email": anEmail };
-        [self sendToBackendWithType:@"beta_email" payload:emailDict];
+        NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:anEmail, @"email", nil];
+        NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                          @"advisory", @"type",
+                                          @"beta_email", @"action",
+                                          aDict, @"data",
+                                          nil];
+        
+        NSString *email = [jsonWriter stringWithObject:emailDict];
+        email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
     }
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail
 {
-    NSDictionary *emailDict = @{ @"email_addresses": @[anEmail] };
-    [self sendToBackendWithType:@"chat_history" payload:emailDict];
+    NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:anEmail], @"email_addresses", nil];
+    NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      @"advisory", @"type",
+                                      @"chat_history", @"action",
+                                      aDict, @"data",
+                                      nil];
+    
+    NSString *email = [jsonWriter stringWithObject:emailDict];
+    email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    
+    [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
+                 withTimeout:LIOLookIOManagerWriteTimeout
+                         tag:0];
     
     [emailHistoryViewController.view removeFromSuperview];
     [emailHistoryViewController release];
@@ -2860,8 +2969,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         userWantsSessionTermination = YES;
         
-        NSDictionary *feedbackDict = @{ @"email_address": anEmail, @"message": aMessage };
-        [self sendToBackendWithType:@"feedback" payload:feedbackDict];
+        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                             @"feedback", @"type",
+                                             anEmail, @"email_address",
+                                             aMessage, @"message",
+                                             nil];
+        
+        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
     }
 }
 
@@ -2925,6 +3044,46 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (BOOL)interstitialViewController:(LIOInterstitialViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+#pragma mark -
+#pragma mark LIOLeaveMessageViewControllerDelegate methods
+
+- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
+{
+    [leaveMessageViewController.view removeFromSuperview];
+    [leaveMessageViewController release];
+    leaveMessageViewController = nil;
+    
+    sessionEnding = YES;
+    
+    userWantsSessionTermination = YES;
+    resetAfterDisconnect = YES;
+    [self killConnection];
+}
+
+- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
+{
+    if ([anEmail length] && [aMessage length])
+    {
+        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                             @"feedback", @"type",
+                                             anEmail, @"email_address",
+                                             aMessage, @"message",
+                                             nil];
+        
+        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
+        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
+}
+
+- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
@@ -3107,7 +3266,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     if (socketConnected)
-        [self sendToBackendWithType:@"app_backgrounded" payload:nil];
+    {
+        NSMutableDictionary *backgroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                 @"advisory", @"type",
+                                                 @"app_backgrounded", @"action",
+                                                 nil];
+        
+        NSString *backgrounded = [jsonWriter stringWithObject:backgroundedDict];
+        backgrounded = [backgrounded stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[backgrounded dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
+    }
     
     if (altChatViewController)
     {
@@ -3160,7 +3331,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (socketConnected)
     {
-        [self sendToBackendWithType:@"app_foregrounded" payload:nil];
+        NSMutableDictionary *foregroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                    @"advisory", @"type",
+                                                    @"app_foregrounded", @"action",
+                                                    nil];
+        
+        NSString *foregrounded = [jsonWriter stringWithObject:foregroundedDict];
+        foregrounded = [foregrounded stringByAppendingString:LIOLookIOManagerMessageSeparator];
+        
+        [controlSocket writeData:[foregrounded dataUsingEncoding:NSUTF8StringEncoding]
+                     withTimeout:LIOLookIOManagerWriteTimeout
+                             tag:0];
         
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
@@ -3309,7 +3490,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [request setURL:url];
                 }
                 
-                NSDictionary *introDict = [self buildIntroDictionaryIncludingType:NO includingWhen:aDate includingFullNavigationHistory:YES includingSurveyResponses:NO];
+                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate includingFullNavigationHistory:YES includingSurveyResponses:NO];
                 NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
                 [request setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
