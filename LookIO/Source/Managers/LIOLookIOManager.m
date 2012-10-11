@@ -2035,7 +2035,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                  target:self
                                                                selector:@selector(continuationTimerDidFire)];
     }
-
+    
+    /*
     NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
@@ -2051,6 +2052,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
         }
     }
+    */
     
     /*
     // Fake survey for testing purposes.
