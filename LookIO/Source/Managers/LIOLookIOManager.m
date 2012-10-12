@@ -1814,6 +1814,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (sessionEnding)
     {
         controlButton.hidden = YES;
+        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: session is ending."];
         return;
     }
     
@@ -1822,6 +1823,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey])
     {
         controlButton.hidden = YES;
+        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server."];
         return;
     }
     
@@ -1829,10 +1831,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])
     {
         controlButton.hidden = YES;
+        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: enabled == 0."];
         return;
     }
     
     BOOL willHide = NO, willShow = NO;
+    NSString *aReason;
     
     if (lastKnownButtonVisibility)
     {
@@ -1841,11 +1845,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             // Want to hide.
             willHide = NO == controlButton.hidden;
+            aReason = @"lastKnownButtonVisibility == 0 (never)";
         }
         else if (1 == val) // always
         {
             // Want to show.
             willShow = controlButton.hidden;
+            aReason = @"lastKnownButtonVisibility == 1 (always)";
         }
         else // 3 = only in session
         {
@@ -1853,17 +1859,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 // Want to show.
                 willShow = controlButton.hidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only) && (introduced || resumeMode)";
             }
             else
             {
                 // Want to hide.
                 willHide = NO == controlButton.hidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only)";
             }
         }
     }
     else
     {
         willShow = controlButton.hidden;
+        aReason = @"no visibility setting";
     }
     
     // Trump card #2: If chat is up, button is always hidden.
@@ -1871,10 +1880,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         willShow = NO;
         willHide = NO == controlButton.hidden;
+        aReason = @"chat is up";
     }
     
     if (willHide)
     {
+        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: ", aReason];
+         
         [UIView animateWithDuration:0.5
                          animations:^{
                              controlButton.alpha = 0.0;
@@ -1898,6 +1910,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
             [delegate lookIOManagerDidShowControlButton:self];
+        
+        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Showing. Reason: ", aReason];
     }
     
     if (resumeMode && NO == socketConnected)

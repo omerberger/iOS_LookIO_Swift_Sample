@@ -13,7 +13,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOInputBarView.h"
 #import "LIOHeaderBarView.h"
-#import "LIOAboutViewController.h"
 #import "LIODismissalBarView.h"
 #import "LIOEmailHistoryViewController.h"
 #import "LIOLeaveMessageViewController.h"
@@ -232,22 +231,6 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-    aboutButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    [aboutButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-    aboutButton.titleLabel.font = [UIFont boldSystemFontOfSize:10.0];
-    aboutButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    aboutButton.titleLabel.layer.shadowOpacity = 0.8;
-    aboutButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [aboutButton setTitle:@"About LP Mobile" forState:UIControlStateNormal];
-    [aboutButton addTarget:self action:@selector(aboutButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    CGRect aFrame = aboutButton.frame;
-    aFrame.size.width = 92.0;
-    aFrame.size.height = 32.0;
-    aFrame.origin.x = 15.0;
-    aFrame.origin.y = 16.0;
-    aboutButton.frame = aFrame;
-    aboutButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-    
     emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
     emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
@@ -256,10 +239,10 @@
     emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     [emailConvoButton setTitle:@"Email Chat" forState:UIControlStateNormal];
     [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    aFrame = emailConvoButton.frame;
-    aFrame.size.width = 92.0;
+    CGRect aFrame = emailConvoButton.frame;
+    aFrame.size.width = 110.0; // was 92
     aFrame.size.height = 32.0;
-    aFrame.origin.x = aboutButton.frame.origin.x + aboutButton.frame.size.width + 5.0;
+    aFrame.origin.x = (self.view.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
     emailConvoButton.frame = aFrame;
     emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
@@ -273,16 +256,15 @@
     [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = endSessionButton.frame;
-    aFrame.size.width = 92.0;
+    aFrame.size.width = 110.0;
     aFrame.size.height = 32.0;
-    aFrame.origin.x = emailConvoButton.frame.origin.x + emailConvoButton.frame.size.width + 5.0;
+    aFrame.origin.x = (self.view.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
     endSessionButton.frame = aFrame;
     endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
     
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
-    [functionHeaderChat.contentView addSubview:aboutButton];
     [functionHeaderChat.contentView addSubview:emailConvoButton];
     [functionHeaderChat.contentView addSubview:endSessionButton];
     
@@ -418,9 +400,6 @@
     [popover release];
     popover = nil;
     
-    [aboutButton release];
-    aboutButton = nil;
-    
     [emailConvoButton release];
     emailConvoButton = nil;
     
@@ -453,7 +432,6 @@
     [horizGradient release];
     [reconnectionOverlay release];
     [popover release];
-    [aboutButton release];
     [emailConvoButton release];
     [chatBubbleHeights release];
     [tappableDismissalAreaForPadUI release];
@@ -591,6 +569,9 @@
         
         [inputBar setNeedsLayout];
     });
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+        [self didRotateFromInterfaceOrientation:0];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -598,8 +579,6 @@
     [super viewWillDisappear:animated];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    aboutScreenWasPresentedViaInputBarAdArea = NO;
     
     [popover dismissPopoverAnimated:NO];
     [popover autorelease];
@@ -1084,35 +1063,6 @@
 #pragma mark -
 #pragma mark UIControl actions
 
-- (void)aboutButtonWasTapped
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-    aController.delegate = self;
-    
-    if (padUI)
-    {
-        //aController.modalInPopover = YES;
-        aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
-        
-        popover = [[UIPopoverController alloc] initWithContentViewController:aController];
-        popover.popoverContentSize = CGSizeMake(320.0, 460.0);
-        popover.delegate = self;
-        [popover presentPopoverFromRect:aboutButton.frame inView:functionHeaderChat.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
-    }
-    else
-    {
-        [self.view endEditing:YES];
-        
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self presentModalViewController:aController animated:YES];
-        });
-    }
-}
-
 - (void)emailConvoButtonWasTapped
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -1382,11 +1332,6 @@
 
 - (void)keyboardDidShow:(NSNotification *)aNotification
 {
-    if (aboutScreenWasPresentedViaInputBarAdArea && popover)
-    {
-        [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
-        aboutScreenWasPresentedViaInputBarAdArea = NO;
-    }
 }
 
 - (void)keyboardDidHide:(NSNotification *)aNotification
@@ -1483,18 +1428,6 @@
 
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView
 {
-    // This only applies to iPad.
-    
-    aboutScreenWasPresentedViaInputBarAdArea = YES;
-    
-    LIOAboutViewController *aController = [[[LIOAboutViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-    aController.delegate = self;
-    //aController.modalInPopover = YES;
-    aController.contentSizeForViewInPopover = CGSizeMake(320.0, 460.0);
-    
-    popover = [[UIPopoverController alloc] initWithContentViewController:aController];
-    popover.delegate = self;
-    [popover presentPopoverFromRect:inputBar.notificationArea.frame inView:inputBar permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
 }
 
 - (void)inputBarViewDidStopPulseAnimation:(LIOInputBarView *)aView
@@ -1508,39 +1441,6 @@
 {
     [tableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
     [self.view endEditing:YES];
-}
-
-#pragma mark -
-#pragma mark LIOAboutViewControllerDelegate methods
-
-- (void)aboutViewController:(LIOAboutViewController *)aController wasDismissedWithEmail:(NSString *)anEmail
-{
-    if ([anEmail length])
-        [delegate altChatViewController:self didEnterBetaEmail:anEmail];
-    
-    if (popover)
-    {
-        aboutScreenWasPresentedViaInputBarAdArea = NO;
-        
-        [popover dismissPopoverAnimated:NO];
-        [popover autorelease];
-        popover = nil;
-    }
-    else
-    {
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self didRotateFromInterfaceOrientation:0];
-        });
-        
-        [self dismissModalViewControllerAnimated:YES];
-    }
-}
-
-- (BOOL)aboutViewController:(LIOAboutViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
-{
-    return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:anOrientation];
 }
 
 #pragma mark -
