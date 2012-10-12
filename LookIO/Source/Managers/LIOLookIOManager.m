@@ -851,8 +851,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousScreenshotHash = 0;
     nextTimeInterval = 0.0;
     
+    /*
     [currentVisitId release];
     currentVisitId = nil;
+    */
     
     [currentRequiredSkill release];
     currentRequiredSkill = nil;
