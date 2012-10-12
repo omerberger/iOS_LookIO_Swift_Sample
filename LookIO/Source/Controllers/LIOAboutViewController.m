@@ -38,7 +38,7 @@
     
     navBar = [[LIONavigationBar alloc] init];
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    navBar.titleString = @"About LP Mobile";
+    navBar.titleString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAboutViewController.NavTitle"];
     navBar.leftButtonText = @"Close";
     navBar.delegate = self;
     CGRect aFrame = navBar.frame;

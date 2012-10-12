@@ -441,6 +441,17 @@ static LIOBundleManager *sharedBundleManager = nil;
     return lioBundle != nil;
 }
 
+- (NSString *)localizedStringWithKey:(NSString *)aKey
+{
+    // First, check to see if we've got a string for this key in
+    // the downloaded tables.
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary *downloadedStrings = [userDefaults objectForKey:LIOBundleManagerStringTableDictKey];
+    NSString *aValue = [downloadedStrings objectForKey:aKey];
+    if ([aValue length])
+        return aValue;
+}
+
 #pragma mark -
 #pragma mark NSURLConnectionDelegate methods
 

@@ -14,6 +14,9 @@
 // UserInfo keys
 #define LIOBundleManagerErrorKey @"LIOBundleManagerErrorKey"
 
+// Defaults keys
+#define LIOBundleManagerStringTableDictKey @"LIOBundleManagerStringTableDictKey"
+
 @class LIOBundleManager;
 
 @interface LIOBundleManager : NSObject
@@ -34,5 +37,6 @@
 - (UIImage *)imageNamed:(NSString *)aString;
 - (BOOL)isAvailable;
 - (void)pruneImageCache;
+- (NSString *)localizedStringWithKey:(NSString *)aKey;
 
 @end
