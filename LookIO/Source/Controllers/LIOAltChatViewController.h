@@ -13,7 +13,6 @@
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
-@protocol LIOAboutViewControllerDelegate;
 @protocol LIODismissalBarViewDelegate;
 @protocol LIOEmailHistoryViewControllerDelegate;
 @protocol LIOLeaveMessageViewControllerDelegate;
@@ -48,9 +47,9 @@
 
 @interface LIOAltChatViewController : UIViewController
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
-     LIOHeaderBarViewDelegate, LIOAboutViewControllerDelegate, LIODismissalBarViewDelegate,
-     LIOEmailHistoryViewControllerDelegate, LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate,
-     LIOToasterViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, LIOSurveyViewControllerDelegate>
+     LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
+     LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
+     UIAlertViewDelegate, LIOSurveyViewControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -63,7 +62,7 @@
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
     UITableViewCell *functionHeaderChat, *functionHeaderSurvey;
-    UIButton *aboutButton, *emailConvoButton, *dismissButton, *leaveSurveyButton;
+    UIButton *emailConvoButton, *dismissButton, *leaveSurveyButton;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;
@@ -74,7 +73,6 @@
     LIOToasterView *toasterView;
     NSString *pendingNotificationString;
     BOOL pendingNotificationStringIsTypingNotification;
-    BOOL aboutScreenWasPresentedViaInputBarAdArea;
     BOOL surveyWasCanceled;
     id pendingSurveyResponse;
     int numPreviousMessagesToShowInScrollback;
