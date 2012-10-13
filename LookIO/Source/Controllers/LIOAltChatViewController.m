@@ -240,12 +240,13 @@
     [emailConvoButton setTitle:@"Email Chat" forState:UIControlStateNormal];
     [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     CGRect aFrame = emailConvoButton.frame;
-    aFrame.size.width = 110.0; // was 92
+    aFrame.size.width = 100.0;
     aFrame.size.height = 32.0;
-    aFrame.origin.x = (self.view.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
     emailConvoButton.frame = aFrame;
-    emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
+    if (NO == padUI)
+        emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
 
     UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
@@ -256,12 +257,13 @@
     [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = endSessionButton.frame;
-    aFrame.size.width = 110.0;
+    aFrame.size.width = 100.0;
     aFrame.size.height = 32.0;
-    aFrame.origin.x = (self.view.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
+    aFrame.origin.x = (tableView.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
     endSessionButton.frame = aFrame;
-    endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
+    if (NO == padUI)
+        endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -1136,7 +1138,7 @@
         currentScrollId = 0;
         //[self reloadMessages];
         
-        int64_t delayInSeconds = 1.0;
+        int64_t delayInSeconds = 0.1;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             aPanner.enabled = YES;
