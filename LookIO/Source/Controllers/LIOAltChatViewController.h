@@ -77,6 +77,7 @@
     id pendingSurveyResponse;
     int numPreviousMessagesToShowInScrollback;
     NSMutableArray *messagesSentBeforeAvailabilityKnown;
+    UIAlertView *alertView;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

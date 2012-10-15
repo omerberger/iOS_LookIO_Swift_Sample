@@ -62,6 +62,11 @@
         numPreviousMessagesToShowInScrollback = 1;
         chatBubbleHeights = [[NSMutableArray alloc] init];
         messagesSentBeforeAvailabilityKnown = [[NSMutableArray alloc] init];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive:)
+                                                     name:UIApplicationWillResignActiveNotification
+                                                   object:nil];
     }
     
     return self;
@@ -422,6 +427,10 @@
     tableView.delegate = nil;
     tableView.dataSource = nil;
     [tableView release];
+    
+    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
     
     [background release];
     [pendingChatText release];
@@ -1118,7 +1127,6 @@
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"Don't Exit", @"Exit", nil];
     [alertView show];
-    [alertView autorelease];
 }
 
 #pragma mark -
@@ -1167,6 +1175,13 @@
 
 #pragma mark -
 #pragma mark Notification handlers
+
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
+    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
+}
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
