@@ -238,6 +238,10 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
+    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
+    
     [emailField release];
     [fieldBackground release];
     [messageView release];
@@ -401,11 +405,11 @@
 {
     if (0 == [emailField.text length])
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:@"Please enter an e-mail address."
-                                                           delegate:nil
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
+        alertView = [[UIAlertView alloc] initWithTitle:nil
+                                               message:@"Please enter an e-mail address."
+                                              delegate:nil
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:@"Dismiss", nil];
         [alertView show];
         [alertView autorelease];
         
@@ -414,11 +418,11 @@
     
     if (0 == [messageView.text length])
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:@"Please enter a message."
-                                                           delegate:nil
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
+        alertView = [[UIAlertView alloc] initWithTitle:nil
+                                               message:@"Please enter a message."
+                                              delegate:nil
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:@"Dismiss", nil];
         [alertView show];
         [alertView autorelease];
         
@@ -427,11 +431,11 @@
     
     [self.view endEditing:YES];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                        message:@"Your message has been sent."
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"Dismiss", nil];
+    alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                           message:@"Your message has been sent."
+                                          delegate:self
+                                 cancelButtonTitle:nil
+                                 otherButtonTitles:@"Dismiss", nil];
     [alertView show];
     [alertView autorelease];
     
@@ -481,6 +485,9 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
+    if (buttonIndex < 0)
+        return;
+    
     double delayInSeconds = 0.1;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){

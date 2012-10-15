@@ -2775,6 +2775,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
     NSData *chatData = [chat dataUsingEncoding:NSUTF8StringEncoding];
     
+    //[[LIOLogManager sharedLogManager] logFormat:@"[CHAT] Sent to backend: \"%@\"", chat];
+    
     [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
