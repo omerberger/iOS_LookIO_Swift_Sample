@@ -2449,12 +2449,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // 3) location
     
     // Run a location check?
+    // FIXME: Do this as a callback, not as a poll.
+    /*
     if (NO == realtimeExtrasWaitingForLocation && [[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled] && nil == realtimeExtrasChangedLocation)
     {
         // We don't ask for a location update if we've already got a pending changed location that we need to submit.
         realtimeExtrasWaitingForLocation = YES;
         [[LIOAnalyticsManager sharedAnalyticsManager] beginLocationCheck];
     }
+    */
     
     if (nil == realtimeExtrasPreviousSessionExtras)
         realtimeExtrasPreviousSessionExtras = [sessionExtras copy];
@@ -2604,7 +2607,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
     
     // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
-    if (NO == firstChatMessageSent && NO == unprovisioned)
+    if (/*NO == firstChatMessageSent && */NO == unprovisioned)
     {
         // We don't show error boxes if the user specifically requested a termination.
         if (NO == userWantsSessionTermination && (err != nil || NO == outroReceived))
@@ -2659,7 +2662,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
             
-            LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server but without outro.");
+            if (outroReceived)
+                LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server (with outro).");
+            else
+                LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server but WITHOUT outro.");
         }
     }
     

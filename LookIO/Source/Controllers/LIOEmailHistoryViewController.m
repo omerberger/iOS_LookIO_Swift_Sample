@@ -171,6 +171,10 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
+    
     [initialEmailAddress release];
     [scrollView release];
     [fieldBackground release];
@@ -324,11 +328,11 @@
 {
     if ([inputField.text length])
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                                            message:@"We just sent you an email with some additional information."
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
+        alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
+                                               message:@"We just sent you an email with some additional information."
+                                              delegate:self
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:@"Dismiss", nil];
         [alertView show];
         [alertView autorelease];
     }
@@ -343,6 +347,9 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
+    if (buttonIndex < 0)
+        return;
+        
     double delayInSeconds = 0.1;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){

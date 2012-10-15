@@ -764,7 +764,7 @@
                          // Manually setting its frame doesn't work either. o_O
                          // Hence, we just fade it out instead of moving it.
                          //tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-                         tableView.alpha = 0.0;
+                         //tableView.alpha = 0.0;
                          
                          headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
                          inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
@@ -776,6 +776,15 @@
                          dispatch_after(popTime, dispatch_get_main_queue(), ^{
                              [delegate altChatViewControllerDidFinishDismissalAnimation:self];
                          });
+                     }];
+    
+    [UIView animateWithDuration:0.15
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveLinear
+                     animations:^{
+                         tableView.alpha = 0.0;
+                     }
+                     completion:^(BOOL finished) {
                      }];
 }
 

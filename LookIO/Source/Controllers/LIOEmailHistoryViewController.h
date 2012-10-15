@@ -28,6 +28,7 @@
     UILabel *label02;
     BOOL keyboardShown;
     NSString *initialEmailAddress;
+    UIAlertView *alertView;
     id<LIOEmailHistoryViewControllerDelegate> delegate;
 }
 
