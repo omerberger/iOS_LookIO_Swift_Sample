@@ -758,7 +758,7 @@
             else if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
             {
                 // Cheap e-mail validation: does the string contain one @ symbol?
-                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"^[\\w\\d]+@[\\w\\d]+\\.[\\w\\d]{2,}$" options:0 error:nil];
+                NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"^[^@]+@[^@]+\\.[^@]{2,}$" options:0 error:nil];
                 if (0 < [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
                     validated = YES;
                 else
