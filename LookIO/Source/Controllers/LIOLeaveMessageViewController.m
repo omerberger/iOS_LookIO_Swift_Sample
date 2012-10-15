@@ -411,7 +411,6 @@
                                      cancelButtonTitle:nil
                                      otherButtonTitles:@"Dismiss", nil];
         [alertView show];
-        [alertView autorelease];
         
         return;
     }
@@ -424,7 +423,6 @@
                                      cancelButtonTitle:nil
                                      otherButtonTitles:@"Dismiss", nil];
         [alertView show];
-        [alertView autorelease];
         
         return;
     }
@@ -437,7 +435,6 @@
                                  cancelButtonTitle:nil
                                  otherButtonTitles:@"Dismiss", nil];
     [alertView show];
-    [alertView autorelease];
     
     [delegate leaveMessageViewController:self didSubmitEmailAddress:emailField.text withMessage:messageView.text];
 }
