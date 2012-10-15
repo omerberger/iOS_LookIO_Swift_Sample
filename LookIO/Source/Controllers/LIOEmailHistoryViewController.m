@@ -334,7 +334,6 @@
                                      cancelButtonTitle:nil
                                      otherButtonTitles:@"Dismiss", nil];
         [alertView show];
-        [alertView autorelease];
     }
     else
     {
