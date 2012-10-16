@@ -1962,12 +1962,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *buttonText = [params objectForKey:@"button_text"];
     if ([buttonText length])
     {
-        controlButton.labelText = buttonText;
-        
         [lastKnownButtonText release];
         lastKnownButtonText = [buttonText retain];
         
         [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
+        
+        // FIXME: Refactor control button resizing outside of applicationDidChangeStatusBarOrientation.
+        controlButton.labelText = buttonText;
+        [controlButton layoutSubviews];
+        [self applicationDidChangeStatusBarOrientation:nil];
     }
     
     NSString *welcomeText = [params objectForKey:@"welcome_text"];
