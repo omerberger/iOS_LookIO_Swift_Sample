@@ -508,6 +508,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonText release];
     lastKnownButtonText = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey] retain];
     controlButton.labelText = lastKnownButtonText;
+    [self rejiggerControlButtonFrame];
     
     [lastKnownButtonTintColor release];
     lastKnownButtonTintColor = nil;
@@ -907,6 +908,80 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults synchronize];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
+}
+
+- (void)rejiggerControlButtonFrame
+{
+    CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    [controlButton layoutSubviews];
+    
+    CGSize textSize = [controlButton.label.text sizeWithFont:controlButton.label.font];
+    textSize.width += 20.0; // 10px padding on each side
+    CGFloat extraHeight = 0.0;
+    if (textSize.width > LIOLookIOManagerControlButtonMinHeight)
+        extraHeight = textSize.width - LIOLookIOManagerControlButtonMinHeight;
+    
+    CGFloat actualHeight = LIOLookIOManagerControlButtonMinHeight + extraHeight;
+    
+    // Manually position the control button. Ugh.
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.size.height = actualHeight;
+        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
+        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonMinWidth + 2.0;
+        controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.size.width = actualHeight;
+        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.origin.y = -2.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
+        controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.size.height = actualHeight;
+        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
+        aFrame.origin.x = -2.0;
+        controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+        
+    }
+    else // Landscape, home button right
+    {
+        CGRect aFrame = controlButton.frame;
+        aFrame.size.width = actualHeight;
+        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
+        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
+        controlButton.frame = aFrame;
+        [controlButton setNeedsLayout];
+        
+        controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    
+    [controlButton setNeedsLayout];
+    [controlButton setNeedsDisplay];
 }
 
 - (void)rejiggerWindows
@@ -1967,10 +2042,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
         
-        // FIXME: Refactor control button resizing outside of applicationDidChangeStatusBarOrientation.
         controlButton.labelText = buttonText;
-        [controlButton layoutSubviews];
-        [self applicationDidChangeStatusBarOrientation:nil];
+        [self rejiggerControlButtonFrame];
     }
     
     NSString *welcomeText = [params objectForKey:@"welcome_text"];
@@ -3434,7 +3507,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         statusBarUnderlayBlackout.hidden = YES;
     });
     
-    CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
     CGAffineTransform transform = CGAffineTransformIdentity;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
@@ -3457,71 +3529,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     clickView.transform = transform;
     cursorView.transform = transform;
     
-    CGSize textSize = [controlButton.label.text sizeWithFont:controlButton.label.font];
-    textSize.width += 20.0; // 10px padding on each side
-    CGFloat extraHeight = 0.0;
-    if (textSize.width > LIOLookIOManagerControlButtonMinHeight)
-        extraHeight = textSize.width - LIOLookIOManagerControlButtonMinHeight;
-    
-    CGFloat actualHeight = LIOLookIOManagerControlButtonMinHeight + extraHeight;
-    
-    // Manually position the control button. Ugh.
-    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
-    {
-        CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
-        aFrame.size.height = actualHeight;
-        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
-        aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonMinWidth + 2.0;
-        controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
-        
-        controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
-    }
-    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
-    {
-        CGRect aFrame = controlButton.frame;
-        aFrame.size.width = actualHeight;
-        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
-        aFrame.origin.y = -2.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
-        
-        controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
-    }
-    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
-    {
-        CGRect aFrame = controlButton.frame;
-        aFrame.size.width = LIOLookIOManagerControlButtonMinWidth;
-        aFrame.size.height = actualHeight;
-        aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
-        aFrame.origin.x = -2.0;
-        controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
-        
-        controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
-
-    }
-    else // Landscape, home button right
-    {
-        CGRect aFrame = controlButton.frame;
-        aFrame.size.width = actualHeight;
-        aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
-        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
-        
-        controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
-    }
-    
-    [controlButton setNeedsLayout];
-    [controlButton setNeedsDisplay];
+    [self rejiggerControlButtonFrame];
 }
 
 - (void)reachabilityDidChange:(NSNotification *)aNotification
