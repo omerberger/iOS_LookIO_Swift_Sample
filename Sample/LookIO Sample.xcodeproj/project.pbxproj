@@ -410,6 +410,7 @@
 		490E959114C3E25F007BFD8C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Joe Toscano (VCWBE7HBK8)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LookIO Sample/LookIO Sample-Prefix.pch";
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/libLookIO_dist\"";
@@ -421,6 +422,7 @@
 					"\"$(SRCROOT)/libLookIO_dist\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "26E87CFD-E75C-4E23-92CE-C6899A3649E2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;

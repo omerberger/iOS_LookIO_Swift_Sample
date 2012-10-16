@@ -100,7 +100,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -159,6 +159,7 @@
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
+@property(nonatomic, assign) BOOL resetAfterNextForegrounding;
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
@@ -236,6 +237,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
+@synthesize resetAfterNextForegrounding;
 @dynamic enabled;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -862,7 +864,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
-    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO,
+    socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO, resetAfterNextForegrounding = NO,
     cursorEnded = YES;
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
@@ -1066,9 +1068,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     if (keyWindow != lookioWindow)
     {
-        [keyWindow bringSubviewToFront:controlButton];
-        [keyWindow bringSubviewToFront:cursorView];
-        [keyWindow bringSubviewToFront:clickView];
+        if (controlButton)
+            [keyWindow bringSubviewToFront:controlButton];
+
+        [clickView removeFromSuperview];
+        if (clickView)
+        {
+            [keyWindow addSubview:clickView];
+            [keyWindow bringSubviewToFront:clickView];
+        }
+        
+        [cursorView removeFromSuperview];
+        if (cursorView)
+        {
+            [keyWindow addSubview:cursorView];
+            [keyWindow bringSubviewToFront:cursorView];
+        }
     }
     
     if (NO == socketConnected || waitingForScreenshotAck || NO == introduced || YES == enqueued || NO == screenshotsAllowed || altChatViewController || interstitialViewController)
@@ -3372,8 +3387,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        if (nil == leaveMessageViewController && nil == emailHistoryViewController && NO == screenshotsAllowed)
+        if (NO == resetAfterNextForegrounding && NO == screenshotsAllowed)
             [self showChatAnimated:NO];
+        
+        if (resetAfterNextForegrounding)
+        {
+            int64_t delayInSeconds = 0.1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                if (socketConnected)
+                {
+                    resetAfterDisconnect = YES;
+                    userWantsSessionTermination = YES;
+                    [controlSocket disconnect];
+                }
+                else
+                    [self reset];
+            });
+        }
     }
 
     [self refreshControlButtonVisibility];
