@@ -51,6 +51,8 @@ git add iOS/LookIO.bundle/*
 git commit -a -m "${COMMIT_DESCRIPTION}"
 git push origin $2
 
+otool -f iOS/libLookIO.a
+
 #
 # Only non-enterprise release builds have their bundle uploaded to the CDN.
 #
