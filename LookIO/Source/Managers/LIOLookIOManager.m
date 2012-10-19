@@ -2222,7 +2222,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (hostAppWindow.rootViewController)
         return [hostAppWindow.rootViewController supportedInterfaceOrientations];
     
-    return UIInterfaceOrientationMaskPortrait;
+    // UIInterfaceOrientationMaskPortrait is 2 as of 10/18/12.
+    return 2;
 }
 
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey
