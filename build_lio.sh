@@ -53,11 +53,13 @@ then
     exit 1
 fi
 
+lipo LookIO/build/Release-iphoneos/libLookIO.a -thin armv6 -output $TARGET_DIR/libLookIO_legacy.a
+
 
 #
 # Now, combine the two build products.
 #
-lipo $TARGET_DIR/libLookIO_main.a LookIO/build/Release-iphoneos/libLookIO.a -create -output $TARGET_DIR/libLookIO.a &>$LOG_FILE_LIPO
+lipo $TARGET_DIR/libLookIO_main.a $TARGET_DIR/libLookIO_legacy.a -create -output $TARGET_DIR/libLookIO.a &>$LOG_FILE_LIPO
 
 if [ $? -ne 0 ]
 then
@@ -67,6 +69,7 @@ then
 fi
 
 rm $TARGET_DIR/libLookIO_main.a
+rm $TARGET_DIR/libLookIO_legacy.a
 
 
 # Undo the sed change.
