@@ -21,8 +21,6 @@
 #import "SBJSON.h"
 #import "NSData+Base64.h"
 #import "LIOAltChatViewController.h"
-#import "LIOLeaveMessageViewController.h"
-#import "LIOEmailHistoryViewController.h"
 #import "LIOControlButtonView.h"
 #import "LIOAnalyticsManager.h"
 #import "LIOChatMessage.h"
@@ -117,8 +115,6 @@
     NSMutableData *appLaunchRequestData, *appContinueRequestData;
     NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode;
     LIOAltChatViewController *altChatViewController;
-    LIOEmailHistoryViewController *emailHistoryViewController;
-    LIOLeaveMessageViewController *leaveMessageViewController;
     LIOInterstitialViewController *interstitialViewController;
     NSString *pendingEmailAddress;
     NSString *friendlyName;
@@ -766,13 +762,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [realtimeExtrasTimer stopTimer];
     [realtimeExtrasTimer release];
     realtimeExtrasTimer = nil;
-    
-    [leaveMessageViewController release];
-    leaveMessageViewController = nil;
-    
-    [emailHistoryViewController release];
-    emailHistoryViewController = nil;
-    
+        
     [altChatViewController release];
     altChatViewController = nil;
 
@@ -798,15 +788,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
-    
-    [leaveMessageViewController.view removeFromSuperview];
-    [leaveMessageViewController release];
-    leaveMessageViewController = nil;
-    
-    [emailHistoryViewController.view removeFromSuperview];
-    [emailHistoryViewController release];
-    emailHistoryViewController = nil;
-    
+        
     [interstitialViewController.view removeFromSuperview];
     [interstitialViewController release];
     interstitialViewController = nil;
@@ -989,7 +971,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
     
-    if (altChatViewController || leaveMessageViewController || emailHistoryViewController || interstitialViewController)
+    if (altChatViewController || interstitialViewController)
     {
         if (nil == previousKeyWindow)
         {
@@ -1314,24 +1296,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.hidden = YES;
 }
 
-- (void)showLeaveMessage
-{
-    if (leaveMessageViewController)
-        return;
-    
-    // Just in case...
-    [altChatViewController.view removeFromSuperview];
-    [altChatViewController release];
-    altChatViewController = nil;
-    
-    leaveMessageViewController = [[LIOLeaveMessageViewController alloc] initWithNibName:nil bundle:nil];
-    leaveMessageViewController.delegate = self;
-    leaveMessageViewController.initialEmailAddress = pendingEmailAddress;
-    [lookioWindow addSubview:leaveMessageViewController.view];
-    
-    [self rejiggerWindows];
-}
-
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
     // Survey needed? We need to wait until it's done before we try to connect.
@@ -1524,11 +1488,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (nil == altChatViewController)
         {
-            // First, we have to kill any existing full-screen dealios.
-            [emailHistoryViewController.view removeFromSuperview];
-            [emailHistoryViewController release];
-            emailHistoryViewController = nil;
-            
             [self showChatAnimated:YES];
         }
         else
@@ -1725,11 +1684,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"leave_message"])
         {
-            [altChatViewController.view removeFromSuperview];
-            [altChatViewController release];
-            altChatViewController = nil;
-            
-            [self showLeaveMessage];
+            [altChatViewController forceLeaveMessageScreen];
         }
     }
     else if ([type isEqualToString:@"click"])
@@ -1880,7 +1835,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendCapabilitiesPacket
 {
-    NSArray *capsArray = [NSArray arrayWithObjects:@"receive_leavemessage", nil];
+    NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", nil];
     
     NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                               @"capabilities", @"type",
@@ -3075,10 +3030,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
-    
-    [emailHistoryViewController.view removeFromSuperview];
-    [emailHistoryViewController release];
-    emailHistoryViewController = nil;
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage
@@ -3162,46 +3113,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (BOOL)interstitialViewController:(LIOInterstitialViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
-{
-    return [self shouldRotateToInterfaceOrientation:anOrientation];
-}
-
-#pragma mark -
-#pragma mark LIOLeaveMessageViewControllerDelegate methods
-
-- (void)leaveMessageViewControllerWasDismissed:(LIOLeaveMessageViewController *)aController
-{
-    [leaveMessageViewController.view removeFromSuperview];
-    [leaveMessageViewController release];
-    leaveMessageViewController = nil;
-    
-    sessionEnding = YES;
-    
-    userWantsSessionTermination = YES;
-    resetAfterDisconnect = YES;
-    [self killConnection];
-}
-
-- (void)leaveMessageViewController:(LIOLeaveMessageViewController *)aController didSubmitEmailAddress:(NSString *)anEmail withMessage:(NSString *)aMessage
-{
-    if ([anEmail length] && [aMessage length])
-    {
-        NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                             @"feedback", @"type",
-                                             anEmail, @"email_address",
-                                             aMessage, @"message",
-                                             nil];
-        
-        NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
-        feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
-    }
-}
-
-- (BOOL)leaveMessageViewController:(LIOLeaveMessageViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [self shouldRotateToInterfaceOrientation:anOrientation];
 }
@@ -3407,15 +3318,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [altChatViewController release];
         altChatViewController = nil;
     }
-    
-    [emailHistoryViewController.view removeFromSuperview];
-    [emailHistoryViewController release];
-    emailHistoryViewController = nil;
-    
-    [leaveMessageViewController.view removeFromSuperview];
-    [leaveMessageViewController release];
-    leaveMessageViewController = nil;
-    
+        
     [pendingIntraAppLinkURL release];
     pendingIntraAppLinkURL = nil;
 
