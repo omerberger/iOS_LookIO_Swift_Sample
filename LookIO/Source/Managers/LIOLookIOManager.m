@@ -1353,11 +1353,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (NO == firstChatMessageSent)
         {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Connection Failed"
-                                                                message:@"Sorry, we can't connect with the live chat support right now. Please try again later."
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertBody")
                                                                delegate:nil
                                                       cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertButton"), nil];
             [alertView show];
             [alertView autorelease];
         }
@@ -1500,8 +1500,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
             localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = @"The support agent has sent a chat message to you.";
-            localNotification.alertAction = @"Go!";
+            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
         }
     }
@@ -1622,8 +1622,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
                 localNotification.soundName = @"LookIODing.caf";
-                localNotification.alertBody = @"The support agent is ready to chat with you!";
-                localNotification.alertAction = @"Go!";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
                 
                 [self showChatAnimated:NO];
@@ -1650,18 +1650,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 {
                     UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
                     localNotification.soundName = @"LookIODing.caf";
-                    localNotification.alertBody = @"The support agent wants to view your screen.";
-                    localNotification.alertAction = @"Go!";
+                    localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+                    localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
                     [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
                 }
                 
                 [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
                 
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Screen Share Permission"
-                                                                    message:@"To better serve you, the support agent would like to view your screen. (Agent can only view this app, and only for this session.)"
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertBody")
                                                                    delegate:self
                                                           cancelButtonTitle:nil
-                                                          otherButtonTitles:@"Do Not Allow", @"Allow", nil];
+                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonDisallow"), LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonAllow"), nil];
                 alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
@@ -1673,11 +1673,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Not Enabled"
-                                                                message:@"This app is not configured for live help. Please contact the app developer."
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertBody")
                                                                delegate:self
                                                       cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertButton"), nil];
             alertView.tag = LIOLookIOManagerUnprovisionedAlertViewTag;
             [alertView show];
             [alertView autorelease];
@@ -1753,11 +1753,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [self populateChatWithFirstMessage];
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Reconnected"
-                                                                message:@"Your chat session has been reconnected."
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
                                                                delegate:self
                                                       cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Hide", @"Open Chat", nil];
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
             alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
             [alertView show];
             [alertView autorelease];
@@ -1774,11 +1774,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             resetAfterDisconnect = YES;
             [self killConnection];
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Session Ended"
-                                                                message:@"Your chat session could not be resumed. Please start a new session."
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
                                                                delegate:self
                                                       cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
             [alertView show];
             [alertView autorelease];
         }
@@ -2408,13 +2408,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [self reset];
         
-        NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                            message:message
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                            delegate:self
                                                   cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Dismiss", nil];
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
         [alertView show];
         [alertView autorelease];
         
@@ -2460,13 +2458,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     resetAfterDisconnect = YES;
     [self killConnection];
     
-    NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-    
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                        message:message
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"Dismiss", nil];
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
     [alertView show];
     [alertView autorelease];
         
@@ -2553,11 +2549,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)showReconnectionQuery
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Connection Lost"
-                                                        message:@"Your chat support session has lost its connection. If you would like to continue this session, we can try to reconnect you."
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"Close", @"Reconnect", nil];
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonClose"), LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonReconnect"), nil];
     alertView.tag = LIOLookIOManagerReconnectionModeAlertViewTag;
     [alertView show];
     [alertView autorelease];
@@ -2575,7 +2571,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([lastKnownWelcomeMessage length])
             firstMessage.text = lastKnownWelcomeMessage;
         else
-            firstMessage.text = @"Send a message to our live service reps for immediate help.";
+            firstMessage.text = LIOLocalizedString(@"LIOLookIOManager.DefaultWelcomeMessage");
     }
 }
 
@@ -2663,13 +2659,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (introduced)
             {
-                NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-                
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                                    message:message
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                    delegate:self
                                                           cancelButtonTitle:nil
-                                                          otherButtonTitles:@"Dismiss", nil];
+                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
                 alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
@@ -2680,13 +2674,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
-                NSString *message = [NSString stringWithFormat:@"Couldn't start live chat session. Please try again."];
-                
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Error"
-                                                                    message:message
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
                                                                    delegate:self
                                                           cancelButtonTitle:nil
-                                                          otherButtonTitles:@"Dismiss", nil];
+                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
                 alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
@@ -2698,13 +2690,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Wacky special case: server terminates session.
         else if (NO == userWantsSessionTermination && err == nil)
         {
-            NSString *message = [NSString stringWithFormat:@"Your support session has ended. If you still need help, try connecting to a live chat agent again."];
-            
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Support Session Ended"
-                                                                message:message
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                delegate:self
                                                       cancelButtonTitle:nil
-                                                      otherButtonTitles:@"Dismiss", nil];
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
             alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
             [alertView show];
             [alertView autorelease];
@@ -2844,11 +2834,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"End Support Session?"
-                                                        message:@"Would you like to end this customer support session?"
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"Don't End", @"End", nil];
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonNo"), LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonYes"), nil];
     alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
     [alertView show];
     [alertView autorelease];
@@ -3654,11 +3644,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (resumeMode)
     {        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Chat Reconnecting"
-                                                            message:@"We're trying to reconnect you with your chat support session. Continue reconnecting?"
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertBody")
                                                            delegate:self
                                                   cancelButtonTitle:nil
-                                                  otherButtonTitles:@"Stop", @"Continue", nil];
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonStop"), LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonContinue"), nil];
         alertView.tag = LIOLookIOManagerReconnectionCancelAlertViewTag;
         [alertView show];
         [alertView autorelease];

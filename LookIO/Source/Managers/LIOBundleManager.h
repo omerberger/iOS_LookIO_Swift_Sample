@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define LIOLocalizedString(key) [[LIOBundleManager sharedBundleManager] localizedStringWithKey:key]
+
 // Notifications
 #define LIOBundleManagerBundleDownloadDidFinishNotification @"LIOBundleManagerBundleDownloadDidFinishNotification"
 

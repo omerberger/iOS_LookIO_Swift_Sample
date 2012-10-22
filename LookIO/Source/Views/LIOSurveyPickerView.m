@@ -33,7 +33,7 @@
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:16 topCapHeight:0];
         
         doneButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        [doneButton setTitle:@"Next" forState:UIControlStateNormal];
+        [doneButton setTitle:LIOLocalizedString(@"LIOSurveyPickerView.DoneButton") forState:UIControlStateNormal];
         [doneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         doneButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
         [doneButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
@@ -316,7 +316,7 @@
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component
 {
     if (0 == row)
-        return @"Choose an option below:";
+        return LIOLocalizedString(@"LIOSurveyPickerView.HeaderText");
     
     LIOSurveyPickerEntry *entry = [surveyQuestion.pickerEntries objectAtIndex:row - 1];
     return entry.label;

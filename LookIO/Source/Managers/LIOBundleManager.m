@@ -450,6 +450,10 @@ static LIOBundleManager *sharedBundleManager = nil;
     NSString *aValue = [downloadedStrings objectForKey:aKey];
     if ([aValue length])
         return aValue;
+    
+    LIOLog(@"Available localizations in lioBundle: %@", [lioBundle preferredLocalizations]);
+    
+    return [lioBundle localizedStringForKey:aKey value:@"<<???>>" table:nil];
 }
 
 #pragma mark -

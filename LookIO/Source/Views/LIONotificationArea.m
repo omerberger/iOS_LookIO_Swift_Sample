@@ -97,7 +97,7 @@
             adLabel.backgroundColor = [UIColor clearColor];
             adLabel.font = [UIFont boldSystemFontOfSize:12.0];
             adLabel.textColor = [UIColor whiteColor];
-            adLabel.text = @"Powered by";
+            adLabel.text = LIOLocalizedString(@"LIONotificationArea.PoweredBy");
             [adLabel sizeToFit];
             aFrame = adLabel.frame;
             aFrame.origin.x = 0.0;

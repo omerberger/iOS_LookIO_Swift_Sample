@@ -36,8 +36,8 @@
     aFrame.size.width = rootView.frame.size.width;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    navBar.titleString = @"No Agents Available";
-    navBar.leftButtonText = @"Close";
+    navBar.titleString = LIOLocalizedString(@"LIOLeaveMessageViewController.NavTitle");
+    navBar.leftButtonText = LIOLocalizedString(@"LIOLeaveMessageViewController.NavLeftButton");
     navBar.delegate = self;
     [navBar layoutSubviews];
     [rootView addSubview:navBar];
@@ -53,7 +53,7 @@
     [rootView addSubview:scrollView];
     
     label02 = [[UILabel alloc] init];
-    label02.text = @"Please enter your email and a message for further help:";
+    label02.text = LIOLocalizedString(@"LIOLeaveMessageViewController.HeaderText");
     label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
     label02.font = [UIFont systemFontOfSize:12.0];
@@ -133,7 +133,7 @@
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Send" forState:UIControlStateNormal];
+    [submitButton setTitle:LIOLocalizedString(@"LIOLeaveMessageViewController.SendButton") forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
@@ -406,10 +406,10 @@
     if (0 == [emailField.text length])
     {
         alertView = [[UIAlertView alloc] initWithTitle:nil
-                                               message:@"Please enter an e-mail address."
+                                               message:LIOLocalizedString(@"LIOLeaveMessageViewController.NoEmailAlertBody")
                                               delegate:nil
                                      cancelButtonTitle:nil
-                                     otherButtonTitles:@"Dismiss", nil];
+                                     otherButtonTitles:LIOLocalizedString(@"LIOLeaveMessageViewController.NoEmailAlertButton"), nil];
         [alertView show];
         
         return;
@@ -418,10 +418,10 @@
     if (0 == [messageView.text length])
     {
         alertView = [[UIAlertView alloc] initWithTitle:nil
-                                               message:@"Please enter a message."
+                                               message:LIOLocalizedString(@"LIOLeaveMessageViewController.NoMessageAlertBody")
                                               delegate:nil
                                      cancelButtonTitle:nil
-                                     otherButtonTitles:@"Dismiss", nil];
+                                     otherButtonTitles:LIOLocalizedString(@"LIOLeaveMessageViewController.NoMessageAlertButton"), nil];
         [alertView show];
         
         return;
@@ -429,11 +429,11 @@
     
     [self.view endEditing:YES];
     
-    alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                           message:@"Your message has been sent."
+    alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLeaveMessageViewController.SuccessAlertTitle")
+                                           message:LIOLocalizedString(@"LIOLeaveMessageViewController.SuccessAlertBody")
                                           delegate:self
                                  cancelButtonTitle:nil
-                                 otherButtonTitles:@"Dismiss", nil];
+                                 otherButtonTitles:LIOLocalizedString(@"LIOLeaveMessageViewController.SuccessAlertButton"), nil];
     [alertView show];
     
     [delegate leaveMessageViewController:self didSubmitEmailAddress:emailField.text withMessage:messageView.text];

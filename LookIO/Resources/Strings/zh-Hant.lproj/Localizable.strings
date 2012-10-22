@@ -1,0 +1,108 @@
+"LIOAltChatViewController.EmailChatButton"  = "抄本";
+"LIOAltChatViewController.EndSessionButton" = "結束會話";
+"LIOAltChatViewController.ReconnectionLabel"     = "重新連接...";
+"LIOAltChatViewController.ReconnectionHideButton" = "隱藏";
+"LIOAltChatViewController.LocalNameLabel" = "我";
+"LIOAltChatViewController.AgentTypingNotification" = "代理的輸入...";
+
+"LIOChatBubbleView.LinkAlert" = "你確定要離開應用程序和訪問 \"%@\"?";
+"LIOChatBubbleView.LinkAlertEmail" = "你確定要離開應用程序和電子郵件 \"%@\"?";
+"LIOChatBubbleView.LinkAlertPhone" = "你確定要離開應用程序，並調用 \"%@\"?";
+"LIOChatBubbleView.AlertGo" = "打開";
+"LIOChatBubbleView.AlertCancel" = "不開";
+"LIOChatBubbleView.AlertGoPhone" = "呼叫";
+"LIOChatBubbleView.AlertCancelPhone" = "不叫";
+
+"LIOControlButtonView.DefaultText" = "在線幫助";
+"LIOControlButtonView.ReconnectingText" = "重新連接";
+
+"LIODismissalBarView.DismissalLabel" = "隱藏聊天";
+
+"LIOEmailHistoryViewController.NavTitle" = "電子郵件會話";
+"LIOEmailHistoryViewController.NavLeftButton" = "關閉";
+"LIOEmailHistoryViewController.HeaderText" = "需要複製這個聊天嗎？沒問題！";
+"LIOEmailHistoryViewController.EmailHeader" = "您的電郵地址:";
+"LIOEmailHistoryViewController.SubmitButton" = "遞交";
+"LIOEmailHistoryViewController.SuccessAlertTitle" = "謝謝!";
+"LIOEmailHistoryViewController.SuccessAlertBody" = "我們剛給您發送一封電子郵件，其中一些額外的信息.";
+"LIOEmailHistoryViewController.SuccessAlertButton" = "解僱";
+
+"LIOInputBarView.SendButton" = "發送";
+"LIOInputBarView.Placeholder" = "發送消息.";
+
+"LIOInterstitialViewController.LoadingLabel" = "我們正在加載聊天.\n請稍候.";
+"LIOInterstitialViewController.DismissButton" = "隱藏此";
+"LIOInterstitialViewController.ErrorAlertTitle" = "在線聊天錯誤";
+"LIOInterstitialViewController.ErrorAlertBody" = "很抱歉，但現場聊天服務是當前不可用. 請稍後再試一次.";
+"LIOInterstitialViewController.ErrorAlertButton" = "解僱";
+
+"LIOLeaveMessageViewController.NavTitle" = "代理不可用";
+"LIOLeaveMessageViewController.NavLeftButton" = "關閉";
+"LIOLeaveMessageViewController.HeaderText" = "請輸入您的電子郵件和消息，以獲得進一步的幫助:";
+"LIOLeaveMessageViewController.SendButton" = "發送";
+"LIOLeaveMessageViewController.NoEmailAlertBody" = "請輸入電子郵件地址.";
+"LIOLeaveMessageViewController.NoEmailAlertButton" = "解僱";
+"LIOLeaveMessageViewController.NoMessageAlertBody" = "請輸入信息.";
+"LIOLeaveMessageViewController.NoMessageAlertButton" = "解僱";
+"LIOLeaveMessageViewController.SuccessAlertTitle" = "謝謝!";
+"LIOLeaveMessageViewController.SuccessAlertBody" = "您的郵件已發送.";
+"LIOLeaveMessageViewController.SuccessAlertButton" = "解僱";
+
+"LIONotificationArea.PoweredBy" = "技術支持";
+
+"LIOSurveyPickerView.DoneButton" = "下";
+"LIOSurveyPickerView.HeaderText" = "請選擇以下選項:";
+
+"LIOSurveyViewController.NavButtonLeft" = "取消";
+"LIOSurveyViewController.NavButtonLeftAlt" = "向後";
+"LIOSurveyViewController.NavButtonRight" = "下";
+"LIOSurveyViewController.NavButtonRightAlt" = "開始聊天";
+"LIOSurveyViewController.QuestionHeader" = "問題%d（共%d）:";
+"LIOSurveyViewController.LastQuestionPickerViewDoneButton" = "開始聊天";
+"LIOSurveyViewController.ResponseAlertBody" = "請輸入對這個問題的回應.";
+"LIOSurveyViewController.EmailValidationAlertBody" = "請輸入一個有效的電子郵件地址.";
+"LIOSurveyViewController.NumericValidationAlertBody" = "請輸入一個有效的數字.";
+"LIOSurveyViewController.RegexpValidationAlertBody" = "請檢查你的回答，然後再試一次.";
+
+"LIOLookIOManager.ConnectionFailedAlertTitle" = "聊天連接失敗";
+"LIOLookIOManager.ConnectionFailedAlertBody" = "很抱歉，我們不能連接現在與實時聊天支持. 請稍後再試一次.";
+"LIOLookIOManager.ConnectionFailedAlertButton" = "解僱";
+"LIOLookIOManager.LocalNotificationChatBody" = "支持代理發送聊天消息給你.";
+"LIOLookIOManager.LocalNotificationChatButton" = "加油！";
+"LIOLookIOManager.LocalNotificationReadyBody" = "支持代理已準備好與你聊天！";
+"LIOLookIOManager.LocalNotificationReadyButton" = "加油！";
+"LIOLookIOManager.LocalNotificationScreenshareBody" = "支持代理要查看您的屏幕.";
+"LIOLookIOManager.LocalNotificationScreenshareButton" = "加油！";
+"LIOLookIOManager.ScreenshareAlertTitle" = "屏幕共享權限";
+"LIOLookIOManager.ScreenshareAlertBody" = "為了更好地為您服務，支持代理想查看您的屏幕。 （代理只能查看此應用程序，只為這個會話）。";
+"LIOLookIOManager.ScreenshareAlertButtonAllow" = "讓";
+"LIOLookIOManager.ScreenshareAlertButtonDisallow" = "不允許";
+"LIOLookIOManager.UnprovisionedAlertTitle" = "在線聊天殘疾人";
+"LIOLookIOManager.UnprovisionedAlertBody" = "這個應用程序未配置為現場幫助。請聯繫應用程序開發人員。";
+"LIOLookIOManager.UnprovisionedAlertButton" = "解僱";
+"LIOLookIOManager.ReconnectedAlertTitle" = "即時重新連接";
+"LIOLookIOManager.ReconnectedAlertBody" = "您的聊天會話已重新連接。";
+"LIOLookIOManager.ReconnectedAlertButtonHide" = "隱藏";
+"LIOLookIOManager.ReconnectedAlertButtonOpen" = "打開聊天";
+"LIOLookIOManager.ReconnectFailureAlertTitle" = "聊天會話結束";
+"LIOLookIOManager.ReconnectFailureAlertBody" = "您的聊天會話可能無法恢復。請開始一個新的會話。";
+"LIOLookIOManager.ReconnectFailureAlertButton" = "解僱";
+"LIOLookIOManager.SessionEndedAlertTitle" = "支持會話結束";
+"LIOLookIOManager.SessionEndedAlertBody" = "您的支持，會議已經結束。如果您仍需要幫助，請嘗試再次連接到即時交談劑。";
+"LIOLookIOManager.SessionEndedAlertButton" = "解僱";
+"LIOLookIOManager.ReconnectQuestionAlertTitle" = "即時連接丟失";
+"LIOLookIOManager.ReconnectQuestionAlertBody" = "你的聊天已經失去了支持會話的連接。如果您想繼續本次會議，我們可以嘗試重新連接。";
+"LIOLookIOManager.ReconnectQuestionAlertButtonClose" = "關閉";
+"LIOLookIOManager.ReconnectQuestionAlertButtonReconnect" = "重新連接";
+"LIOLookIOManager.DefaultWelcomeMessage" = "將消息發送到我們的現場服務代表的即時幫助。";
+"LIOLookIOManager.StartFailureAlertTitle" = "在線聊天錯誤";
+"LIOLookIOManager.StartFailureAlertBody" = "無法啟動實時聊天會話。請再試一次。";
+"LIOLookIOManager.StartFailureAlertButton" = "解僱";
+"LIOLookIOManager.EndSessionQuestionAlertTitle" = "支持會話結束？";
+"LIOLookIOManager.EndSessionQuestionAlertBody" = "你想結束這個客戶支持會話嗎？";
+"LIOLookIOManager.EndSessionQuestionAlertButtonYes" = "結束";
+"LIOLookIOManager.EndSessionQuestionAlertButtonNo" = "不要結束";
+"LIOLookIOManager.ReconnectCancelAlertTitle" = "即時重新連接";
+"LIOLookIOManager.ReconnectCancelAlertBody" = "我們正在嘗試重新連接你與你聊天的支持會話。繼續重新連接？";
+"LIOLookIOManager.ReconnectCancelAlertButtonStop" = "停止";
+"LIOLookIOManager.ReconnectCancelAlertButtonContinue" = "繼續";

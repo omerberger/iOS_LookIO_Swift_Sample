@@ -54,7 +54,7 @@
     label.font = [UIFont systemFontOfSize:13.0];
     label.textColor = [UIColor whiteColor];
     label.backgroundColor = [UIColor clearColor];
-    label.text = @"We're loading the chat.\nGive us just a few. :)";
+    label.text = LIOLocalizedString(@"LIOInterstitialViewController.LoadingLabel");
     label.textAlignment = UITextAlignmentCenter;
     label.numberOfLines = 2;
     [label sizeToFit];
@@ -70,7 +70,7 @@
     dismissButton.layer.cornerRadius = 7.0;
     dismissButton.layer.masksToBounds = YES;
     dismissButton.titleLabel.font = [UIFont systemFontOfSize:14.0];
-    [dismissButton setTitle:@"Let's just hide this for now" forState:UIControlStateNormal];
+    [dismissButton setTitle:LIOLocalizedString(@"LIOInterstitialViewController.DismissButton") forState:UIControlStateNormal];
     [dismissButton addTarget:self action:@selector(dismissButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = dismissButton.frame;
     aFrame.size.width = bezel.frame.size.width + 40.0;
@@ -204,11 +204,11 @@
 
 - (void)showFailureAlert
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Live Chat Error"
-                                                        message:@"Sorry, but the live chat service is currently unavailable. Please try again later."
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOInterstitialViewController.ErrorAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOInterstitialViewController.ErrorAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
-                                              otherButtonTitles:@"Dismiss", nil];
+                                              otherButtonTitles:LIOLocalizedString(@"LIOInterstitialViewController.ErrorAlertButton"), nil];
     [alertView show];
     [alertView autorelease];
 }

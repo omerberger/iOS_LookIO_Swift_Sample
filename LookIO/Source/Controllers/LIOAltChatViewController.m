@@ -242,7 +242,7 @@
     emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
     emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [emailConvoButton setTitle:@"Email Chat" forState:UIControlStateNormal];
+    [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
     [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     CGRect aFrame = emailConvoButton.frame;
     aFrame.size.width = 100.0;
@@ -259,7 +259,7 @@
     endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
     endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [endSessionButton setTitle:@"End Session" forState:UIControlStateNormal];
+    [endSessionButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EndSessionButton") forState:UIControlStateNormal];
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = endSessionButton.frame;
     aFrame.size.width = 100.0;
@@ -274,26 +274,6 @@
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
     [functionHeaderChat.contentView addSubview:emailConvoButton];
     [functionHeaderChat.contentView addSubview:endSessionButton];
-    
-    leaveSurveyButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    [leaveSurveyButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-    leaveSurveyButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    leaveSurveyButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    leaveSurveyButton.titleLabel.layer.shadowOpacity = 0.8;
-    leaveSurveyButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [leaveSurveyButton setTitle:@"Exit Chat" forState:UIControlStateNormal];
-    [leaveSurveyButton addTarget:self action:@selector(leaveSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    aFrame = leaveSurveyButton.frame;
-    aFrame.size.width = tableView.bounds.size.width - 60.0;
-    aFrame.size.height = 32.0;
-    aFrame.origin.x = 30.0;
-    aFrame.origin.y = 16.0;
-    leaveSurveyButton.frame = aFrame;
-    leaveSurveyButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    
-    functionHeaderSurvey = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    functionHeaderSurvey.selectionStyle = UITableViewCellSelectionStyleNone;
-    [functionHeaderSurvey.contentView addSubview:leaveSurveyButton];
     
     reconnectionOverlay = [[UIView alloc] initWithFrame:self.view.bounds];
     reconnectionOverlay.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
@@ -329,7 +309,7 @@
     label.font = [UIFont systemFontOfSize:16.0];
     label.textColor = [UIColor whiteColor];
     label.backgroundColor = [UIColor clearColor];
-    label.text = @"Reconnecting...";
+    label.text = LIOLocalizedString(@"LIOAltChatViewController.ReconnectionLabel");
     [label sizeToFit];
     aFrame = label.frame;
     aFrame.origin.x = (reconnectionBezel.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
@@ -343,7 +323,7 @@
     dismissButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     dismissButton.titleLabel.layer.shadowOpacity = 0.8;
     dismissButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    [dismissButton setTitle:@"Hide" forState:UIControlStateNormal];
+    [dismissButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.ReconnectionHideButton") forState:UIControlStateNormal];
     [dismissButton addTarget:self action:@selector(dismissButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = dismissButton.frame;
     aFrame.size.width = 92.0;
@@ -392,9 +372,6 @@
     [functionHeaderChat release];
     functionHeaderChat = nil;
     
-    [functionHeaderSurvey release];
-    functionHeaderSurvey = nil;
-    
     [vertGradient release];
     vertGradient = nil;
     
@@ -409,9 +386,6 @@
     
     [emailConvoButton release];
     emailConvoButton = nil;
-    
-    [leaveSurveyButton release];
-    leaveSurveyButton = nil;
     
     [dismissButton release];
     dismissButton = nil;
@@ -448,8 +422,6 @@
     [tappableDismissalAreaForPadUI release];
     [pendingNotificationString release];
     [toasterView release];
-    [functionHeaderSurvey release];
-    [leaveSurveyButton release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -836,7 +808,7 @@
         if (LIOChatMessageKindLocal == aMessage.kind)
         {
             tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-            tempView.senderName = @"Me";
+            tempView.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
         }
         else if (LIOChatMessageKindRemote == aMessage.kind)
         {
@@ -1001,7 +973,7 @@
     if (LIOChatMessageKindLocal == aMessage.kind)
     {
         aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-        aBubble.senderName = @"Me";
+        aBubble.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
     }
     else if (LIOChatMessageKindRemote == aMessage.kind)
     {
@@ -1117,18 +1089,6 @@
 - (void)endSessionButtonWasTapped
 {
     [delegate altChatViewControllerDidTapEndSessionButton:self];
-}
-
-- (void)leaveSurveyButtonWasTapped
-{
-    [self.view endEditing:YES];
-    
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Exit Chat?"
-                                                        message:@"Would you like to exit this chat?"
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:@"Don't Exit", @"Exit", nil];
-    [alertView show];
 }
 
 #pragma mark -
@@ -1549,7 +1509,7 @@
     if (NO == agentTyping && aBool)
     {
         pendingNotificationStringIsTypingNotification = YES;
-        [self revealNotificationString:@"Agent is typing..." withAnimatedKeyboard:YES];
+        [self revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES];
     }
     else if (agentTyping && NO == aBool)
     {
@@ -1615,15 +1575,6 @@
 {
     [popover release];
     popover = nil;
-}
-
-#pragma mark -
-#pragma mark UIAlertViewDelegate methods
-
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (1 == buttonIndex)
-        [delegate altChatViewControllerWantsToLeaveSurvey:self];
 }
 
 #pragma mark -

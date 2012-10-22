@@ -487,9 +487,9 @@ static NSDataDetector *dataDetector = nil;
             int aSubtype = [[linkSubtypes objectAtIndex:linkIndex] intValue];
             NSString *alertMessage = nil;
             if (LIOChatBubbleViewLinkSubtypeWeb == aSubtype)
-                alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and visit \"%@\"?", aLink];
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
             else
-                alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and e-mail \"%@\"?", aLink];
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
             
             [urlBeingLaunched release];
             urlBeingLaunched = [[NSURL URLWithString:aLinkURLString] retain];
@@ -498,7 +498,7 @@ static NSDataDetector *dataDetector = nil;
                                                    message:alertMessage
                                                   delegate:self
                                          cancelButtonTitle:nil
-                                         otherButtonTitles:@"Don't Open", @"Open", nil];
+                                         otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancel"), LIOLocalizedString(@"LIOChatBubbleView.AlertGo"), nil];
             [alertView show];
         }
         else
@@ -516,12 +516,12 @@ static NSDataDetector *dataDetector = nil;
         [urlBeingLaunched release];
         urlBeingLaunched = [result retain];
         
-        NSString *alertMessage = [NSString stringWithFormat:@"Are you sure you want to leave the app and call \"%@\"?", aLink];
+        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString("LIOChatBubbleView.LinkAlertPhone"), aLink];
         alertView = [[UIAlertView alloc] initWithTitle:nil
                                                message:alertMessage
                                               delegate:self
                                      cancelButtonTitle:nil
-                                     otherButtonTitles:@"Don't Call", @"Call", nil];
+                                     otherButtonTitles:LIOLocalizedString("LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString("LIOChatBubbleView.AlertGoPhone"), nil];
         [alertView show];
     }
 }

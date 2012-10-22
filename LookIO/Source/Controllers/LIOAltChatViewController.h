@@ -61,8 +61,8 @@
     BOOL agentTyping, keyboardShowing, leavingMessage;
     LIOInputBarView *inputBar;
     LIOHeaderBarView *headerBar;
-    UITableViewCell *functionHeaderChat, *functionHeaderSurvey;
-    UIButton *emailConvoButton, *dismissButton, *leaveSurveyButton;
+    UITableViewCell *functionHeaderChat;
+    UIButton *emailConvoButton, *dismissButton;
     LIODismissalBarView *dismissalBar;
     CGFloat keyboardHeight;
     LIOGradientLayer *vertGradient, *horizGradient;

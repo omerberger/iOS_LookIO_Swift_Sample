@@ -47,8 +47,8 @@
     aFrame.size.width = self.view.frame.size.width;
     navBar.frame = aFrame;
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    navBar.leftButtonText = @"Cancel";
-    navBar.rightButtonText = @"Next";
+    navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeft");
+    navBar.rightButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonRight");
     navBar.titleImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"];
     navBar.delegate = self;
     [navBar layoutSubviews];
@@ -63,8 +63,8 @@
 
     [self.view addSubview:currentScrollView];
     
-    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
-    else navBar.leftButtonText = @"Back";
+    if (currentQuestionIndex == 0) navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeft");
+    else navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeftAlt");
     [navBar layoutSubviews];
 
     double delayInSeconds = 0.1;
@@ -215,7 +215,7 @@
     questionNumberLabel.textColor = textColor;
     questionNumberLabel.backgroundColor = [UIColor clearColor];
     questionNumberLabel.numberOfLines = 1;
-    questionNumberLabel.text = [NSString stringWithFormat:@"Question %d of %d:", nextQuestionIndex + 1, currentSurvey.questions.count];
+    questionNumberLabel.text = [NSString stringWithFormat:LIOLocalizedString(@"LIOSurveyViewController.QuestionHeader"), nextQuestionIndex + 1, currentSurvey.questions.count];
 //    questionNumberLabel.layer.shadowColor = [UIColor blackColor].CGColor;
 //    questionNumberLabel.layer.shadowOffset = CGSizeMake(1.0, 1.0);
 //    questionNumberLabel.layer.shadowOpacity = 0.33;
@@ -248,9 +248,9 @@
     currentQuestionLabel = questionLabel;
     
     if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
-        navBar.rightButtonText = @" Start Chat "; // FIXME: aaaaaaaahahahaha
+        navBar.rightButtonText = [NSString stringWithFormat:@" %@ ", LIOLocalizedString(@"LIOSurveyViewController.NavButtonRightAlt")]; // FIXME: aaaaaaaahahahaha
     else
-        navBar.rightButtonText = @"Next";
+        navBar.rightButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonRight");
     [navBar layoutSubviews];
     
     if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
@@ -345,7 +345,7 @@
         
         if (nextQuestionIndex + 1 >= [currentSurvey.questions count])
         {
-            [currentPickerView.doneButton setTitle:@"Start Chat" forState:UIControlStateNormal];
+            [currentPickerView.doneButton setTitle:LIOLocalizedString(@"LIOSurveyViewController.LastQuestionPickerViewDoneButton") forState:UIControlStateNormal];
         }
         
         [self.view endEditing:YES];
@@ -438,8 +438,8 @@
                              [currentInputField becomeFirstResponder];
                      }];
     
-    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
-    else navBar.leftButtonText = @"Back";
+    if (currentQuestionIndex == 0) navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeft");
+    else navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeftAlt");
     [navBar layoutSubviews];
     
     [self.view bringSubviewToFront:navBar];
@@ -502,8 +502,9 @@
                              [currentInputField becomeFirstResponder];
                      }];
     
-    if (currentQuestionIndex == 0) navBar.leftButtonText = @"Cancel";
-    else navBar.leftButtonText = @"Back";
+    if (currentQuestionIndex == 0) navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeft");
+    else navBar.leftButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonLeftAlt");
+    
     [navBar layoutSubviews];
     
     [self.view bringSubviewToFront:navBar];
@@ -743,7 +744,7 @@
             }
             else
             {
-                [self showAlertWithMessage:@"Please enter a response for this question."];
+                [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
             }
         }
         else
@@ -762,7 +763,7 @@
                 if (0 < [emailRegex numberOfMatchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])])
                     validated = YES;
                 else
-                    [self showAlertWithMessage:@"Please enter a valid e-mail address."];
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.EmailValidationAlertBody")];
             }
             else if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
             {
@@ -772,7 +773,7 @@
                 if ([matches count])
                     validated = YES;
                 else
-                    [self showAlertWithMessage:@"Please enter a valid number."];
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.NumericValidationAlertBody")];
             }
             else if ([currentQuestion.validationRegexp length])
             {
@@ -781,7 +782,7 @@
                 if ([matches count])
                     validated = YES;
                 else
-                    [self showAlertWithMessage:@"Please check your input and try again."];
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.RegexpValidationAlertBody")];
             }
             
             if (validated)
@@ -796,7 +797,7 @@
     {
         if (currentQuestion.mandatory && 0 == [indexArrayResponse count])
         {
-            [self showAlertWithMessage:@"Please enter a response for this question."];
+            [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
         }
         else
         {

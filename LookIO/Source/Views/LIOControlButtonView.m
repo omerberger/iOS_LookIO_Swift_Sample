@@ -26,7 +26,7 @@
         // Defaults.
         self.tintColor = [UIColor colorWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
         self.textColor = [UIColor whiteColor];
-        self.labelText = @"Live Help";
+        self.labelText = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
         label.font = [UIFont systemFontOfSize:17.0];
@@ -88,7 +88,7 @@
     if (LIOControlButtonViewModePending == currentMode)
     {
         label.font = [UIFont systemFontOfSize:14.0];
-        label.text = @"     Reconnecting";
+        label.text = [NSString stringWithFormat:@"     %@", LIOLocalizedString(@"LIOControlButtonView.ReconnectingText")];
     }
     else if (labelText)
     {
@@ -98,7 +98,7 @@
     else
     {
         label.font = [UIFont systemFontOfSize:17.0];
-        label.text = @"Live Chat";
+        label.text = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
     }
     
     if (textColor)

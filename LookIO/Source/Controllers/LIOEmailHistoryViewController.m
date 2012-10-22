@@ -27,8 +27,8 @@
     CGRect aFrame = navBar.frame;
     aFrame.size.width = rootView.frame.size.width;
     navBar.frame = aFrame;
-    navBar.titleString = @"Email Conversation";
-    navBar.leftButtonText = @"Close";
+    navBar.titleString = LIOLocalizedString(@"LIOEmailHistoryViewController.NavTitle");
+    navBar.leftButtonText = LIOLocalizedString(@"LIOEmailHistoryViewController.NavLeftButton");
     navBar.delegate = self;
     [navBar layoutSubviews];
     navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -55,7 +55,7 @@
     [scrollView addSubview:backgroundView];
     
     UILabel *label01 = [[[UILabel alloc] init] autorelease];
-    label01.text = @"Need a copy of this chat? No problem!";
+    label01.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderText");
     label01.textColor = textColor;
     label01.backgroundColor = [UIColor clearColor];
     label01.font = [UIFont boldSystemFontOfSize:14.0];
@@ -68,7 +68,7 @@
     [scrollView addSubview:label01];
     
     label02 = [[UILabel alloc] init];
-    label02.text = @"Your Email Address:";
+    label02.text = LIOLocalizedString(@"LIOEmailHistoryViewController.EmailHeader");
     label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
     label02.font = [UIFont systemFontOfSize:12.0];
@@ -120,7 +120,7 @@
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
-    [submitButton setTitle:@"Submit" forState:UIControlStateNormal];
+    [submitButton setTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SubmitButton") forState:UIControlStateNormal];
     [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     submitButton.bounds = fieldBackground.bounds;
@@ -328,11 +328,11 @@
 {
     if ([inputField.text length])
     {
-        alertView = [[UIAlertView alloc] initWithTitle:@"Thank you!"
-                                               message:@"We just sent you an email with some additional information."
+        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle")
+                                               message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody")
                                               delegate:self
                                      cancelButtonTitle:nil
-                                     otherButtonTitles:@"Dismiss", nil];
+                                     otherButtonTitles:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton"), nil];
         [alertView show];
     }
     else

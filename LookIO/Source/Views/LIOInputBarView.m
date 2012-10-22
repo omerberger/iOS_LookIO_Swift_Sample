@@ -53,7 +53,7 @@
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         sendButton.accessibilityLabel = @"LIOSendButton";
         [sendButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
-        [sendButton setTitle:@"Send" forState:UIControlStateNormal];
+        [sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
         sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
         sendButton.frame = sendButtonFrame;
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -123,7 +123,7 @@
         placeholderText.backgroundColor = [UIColor clearColor];
         placeholderText.textColor = [UIColor lightGrayColor];
         placeholderText.font = inputField.font;
-        placeholderText.text = @"Send a message.";
+        placeholderText.text = LIOLocalizedString(@"LIOInputBarView.Placeholder");
         [placeholderText sizeToFit];
         aFrame = placeholderText.frame;
         aFrame.origin.x = 9.0;
