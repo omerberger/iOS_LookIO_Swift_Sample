@@ -69,8 +69,6 @@
 		D486D7371521303B007C9AF8 /* ZipReadStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7251521303B007C9AF8 /* ZipReadStream.m */; };
 		D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7261521303B007C9AF8 /* ZipWriteStream.h */; };
 		D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7271521303B007C9AF8 /* ZipWriteStream.m */; };
-		D4ADC7A414F3211800713F29 /* LIOAboutViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */; };
-		D4ADC7A514F3211800713F29 /* LIOAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */; };
 		D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */; };
 		D4ADC7A714F3211800713F29 /* LIOAltChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */; };
 		D4ADC7A814F3211800713F29 /* LIOEmailHistoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */; };
@@ -179,8 +177,6 @@
 		D486D7261521303B007C9AF8 /* ZipWriteStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipWriteStream.h; sourceTree = "<group>"; };
 		D486D7271521303B007C9AF8 /* ZipWriteStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipWriteStream.m; sourceTree = "<group>"; };
 		D48ABEE41404607500835205 /* libLookIO.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLookIO.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAboutViewController.h; path = Source/Controllers/LIOAboutViewController.h; sourceTree = "<group>"; };
-		D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAboutViewController.m; path = Source/Controllers/LIOAboutViewController.m; sourceTree = "<group>"; };
 		D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAltChatViewController.h; path = Source/Controllers/LIOAltChatViewController.h; sourceTree = "<group>"; };
 		D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAltChatViewController.m; path = Source/Controllers/LIOAltChatViewController.m; sourceTree = "<group>"; };
 		D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEmailHistoryViewController.h; path = Source/Controllers/LIOEmailHistoryViewController.h; sourceTree = "<group>"; };
@@ -279,8 +275,6 @@
 		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				D4ADC79C14F3211800713F29 /* LIOAboutViewController.h */,
-				D4ADC79D14F3211800713F29 /* LIOAboutViewController.m */,
 				D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */,
 				D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */,
 				D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */,
@@ -484,7 +478,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4ADC7A414F3211800713F29 /* LIOAboutViewController.h in Headers */,
 				D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */,
 				D4ADC7A814F3211800713F29 /* LIOEmailHistoryViewController.h in Headers */,
 				D4ADC7AA14F3211800713F29 /* LIOLeaveMessageViewController.h in Headers */,
@@ -607,7 +600,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4ADC7A514F3211800713F29 /* LIOAboutViewController.m in Sources */,
 				D4ADC7A714F3211800713F29 /* LIOAltChatViewController.m in Sources */,
 				D4ADC7A914F3211800713F29 /* LIOEmailHistoryViewController.m in Sources */,
 				D4ADC7AB14F3211800713F29 /* LIOLeaveMessageViewController.m in Sources */,
