@@ -8,10 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOLog(...) [[LIOLogManager sharedLogManager] logFormat:__VA_ARGS__]
+#define LIOLog(...) [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityDebug format:__VA_ARGS__]
 
 #define LIOLogManagerMaxResidentLogCharacters   128000
 #define LIOLogManagerMaxLogFileSize             512000
+
+typedef enum {
+    LIOLogManagerSeverityDebug,
+    LIOLogManagerSeverityInfo,
+    LIOLogManagerSeverityWarning
+} LIOLogManagerSeverity;
 
 @class LIOLogManager;
 
@@ -25,7 +31,7 @@
 @property(nonatomic, readonly) NSMutableArray *logEntries;
 
 + (LIOLogManager *)sharedLogManager;
-- (void)logFormat:(NSString *)formatString, ...;
+- (void)logWithSeverity:(LIOLogManagerSeverity)severity format:(NSString *)formatString, ...;
 - (void)deleteExistingLogIfOversized;
 - (void)flush;
 - (void)uploadLog;

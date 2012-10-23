@@ -355,10 +355,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [NSURLConnection connectionWithRequest:uploadLogRequest delegate:nil];
     
-#ifdef DEBUG
-    NSLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
-#endif
-
+    LIOLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
 }
 
 - (void)sendLaunchReport
@@ -644,7 +641,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
-    LIOLog(@"Loaded.");    
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
 - (NSString *)dateToStandardizedString:(NSDate *)aDate
@@ -772,7 +769,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [statusBarUnderlay release];
     [statusBarUnderlayBlackout release];
     
-    LIOLog(@"Unloaded.");
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Unloaded."];
     
     [super dealloc];
 }
@@ -997,7 +994,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
-                LIOLog(@"WARNING: Could not find host app's key window! Behavior from this point on is undefined.");
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined."];
             }
             
             LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
@@ -1349,7 +1346,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
         
-        LIOLog(@"Connection failed. Reason: %@", [connectError localizedDescription]);
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection failed. Reason: %@", [connectError localizedDescription]];
         
         if (NO == firstChatMessageSent)
         {
@@ -1859,7 +1856,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (sessionEnding)
     {
         controlButton.hidden = YES;
-        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: session is ending."];
+        LIOLog(@"<<CONTROL>> Hiding. Reason: session is ending.");
         return;
     }
     
@@ -1868,7 +1865,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey])
     {
         controlButton.hidden = YES;
-        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server."];
+        LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
         return;
     }
     
@@ -1876,7 +1873,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])
     {
         controlButton.hidden = YES;
-        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: enabled == 0."];
+        LIOLog(@"<<CONTROL>> Hiding. Reason: enabled == 0.");
         return;
     }
     
@@ -1930,7 +1927,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (willHide)
     {
-        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Hiding. Reason: ", aReason];
+        LIOLog(@"<<CONTROL>> Hiding. Reason: ", aReason);
          
         [UIView animateWithDuration:0.5
                          animations:^{
@@ -1956,7 +1953,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
             [delegate lookIOManagerDidShowControlButton:self];
         
-        [[LIOLogManager sharedLogManager] logFormat:@"<<CONTROL>> Showing. Reason: ", aReason];
+        LIOLog(@"<<CONTROL>> Showing. Reason: ", aReason);
     }
     
     if (resumeMode && NO == socketConnected)
@@ -2142,7 +2139,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return [hostAppWindow.rootViewController shouldAutorotateToInterfaceOrientation:anOrientation];
     
     // Fall back on plist settings.
-    LIOLog(@"Warning! Using .plist keys to determine rotation behavior. This may not be accurate. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:");
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Using .plist keys to determine rotation behavior. This may not be accurate. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:"];
     return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
 }
 
@@ -2190,7 +2187,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([test length])
             [sessionExtras setObject:anObject forKey:aKey];
         else
-            LIOLog(@"Can't add object of class \"%@\" to session extras! Use simple classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class]));
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add object of class \"%@\" to session extras! Use simple classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class])];
     }
     else
         [sessionExtras removeObjectForKey:aKey];
@@ -2208,7 +2205,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([test length])
         [sessionExtras addEntriesFromDictionary:aDictionary];
     else
-        LIOLog(@"Can't add dictionary of objects to session extras! >:|  Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.");
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add dictionary of objects to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc."];
 }
 
 - (void)clearSessionExtras
@@ -2642,7 +2639,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
-    LIOLog(@"Connection secured.");
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Connection secured."];
 
     socketConnected = YES;
     [self configureReconnectionTimer];
@@ -2821,8 +2818,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
     NSData *chatData = [chat dataUsingEncoding:NSUTF8StringEncoding];
-    
-    //[[LIOLogManager sharedLogManager] logFormat:@"[CHAT] Sent to backend: \"%@\"", chat];
     
     [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout

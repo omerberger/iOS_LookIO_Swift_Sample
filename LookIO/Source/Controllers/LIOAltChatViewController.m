@@ -569,7 +569,12 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         
-        [inputBar.inputField becomeFirstResponder];
+        BOOL result = [inputBar.inputField becomeFirstResponder];
+        if (result != 1)
+        {
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The LPMobile UI is unable to bring up the keyboard. Please check to make sure that you aren't using any categories on the UITextView class which drastically modify its behavior."];
+        }
+        
         
         if ([initialChatText length])
         {
@@ -1191,7 +1196,9 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         if ([[UIApplication sharedApplication] statusBarOrientation] != self.interfaceOrientation)
-            LIOLog(@"Warning! The LookIO UI isn't in the same orientation as the host app. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:");
+        {
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The LPMobile UI isn't in the same orientation as your host app's UI. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:"];
+        }
     });
 }
 
