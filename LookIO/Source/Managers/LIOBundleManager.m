@@ -655,7 +655,7 @@ static LIOBundleManager *sharedBundleManager = nil;
     {
         // Failure cleanup.
         [[NSFileManager defaultManager] removeItemAtPath:[self bundlePath] error:nil];
-        LIOLog(@"BUNDLE: Warning! Failed to download/extract bundle.");
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"BUNDLE: Warning! Failed to download/extract bundle."];
     }
     else
     {

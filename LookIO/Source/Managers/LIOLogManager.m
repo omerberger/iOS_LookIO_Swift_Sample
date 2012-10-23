@@ -101,8 +101,16 @@ static LIOLogManager *sharedLogManager = nil;
     residentLogCharacters = 0;
 }
 
-- (void)logFormat:(NSString *)formatString, ...
+- (void)logWithSeverity:(LIOLogManagerSeverity)severity format:(NSString *)formatString, ...
 {
+    NSString *severityString = nil;
+    switch (severity)
+    {
+        case LIOLogManagerSeverityDebug: severityString = @"debug"; break;
+        case LIOLogManagerSeverityInfo: severityString = @"info"; break;
+        case LIOLogManagerSeverityWarning: severityString = @"warning"; break;
+    }
+    
     va_list args;
     va_start(args, formatString);
     NSString *stringToLog = [[[NSString alloc] initWithFormat:formatString arguments:args] autorelease];
@@ -111,12 +119,15 @@ static LIOLogManager *sharedLogManager = nil;
     NSMutableString *result = [NSMutableString string];
     [result appendFormat:@"%@ ", [dateFormatter stringFromDate:[NSDate date]]];
     [result appendString:stringToLog];
-    [result appendString:@" #ios\n"];
+    [result appendFormat:@" #ios #%@\n", severityString];
     
     [logEntries addObject:result];
     
 #ifdef DEBUG
-    NSLog(@"[LOOKIO] %@", result);
+    NSLog(@"[LPMobile//%@] %@", severityString, result);
+#else
+    if (severity != LIOLogManagerSeverityDebug)
+        NSLog(@"[LPMobile//%@] %@", severityString, result);
 #endif // DEBUG
     
     // Clamp.
