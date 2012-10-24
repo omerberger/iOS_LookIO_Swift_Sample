@@ -832,15 +832,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousReconnectionTimerStep = 2;
     previousScreenshotHash = 0;
     nextTimeInterval = 0.0;
-    
-    /*
-    [currentVisitId release];
-    currentVisitId = nil;
-    */
-    
-    [currentRequiredSkill release];
-    currentRequiredSkill = nil;
-    
+        
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
