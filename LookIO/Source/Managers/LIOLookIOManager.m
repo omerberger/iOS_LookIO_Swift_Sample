@@ -1824,7 +1824,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendCapabilitiesPacket
 {
-    NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", nil];
+    NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
     
     NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                               @"capabilities", @"type",
