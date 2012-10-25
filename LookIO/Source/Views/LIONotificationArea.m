@@ -283,6 +283,7 @@
     {
         [notificationTimer stopTimer];
         [notificationTimer release];
+        notificationTimer = nil;
         
         [self dismissActiveNotification];
     }
