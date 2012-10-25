@@ -150,6 +150,7 @@
     NSTimeInterval nextTimeInterval;
     NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
     NSDictionary *surveyResponsesToBeSent;
+    NSString *partialPacketString;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -1420,9 +1421,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     currentRequiredSkill = [aRequiredSkill retain];
 }
 
-- (void)handlePacket:(NSDictionary *)aPacket
+- (void)handlePacket:(NSString *)aJsonString
 {
-    NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO cannot be used on a non-main thread!");
+    NSDictionary *aPacket = [jsonParser objectWithString:aJsonString];
+    if (nil == aPacket)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", aJsonString];
+        return;
+    }
+    
+    LIOLog(@"<<<FROM BACKEND<<< %@", aJsonString);
     
     NSString *type = [aPacket objectForKey:@"type"];
     
@@ -2261,6 +2269,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([currentRequiredSkill length])
         [introDict setObject:currentRequiredSkill forKey:@"skill"];
     
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground)
+        [introDict setObject:[NSNumber numberWithInt:0] forKey:@"app_foregrounded"];
+    else
+        [introDict setObject:[NSNumber numberWithInt:1] forKey:@"app_foregrounded"];
+    
     if (includeExtras)
     {
         if ([targetAgentId length])
@@ -2738,22 +2751,35 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    NSString *jsonString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
-    jsonString = [jsonString substringToIndex:([jsonString length] - [LIOLookIOManagerMessageSeparator length])];
-    NSDictionary *result = [jsonParser objectWithString:jsonString];
+    NSString *incomingString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+    LIOLog(@"<<<FROM BACKEND<<< \"%@\"", incomingString);
+    if ([partialPacketString length])
+    {
+        incomingString = [NSString stringWithFormat:@"%@%@", partialPacketString, incomingString];
+        LIOLog(@"String from backend prepended with partial packet: \"%@\"\nResult: \"%@\"", partialPacketString, incomingString);
+        [partialPacketString release];
+        partialPacketString = nil;
+    }
     
-#ifdef DEBUG
-    LIOLog(@"\n[READ]\n%@\n", jsonString);
-#endif
+    NSRange aRange = [incomingString rangeOfString:LIOLookIOManagerMessageSeparator];
+    while (aRange.location != NSNotFound)
+    {
+        NSString *aPacketString = [incomingString substringToIndex:aRange.location];
+        if (aRange.location < [incomingString length] - 1)
+            incomingString = [incomingString substringFromIndex:(aRange.location + aRange.length)];
+        else
+            incomingString = @"";
+        
+        aRange = [incomingString rangeOfString:LIOLookIOManagerMessageSeparator];
+        if ([aPacketString length])
+            [self handlePacket:aPacketString];
+    }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [self handlePacket:result];
-        
-        [controlSocket readDataToData:messageSeparatorData
-                          withTimeout:-1
-                                  tag:0];    
-    });
+    if ([incomingString length])
+    {
+        partialPacketString = [incomingString retain];
+        LIOLog(@"Saved partial packet: \"%@\"", partialPacketString);
+    }
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
@@ -3269,6 +3295,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [backgroundedTime release];
         backgroundedTime = [[NSDate date] retain];
+        
+        [self sendContinuationReport];
     }
     
     if (socketConnected)
@@ -3319,9 +3347,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // It's been 30 minutes! Send a launch packet.
             [overriddenEndpoint release];
             overriddenEndpoint = nil;
+            [currentVisitId release];
+            currentVisitId = nil;
+            [lastKnownContinueURL release];
+            lastKnownContinueURL = nil;
+            [continuationTimer stopTimer];
+            [continuationTimer release];
+            continuationTimer = nil;
             
+            [self reset];
             [self sendLaunchReport];
         }
+        else
+            [self sendContinuationReport];
         
         [backgroundedTime release];
         backgroundedTime = nil;
@@ -3551,11 +3589,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-        NSString *responseString = [[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease];
-        NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-        LIOLog(@"<LAUNCH> Success (%d). Response: %@", appLaunchRequestResponseCode, responseString);
+        if (201 == appLaunchRequestResponseCode)
+        {
+            NSString *responseString = [[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease];
+            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
         
-        [self parseAndSaveSettingsPayload:responseDict];
+            LIOLog(@"<LAUNCH> Success. Response: %@", responseString);
+            [self parseAndSaveSettingsPayload:responseDict];
+        }
+        else if (404 == appLaunchRequestResponseCode)
+        {
+            LIOLog(@"<LAUNCH> Failure. HTTP code: 404.");
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
+        }
+        else
+        {
+            LIOLog(@"<LAUNCH> Failure. HTTP code: %d", appLaunchRequestResponseCode);
+        }
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;
@@ -3564,11 +3614,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (appContinueRequestConnection == connection)
     {
-        NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
-        NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-        LIOLog(@"<CONTINUE> Success (%d). Response: %@", appContinueRequestResponseCode, responseString);
-        
-        [self parseAndSaveSettingsPayload:responseDict];
+        if (200 == appContinueRequestResponseCode)
+        {
+            NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
+            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
+            LIOLog(@"<CONTINUE> Success. Response: %@", responseString);
+            
+            [self parseAndSaveSettingsPayload:responseDict];
+        }
+        else if (404 == appContinueRequestResponseCode)
+        {
+            LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Stopping future continue calls.");
+            [currentVisitId release];
+            currentVisitId = nil;
+            [lastKnownContinueURL release];
+            lastKnownContinueURL = nil;
+            [continuationTimer stopTimer];
+            [continuationTimer release];
+            continuationTimer = nil;
+        }
+        else
+        {
+            LIOLog(@"<CONTINUE> Failure. HTTP code: %d", appContinueRequestResponseCode);
+        }
         
         [appContinueRequestConnection release];
         appContinueRequestConnection = nil;
@@ -3593,8 +3661,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = nil;
-        
-        
     }
     else if (appContinueRequestConnection == connection)
     {
@@ -3604,6 +3670,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appLaunchRequestConnection = nil;
         
         appLaunchRequestResponseCode = -1;
+        
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
+        [lastKnownContinueURL release];
+        lastKnownContinueURL = nil;
         
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
         [lastKnownEnabledStatus release];
