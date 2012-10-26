@@ -2772,7 +2772,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         aRange = [incomingString rangeOfString:LIOLookIOManagerMessageSeparator];
         if ([aPacketString length])
-            [self handlePacket:aPacketString];
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self handlePacket:aPacketString];
+            });
+        }
     }
     
     if ([incomingString length])
@@ -2780,6 +2784,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         partialPacketString = [incomingString retain];
         LIOLog(@"Saved partial packet: \"%@\"", partialPacketString);
     }
+    
+    [controlSocket readDataToData:messageSeparatorData
+                      withTimeout:-1
+                              tag:0];
 }
 
 - (NSTimeInterval)onSocket:(AsyncSocket_LIO *)sock shouldTimeoutReadWithTag:(long)tag elapsed:(NSTimeInterval)elapsed bytesDone:(NSUInteger)length
