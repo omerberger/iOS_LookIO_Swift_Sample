@@ -235,7 +235,7 @@ NSString *uniqueIdentifier()
 
 @synthesize touchImage, targetAgentId, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @synthesize resetAfterNextForegrounding;
-@dynamic enabled;
+@dynamic enabled, sessionInProgress;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -2185,12 +2185,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We only allow JSONable objects.
         NSString *test = [jsonWriter stringWithObject:[NSArray arrayWithObject:anObject]];
         if ([test length])
+        {
             [sessionExtras setObject:anObject forKey:aKey];
+            [self sendContinuationReport];
+        }
         else
             [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add object of class \"%@\" to session extras! Use simple classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class])];
     }
     else
+    {
         [sessionExtras removeObjectForKey:aKey];
+        [self sendContinuationReport];
+    }
 }
 
 - (id)sessionExtraForKey:(NSString *)aKey
@@ -2203,7 +2209,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // We only allow JSONable objects.
     NSString *test = [jsonWriter stringWithObject:aDictionary];
     if ([test length])
+    {
         [sessionExtras addEntriesFromDictionary:aDictionary];
+        [self sendContinuationReport];
+    }
     else
         [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add dictionary of objects to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc."];
 }
@@ -2211,6 +2220,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)clearSessionExtras
 {
     [sessionExtras removeAllObjects];
+    
+    [self sendContinuationReport];
 }
 
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses
@@ -3740,6 +3751,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (BOOL)enabled
 {
     return [lastKnownEnabledStatus boolValue];
+}
+
+- (BOOL)sessionInProgress
+{
+    return introduced && firstChatMessageSent;
 }
 
 @end
