@@ -150,6 +150,9 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    currentPickerView.delegate = nil;
+    validationView.delegate = nil;
+    
     [validationTimer stopTimer];
     [validationTimer release];
     
