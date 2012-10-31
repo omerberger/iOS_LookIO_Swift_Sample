@@ -30,7 +30,7 @@
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, retain) UIWindow *mainWindow;
-@property(nonatomic, readonly) BOOL enabled;
+@property(nonatomic, readonly) BOOL enabled, sessionInProgress;
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;
 
 + (LIOLookIOManager *)sharedLookIOManager;

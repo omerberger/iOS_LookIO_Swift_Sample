@@ -390,6 +390,7 @@
     [dismissButton release];
     dismissButton = nil;
     
+    toasterView.delegate = nil;
     [toasterView release];
     toasterView = nil;
 }
@@ -401,6 +402,9 @@
     tableView.delegate = nil;
     tableView.dataSource = nil;
     [tableView release];
+    
+    toasterView.delegate = nil;
+    [toasterView release];
     
     [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
     [alertView autorelease];
@@ -421,7 +425,6 @@
     [chatBubbleHeights release];
     [tappableDismissalAreaForPadUI release];
     [pendingNotificationString release];
-    [toasterView release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
