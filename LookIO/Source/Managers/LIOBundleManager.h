@@ -17,7 +17,8 @@
 #define LIOBundleManagerErrorKey @"LIOBundleManagerErrorKey"
 
 // Defaults keys
-#define LIOBundleManagerStringTableDictKey @"LIOBundleManagerStringTableDictKey"
+#define LIOBundleManagerStringTableDictKey      @"LIOBundleManagerStringTableDictKey"
+#define LIOBundleManagerStringTableVersionKey   @"LIOBundleManagerStringTableVersionKey"
 
 @class LIOBundleManager;
 

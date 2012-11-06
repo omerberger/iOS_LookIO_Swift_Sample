@@ -2076,6 +2076,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         currentVisitId = [visitIdString retain];
     }
     
+    NSNumber *localizationVersion = [params objectForKey:@"localization_version"];
+    [userDefaults setObject:localizationVersion forKey:LIOBundleManagerStringTableVersionKey];
+    
+    NSDictionary *localizedStrings = [params objectForKey:@"localized_strings"];
+    if ([localizedStrings count])
+        [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
+    
     NSString *continueURLString = [params objectForKey:@"continue_url"];
     if ([continueURLString length])
     {
@@ -2284,6 +2291,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [introDict setObject:[NSNumber numberWithInt:0] forKey:@"app_foregrounded"];
     else
         [introDict setObject:[NSNumber numberWithInt:1] forKey:@"app_foregrounded"];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *localizedStringsVersion = [userDefaults objectForKey:LIOBundleManagerStringTableVersionKey];
+    if (localizedStringsVersion)
+        [introDict setObject:localizedStringsVersion forKey:@"localization_version"];
     
     if (includeExtras)
     {
