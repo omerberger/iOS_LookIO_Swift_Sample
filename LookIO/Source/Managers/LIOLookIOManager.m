@@ -2107,7 +2107,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Calculate the hash.
         // Sort the keys lexically, descending.
         NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-        NSArray *sortedKeys = [[localizedStrings allKeys] sortedArrayUsingDescriptors:@[descriptor]];
+        NSArray *sortedKeys = [[localizedStrings allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:descriptor]];
         NSMutableString *stringResult = [NSMutableString string];
         for (int i=0; i<[sortedKeys count]; i++)
         {
