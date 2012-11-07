@@ -151,6 +151,8 @@
     NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
     NSDictionary *surveyResponsesToBeSent;
     NSString *partialPacketString;
+    CGRect controlButtonShownFrame, controlButtonHiddenFrame;
+    BOOL controlButtonVisibilityAnimating;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -905,8 +907,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = actualHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
         aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonMinWidth + 2.0;
-        controlButton.frame = aFrame;
+        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
+        
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.x = screenSize.width + 2.0;
+        controlButtonHiddenFrame = aFrame;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
@@ -918,8 +924,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
         aFrame.origin.y = -2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        controlButton.frame = aFrame;
+        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
+        
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.y = -aFrame.size.height - 2.0;
+        controlButtonHiddenFrame = aFrame;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
@@ -931,8 +941,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = actualHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
         aFrame.origin.x = -2.0;
-        controlButton.frame = aFrame;
+        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
+        
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.x = aFrame.size.width - 2.0;
+        controlButtonHiddenFrame = aFrame;
         
         controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
@@ -945,8 +959,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
         aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        controlButton.frame = aFrame;
+        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
         [controlButton setNeedsLayout];
+        
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.y = screenSize.height + 2.0;
+        controlButtonHiddenFrame = aFrame;
         
         controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
@@ -1283,7 +1301,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                              tag:0];
     }
         
-    controlButton.hidden = YES;
+    [self refreshControlButtonVisibility];
 }
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
@@ -1849,7 +1867,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)refreshControlButtonVisibility
 {
-    [controlButton stopFadeTimer];
     [controlButton.layer removeAllAnimations];
 
     // Trump card #-1: If the session is ending, button is hidden.
@@ -1928,13 +1945,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (willHide)
     {
         LIOLog(@"<<CONTROL>> Hiding. Reason: ", aReason);
-         
-        [UIView animateWithDuration:0.5
+        
+        controlButtonVisibilityAnimating = YES;
+        
+        [UIView animateWithDuration:0.25
                          animations:^{
-                             controlButton.alpha = 0.0;
+                             controlButton.frame = controlButtonHiddenFrame;
                          }
                          completion:^(BOOL finished) {
                              controlButton.hidden = YES;
+                             controlButtonVisibilityAnimating = NO;
                          }];
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
@@ -1942,12 +1962,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (willShow)
     {
-        controlButton.alpha = 0.0;
         controlButton.hidden = NO;
         
-        [UIView animateWithDuration:0.5
+        controlButtonVisibilityAnimating = YES;
+        
+        [UIView animateWithDuration:0.25
                          animations:^{
-                             controlButton.alpha = 1.0;
+                             controlButton.frame = controlButtonShownFrame;                             
+                         } completion:^(BOOL finished) {
+                             controlButtonVisibilityAnimating = NO;
                          }];
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
@@ -2076,12 +2099,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         currentVisitId = [visitIdString retain];
     }
     
-    NSNumber *localizationVersion = [params objectForKey:@"localization_version"];
-    [userDefaults setObject:localizationVersion forKey:LIOBundleManagerStringTableVersionKey];
-    
     NSDictionary *localizedStrings = [params objectForKey:@"localized_strings"];
     if ([localizedStrings count])
+    {
         [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
+        
+        // Calculate the hash.
+        // Sort the keys lexically, descending.
+        NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
+        NSArray *sortedKeys = [[localizedStrings allKeys] sortedArrayUsingDescriptors:@[descriptor]];
+        NSMutableString *stringResult = [NSMutableString string];
+        for (int i=0; i<[sortedKeys count]; i++)
+        {
+            NSString *aKey = [sortedKeys objectAtIndex:i];
+            [stringResult appendString:[localizedStrings objectForKey:aKey]];
+            if (i < [sortedKeys count] - 1)
+                [stringResult appendString:@"\x1E"];
+        }
+        
+        const char *cString = [stringResult UTF8String];
+        unsigned char result[16];
+        CC_MD5(cString, strlen(cString), result);
+        NSMutableString *md5String = [NSMutableString string];
+        for (int i=0; i<16; i++)
+            [md5String appendFormat:@"%02x", result[i]];        
+    }
     
     NSString *continueURLString = [params objectForKey:@"continue_url"];
     if ([continueURLString length])
@@ -2293,9 +2335,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [introDict setObject:[NSNumber numberWithInt:1] forKey:@"app_foregrounded"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *localizedStringsVersion = [userDefaults objectForKey:LIOBundleManagerStringTableVersionKey];
-    if (localizedStringsVersion)
-        [introDict setObject:localizedStringsVersion forKey:@"localization_version"];
+    NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
+    if ([localizationTableHash length])
+        [introDict setObject:localizationTableHash forKey:@"strings_hash"];
     
     if (includeExtras)
     {
@@ -3448,6 +3490,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.5;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        controlButton.frame = controlButtonHiddenFrame;
         [self refreshControlButtonVisibility];
         
         statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];

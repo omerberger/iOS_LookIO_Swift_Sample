@@ -8,7 +8,6 @@
 
 #import "LIOControlButtonView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "LIOTimerProxy.h"
 #import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
 
@@ -76,9 +75,6 @@
     [shadowColor release];
     [innerShadow release];
     [spinner release];
-    
-    [fadeTimer stopTimer];
-    [fadeTimer release];
     
     [super dealloc];
 }
@@ -198,23 +194,6 @@
     [outerPath stroke];
 }
 
-- (void)startFadeTimer
-{
-    [fadeTimer stopTimer];
-    [fadeTimer release];
-    
-    self.alpha = 1.0;
-    
-    fadeTimer = [[LIOTimerProxy alloc] initWithTimeInterval:5.0 target:self selector:@selector(fadeTimerDidFire)];
-}
-
-- (void)stopFadeTimer
-{
-    [fadeTimer stopTimer];
-    [fadeTimer release];
-    fadeTimer = nil;
-}
-
 #pragma mark -
 #pragma mark Dynamic property accessors
 
@@ -245,21 +224,6 @@
 - (UIColor *)tintColor
 {
     return tintColor;
-}
-
-#pragma mark -
-#pragma mark Timer callbacks
-
-- (void)fadeTimerDidFire
-{
-    [fadeTimer stopTimer];
-    [fadeTimer release];
-    fadeTimer = nil;
-    
-    [UIView animateWithDuration:2.0
-                     animations:^{
-                         self.alpha = 0.5;
-                     }];
 }
 
 #pragma mark -

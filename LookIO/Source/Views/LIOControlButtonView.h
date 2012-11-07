@@ -25,7 +25,6 @@ typedef enum
     UILabel *label;
     UIColor *tintColor, *textColor, *fillColor, *shadowColor;
     NSString *labelText;
-    LIOTimerProxy *fadeTimer;
     UIImageView *innerShadow;
     UIActivityIndicatorView *spinner;
     LIOControlButtonViewMode currentMode;
@@ -39,8 +38,5 @@ typedef enum
 @property(nonatomic, assign) LIOControlButtonViewMode currentMode;
 @property(nonatomic, readonly) UIActivityIndicatorView *spinner;
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
-
-- (void)startFadeTimer;
-- (void)stopFadeTimer;
 
 @end
