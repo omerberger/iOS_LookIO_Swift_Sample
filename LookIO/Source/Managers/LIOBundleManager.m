@@ -451,7 +451,8 @@ static LIOBundleManager *sharedBundleManager = nil;
     if ([aValue length])
         return aValue;
     
-    return [lioBundle localizedStringForKey:aKey value:@"<<???>>" table:nil];
+    NSString *defaultString = [lioBundle localizedStringForKey:aKey value:@"<<???>>" table:nil];
+    return defaultString;
 }
 
 #pragma mark -

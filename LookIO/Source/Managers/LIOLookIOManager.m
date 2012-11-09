@@ -1979,9 +1979,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                             options:0
                          animations:^{
                              controlButton.frame = controlButtonHiddenFrame;
-                             [self rejiggerControlButtonLabel];
                          } completion:^(BOOL finished) {
                              controlButtonVisibilityAnimating = NO;
+                             [self rejiggerControlButtonLabel];
                          }];
                 
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
@@ -1999,9 +1999,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                             options:0
                          animations:^{
                              controlButton.frame = controlButtonShownFrame;
-                             [self rejiggerControlButtonLabel];
                          } completion:^(BOOL finished) {
                              controlButtonVisibilityAnimating = NO;
+                             [self rejiggerControlButtonLabel];
                          }];
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])

@@ -36,6 +36,7 @@ fi
 
 mkdir -p $TARGET_DIR/LookIO.bundle
 cp LookIO/Resources/Images/LIO* $TARGET_DIR/LookIO.bundle
+cp -R LookIO/Resources/Strings/* $TARGET_DIR/LookIO.bundle
 mv LookIO/build/Release-universal/libLookIO.a $TARGET_DIR/libLookIO_main.a
 cp LookIO/Source/Managers/LIOLookIOManager.h $TARGET_DIR
 
