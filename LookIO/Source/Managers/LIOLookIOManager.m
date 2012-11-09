@@ -98,7 +98,7 @@
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -152,7 +152,6 @@
     NSDictionary *surveyResponsesToBeSent;
     NSString *partialPacketString;
     CGRect controlButtonShownFrame, controlButtonHiddenFrame;
-    BOOL controlButtonVisibilityAnimating;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -479,7 +478,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatHistory = [[NSMutableArray alloc] init];
         
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
-    controlButton.hidden = YES;
     controlButton.delegate = self;
     controlButton.accessibilityLabel = @"LIOTab";
     [keyWindow addSubview:controlButton];
@@ -884,6 +882,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
 
+- (void)rejiggerControlButtonLabel
+{
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    {
+        controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+    else // Landscape, home button right
+    {
+        controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        controlButton.label.frame = controlButton.bounds;
+    }
+}
+
 - (void)rejiggerControlButtonFrame
 {
     CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
@@ -907,15 +931,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = actualHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
         aFrame.origin.x = screenSize.width - LIOLookIOManagerControlButtonMinWidth + 2.0;
-        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) controlButton.frame = aFrame;
+        //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
         aFrame.origin.x = screenSize.width + 2.0;
         controlButtonHiddenFrame = aFrame;
-        
-        controlButton.label.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
+
+        [self rejiggerControlButtonLabel];
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
     {
@@ -924,15 +947,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
         aFrame.origin.y = -2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) controlButton.frame = aFrame;
+        //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
         aFrame.origin.y = -aFrame.size.height - 2.0;
         controlButtonHiddenFrame = aFrame;
         
-        controlButton.label.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
+        [self rejiggerControlButtonLabel];
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
@@ -941,16 +963,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = actualHeight;
         aFrame.origin.y = (screenSize.height / 2.0) - (actualHeight / 2.0);
         aFrame.origin.x = -2.0;
-        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) controlButton.frame = aFrame;
+        //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = aFrame.size.width - 2.0;
+        aFrame.origin.x = -aFrame.size.width;
         controlButtonHiddenFrame = aFrame;
         
-        controlButton.label.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
-        
+        [self rejiggerControlButtonLabel];        
     }
     else // Landscape, home button right
     {
@@ -959,18 +979,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.height = LIOLookIOManagerControlButtonMinWidth;
         aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (actualHeight / 2.0);
-        if (NO == controlButtonVisibilityAnimating) controlButton.frame = aFrame;
-        [controlButton setNeedsLayout];
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) controlButton.frame = aFrame;
+        //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
         aFrame.origin.y = screenSize.height + 2.0;
         controlButtonHiddenFrame = aFrame;
-        
-        controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
-        controlButton.label.frame = controlButton.bounds;
+
+        [self rejiggerControlButtonLabel];
     }
     
-    [controlButton setNeedsLayout];
+    //[controlButton setNeedsLayout];
     [controlButton setNeedsDisplay];
 }
 
@@ -1872,7 +1891,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Trump card #-1: If the session is ending, button is hidden.
     if (sessionEnding)
     {
-        controlButton.hidden = YES;
+        controlButtonHidden = YES;
+        controlButton.frame = controlButtonHiddenFrame;
+        [self rejiggerControlButtonLabel];
         LIOLog(@"<<CONTROL>> Hiding. Reason: session is ending.");
         return;
     }
@@ -1881,7 +1902,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
         nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey])
     {
-        controlButton.hidden = YES;
+        controlButtonHidden = YES;
+        controlButton.frame = controlButtonHiddenFrame;
+        [self rejiggerControlButtonLabel];
         LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
         return;
     }
@@ -1889,7 +1912,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Trump card #1: "enabled" from server-side settings.
     if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])
     {
-        controlButton.hidden = YES;
+        controlButtonHidden = YES;
+        controlButton.frame = controlButtonHiddenFrame;
+        [self rejiggerControlButtonLabel];
         LIOLog(@"<<CONTROL>> Hiding. Reason: enabled == 0.");
         return;
     }
@@ -1903,13 +1928,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (0 == val) // never
         {
             // Want to hide.
-            willHide = NO == controlButton.hidden;
+            willHide = NO == controlButtonHidden;
             aReason = @"lastKnownButtonVisibility == 0 (never)";
         }
         else if (1 == val) // always
         {
             // Want to show.
-            willShow = controlButton.hidden;
+            willShow = controlButtonHidden;
             aReason = @"lastKnownButtonVisibility == 1 (always)";
         }
         else // 3 = only in session
@@ -1917,20 +1942,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (introduced || resumeMode)
             {
                 // Want to show.
-                willShow = controlButton.hidden;
+                willShow = controlButtonHidden;
                 aReason = @"lastKnownButtonVisibility == 3 (in-session only) && (introduced || resumeMode)";
             }
             else
             {
                 // Want to hide.
-                willHide = NO == controlButton.hidden;
+                willHide = NO == controlButtonHidden;
                 aReason = @"lastKnownButtonVisibility == 3 (in-session only)";
             }
         }
     }
     else
     {
-        willShow = controlButton.hidden;
+        willShow = controlButtonHidden;
         aReason = @"no visibility setting";
     }
     
@@ -1938,45 +1963,49 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (altChatViewController)
     {
         willShow = NO;
-        willHide = NO == controlButton.hidden;
+        willHide = NO == controlButtonHidden;
         aReason = @"chat is up";
     }
     
     if (willHide)
     {
-        LIOLog(@"<<CONTROL>> Hiding. Reason: ", aReason);
+        LIOLog(@"<<CONTROL>> Hiding. Reason: %@", aReason);
         
         controlButtonVisibilityAnimating = YES;
+        controlButtonHidden = YES;
         
         [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:0
                          animations:^{
                              controlButton.frame = controlButtonHiddenFrame;
-                         }
-                         completion:^(BOOL finished) {
-                             controlButton.hidden = YES;
+                             [self rejiggerControlButtonLabel];
+                         } completion:^(BOOL finished) {
                              controlButtonVisibilityAnimating = NO;
                          }];
-        
+                
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
             [delegate lookIOManagerDidHideControlButton:self];
     }
     else if (willShow)
     {
-        controlButton.hidden = NO;
+        LIOLog(@"<<CONTROL>> Showing. Reason: %@", aReason);
         
         controlButtonVisibilityAnimating = YES;
+        controlButtonHidden = NO;
         
         [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:0
                          animations:^{
-                             controlButton.frame = controlButtonShownFrame;                             
+                             controlButton.frame = controlButtonShownFrame;
+                             [self rejiggerControlButtonLabel];
                          } completion:^(BOOL finished) {
                              controlButtonVisibilityAnimating = NO;
                          }];
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
             [delegate lookIOManagerDidShowControlButton:self];
-        
-        LIOLog(@"<<CONTROL>> Showing. Reason: ", aReason);
     }
     
     if (resumeMode && NO == socketConnected)
@@ -1984,8 +2013,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else
         controlButton.currentMode = LIOControlButtonViewModeDefault;
     
-    [controlButton setNeedsLayout];
-    [controlButton setNeedsDisplay];
+    //[controlButton setNeedsLayout];
+    //[controlButton setNeedsDisplay];
 }
 
 - (void)parseAndSaveSettingsPayload:(NSDictionary *)params
@@ -2986,8 +3015,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
-    
-    [self rejiggerWindows];
+
+    int64_t delayInSeconds = 0.25;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [self rejiggerControlButtonFrame];
+        controlButtonHidden = YES;
+        controlButton.frame = controlButtonHiddenFrame;
+        [self rejiggerControlButtonLabel];
+        [self rejiggerWindows];
+    });
     
     if (socketConnected)
     {
@@ -3480,6 +3517,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
 {
+    rotationIsActuallyHappening = YES;
     controlButton.hidden = YES;
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
@@ -3490,7 +3528,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.5;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        controlButton.frame = controlButtonHiddenFrame;
+        controlButton.hidden = NO;
+        if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
+        {
+            [self rejiggerControlButtonFrame];
+            rotationIsActuallyHappening = NO;
+            controlButtonHidden = YES;
+            controlButton.frame = controlButtonHiddenFrame;
+            [self rejiggerControlButtonLabel];
+        }
+        
         [self refreshControlButtonVisibility];
         
         statusBarUnderlay.frame = [[UIApplication sharedApplication] statusBarFrame];
@@ -3521,8 +3568,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     clickView.transform = transform;
     cursorView.transform = transform;
-    
-    [self rejiggerControlButtonFrame];
 }
 
 - (void)reachabilityDidChange:(NSNotification *)aNotification
