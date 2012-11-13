@@ -451,8 +451,9 @@ static LIOBundleManager *sharedBundleManager = nil;
     if ([aValue length])
         return aValue;
     
-    NSString *defaultString = [lioBundle localizedStringForKey:aKey value:@"<<???>>" table:nil];
-    return defaultString;
+    NSString *bundlePath = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:@"en"];
+    NSBundle *englishBundle = [NSBundle bundleWithPath:[bundlePath stringByDeletingLastPathComponent]];
+    return [englishBundle localizedStringForKey:aKey value:@"<<<???>>>" table:nil];
 }
 
 #pragma mark -
