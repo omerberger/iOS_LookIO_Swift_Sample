@@ -152,12 +152,14 @@
     NSDictionary *surveyResponsesToBeSent;
     NSString *partialPacketString;
     CGRect controlButtonShownFrame, controlButtonHiddenFrame;
+    NSMutableDictionary *registeredPlugins;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
 @property(nonatomic, readonly) NSString *pendingEmailAddress;
 @property(nonatomic, assign) BOOL resetAfterNextForegrounding;
+@property(nonatomic, readonly) NSDictionary *registeredPlugins;
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
@@ -235,7 +237,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize touchImage, targetAgentId, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
-@synthesize resetAfterNextForegrounding;
+@synthesize resetAfterNextForegrounding, registeredPlugins;
 @dynamic enabled, sessionInProgress;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -278,6 +280,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         proactiveChatRules = [[NSMutableDictionary alloc] init];
         fullNavigationHistory = [[NSMutableArray alloc] init];
         partialNavigationHistory = [[NSMutableArray alloc] init];
+        registeredPlugins = [[NSMutableDictionary alloc] init];
         
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
@@ -748,6 +751,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [surveyResponsesToBeSent release];
     [lastKnownLocation release];
     [realtimeExtrasPreviousSessionExtras release];
+    [registeredPlugins release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -790,6 +794,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [interstitialViewController.view removeFromSuperview];
     [interstitialViewController release];
     interstitialViewController = nil;
+    
+    for (NSString *aKey in registeredPlugins)
+    {
+        id<LIOPlugin> aPlugin = [registeredPlugins objectForKey:aKey];
+        [aPlugin resetPluginState];
+    }
 
     [callCenter release];
     callCenter = nil;
@@ -2711,6 +2721,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setUsesTLS:(NSNumber *)aNumber
 {
     usesTLS = [aNumber boolValue];
+}
+
+- (BOOL)registerPlugin:(id<LIOPlugin>)aPlugin
+{
+    NSString *pluginId = [aPlugin pluginId];
+    if ([registeredPlugins objectForKey:pluginId])
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Ignoring attempt to register duplicate plugin with id \"%@\"", pluginId];
+        return NO;
+    }
+    
+    [registeredPlugins setObject:aPlugin forKey:pluginId];
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Registered new plugin with id \"%@\"", pluginId];
+    
+    return YES;
 }
 
 #pragma mark -

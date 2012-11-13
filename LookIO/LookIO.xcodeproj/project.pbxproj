@@ -106,6 +106,8 @@
 		D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EA14F322C300713F29 /* SBJsonParser.m */; };
 		D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */; };
 		D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */; };
+		D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = D4BB18AC1651CC52007E096F /* LIOPhotoPlugin.h */; };
+		D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = D4BB18AD1651CC52007E096F /* LIOPhotoPlugin.m */; };
 		D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C902491549D04A00B36D68 /* LIOCacheEntry.h */; };
 		D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */; };
 		D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */; };
@@ -214,6 +216,8 @@
 		D4ADC7EA14F322C300713F29 /* SBJsonParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonParser.m; sourceTree = "<group>"; };
 		D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
 		D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBJsonWriter.m; sourceTree = "<group>"; };
+		D4BB18AC1651CC52007E096F /* LIOPhotoPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOPhotoPlugin.h; path = Source/Other/LIOPhotoPlugin.h; sourceTree = "<group>"; };
+		D4BB18AD1651CC52007E096F /* LIOPhotoPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOPhotoPlugin.m; path = Source/Other/LIOPhotoPlugin.m; sourceTree = "<group>"; };
 		D4C902491549D04A00B36D68 /* LIOCacheEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOCacheEntry.h; path = Source/Other/LIOCacheEntry.h; sourceTree = "<group>"; };
 		D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOCacheEntry.m; path = Source/Other/LIOCacheEntry.m; sourceTree = "<group>"; };
 		D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAnimatedCogView.h; path = Source/Views/LIOAnimatedCogView.h; sourceTree = "<group>"; };
@@ -355,6 +359,8 @@
 				D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */,
 				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
 				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
+				D4BB18AC1651CC52007E096F /* LIOPhotoPlugin.h */,
+				D4BB18AD1651CC52007E096F /* LIOPhotoPlugin.m */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -530,6 +536,7 @@
 				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
 				D446F41915AB435D00E40B19 /* LIOSurveyViewController.h in Headers */,
 				D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */,
+				D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -652,6 +659,7 @@
 				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
 				D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */,
 				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
+				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
