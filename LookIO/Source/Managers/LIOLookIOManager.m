@@ -2378,6 +2378,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([localizationTableHash length])
         [introDict setObject:localizationTableHash forKey:@"strings_hash"];
     
+    NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
+    if ([localeId length])
+        [introDict setObject:localeId forKey:@"locale"];
+    
     if (includeExtras)
     {
         if ([targetAgentId length])
@@ -2429,11 +2433,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSArray *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
             [detectedDict setObject:location forKey:@"location"];
         }
-        
-        NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
-        if ([localeId length])
-            [detectedDict setObject:localeId forKey:@"locale"];
-                               
+                                       
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
         if ([sessionExtras count])
             [extrasDict setDictionary:sessionExtras];
