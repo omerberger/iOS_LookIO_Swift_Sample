@@ -445,15 +445,23 @@ static LIOBundleManager *sharedBundleManager = nil;
 {
     // First, check to see if we've got a string for this key in
     // the downloaded tables.
+    NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *downloadedStrings = [userDefaults objectForKey:LIOBundleManagerStringTableDictKey];
-    NSString *aValue = [downloadedStrings objectForKey:aKey];
+    NSString *downloadedLocale = [downloadedStrings objectForKey:@"locale"];
+    if ([downloadedLocale length] && NO == [downloadedLocale isEqualToString:localeId])
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The downloaded localized string table's locale (%@) does not match this device's locale (%@).", downloadedLocale, localeId];
+    }
+    
+    NSDictionary *stringTable = [downloadedStrings objectForKey:@"strings"];
+    NSString *aValue = [stringTable objectForKey:aKey];
     if ([aValue length])
         return aValue;
     
     NSString *bundlePath = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:@"en"];
     NSBundle *englishBundle = [NSBundle bundleWithPath:[bundlePath stringByDeletingLastPathComponent]];
-    return [englishBundle localizedStringForKey:aKey value:@"<<<???>>>" table:nil];
+    return [englishBundle localizedStringForKey:aKey value:@"<LOCALIZATION MISSING>" table:nil];
 }
 
 #pragma mark -

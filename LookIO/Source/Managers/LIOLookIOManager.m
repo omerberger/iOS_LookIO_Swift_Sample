@@ -2138,6 +2138,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         currentVisitId = [visitIdString retain];
     }
     
+    // { "locale": "nl_NL", "strings": { } }
     NSDictionary *localizedStrings = [params objectForKey:@"localized_strings"];
     if ([localizedStrings count])
     {
@@ -2145,13 +2146,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         // Calculate the hash.
         // Sort the keys lexically, descending.
+        NSDictionary *strings = [localizedStrings objectForKey:@"strings"];
         NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-        NSArray *sortedKeys = [[localizedStrings allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:descriptor]];
+        NSArray *sortedKeys = [[strings allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:descriptor]];
         NSMutableString *stringResult = [NSMutableString string];
         for (int i=0; i<[sortedKeys count]; i++)
         {
             NSString *aKey = [sortedKeys objectAtIndex:i];
-            [stringResult appendString:[localizedStrings objectForKey:aKey]];
+            [stringResult appendString:[strings objectForKey:aKey]];
             if (i < [sortedKeys count] - 1)
                 [stringResult appendString:@"\x1E"];
         }
@@ -2161,7 +2163,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         CC_MD5(cString, strlen(cString), result);
         NSMutableString *md5String = [NSMutableString string];
         for (int i=0; i<16; i++)
-            [md5String appendFormat:@"%02x", result[i]];        
+            [md5String appendFormat:@"%02x", result[i]];
+        
+        LIOLog(@"\n\nhash: %@\n\nhash input: \"%@\"\n\n", md5String, stringResult);
     }
     
     NSString *continueURLString = [params objectForKey:@"continue_url"];
