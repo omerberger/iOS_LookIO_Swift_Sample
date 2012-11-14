@@ -2154,8 +2154,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             NSString *aKey = [sortedKeys objectAtIndex:i];
             [stringResult appendString:[strings objectForKey:aKey]];
+            /*
             if (i < [sortedKeys count] - 1)
                 [stringResult appendString:@"\x1E"];
+            */
         }
         
         const char *cString = [stringResult UTF8String];
