@@ -41,5 +41,6 @@
 - (BOOL)isAvailable;
 - (void)pruneImageCache;
 - (NSString *)localizedStringWithKey:(NSString *)aKey;
+- (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable;
 
 @end

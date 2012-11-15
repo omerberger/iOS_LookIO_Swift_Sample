@@ -6,6 +6,7 @@
 //  Copyright (c) 2012 LivePerson, Inc. All rights reserved.
 //
 
+#import <CommonCrypto/CommonCrypto.h>
 #import "LIOBundleManager.h"
 #import "LIOLookIOManager.h"
 #import "ZipFile.h"
@@ -462,6 +463,27 @@ static LIOBundleManager *sharedBundleManager = nil;
     NSString *bundlePath = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:@"en"];
     NSBundle *englishBundle = [NSBundle bundleWithPath:[bundlePath stringByDeletingLastPathComponent]];
     return [englishBundle localizedStringForKey:aKey value:@"<LOCALIZATION MISSING>" table:nil];
+}
+
+- (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable
+{
+    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
+    NSArray *sortedKeys = [[aTable allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:descriptor]];
+    NSMutableString *stringResult = [NSMutableString string];
+    for (int i=0; i<[sortedKeys count]; i++)
+    {
+        NSString *aKey = [sortedKeys objectAtIndex:i];
+        [stringResult appendString:[aTable objectForKey:aKey]];
+    }
+    
+    const char *cString = [stringResult UTF8String];
+    unsigned char result[16];
+    CC_MD5(cString, strlen(cString), result);
+    NSMutableString *md5String = [NSMutableString string];
+    for (int i=0; i<16; i++)
+        [md5String appendFormat:@"%02x", result[i]];
+    
+    return md5String;
 }
 
 #pragma mark -

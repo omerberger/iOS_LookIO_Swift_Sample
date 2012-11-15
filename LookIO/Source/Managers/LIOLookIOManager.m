@@ -38,6 +38,7 @@
                                     alpha:1.0]
 
 // Misc. constants
+#define LIOLookIOManagerDefaultLocalizationHash @"81681d728c629a14594c57d32f8a0a7b"
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerScreenCaptureInterval       0.5
@@ -258,6 +259,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+
+        if (0 == [[userDefaults objectForKey:LIOBundleManagerStringTableHashKey] length])
+            [userDefaults setObject:LIOLookIOManagerDefaultLocalizationHash forKey:LIOBundleManagerStringTableHashKey];
+        
         self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
         cursorView = [[UIImageView alloc] initWithImage:touchImage];
         cursorView.frame = CGRectMake(-cursorView.frame.size.width, -cursorView.frame.size.height, cursorView.frame.size.width, cursorView.frame.size.height);
@@ -286,7 +292,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
-        queuedLaunchReportDates = [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLaunchReportQueueKey];
+        queuedLaunchReportDates = [userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey];
         if (nil == queuedLaunchReportDates)
             queuedLaunchReportDates = [[NSMutableArray alloc] init];
         
@@ -2144,30 +2150,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
         
-        // Calculate the hash.
-        // Sort the keys lexically, descending.
         NSDictionary *strings = [localizedStrings objectForKey:@"strings"];
-        NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-        NSArray *sortedKeys = [[strings allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:descriptor]];
-        NSMutableString *stringResult = [NSMutableString string];
-        for (int i=0; i<[sortedKeys count]; i++)
-        {
-            NSString *aKey = [sortedKeys objectAtIndex:i];
-            [stringResult appendString:[strings objectForKey:aKey]];
-            /*
-            if (i < [sortedKeys count] - 1)
-                [stringResult appendString:@"\x1E"];
-            */
-        }
+        NSString *newHash = [[LIOBundleManager sharedBundleManager] hashForLocalizedStringTable:strings];
+        [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
         
-        const char *cString = [stringResult UTF8String];
-        unsigned char result[16];
-        CC_MD5(cString, strlen(cString), result);
-        NSMutableString *md5String = [NSMutableString string];
-        for (int i=0; i<16; i++)
-            [md5String appendFormat:@"%02x", result[i]];
-        
-        LIOLog(@"\n\nhash: %@\n\nhash input: \"%@\"\n\n", md5String, stringResult);
+        LIOLog(@"Got a localized string table for locale \"%@\", hash: \"%@\"", [localizedStrings objectForKey:@"locale"], newHash);
     }
     
     NSString *continueURLString = [params objectForKey:@"continue_url"];
