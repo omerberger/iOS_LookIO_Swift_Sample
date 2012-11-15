@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 LivePerson, Inc. All rights reserved.
 //
 
-#import <CommonCrypto/CommonCrypto.h>
+#import <CommonCrypto/CommonDigest.h>
 #import "LIOBundleManager.h"
 #import "LIOLookIOManager.h"
 #import "ZipFile.h"
