@@ -2370,10 +2370,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
     if ([localizationTableHash length])
         [introDict setObject:localizationTableHash forKey:@"strings_hash"];
+
+    NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
+    if ([localeId length])
+        [introDict setObject:localeId forKey:@"locale"];
     
     NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
     if ([languageId length])
-        [introDict setObject:languageId forKey:@"locale"];
+        [introDict setObject:languageId forKey:@"language"];
     
     if (includeExtras)
     {
