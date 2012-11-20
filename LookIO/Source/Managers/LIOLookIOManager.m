@@ -31,6 +31,7 @@
 #import "LIOSurveyManager.h"
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyQuestion.h"
+#import "LIOPlugin.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -86,15 +87,22 @@
 #define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
 #define LIOLookIOManagerLastKnownDefaultAvailabilityKey @"LIOLookIOManagerLastKnownDefaultAvailabilityKey"
 #define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
+#define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
 
+// Event constants.
+NSString *const kLPEventConversion  = @"LIOEventConversion";
+NSString *const kLPEventPageView    = @"LIOEventPageView";
+NSString *const kLPEventSignUp      = @"LIOEventSignUp";
+NSString *const kLPEventSignIn      = @"LIOEventSignIn";
+NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
+
 @class CTCall, CTCallCenter;
 
 @interface LIOLookIOManager ()
-    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate,
-     LIOLeaveMessageViewControllerDelegate, AsyncSocketDelegate_LIO>
+    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -149,11 +157,11 @@
     NSString *currentRequiredSkill;
     NSString *lastKnownContinueURL;
     NSTimeInterval nextTimeInterval;
-    NSMutableArray *fullNavigationHistory, *partialNavigationHistory;
     NSDictionary *surveyResponsesToBeSent;
     NSString *partialPacketString;
     CGRect controlButtonShownFrame, controlButtonHiddenFrame;
     NSMutableDictionary *registeredPlugins;
+    NSMutableArray *pendingEvents;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -164,7 +172,7 @@
 
 - (void)rejiggerWindows;
 - (void)refreshControlButtonVisibility;
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses;
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingSurveyResponses:(BOOL)includesSurveyResponses includingEvents:(BOOL)includeEvents;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
 - (void)handleCallEvent:(CTCall *)aCall;
 - (void)configureReconnectionTimer;
@@ -284,12 +292,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         sessionExtras = [[NSMutableDictionary alloc] init];
         proactiveChatRules = [[NSMutableDictionary alloc] init];
-        fullNavigationHistory = [[NSMutableArray alloc] init];
-        partialNavigationHistory = [[NSMutableArray alloc] init];
         registeredPlugins = [[NSMutableDictionary alloc] init];
+        pendingEvents = [[NSMutableArray alloc] init];
+        
+        // Restore saved pending events.
+        NSArray *savedPendingEvents = [userDefaults objectForKey:LIOLookIOManagerPendingEventsKey];
+        if ([savedPendingEvents count])
+            [pendingEvents addObjectsFromArray:savedPendingEvents];
         
         dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
+        dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
         queuedLaunchReportDates = [userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey];
@@ -386,7 +398,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:NO];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appLaunchRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<LAUNCH> Endpoint: \"%@\"\n    Request: %@", [appLaunchRequest.URL absoluteString], introDictJSONEncoded);
@@ -417,14 +429,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:nil includingFullNavigationHistory:NO includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:YES];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
         [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictJSONEncoded);
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
-        
-        [partialNavigationHistory removeAllObjects];
     }
 }
 
@@ -752,12 +762,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [currentRequiredSkill release];
     [lastKnownContinueURL release];
     [currentVisitId release];
-    [fullNavigationHistory release];
-    [partialNavigationHistory release];
     [surveyResponsesToBeSent release];
     [lastKnownLocation release];
     [realtimeExtrasPreviousSessionExtras release];
     [registeredPlugins release];
+    [sessionExtras release];
+    [pendingEvents release];
     
     [reconnectionTimer stopTimer];
     [reconnectionTimer release];
@@ -862,8 +872,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [queuedLaunchReportDates removeAllObjects];
     [proactiveChatRules removeAllObjects];
-    [partialNavigationHistory removeAllObjects];
-    [fullNavigationHistory removeAllObjects];
     
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
@@ -1462,12 +1470,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket disconnectAfterWriting];
 }
 
-- (void)setUILocation:(NSString *)aLocationString
-{
-    [fullNavigationHistory addObject:aLocationString];
-    [partialNavigationHistory addObject:aLocationString];
-}
-
 - (void)setSkill:(NSString *)aRequiredSkill
 {
     [currentRequiredSkill release];
@@ -1862,7 +1864,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingWhen:nil includingFullNavigationHistory:YES includingSurveyResponses:YES];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:YES includingEvents:NO];
     
     NSString *intro = [jsonWriter stringWithObject:introDict];
     
@@ -2280,9 +2282,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey
+{
+    [self setSessionExtra:anObject forKey:aKey];
+}
+
 - (id)sessionExtraForKey:(NSString *)aKey
 {
     return [sessionExtras objectForKey:aKey];
+}
+
+- (id)customVariableForKey:(NSString *)aKey
+{
+    return [self sessionExtraForKey:aKey];
 }
 
 - (void)addSessionExtras:(NSDictionary *)aDictionary
@@ -2298,6 +2310,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add dictionary of objects to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc."];
 }
 
+- (void)addCustomVariables:(NSDictionary *)aDictionary
+{
+    [self addSessionExtras:aDictionary];
+}
+
 - (void)clearSessionExtras
 {
     [sessionExtras removeAllObjects];
@@ -2305,7 +2322,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self sendContinuationReport];
 }
 
-- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingWhen:(NSDate *)aDate includingFullNavigationHistory:(BOOL)fullNavHistory includingSurveyResponses:(BOOL)includesSurveyResponses
+- (void)clearCustomVariables
+{
+    [self clearSessionExtras];
+}
+
+- (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingSurveyResponses:(BOOL)includesSurveyResponses includingEvents:(BOOL)includeEvents
 {
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);  
@@ -2332,6 +2354,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       LOOKIO_VERSION_STRING, @"sdk_version",
                                       nil];
     
+    if (includeEvents && [pendingEvents count])
+        [introDict setObject:pendingEvents forKey:@"events"];
+    
     if ([currentVisitId length])
         [introDict setObject:currentVisitId forKey:@"visit_id"];
     
@@ -2341,14 +2366,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (includesType)
         [introDict setObject:@"intro" forKey:@"type"];
-    
-    if (aDate)
-        [introDict setObject:[self dateToStandardizedString:aDate] forKey:@"when"];
-    
-    if (fullNavHistory && [fullNavigationHistory count])
-        [introDict setObject:fullNavigationHistory forKey:@"navigation_history"];
-    else if ([partialNavigationHistory count])
-        [introDict setObject:partialNavigationHistory forKey:@"navigation_history"];
     
     if (includesSurveyResponses && [surveyResponsesToBeSent count])
     {
@@ -2633,7 +2650,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         realtimeExtrasChangedLocation = nil;
 
         // Send an update.
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:NO includingFullNavigationHistory:YES includingSurveyResponses:NO];
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:NO];
         NSDictionary *extrasDict = [introDict objectForKey:@"extras"];
         NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"extras", @"type", extrasDict, @"extras", nil];
         
@@ -2733,6 +2750,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Registered new plugin with id \"%@\"", pluginId];
     
     return YES;
+}
+
+- (void)reportEvent:(NSString *)anEvent
+{
+    [self reportEvent:anEvent withData:nil];
+}
+
+// FIXME: Handle case where continue call is in progress and this is called.
+// Need an overflow hash.
+- (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
+{
+    id<NSObject> dataPayload = someData;
+    if (nil == dataPayload)
+        dataPayload = [NSNumber numberWithInt:1];
+    
+    NSMutableDictionary *newEvent = [NSMutableDictionary dictionary];
+    [newEvent setObject:anEvent forKey:@"name"];
+    [newEvent setObject:dataPayload forKey:@"data"];
+    [newEvent setObject:[self dateToStandardizedString:[NSDate date]] forKey:@"timestamp"];
+    
+    [pendingEvents addObject:newEvent];
+    [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
 }
 
 #pragma mark -
@@ -3618,7 +3657,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [request setURL:url];
                 }
                 
-                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingWhen:aDate includingFullNavigationHistory:YES includingSurveyResponses:NO];
+                NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:NO];
                 NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
                 [request setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
                 [NSURLConnection connectionWithRequest:request delegate:nil];
@@ -3755,6 +3794,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (appContinueRequestConnection == connection)
     {
+        BOOL failure = NO;
+        
         if (200 == appContinueRequestResponseCode)
         {
             NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
@@ -3762,9 +3803,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"<CONTINUE> Success. Response: %@", responseString);
             
             [self parseAndSaveSettingsPayload:responseDict];
+            
+            // Continue call succeeded! Purge the event queue.
+            [pendingEvents removeAllObjects];
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
         }
         else if (404 == appContinueRequestResponseCode)
         {
+            failure = YES;
+            
             LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Stopping future continue calls.");
             [currentVisitId release];
             currentVisitId = nil;
@@ -3776,6 +3823,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
+            failure = YES;
+            
             LIOLog(@"<CONTINUE> Failure. HTTP code: %d", appContinueRequestResponseCode);
         }
         
@@ -3783,6 +3832,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appContinueRequestConnection = nil;
         
         appContinueRequestResponseCode = -1;
+        
+        if (failure && [pendingEvents count])
+        {
+            // Oh crap, the continue call failed!
+            // Save all queued events to the user defaults store.
+            [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
+        }
     }
     
     [self refreshControlButtonVisibility];
@@ -3819,6 +3875,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = nil;
+        
+        // Oh crap, the continue call failed!
+        // Save all queued events to the user defaults store.
+        if ([pendingEvents count])
+            [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
     }
     
     [self refreshControlButtonVisibility];
