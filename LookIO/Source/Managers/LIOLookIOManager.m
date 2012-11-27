@@ -1485,7 +1485,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    LIOLog(@"<<<FROM BACKEND<<< %@", aJsonString);
+    LIOLog(@"<<<FROM BACKEND (objc)<<< %@", aPacket);
     
     NSString *type = [aPacket objectForKey:@"type"];
     
@@ -2037,6 +2037,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)parseAndSaveSettingsPayload:(NSDictionary *)params
 {
+    LIOLog(@"Got settings payload: %@", params);
+    
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
     NSNumber *visitorIdNumber = [params objectForKey:@"visitor_id"];
