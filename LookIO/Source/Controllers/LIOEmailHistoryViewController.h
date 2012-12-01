@@ -25,7 +25,7 @@
     UIImageView *fieldBackground;
     UITextField *inputField;
     UIButton *submitButton;
-    UILabel *label02;
+    UILabel *label01, *label02;
     BOOL keyboardShown;
     NSString *initialEmailAddress;
     UIAlertView *alertView;

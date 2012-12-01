@@ -57,10 +57,15 @@
     label02.textColor = textColor;
     label02.backgroundColor = [UIColor clearColor];
     label02.font = [UIFont systemFontOfSize:12.0];
+    label02.adjustsFontSizeToFitWidth = YES;
+    label02.minimumFontSize = 9.0;
+    label02.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    label02.textAlignment = UITextAlignmentCenter;
     [label02 sizeToFit];
     aFrame = label02.frame;
     aFrame.origin.y = 5.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label02.frame.size.width / 2.0);
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     label02.frame = aFrame;
     label02.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label02];
@@ -159,7 +164,8 @@
         [label02 sizeToFit];
         CGRect aFrame = label02.frame;
         aFrame.origin.y = 15.0;
-        aFrame.origin.x = (self.view.bounds.size.width / 2.0) - (label02.frame.size.width / 2.0);
+        aFrame.origin.x = 10.0;
+        aFrame.size.width = self.view.bounds.size.width - 20.0;
         label02.frame = aFrame;
     
         aFrame = fieldBackground.frame;

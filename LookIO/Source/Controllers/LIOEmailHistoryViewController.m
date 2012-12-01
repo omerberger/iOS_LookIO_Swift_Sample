@@ -54,15 +54,20 @@
     backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [scrollView addSubview:backgroundView];
     
-    UILabel *label01 = [[[UILabel alloc] init] autorelease];
+    label01 = [[UILabel alloc] init];
     label01.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderText");
     label01.textColor = textColor;
     label01.backgroundColor = [UIColor clearColor];
     label01.font = [UIFont boldSystemFontOfSize:14.0];
+    label01.minimumFontSize = 9.0;
+    label01.adjustsFontSizeToFitWidth = YES;
+    label01.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    label01.textAlignment = UITextAlignmentCenter;
     [label01 sizeToFit];
     aFrame = label01.frame;
     aFrame.origin.y = 20.0;
-    aFrame.origin.x = (rootView.frame.size.width / 2.0) - (label01.frame.size.width / 2.0);
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
     label01.frame = aFrame;
     label01.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [scrollView addSubview:label01];
@@ -186,6 +191,16 @@
     [super dealloc];
 }
 
+- (void)rejiggerInterface
+{
+    [label01 sizeToFit];
+    CGRect aFrame = label01.frame;
+    aFrame.origin.y = 20.0;
+    aFrame.origin.x = 10.0;
+    aFrame.size.width = self.view.bounds.size.width - 20.0;
+    label01.frame = aFrame;
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -200,7 +215,7 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];   
     
-    //[self rejiggerInterface];
+    [self rejiggerInterface];
     
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [inputField becomeFirstResponder];

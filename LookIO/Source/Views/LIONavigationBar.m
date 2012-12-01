@@ -65,6 +65,10 @@
         titleLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
         titleLabel.layer.shadowOpacity = 0.8;
         titleLabel.layer.shadowRadius = 0.5;
+        titleLabel.adjustsFontSizeToFitWidth = YES;
+        titleLabel.minimumFontSize = 9.0;
+        titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
+        titleLabel.textAlignment = UITextAlignmentCenter;
         [self addSubview:titleLabel];
     }
     
@@ -106,9 +110,10 @@
         
         [leftButton setBackgroundImage:stretchableButtonPortrait forState:UIControlStateNormal];
         leftButton.hidden = 0 == [leftButtonText length];
-        if (NO == leftButton.hidden)
-        {
-            [leftButton setTitle:leftButtonText forState:UIControlStateNormal];
+        //if (NO == leftButton.hidden)
+        //{
+            if ([leftButtonText length]) [leftButton setTitle:leftButtonText forState:UIControlStateNormal];
+            else [leftButton setTitle:@"12345" forState:UIControlStateNormal];
             [leftButton sizeToFit];
             CGRect leftFrame = leftButton.frame;
             leftFrame.size.height = 29.0;
@@ -116,13 +121,14 @@
             leftFrame.origin.x = 7.0;
             leftFrame.origin.y = (self.bounds.size.height / 2.0) - (leftFrame.size.height / 2.0);
             leftButton.frame = leftFrame;
-        }
+        //}
         
         [rightButton setBackgroundImage:stretchableButtonPortrait forState:UIControlStateNormal];
         rightButton.hidden = 0 == [rightButtonText length];
-        if (NO == rightButton.hidden)
-        {
-            [rightButton setTitle:rightButtonText forState:UIControlStateNormal];
+        //if (NO == rightButton.hidden)
+        //{
+            if ([rightButtonText length]) [rightButton setTitle:rightButtonText forState:UIControlStateNormal];
+            else [rightButton setTitle:@"12345" forState:UIControlStateNormal];
             [rightButton sizeToFit];
             CGRect rightFrame = rightButton.frame;
             rightFrame.size.height = 29.0;
@@ -130,7 +136,7 @@
             rightFrame.origin.x = self.bounds.size.width - rightFrame.size.width - 7.0;
             rightFrame.origin.y = (self.bounds.size.height / 2.0) - (rightFrame.size.height / 2.0);
             rightButton.frame = rightFrame;
-        }
+        //}
     }
     else
     {
@@ -147,9 +153,10 @@
         
         [leftButton setBackgroundImage:stretchableButtonLandscape forState:UIControlStateNormal];
         leftButton.hidden = 0 == [leftButtonText length];
-        if (NO == leftButton.hidden)
-        {
-            [leftButton setTitle:leftButtonText forState:UIControlStateNormal];
+        //if (NO == leftButton.hidden)
+        //{
+            if ([leftButtonText length]) [leftButton setTitle:leftButtonText forState:UIControlStateNormal];
+            else [leftButton setTitle:@"12345" forState:UIControlStateNormal];
             [leftButton sizeToFit];
             CGRect leftFrame = leftButton.frame;
             leftFrame.size.height = 24.0;
@@ -157,13 +164,14 @@
             leftFrame.origin.x = 7.0;
             leftFrame.origin.y = (self.bounds.size.height / 2.0) - (leftFrame.size.height / 2.0);
             leftButton.frame = leftFrame;
-        }
+        //}
         
         [rightButton setBackgroundImage:stretchableButtonLandscape forState:UIControlStateNormal];
         rightButton.hidden = 0 == [rightButtonText length];
-        if (NO == rightButton.hidden)
-        {
-            [rightButton setTitle:rightButtonText forState:UIControlStateNormal];
+        //if (NO == rightButton.hidden)
+        //{
+            if ([rightButtonText length]) [rightButton setTitle:rightButtonText forState:UIControlStateNormal];
+            else [rightButton setTitle:@"12345" forState:UIControlStateNormal];
             [rightButton sizeToFit];
             CGRect rightFrame = rightButton.frame;
             rightFrame.size.height = 24.0;
@@ -171,7 +179,7 @@
             rightFrame.origin.x = self.bounds.size.width - rightFrame.size.width - 7.0;
             rightFrame.origin.y = (self.bounds.size.height / 2.0) - (rightFrame.size.height / 2.0);
             rightButton.frame = rightFrame;
-        }
+        //}
     }
     
     CGRect aFrame = CGRectZero;
@@ -201,8 +209,9 @@
         titleLabel.text = titleString;
         [titleLabel sizeToFit];
         aFrame = titleLabel.frame;
-        aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
         aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
+        aFrame.origin.x = leftButton.frame.origin.x + leftButton.frame.size.width + 10.0;
+        aFrame.size.width = rightButton.frame.origin.x - aFrame.origin.x - 10.0;
         titleLabel.frame = aFrame;
     }
 }
