@@ -59,7 +59,7 @@
     label02.font = [UIFont systemFontOfSize:12.0];
     label02.adjustsFontSizeToFitWidth = YES;
     label02.minimumFontSize = 9.0;
-    label02.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    label02.lineBreakMode = UILineBreakModeMiddleTruncation;
     label02.textAlignment = UITextAlignmentCenter;
     [label02 sizeToFit];
     aFrame = label02.frame;

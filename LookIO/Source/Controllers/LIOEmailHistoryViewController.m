@@ -61,7 +61,7 @@
     label01.font = [UIFont boldSystemFontOfSize:14.0];
     label01.minimumFontSize = 9.0;
     label01.adjustsFontSizeToFitWidth = YES;
-    label01.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    label01.lineBreakMode = UILineBreakModeMiddleTruncation;
     label01.textAlignment = UITextAlignmentCenter;
     [label01 sizeToFit];
     aFrame = label01.frame;
