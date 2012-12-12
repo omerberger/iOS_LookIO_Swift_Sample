@@ -58,6 +58,8 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
+#define LIOLookIOManagerMaxContinueFailures 3
+
 #define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
 #define LIOLookIOManagerAppContinueRequestURL   @"api/v1/app/continue"
 #define LIOLookIOManagerLogUploadRequestURL     @"api/v1/app/log"
@@ -162,6 +164,7 @@ NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
     CGRect controlButtonShownFrame, controlButtonHiddenFrame;
     NSMutableDictionary *registeredPlugins;
     NSMutableArray *pendingEvents;
+    int failedContinueCount;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -859,6 +862,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousReconnectionTimerStep = 2;
     previousScreenshotHash = 0;
     nextTimeInterval = 0.0;
+    failedContinueCount = 0;
         
     waitingForScreenshotAck = NO, waitingForIntroAck = NO, controlSocketConnecting = NO, introduced = NO, enqueued = NO;
     resetAfterDisconnect = NO, killConnectionAfterChatViewDismissal = NO, screenshotsAllowed = NO, unprovisioned = NO;
@@ -3804,6 +3808,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
             LIOLog(@"<CONTINUE> Success. Response: %@", responseString);
             
+            failedContinueCount = 0;
+            
             [self parseAndSaveSettingsPayload:responseDict];
             
             // Continue call succeeded! Purge the event queue.
@@ -3827,7 +3833,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             failure = YES;
             
-            LIOLog(@"<CONTINUE> Failure. HTTP code: %d", appContinueRequestResponseCode);
+            LIOLog(@"<CONTINUE> General failure. HTTP code: %d", appContinueRequestResponseCode);
         }
         
         [appContinueRequestConnection release];
@@ -3866,22 +3872,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOLog(@"<CONTINUE> Failed. Reason: %@", [error localizedDescription]);
         
         [appContinueRequestConnection release];
-        appLaunchRequestConnection = nil;
+        appContinueRequestConnection = nil;
         
-        appLaunchRequestResponseCode = -1;
-        
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
-        [lastKnownContinueURL release];
-        lastKnownContinueURL = nil;
-        
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-        [lastKnownEnabledStatus release];
-        lastKnownEnabledStatus = nil;
+        appContinueRequestResponseCode = -1;
         
         // Oh crap, the continue call failed!
         // Save all queued events to the user defaults store.
         if ([pendingEvents count])
             [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
+        
+        if (failedContinueCount < LIOLookIOManagerMaxContinueFailures)
+        {
+            failedContinueCount++;
+            LIOLog(@"<CONTINUE> Retry attempt %u of %u...", failedContinueCount, LIOLookIOManagerMaxContinueFailures);
+            [self sendContinuationReport];
+        }
+        else
+        {
+            LIOLog(@"<CONTINUE> Retries exhausted. Disabling library...");
+            
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
+            [lastKnownContinueURL release];
+            lastKnownContinueURL = nil;
+            
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+            [lastKnownEnabledStatus release];
+            lastKnownEnabledStatus = nil;
+        }
     }
     
     [self refreshControlButtonVisibility];
