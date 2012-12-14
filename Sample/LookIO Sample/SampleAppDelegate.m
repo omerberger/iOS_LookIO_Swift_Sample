@@ -29,6 +29,20 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
+    
+    //[[LIOLookIOManager sharedLookIOManager] performSelector:@selector(setUsesTLS:) withObject:[NSNumber numberWithBool:NO]];
+    //[[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"test@fake.tld" forKey:@"extra_email"]];
+    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
+    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
+    
+#if RUN_KIF_TESTS
+    [[LIOTestController sharedInstance] startTestingWithCompletionBlock:^{
+        // Exit after the tests complete so that CI knows we're done
+        exit([[LIOTestController sharedInstance] failureCount]);
+    }];
+#endif
+    
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
@@ -38,8 +52,6 @@
     }
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
-    
-    //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
     
     // Enable Twitter / Location services for LookIO analytical purposes
     Class $ACAccountType = NSClassFromString(@"ACAccountType");
@@ -66,17 +78,6 @@
         }];
     }
     
-    //[[LIOLookIOManager sharedLookIOManager] performSelector:@selector(setUsesTLS:) withObject:[NSNumber numberWithBool:NO]];
-    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"test@fake.tld" forKey:@"extra_email"]];
-    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
-    [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
-    
-#if RUN_KIF_TESTS
-    [[LIOTestController sharedInstance] startTestingWithCompletionBlock:^{
-        // Exit after the tests complete so that CI knows we're done
-        exit([[LIOTestController sharedInstance] failureCount]);
-    }];
-#endif
     
     return YES;
 }

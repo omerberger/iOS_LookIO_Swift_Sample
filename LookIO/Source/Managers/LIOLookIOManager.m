@@ -268,8 +268,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
-        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
         if (0 == [[userDefaults objectForKey:LIOBundleManagerStringTableHashKey] length])
@@ -278,10 +276,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
         cursorView = [[UIImageView alloc] initWithImage:touchImage];
         cursorView.frame = CGRectMake(-cursorView.frame.size.width, -cursorView.frame.size.height, cursorView.frame.size.width, cursorView.frame.size.height);
-        [keyWindow addSubview:cursorView];
+        
         clickView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOClickIndicator"]];
         clickView.frame = CGRectMake(-clickView.frame.size.width, -clickView.frame.size.height, clickView.frame.size.width, clickView.frame.size.height);
-        [keyWindow addSubview:clickView];
+
         cursorView.hidden = YES;
         clickView.hidden = YES;
         cursorEnded = YES;
@@ -334,6 +332,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 }
             }
         }
+        
+        appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                        cachePolicy:NSURLCacheStorageNotAllowed
+                                                    timeoutInterval:10.0];
+        [appLaunchRequest setHTTPMethod:@"POST"];
+        [appLaunchRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        appLaunchRequestData = [[NSMutableData alloc] init];
+        appLaunchRequestResponseCode = -1;
+        
+        appContinueRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                          cachePolicy:NSURLCacheStorageNotAllowed
+                                                      timeoutInterval:10.0];
+        [appContinueRequest setHTTPMethod:@"POST"];
+        [appContinueRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        appContinueRequestData = [[NSMutableData alloc] init];
+        appContinueRequestResponseCode = -1;
+        
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -481,9 +496,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         supportedOrientations = [[NSArray alloc] init];
     }
     
-    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    
-    lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
+    lookioWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     lookioWindow.hidden = YES;
     lookioWindow.windowLevel = 0.1;
     
@@ -502,7 +515,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
     controlButton.delegate = self;
     controlButton.accessibilityLabel = @"LIOTab";
-    [keyWindow addSubview:controlButton];
     
     Class $CTCallCenter = NSClassFromString(@"CTCallCenter");
     if ($CTCallCenter)
@@ -566,23 +578,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     lastKnownDefaultAvailability = [[userDefaults objectForKey:LIOLookIOManagerLastKnownDefaultAvailabilityKey] retain];
     
     [self applicationDidChangeStatusBarOrientation:nil];
-    
-    appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                    cachePolicy:NSURLCacheStorageNotAllowed
-                                                     timeoutInterval:10.0];
-    [appLaunchRequest setHTTPMethod:@"POST"];
-    [appLaunchRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    appLaunchRequestData = [[NSMutableData alloc] init];
-    appLaunchRequestResponseCode = -1;
-    
-    appContinueRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                      cachePolicy:NSURLCacheStorageNotAllowed
-                                                  timeoutInterval:10.0];
-    [appContinueRequest setHTTPMethod:@"POST"];
-    [appContinueRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    appContinueRequestData = [[NSMutableData alloc] init];
-    appContinueRequestResponseCode = -1;
-    
+        
     if (0.0 == nextTimeInterval)
         nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
@@ -626,14 +622,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
     statusBarUnderlay.backgroundColor = [UIColor colorWithRed:0.0 green:(100.0/256.0) blue:(137.0/256.0) alpha:1.0];
     statusBarUnderlay.hidden = YES;
-    if (NO == padUI)
-        [keyWindow addSubview:statusBarUnderlay];
     
     statusBarUnderlayBlackout = [[UIView alloc] initWithFrame:[[UIApplication sharedApplication] statusBarFrame]];
     statusBarUnderlayBlackout.backgroundColor = [UIColor blackColor];
     statusBarUnderlayBlackout.hidden = YES;
-    if (NO == padUI)
-        [keyWindow addSubview:statusBarUnderlayBlackout];
 
     NSString *sessionId = [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
     if ([sessionId length])
@@ -1023,6 +1015,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerWindows
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
     
@@ -1077,6 +1071,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (screenshotsAllowed)
             {
+                if (NO == padUI && nil == [statusBarUnderlay superview])
+                    [mainWindow addSubview:statusBarUnderlay];
+
                 statusBarUnderlay.hidden = NO;
                 [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
             }
@@ -1091,7 +1088,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (UIImage *)captureScreen
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     // CAUTION: Called on a non-main thread!
+    if (NO == padUI && nil == [statusBarUnderlay superview])
+        [mainWindow addSubview:statusBarUnderlayBlackout];
+    
     statusBarUnderlayBlackout.hidden = NO;
     
     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
@@ -1181,7 +1183,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (keyWindow != lookioWindow)
     {
         if (controlButton)
+        {
+            if (nil == [controlButton superview])
+            {
+                [keyWindow addSubview:controlButton];
+                [self rejiggerControlButtonFrame];
+                [self rejiggerControlButtonLabel];
+            }
+            
             [keyWindow bringSubviewToFront:controlButton];
+        }
 
         [clickView removeFromSuperview];
         if (clickView)
