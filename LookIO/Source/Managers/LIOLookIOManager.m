@@ -109,7 +109,7 @@ NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -269,6 +269,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        badInitialization = nil == keyWindow;
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
@@ -1435,6 +1436,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginSession
 {
+    if (badInitialization)
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.BadInitAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.BadInitAlertBody")
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.BadInitButton"), nil];
+        [alertView show];
+        [alertView autorelease];
+        
+        return;
+    }
+    
     [self beginSessionImmediatelyShowingChat:YES];
 }
 
@@ -2372,6 +2386,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (includesType)
         [introDict setObject:@"intro" forKey:@"type"];
+    
+    if (badInitialization)
+        [introDict setObject:[NSNumber numberWithBool:YES] forKey:@"bad_init"];
     
     if (includesSurveyResponses && [surveyResponsesToBeSent count])
     {
