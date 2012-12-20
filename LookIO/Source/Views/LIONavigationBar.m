@@ -67,7 +67,7 @@
         titleLabel.layer.shadowRadius = 0.5;
         titleLabel.adjustsFontSizeToFitWidth = YES;
         titleLabel.minimumFontSize = 9.0;
-        titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
+        titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
         titleLabel.textAlignment = UITextAlignmentCenter;
         [self addSubview:titleLabel];
     }

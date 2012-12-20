@@ -242,7 +242,7 @@
     emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
     emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
+    emailConvoButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     emailConvoButton.titleLabel.minimumFontSize = 9.0;
     [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
@@ -262,7 +262,7 @@
     endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
     endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
+    endSessionButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     endSessionButton.titleLabel.minimumFontSize = 9.0;
     [endSessionButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EndSessionButton") forState:UIControlStateNormal];
