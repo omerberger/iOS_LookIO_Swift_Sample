@@ -91,7 +91,16 @@
 
 - (IBAction)crashButtonSelected:(id)sender
 {
-    [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"12345abcdefgskdjgskdjg" forKey:@"nonsense"]];
+    for (int i=0; i<10; i++)
+        [[LIOLookIOManager sharedLookIOManager] reportEvent:kLPEventPageView withData:[NSNumber numberWithInt:i]];
+    
+    int64_t delayInSeconds = 5.0;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [[LIOLookIOManager sharedLookIOManager] reportEvent:kLPEventAddedToCart withData:@"42"];
+    });
+    
+    //[[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"12345abcdefgskdjgskdjg" forKey:@"nonsense"]];
     /*
     NSString *badPointer = (NSString *)0xcafebabe;
     [badPointer length];

@@ -44,6 +44,8 @@
 
 #define LIOLookIOManagerScreenCaptureInterval       0.5
 #define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
+#define LIOLookIOManagerMaxContinueFailures 3
+#define LIOLookIOMAnagerMaxEventQueueSize   100
 
 #define LIOLookIOManagerWriteTimeout            5.0
 
@@ -57,8 +59,6 @@
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
-
-#define LIOLookIOManagerMaxContinueFailures 3
 
 #define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
 #define LIOLookIOManagerAppContinueRequestURL   @"api/v1/app/continue"
@@ -1127,39 +1127,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Retrieve the screenshot image
     UIImage *screenshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    
-    // Chop off the status bar area, if necessary.
-    // FIXME: Too expensive.
-    /*
-    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-    {
-        UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-        CGFloat statusBarHeight;
-        CGRect clippedRect;
-        if (UIInterfaceOrientationIsPortrait(interfaceOrientation))
-        {
-            statusBarHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
-            clippedRect = CGRectMake(0.0, statusBarHeight, screenSize.width, screenSize.height - statusBarHeight);
-        }
-        else
-        {
-            statusBarHeight = [[UIApplication sharedApplication] statusBarFrame].size.width;
-            clippedRect = CGRectMake(statusBarHeight, 0.0, screenSize.height - statusBarHeight, screenSize.width);
-        }
-        
-        if (screenshotImage.scale > 1.0)
-        {
-            clippedRect = CGRectMake(clippedRect.origin.x * screenshotImage.scale,
-                                     clippedRect.origin.y * screenshotImage.scale,
-                                     clippedRect.size.width * screenshotImage.scale,
-                                     clippedRect.size.height * screenshotImage.scale);
-        }
-        
-        CGImageRef croppedImage = CGImageCreateWithImageInRect(screenshotImage.CGImage, clippedRect);
-        screenshotImage = [UIImage imageWithCGImage:croppedImage scale:screenshotImage.scale orientation:screenshotImage.imageOrientation];
-        CGImageRelease(croppedImage);        
-    }
-    */
 
     // CAUTION: Called on a non-main thread!
     statusBarUnderlayBlackout.hidden = YES;
@@ -1654,32 +1621,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"cursor_end"])
         {
-            /*
-            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-            
-            if (nil == cursorView)
-            {
-                cursorView = [[UIImageView alloc] initWithImage:touchImage];
-                [keyWindow addSubview:cursorView];
-            }
-            
-            [keyWindow bringSubviewToFront:cursorView];
-            
-            CGRect aFrame = CGRectZero;
-            aFrame.size.width = cursorView.image.size.width * 8.0;
-            aFrame.size.height = cursorView.image.size.height * 8.0;
-            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            
-            [UIView animateWithDuration:0.25
-                                  delay:0.0
-                                options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
-                             animations:^{
-                                 cursorView.frame = aFrame;
-                                 cursorView.alpha = 0.0;
-                             }
-                             completion:nil];
-             */
             cursorEnded = YES;
             cursorView.hidden = YES;
         }
@@ -2794,7 +2735,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [newEvent setObject:[self dateToStandardizedString:[NSDate date]] forKey:@"timestamp"];
     
     [pendingEvents addObject:newEvent];
+    
+    // Queue is capped. Remove oldest entry on overflow.
+    if ([pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
+        [pendingEvents removeObjectAtIndex:0];
+    
     [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
+    
+    // Immediately make a continue call, unless the event is the built-in "page view" one.
+    if (NO == [anEvent isEqualToString:kLPEventPageView])
+        [self sendContinuationReport];
 }
 
 #pragma mark -
@@ -3069,23 +3019,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     screenSharingStartedDate = nil;
 }
 
-/*
-- (void)altChatViewControllerDidTapEmailButton:(LIOAltChatViewController *)aController
-{
-    [altChatViewController dismissModalViewControllerAnimated:NO];
-    [altChatViewController.view removeFromSuperview];
-    [altChatViewController autorelease];
-    altChatViewController = nil;
-    
-    emailHistoryViewController = [[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil];
-    emailHistoryViewController.delegate = self;
-    emailHistoryViewController.initialEmailAddress = pendingEmailAddress;
-    [lookioWindow addSubview:emailHistoryViewController.view];
-    
-    [self rejiggerWindows];
-}
-*/
-
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
@@ -3278,14 +3211,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     surveyResponsesToBeSent = [aResponseDict retain];
 
     [self beginSession];
-    
-    /*
-    LIOChatMessage *surveyOutro = [LIOChatMessage chatMessage];
-    surveyOutro.date = [NSDate date];
-    surveyOutro.text = @"Thank you for your responses! A live support agent will be available to assist you shortly.";
-    surveyOutro.kind = LIOChatMessageKindRemote;
-    [chatHistory insertObject:surveyOutro atIndex:0];
-    */
 }
 
 #pragma mark -
@@ -3424,52 +3349,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             break;
         }
-            
-        /*    
-        case LIOLookIOManagerNoAgentsOnlineAlertViewTag:
-        {
-            if (1 == buttonIndex) // "Yes"
-            {
-                [connectViewController.view removeFromSuperview];
-                [connectViewController release];
-                connectViewController = nil;
-                
-                feedbackViewController = [[LIOTextEntryViewController alloc] initWithNibName:nil bundle:nil];
-                feedbackViewController.delegate = self;
-                feedbackViewController.instructionsText = @"Please leave a message.";
-                [lookioWindow addSubview:feedbackViewController.view];
-                lookioWindow.hidden = NO;
-            }
-            else
-            {
-                resetAfterDisconnect = YES;
-                [self killConnection];
-            }
-            
-            break;
-        }
-        */
-            
+                        
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
             resetAfterDisconnect = YES;
             [self killConnection];
-            break;
-        }
-            
-        case LIOLookIOManagerAgentEndedSessionAlertViewTag:
-        {
-            /*
-            if (socketConnected)
-            {
-                resetAfterDisconnect = YES;
-                [self killConnection];
-            }
-            else
-            {
-                [self reset];
-            }
-            */
             break;
         }
     }
@@ -3792,22 +3676,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-        if (201 == appLaunchRequestResponseCode)
+        if (appLaunchRequestResponseCode >= 400)
+        {
+            LIOLog(@"<LAUNCH> Failure. HTTP code: %d.", appLaunchRequestResponseCode);
+            
+            if (404 == appLaunchRequestResponseCode)
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
+            }
+                
+            // Disable the library explicitly.
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+            [lastKnownEnabledStatus release];
+            lastKnownEnabledStatus = nil;
+        }
+        
+        else if (appLaunchRequestResponseCode < 300)
         {
             NSString *responseString = [[[NSString alloc] initWithData:appLaunchRequestData encoding:NSUTF8StringEncoding] autorelease];
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
         
-            LIOLog(@"<LAUNCH> Success. Response: %@", responseString);
+            LIOLog(@"<LAUNCH> Success. HTTP code: %d. Response: %@", appLaunchRequestResponseCode, responseString);
             [self parseAndSaveSettingsPayload:responseDict];
         }
-        else if (404 == appLaunchRequestResponseCode)
-        {
-            LIOLog(@"<LAUNCH> Failure. HTTP code: 404.");
-            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
-        }
+        
         else
         {
-            LIOLog(@"<LAUNCH> Failure. HTTP code: %d", appLaunchRequestResponseCode);
+            LIOLog(@"<LAUNCH> Unhandled HTTP code: %d", appLaunchRequestResponseCode);
         }
         
         [appLaunchRequestConnection release];
@@ -3819,11 +3714,58 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         BOOL failure = NO;
         
-        if (200 == appContinueRequestResponseCode)
+        if (404 == appContinueRequestResponseCode)
         {
+            // New launch.
+            
+            failure = YES;
+            
+            LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+            [currentVisitId release];
+            currentVisitId = nil;
+            [lastKnownContinueURL release];
+            lastKnownContinueURL = nil;
+            [continuationTimer stopTimer];
+            [continuationTimer release];
+            continuationTimer = nil;
+            
+            [self sendLaunchReport];
+        }
+        else if (appContinueRequestResponseCode >= 400)
+        {
+            // Retry logic.
+            
+            if (failedContinueCount < LIOLookIOManagerMaxContinueFailures)
+            {
+                failedContinueCount++;
+                LIOLog(@"<CONTINUE> Retry attempt %u of %u...", failedContinueCount, LIOLookIOManagerMaxContinueFailures);
+                
+                // The timer should automatically trigger the next continue call.
+            }
+            else
+            {
+                LIOLog(@"<CONTINUE> Retries exhausted. Stopping future continue calls.");
+                
+                [continuationTimer stopTimer];
+                [continuationTimer release];
+                continuationTimer = nil;
+                
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
+                [lastKnownContinueURL release];
+                lastKnownContinueURL = nil;
+                
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
+                [lastKnownEnabledStatus release];
+                lastKnownEnabledStatus = nil;
+            }
+        }
+        else if (appContinueRequestResponseCode < 300 && appContinueRequestResponseCode >= 200)
+        {
+            // Success.
+            
             NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-            LIOLog(@"<CONTINUE> Success. Response: %@", responseString);
+            LIOLog(@"<CONTINUE> Success! Response: %@", responseString);
             
             failedContinueCount = 0;
             
@@ -3833,26 +3775,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [pendingEvents removeAllObjects];
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
         }
-        else if (404 == appContinueRequestResponseCode)
-        {
-            failure = YES;
-            
-            LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Stopping future continue calls.");
-            [currentVisitId release];
-            currentVisitId = nil;
-            [lastKnownContinueURL release];
-            lastKnownContinueURL = nil;
-            [continuationTimer stopTimer];
-            [continuationTimer release];
-            continuationTimer = nil;
-        }
         else
         {
-            failure = YES;
+            // Wat.
             
-            LIOLog(@"<CONTINUE> General failure. HTTP code: %d", appContinueRequestResponseCode);
+            LIOLog(@"<CONTINUE> Unhandled HTTP code: %d", appContinueRequestResponseCode);            
         }
-        
+                
         [appContinueRequestConnection release];
         appContinueRequestConnection = nil;
         
@@ -3873,13 +3802,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appLaunchRequestConnection == connection)
     {
-        LIOLog(@"<LAUNCH> Failed. Reason: %@", [error localizedDescription]);
+        LIOLog(@"<LAUNCH> Connection failed. Reason: %@", [error localizedDescription]);
         
         [appLaunchRequestConnection release];
         appLaunchRequestConnection = nil;
         
         appLaunchRequestResponseCode = -1;
         
+        // Disable the library explicitly.
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
         [lastKnownEnabledStatus release];
         lastKnownEnabledStatus = nil;
@@ -3902,19 +3832,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             failedContinueCount++;
             LIOLog(@"<CONTINUE> Retry attempt %u of %u...", failedContinueCount, LIOLookIOManagerMaxContinueFailures);
-            [self sendContinuationReport];
+            
+            // The timer should automatically trigger the next continue call.
         }
         else
         {
-            LIOLog(@"<CONTINUE> Retries exhausted. Disabling library...");
+            LIOLog(@"<CONTINUE> Retries exhausted. Stopping future continue calls.");
+            
+            [continuationTimer stopTimer];
+            [continuationTimer release];
+            continuationTimer = nil;
             
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
             [lastKnownContinueURL release];
             lastKnownContinueURL = nil;
-            
+
+            /*
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
             [lastKnownEnabledStatus release];
             lastKnownEnabledStatus = nil;
+            */
         }
     }
     
