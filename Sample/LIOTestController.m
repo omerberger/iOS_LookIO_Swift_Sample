@@ -11,10 +11,10 @@
 
 @implementation LIOTestController
 
-- (void)initializeScenarios;
+- (void)initializeScenarios
 {
     [self addScenario:[KIFTestScenario scenarioToChatWithNoAgentsPresent]];
-    [self addScenario:[KIFTestScenario scenarioToChat]];
+    //[self addScenario:[KIFTestScenario scenarioToChat]];
 }
 
 @end

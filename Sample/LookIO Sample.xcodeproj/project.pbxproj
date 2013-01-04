@@ -30,6 +30,7 @@
 		D486D6F1151BEDA3007C9AF8 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D6EE151BC33E007C9AF8 /* CoreText.framework */; };
 		D486D748152138FA007C9AF8 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D747152138FA007C9AF8 /* libz.dylib */; };
 		D489590E1566F22500F62C0C /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D489590D1566F22500F62C0C /* CoreLocation.framework */; };
+		D4AECD38169645E60099745C /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D40745821534E87B0076C6BD /* LookIO.bundle */; };
 		D4B07E6614F45D19000B1622 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E957F14C3E25E007BFD8C /* main.m */; };
 		D4B07E6714F45D19000B1622 /* SampleAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958314C3E25E007BFD8C /* SampleAppDelegate.m */; };
 		D4B07E6814F45D19000B1622 /* SampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E958614C3E25F007BFD8C /* SampleViewController.m */; };
@@ -49,6 +50,8 @@
 		D4B07E8514F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B07E8414F46121000B1622 /* KIFTestScenario+LIOChatNoAgents.m */; };
 		D4B07E8814F5CB93000B1622 /* KIFTestScenario+LIOChat.m in Sources */ = {isa = PBXBuildFile; fileRef = D4B07E8714F5CB92000B1622 /* KIFTestScenario+LIOChat.m */; };
 		D4D5B77614F454F100FC4E4C /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D4D5B77314F454F100FC4E4C /* libLookIO.a */; };
+		D4F0C353169640090049D47B /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D486D747152138FA007C9AF8 /* libz.dylib */; };
+		D4F0C354169640110049D47B /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D440D4701540B1790045DBFF /* MapKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,12 +100,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D486D748152138FA007C9AF8 /* libz.dylib in Frameworks */,
 				D489590E1566F22500F62C0C /* CoreLocation.framework in Frameworks */,
 				D4868A70155AF7990081164D /* Security.framework in Frameworks */,
 				D440D4711540B1790045DBFF /* MapKit.framework in Frameworks */,
 				D403F7AB152BB69100101941 /* Accounts.framework in Frameworks */,
 				D403F7AC152BB69100101941 /* Twitter.framework in Frameworks */,
-				D486D748152138FA007C9AF8 /* libz.dylib in Frameworks */,
 				D486D6F1151BEDA3007C9AF8 /* CoreText.framework in Frameworks */,
 				490E959714C3E371007BFD8C /* AudioToolbox.framework in Frameworks */,
 				490E959814C3E371007BFD8C /* CFNetwork.framework in Frameworks */,
@@ -119,6 +122,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4F0C354169640110049D47B /* MapKit.framework in Frameworks */,
+				D4F0C353169640090049D47B /* libz.dylib in Frameworks */,
 				D486D6EF151BC33E007C9AF8 /* CoreText.framework in Frameworks */,
 				D4B07E7F14F45DCB000B1622 /* libKIF.a in Frameworks */,
 				D4B07E6A14F45D19000B1622 /* AudioToolbox.framework in Frameworks */,
@@ -303,6 +308,7 @@
 				D4B07E7314F45D19000B1622 /* InfoPlist.strings in Resources */,
 				D4B07E7414F45D19000B1622 /* SampleViewController_iPhone.xib in Resources */,
 				D4B07E7514F45D19000B1622 /* SampleViewController_iPad.xib in Resources */,
+				D4AECD38169645E60099745C /* LookIO.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

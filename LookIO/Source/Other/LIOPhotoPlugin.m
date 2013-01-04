@@ -8,6 +8,7 @@
 
 #import "LIOPhotoPlugin.h"
 #import "LIOLookIOManager.h"
+#import "LIOPlugin.h"
 
 @implementation LIOPhotoPlugin
 

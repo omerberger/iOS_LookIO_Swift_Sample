@@ -100,6 +100,7 @@
     emailField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     emailField.returnKeyType = UIReturnKeyNext;
     emailField.keyboardAppearance = UIKeyboardAppearanceAlert;
+    emailField.accessibilityLabel = @"LIOLeaveMessageEmailField";
     if ([initialEmailAddress length])
         emailField.text = initialEmailAddress;
     [fieldBackground addSubview:emailField];
@@ -147,6 +148,7 @@
     aFrame.size.width = self.view.bounds.size.width - 20.0;
     submitButton.frame = aFrame;
     submitButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    submitButton.accessibilityLabel = @"LIOLeaveMessageSendButton";
     [scrollView addSubview:submitButton];
     
     scrollView.contentSize = CGSizeMake(rootView.frame.size.width, submitButton.frame.origin.y + submitButton.frame.size.height);

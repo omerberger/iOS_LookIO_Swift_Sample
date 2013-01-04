@@ -15,6 +15,8 @@
 {
     KIFTestScenario *aScenario = [KIFTestScenario scenarioWithDescription:@"Test that a user can chat and then leave a message."];
     
+    [aScenario addStep:[KIFTestStep stepToWaitForTimeInterval:2.0 description:@"Give the app a few seconds to start up"]];
+    
     // main UI is up
     [aScenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"TestField"]];
     
@@ -28,7 +30,8 @@
     [aScenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"LIOSendButton"]];
     
     // leave message UI is up, send message
-    [aScenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"LIOLeaveMessageSendButton"]];
+    [aScenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"LIOLeaveMessageEmailField"]];
+    [aScenario addStep:[KIFTestStep stepToEnterText:@"testguy@testytest.test" intoViewWithAccessibilityLabel:@"LIOLeaveMessageEmailField"]];
     [aScenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"LIOLeaveMessageSendButton"]];
     
     // see if we're back at the sample app main UI

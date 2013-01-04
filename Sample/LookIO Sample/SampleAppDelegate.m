@@ -38,9 +38,8 @@
     }
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
-    
-    //[[LIOLookIOManager sharedLookIOManager]setSessionExtra:@"marc.e.campbell@gmail.com" forKey:@"email_address"];
-    
+
+#if !RUN_KIF_TESTS
     // Enable Twitter / Location services for LookIO analytical purposes
     Class $ACAccountType = NSClassFromString(@"ACAccountType");
     Class $ACAccountStore = NSClassFromString(@"ACAccountStore");
@@ -65,6 +64,7 @@
             }
         }];
     }
+#endif
     
     //[[LIOLookIOManager sharedLookIOManager] performSelector:@selector(setUsesTLS:) withObject:[NSNumber numberWithBool:NO]];
     [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"test@fake.tld" forKey:@"extra_email"]];
