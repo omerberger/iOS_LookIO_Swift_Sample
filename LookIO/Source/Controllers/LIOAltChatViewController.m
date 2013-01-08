@@ -61,7 +61,6 @@
     {
         numPreviousMessagesToShowInScrollback = 1;
         chatBubbleHeights = [[NSMutableArray alloc] init];
-        messagesSentBeforeAvailabilityKnown = [[NSMutableArray alloc] init];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationWillResignActive:)
@@ -244,11 +243,12 @@
     emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    emailConvoButton.titleLabel.minimumFontSize = 9.0;
+    emailConvoButton.titleLabel.minimumFontSize = 6.0;
     [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
+    emailConvoButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
     [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     CGRect aFrame = emailConvoButton.frame;
-    aFrame.size.width = 100.0;
+    aFrame.size.width = 120.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
@@ -266,9 +266,10 @@
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     endSessionButton.titleLabel.minimumFontSize = 9.0;
     [endSessionButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EndSessionButton") forState:UIControlStateNormal];
+    endSessionButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = endSessionButton.frame;
-    aFrame.size.width = 100.0;
+    aFrame.size.width = 120.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (tableView.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
     aFrame.origin.y = 16.0;
@@ -895,15 +896,7 @@
     if ([pendingEmailAddress length])
         aController.initialEmailAddress = pendingEmailAddress;
     
-    if ([messagesSentBeforeAvailabilityKnown count])
-    {
-        NSMutableString *initialMessage = [NSMutableString string];
-        for (NSString *aMessage in messagesSentBeforeAvailabilityKnown)
-            [initialMessage appendFormat:@"%@\n", aMessage];
-        
-        aController.initialMessage = initialMessage;
-    }
-    else if ([pendingChatText length])
+    if ([pendingChatText length])
         aController.initialMessage = pendingChatText;
     
     if (padUI)
@@ -1409,17 +1402,7 @@
     if ([aString length])
     {
         [delegate altChatViewControllerTypingDidStop:self];
-        
-        if ([[LIOLookIOManager sharedLookIOManager] agentsAvailable])
-        {
-            [delegate altChatViewController:self didChatWithText:aString];
-            
-            if (NO == [[LIOLookIOManager sharedLookIOManager] actualAgentAvailabilityKnown])
-                [messagesSentBeforeAvailabilityKnown addObject:aString];
-                
-        }
-        else
-            [self forceLeaveMessageScreen];
+        [delegate altChatViewController:self didChatWithText:aString];
     }
     
     [pendingChatText release];

@@ -39,7 +39,7 @@
                                     alpha:1.0]
 
 // Misc. constants
-#define LIOLookIOManagerDefaultLocalizationHash @"81681d728c629a14594c57d32f8a0a7b"
+#define LIOLookIOManagerDefaultLocalizationHash @"752c6e666849f07a26b98011d22bb42d"
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerScreenCaptureInterval       0.5
@@ -87,7 +87,6 @@
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
 #define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
-#define LIOLookIOManagerLastKnownDefaultAvailabilityKey @"LIOLookIOManagerLastKnownDefaultAvailabilityKey"
 #define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 
@@ -109,7 +108,7 @@ NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -137,7 +136,6 @@ NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
-    NSNumber *lastKnownDefaultAvailability;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
@@ -152,7 +150,6 @@ NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
     NSString *controlEndpoint;
     UIStatusBarStyle originalStatusBarStyle;
     UIView *statusBarUnderlay, *statusBarUnderlayBlackout;
-    NSNumber *availability;
     NSMutableArray *urlSchemes;
     NSURL *pendingIntraAppLinkURL;
     NSString *currentVisitId;
@@ -563,9 +560,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownWelcomeMessage release];
     lastKnownWelcomeMessage = [[userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey] retain];
     
-    [lastKnownDefaultAvailability release];
-    lastKnownDefaultAvailability = [[userDefaults objectForKey:LIOLookIOManagerLastKnownDefaultAvailabilityKey] retain];
-    
     [self applicationDidChangeStatusBarOrientation:nil];
     
     appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
@@ -753,7 +747,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonTextColor release];
     [lastKnownWelcomeMessage release];
     [lastKnownEnabledStatus release];
-    [lastKnownDefaultAvailability release];
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
@@ -761,7 +754,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [dateFormatter release];
     [overriddenEndpoint release];
     [proactiveChatRules release];
-    [availability release];
     [pendingIntraAppLinkURL release];
     [currentRequiredSkill release];
     [lastKnownContinueURL release];
@@ -857,9 +849,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [surveyResponsesToBeSent release];
     surveyResponsesToBeSent = nil;
         
-    [availability release];
-    availability = nil;
-    
     previousReconnectionTimerStep = 2;
     previousScreenshotHash = 0;
     nextTimeInterval = 0.0;
@@ -870,6 +859,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     sessionEnding = NO, userWantsSessionTermination = NO, outroReceived = NO, firstChatMessageSent = NO, resumeMode = NO;
     socketConnected = NO, willAskUserToReconnect = NO, resetAfterChatViewDismissal = NO, realtimeExtrasWaitingForLocation = NO, resetAfterNextForegrounding = NO,
     cursorEnded = YES;
+    chatReceivedWhileAppBackgrounded = NO;
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
     [screenSharingStartedDate release];
@@ -1540,6 +1530,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
             localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            
+            chatReceivedWhileAppBackgrounded = YES;
         }
     }
     else if ([type isEqualToString:@"cursor"])
@@ -1639,17 +1631,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 [self showChatAnimated:NO];
             }
-        }
-        else if ([action isEqualToString:@"queued"])
-        {
-            NSDictionary *data = [aPacket objectForKey:@"data"];
-            NSNumber *online = [data objectForKey:@"online"];
-            
-            [availability release];
-            availability = [online retain];
-            
-            if (firstChatMessageSent && NO == [availability boolValue])
-                [altChatViewController forceLeaveMessageScreen];
         }
         else if ([action isEqualToString:@"permission"])
         {
@@ -1758,9 +1739,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             resetAfterDisconnect = NO;
             introduced = YES;
             killConnectionAfterChatViewDismissal = NO;
-            
-            [availability release];
-            availability = [[NSNumber alloc] initWithInt:1];
             
             [self populateChatWithFirstMessage];
             
@@ -2078,19 +2056,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
-    }
-    
-    NSDictionary *defaultAvailDict = [params objectForKey:@"default_availability"];
-    if ([defaultAvailDict count])
-    {
-        NSNumber *defaultAvailNumber = [defaultAvailDict objectForKey:@"online"];
-        if (defaultAvailNumber)
-        {
-            [userDefaults setObject:defaultAvailNumber forKey:LIOLookIOManagerLastKnownDefaultAvailabilityKey];
-            
-            [lastKnownDefaultAvailability release];
-            lastKnownDefaultAvailability = [defaultAvailNumber retain];
-        }
     }
     
     NSDictionary *proactiveChat = [params objectForKey:@"proactive_chat"];
@@ -2657,19 +2622,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             firstMessage.text = LIOLocalizedString(@"LIOLookIOManager.DefaultWelcomeMessage");
     }
-}
-
-- (BOOL)agentsAvailable
-{
-    if (availability)
-        return [availability boolValue];
-    else
-        return [lastKnownDefaultAvailability boolValue];
-}
-
-- (BOOL)actualAgentAvailabilityKnown
-{
-    return availability != nil;
 }
 
 - (BOOL)isIntraLink:(NSURL *)aURL
@@ -3460,8 +3412,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // We also force the LookIO UI to the foreground here.
         // This prevents any jank: the user can always go out of the app and come back in
         // to correct any wackiness that might occur.
-        if (NO == resetAfterNextForegrounding && NO == screenshotsAllowed)
+        if (chatReceivedWhileAppBackgrounded)
+        {
+            chatReceivedWhileAppBackgrounded = NO;
             [self showChatAnimated:NO];
+        }
         
         if (resetAfterNextForegrounding)
         {

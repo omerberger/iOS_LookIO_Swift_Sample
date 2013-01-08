@@ -108,7 +108,7 @@
     aFrame.size.height = 28.0;
     inputField.frame = aFrame;
     inputField.font = [UIFont systemFontOfSize:14.0];
-    inputField.placeholder = @"name@example.com";
+    inputField.placeholder = LIOLocalizedString(@"LIOEmailPlaceholder");
     inputField.keyboardType = UIKeyboardTypeEmailAddress;
     inputField.autocorrectionType = UITextAutocorrectionTypeNo;
     inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
