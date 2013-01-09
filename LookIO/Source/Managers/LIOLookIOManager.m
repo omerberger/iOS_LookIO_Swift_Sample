@@ -3304,8 +3304,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                         
         case LIOLookIOManagerUnprovisionedAlertViewTag:
         {
-            resetAfterDisconnect = YES;
-            [self killConnection];
+            resetAfterChatViewDismissal = YES;
+            [altChatViewController performDismissalAnimation];
             break;
         }
     }
