@@ -481,8 +481,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         supportedOrientations = [[NSArray alloc] init];
     }
     
-    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    
     lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     lookioWindow.hidden = YES;
     lookioWindow.windowLevel = 0.1;
