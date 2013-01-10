@@ -108,7 +108,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
     AsyncSocket_LIO *controlSocket;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded, appForegrounded;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -441,6 +441,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    appForegrounded = YES;
     
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     badInitialization = nil == keyWindow;
@@ -2307,10 +2309,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([currentRequiredSkill length])
         [introDict setObject:currentRequiredSkill forKey:@"skill"];
     
-    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground)
-        [introDict setObject:[NSNumber numberWithInt:0] forKey:@"app_foregrounded"];
-    else
-        [introDict setObject:[NSNumber numberWithInt:1] forKey:@"app_foregrounded"];
+    [introDict setObject:[NSNumber numberWithBool:appForegrounded] forKey:@"app_foregrounded"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
@@ -3316,6 +3315,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationDidEnterBackground:(NSNotification *)aNotification
 {
+    appForegrounded = NO;
+    
     if (UIBackgroundTaskInvalid == backgroundTaskId)
     {
         backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -3367,6 +3368,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
+    appForegrounded = YES;
+    
     if (UIBackgroundTaskInvalid != backgroundTaskId)
     {
         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
