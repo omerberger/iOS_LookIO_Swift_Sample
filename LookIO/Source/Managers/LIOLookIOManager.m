@@ -94,11 +94,11 @@
 #define LIOLookIOManagerControlButtonMinWidth  35.0
 
 // Event constants.
-NSString *const kLPEventConversion  = @"LIOEventConversion";
-NSString *const kLPEventPageView    = @"LIOEventPageView";
-NSString *const kLPEventSignUp      = @"LIOEventSignUp";
-NSString *const kLPEventSignIn      = @"LIOEventSignIn";
-NSString *const kLPEventAddedToCart = @"LIOEventAddedToCart";
+NSString *const kLPEventConversion  = @"LPEventConversion";
+NSString *const kLPEventPageView    = @"LPEventPageView";
+NSString *const kLPEventSignUp      = @"LPEventSignUp";
+NSString *const kLPEventSignIn      = @"LPEventSignIn";
+NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 
 @class CTCall, CTCallCenter;
 
@@ -266,7 +266,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-        badInitialization = nil == keyWindow;
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
@@ -442,6 +441,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    badInitialization = nil == keyWindow;
     
     delegate = aDelegate;
     
