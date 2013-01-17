@@ -1411,6 +1411,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self beginSessionImmediatelyShowingChat:YES];
 }
 
+- (void)beginChat
+{
+    [self beginSession];
+}
+
 - (BOOL)beginConnectingWithError:(NSError **)anError
 {
     NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
@@ -2810,6 +2815,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (resetAfterDisconnect)
     {
+        if ((NSObject *)[delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+            [delegate lookIOManagerDidEndChat:self];
+        
         sessionEnding = YES;
         [self reset];
     }
