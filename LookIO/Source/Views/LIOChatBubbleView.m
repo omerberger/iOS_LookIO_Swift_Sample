@@ -48,10 +48,10 @@ static NSDataDetector *dataDetector = nil;
         
         if (nil == dataDetector)
         {
-            if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
+            //if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
                 dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
-            else
-                dataDetector = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
+            //else
+                //dataDetector = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
         }
         
         linkMessageViews = [[NSMutableArray alloc] init];
@@ -61,7 +61,7 @@ static NSDataDetector *dataDetector = nil;
         intraAppLinkViews = [[NSMutableArray alloc] init];
         linkSupertypes = [[NSMutableArray alloc] init];
         linkURLStrings = [[NSMutableArray alloc] init];
-        linkSubtypes = [[NSMutableArray alloc] init];
+        linkSchemes = [[NSMutableArray alloc] init];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationWillResignActive:)
@@ -92,6 +92,7 @@ static NSDataDetector *dataDetector = nil;
     [intraAppLinkViews release];
     [linkSupertypes release];
     [linkURLStrings release];
+    [linkSchemes release];
     
     [super dealloc];
 }
@@ -219,7 +220,7 @@ static NSDataDetector *dataDetector = nil;
     [links removeAllObjects];
     [linkTypes removeAllObjects];
     [linkSupertypes removeAllObjects];
-    [linkSubtypes removeAllObjects];
+    [linkSchemes removeAllObjects];
     
     [linkMessageViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [linkMessageViews removeAllObjects];
@@ -240,27 +241,9 @@ static NSDataDetector *dataDetector = nil;
         NSString *currentLinkURLString = [[currentLink copy] autorelease];
         
         if (NSTextCheckingTypeLink == result.resultType)
-        {
-            // First, is this actually an e-mail? Those are for some reason marked as links. >_<
-            NSRegularExpression *emailRegex = [NSRegularExpression regularExpressionWithPattern:@"^[\\w\\d]+@[\\w\\d]+\\.[\\w\\d]{2,}$" options:0 error:nil];
-            if (0 < [emailRegex numberOfMatchesInString:currentLink options:0 range:NSMakeRange(0, [currentLink length])])
-            {
-                // This IS an e-mail, so... slap a mailto: on it, I guess.
-                currentLinkURLString = [NSString stringWithFormat:@"mailto://%@", currentLinkURLString];
-                [linkSubtypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSubtypeMail]];
-            }
-            else
-            {
-                // NOT an e-mail. Probably a web address.
-                // We modify links marked as "NSTextCheckingTypeLink" but which
-                // lack any kind of URL scheme at the beginning by adding "http://"
-                NSURL *testURL = [NSURL URLWithString:currentLink];
-                if (0 == [testURL.scheme length])
-                    currentLinkURLString = [NSString stringWithFormat:@"http://%@", currentLinkURLString];
-                
-                [linkSubtypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSubtypeWeb]];
-            }
-        }
+            [linkSchemes addObject:[result.URL scheme]];
+        else if (NSTextCheckingTypePhoneNumber == result.resultType)
+            [linkSchemes addObject:@"tel"];
         
         [links addObject:currentLink];
         [linkURLStrings addObject:currentLinkURLString];
@@ -479,17 +462,22 @@ static NSDataDetector *dataDetector = nil;
     NSString *aLink = [links objectAtIndex:linkIndex];
     NSString *aLinkURLString = [linkURLStrings objectAtIndex:linkIndex];
     NSTextCheckingType aType = (NSTextCheckingType)[[linkTypes objectAtIndex:linkIndex] longLongValue];
+    NSString *aScheme = [linkSchemes objectAtIndex:linkIndex];
     int aSupertype = [[linkSupertypes objectAtIndex:linkIndex] intValue];
     if (NSTextCheckingTypeLink == aType)
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            int aSubtype = [[linkSubtypes objectAtIndex:linkIndex] intValue];
             NSString *alertMessage = nil;
-            if (LIOChatBubbleViewLinkSubtypeWeb == aSubtype)
+            if ([[aScheme lowercaseString] hasPrefix:@"http"])
                 alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
-            else
+            else if ([[aScheme lowercaseString] hasPrefix:@"mailto"])
                 alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
+            else if ([[aScheme lowercaseString] hasPrefix:@"tel"])
+            {
+                NSString *numWithoutTel = [aLink substringFromIndex:[[aLink lowercaseString] rangeOfString:@"tel://"].location + 6];
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), numWithoutTel];
+            }
             
             [urlBeingLaunched release];
             urlBeingLaunched = [[NSURL URLWithString:aLinkURLString] retain];
@@ -516,12 +504,12 @@ static NSDataDetector *dataDetector = nil;
         [urlBeingLaunched release];
         urlBeingLaunched = [result retain];
         
-        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString("LIOChatBubbleView.LinkAlertPhone"), aLink];
+        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
         alertView = [[UIAlertView alloc] initWithTitle:nil
                                                message:alertMessage
                                               delegate:self
                                      cancelButtonTitle:nil
-                                     otherButtonTitles:LIOLocalizedString("LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString("LIOChatBubbleView.AlertGoPhone"), nil];
+                                     otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
         [alertView show];
     }
 }

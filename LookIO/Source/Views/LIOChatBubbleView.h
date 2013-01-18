@@ -27,12 +27,6 @@ typedef enum
 
 typedef enum
 {
-    LIOChatBubbleViewLinkSubtypeWeb,
-    LIOChatBubbleViewLinkSubtypeMail
-} LIOChatBubbleViewLinkSubtype;
-
-typedef enum
-{
     LIOChatBubbleViewLinkSupertypeExtra,
     LIOChatBubbleViewLinkSupertypeIntra
 } LIOChatBubbleViewLinkSupertype;
@@ -48,7 +42,7 @@ typedef enum
     LIOChatBubbleViewLinkMode linkMode;
     TTTAttributedLabel_LIO *mainMessageView;
     NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes, *linkSupertypes, *intraAppLinkViews,
-        *linkURLStrings, *linkSubtypes;
+        *linkURLStrings, *linkSchemes;
     UIImageView *backgroundImage;
     NSString *senderName;
     NSURL *urlBeingLaunched;
