@@ -245,6 +245,11 @@ static NSDataDetector *dataDetector = nil;
         else if (NSTextCheckingTypePhoneNumber == result.resultType)
             [linkSchemes addObject:@"tel"];
         
+        // Trim the URL scheme out of the link text to be drawn to the screen.
+        NSRange schemeRange = [currentLink rangeOfString:@"://"];
+        if (schemeRange.location != NSNotFound)
+            currentLink = [currentLink substringFromIndex:schemeRange.location + schemeRange.length];
+        
         [links addObject:currentLink];
         [linkURLStrings addObject:currentLinkURLString];
         [linkTypes addObject:[NSNumber numberWithLongLong:result.resultType]];
@@ -469,14 +474,17 @@ static NSDataDetector *dataDetector = nil;
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
             NSString *alertMessage = nil;
+            NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
+            NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
             if ([[aScheme lowercaseString] hasPrefix:@"http"])
                 alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
             else if ([[aScheme lowercaseString] hasPrefix:@"mailto"])
                 alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
             else if ([[aScheme lowercaseString] hasPrefix:@"tel"])
             {
-                NSString *numWithoutTel = [aLink substringFromIndex:[[aLink lowercaseString] rangeOfString:@"tel://"].location + 6];
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), numWithoutTel];
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
+                alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone");
+                alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone");
             }
             
             [urlBeingLaunched release];
@@ -486,7 +494,7 @@ static NSDataDetector *dataDetector = nil;
                                                    message:alertMessage
                                                   delegate:self
                                          cancelButtonTitle:nil
-                                         otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancel"), LIOLocalizedString(@"LIOChatBubbleView.AlertGo"), nil];
+                                         otherButtonTitles:alertCancel, alertOpen, nil];
             [alertView show];
         }
         else

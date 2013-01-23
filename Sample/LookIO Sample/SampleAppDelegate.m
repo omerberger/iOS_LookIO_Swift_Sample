@@ -68,8 +68,9 @@
     
     //[[LIOLookIOManager sharedLookIOManager] performSelector:@selector(setUsesTLS:) withObject:[NSNumber numberWithBool:NO]];
     [[LIOLookIOManager sharedLookIOManager] addSessionExtras:[NSDictionary dictionaryWithObject:@"test@fake.tld" forKey:@"extra_email"]];
-    [[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
+    //[[LIOLookIOManager sharedLookIOManager] enableDevelopmentMode];
     [[LIOLookIOManager sharedLookIOManager] performSetupWithDelegate:self.viewController];
+    [[LIOLookIOManager sharedLookIOManager] setSkill:@"mobile"];
     
 #if RUN_KIF_TESTS
     [[LIOTestController sharedInstance] startTestingWithCompletionBlock:^{
