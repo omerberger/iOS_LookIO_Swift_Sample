@@ -83,12 +83,12 @@
 #define LIOLookIOManagerLastKnownButtonTintColorKey     @"LIOLookIOManagerLastKnownButtonTintColorKey"
 #define LIOLookIOManagerLastKnownButtonTextColorKey     @"LIOLookIOManagerLastKnownButtonTextColorKey"
 #define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
-#define LIOLookIOManagerLastKnownEnabledStatusKey       @"LIOLookIOManagerLastKnownEnabledStatusKey"
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
 #define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
 #define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
+#define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -132,7 +132,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSDictionary *realtimeExtrasPreviousSessionExtras;
     NSMutableDictionary *proactiveChatRules;
     UIInterfaceOrientation actualInterfaceOrientation;
-    NSNumber *lastKnownButtonVisibility, *lastKnownEnabledStatus;
+    NSNumber *lastKnownButtonVisibility;
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
@@ -162,6 +162,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSMutableDictionary *registeredPlugins;
     NSMutableArray *pendingEvents;
     int failedContinueCount;
+    NSMutableDictionary *multiskillMapping;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -410,11 +411,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [queuedLaunchReportDates addObject:[NSDate date]];
         [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
         
-        // Delete LIOLookIOManagerLastKnownEnabledStatusKey. This should force
+        // Delete multiskill mapping. This should force
         // the lib to report "disabled" back to the host app.
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-        [lastKnownEnabledStatus release];
-        lastKnownEnabledStatus = nil;
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+        [multiskillMapping release];
+        multiskillMapping = nil;
         
         [self refreshControlButtonVisibility];
     }
@@ -550,17 +551,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.textColor = lastKnownButtonTextColor;
     }
     
-    [lastKnownEnabledStatus release];
-    lastKnownEnabledStatus = [[userDefaults objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey] retain];
-    // Sensible default
-    if (nil == lastKnownEnabledStatus)
-        lastKnownEnabledStatus = [[NSNumber alloc] initWithBool:NO];
-    
-    [self refreshControlButtonVisibility];
-    
     // Restore other settings.
     [lastKnownWelcomeMessage release];
     lastKnownWelcomeMessage = [[userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey] retain];
+    
+    [multiskillMapping release];
+    multiskillMapping = [[userDefaults objectForKey:LIOLookIOManagerMultiskillMappingKey] retain];
+    
+    [self refreshControlButtonVisibility];
     
     [self applicationDidChangeStatusBarOrientation:nil];
     
@@ -748,7 +746,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownButtonTintColor release];
     [lastKnownButtonTextColor release];
     [lastKnownWelcomeMessage release];
-    [lastKnownEnabledStatus release];
     [pendingEmailAddress release];
     [supportedOrientations release];
     [screenSharingStartedDate release];
@@ -1456,6 +1453,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [currentRequiredSkill release];
     currentRequiredSkill = [aRequiredSkill retain];
+    
+    [self sendContinuationReport];
 }
 
 - (void)handlePacket:(NSString *)aJsonString
@@ -1862,7 +1861,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // Trump card #0: If we have no visibility information, button is hidden.
     if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
-        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownEnabledStatusKey])
+        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerMultiskillMappingKey])
     {
         controlButtonHidden = YES;
         controlButton.frame = controlButtonHiddenFrame;
@@ -1872,12 +1871,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     // Trump card #1: "enabled" from server-side settings.
-    if (lastKnownEnabledStatus && NO == [lastKnownEnabledStatus boolValue])
+    if (NO == [self enabled])
     {
         controlButtonHidden = YES;
         controlButton.frame = controlButtonHiddenFrame;
         [self rejiggerControlButtonLabel];
-        LIOLog(@"<<CONTROL>> Hiding. Reason: enabled == 0.");
+        LIOLog(@"<<CONTROL>> Hiding. Reason: [self enabled] == NO.");
         return;
     }
     
@@ -1991,6 +1990,71 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [userDefaults setObject:visitorIdNumber forKey:LIOLookIOManagerLastKnownVisitorIdKey];
     }
     
+    // Merge existing skill map with the new one.
+    // If the new skill map is an empty hash {}, do not merge; erase all entries.
+    NSDictionary *skillsDict = [params objectForKey:@"skills"];
+    if (skillsDict)
+    {
+        NSMutableDictionary *newMap = [multiskillMapping mutableCopy];
+        if (nil == newMap)
+            newMap = [[NSMutableDictionary alloc] init];
+        
+        if ([skillsDict count])
+        {
+            // Check for a "default=1" value.
+            NSString *newDefault = nil;
+            for (NSString *aSkillKey in skillsDict)
+            {
+                NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
+                NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
+                if (YES == [defaultValue boolValue])
+                {
+                    newDefault = aSkillKey;;
+                    break;
+                }
+            }
+            
+            // Merge.
+            [newMap addEntriesFromDictionary:skillsDict];
+            
+            // Reset default values as needed.
+            if (newDefault)
+            {
+                NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
+                for (NSString *aSkillKey in newMap)
+                {
+                    NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
+                    NSNumber *defaultValue = [existingMap objectForKey:@"default"];
+                    if (defaultValue)
+                    {
+                        if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
+                        {
+                            NSMutableDictionary *newDict = [existingMap mutableCopy];
+                            [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
+                            [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                        }
+                        else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
+                        {
+                            NSMutableDictionary *newDict = [existingMap mutableCopy];
+                            [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
+                            [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                        }
+                    }
+                }
+                
+                [newMap addEntriesFromDictionary:defaultReplacementDict];
+            }
+        }
+        else
+        {
+            [newMap removeAllObjects];
+        }
+        
+        [multiskillMapping release];
+        multiskillMapping = newMap;
+        [userDefaults setObject:newMap forKey:LIOLookIOManagerMultiskillMappingKey];
+    }
+    
     NSNumber *buttonVisibility = [params objectForKey:@"button_visibility"];
     if (buttonVisibility)
     {
@@ -2051,18 +2115,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [lastKnownButtonTextColor release];
         lastKnownButtonTextColor = [color retain];
-    }
-    
-    NSNumber *enabledSetting = [params objectForKey:@"enabled"];
-    if (enabledSetting)
-    {
-        [userDefaults setObject:enabledSetting forKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-        
-        [lastKnownEnabledStatus release];
-        lastKnownEnabledStatus = [enabledSetting retain];
-        
-        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:[lastKnownEnabledStatus boolValue]];
     }
     
     NSDictionary *proactiveChat = [params objectForKey:@"proactive_chat"];
@@ -3652,9 +3704,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
                 
             // Disable the library explicitly.
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-            [lastKnownEnabledStatus release];
-            lastKnownEnabledStatus = nil;
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+            [multiskillMapping release];
+            multiskillMapping = nil;
         }
         
         else if (appLaunchRequestResponseCode < 300)
@@ -3720,9 +3772,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [lastKnownContinueURL release];
                 lastKnownContinueURL = nil;
                 
-                [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-                [lastKnownEnabledStatus release];
-                lastKnownEnabledStatus = nil;
+                [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+                [multiskillMapping release];
+                multiskillMapping = nil;
             }
         }
         else if (appContinueRequestResponseCode < 300 && appContinueRequestResponseCode >= 200)
@@ -3776,9 +3828,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appLaunchRequestResponseCode = -1;
         
         // Disable the library explicitly.
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-        [lastKnownEnabledStatus release];
-        lastKnownEnabledStatus = nil;
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+        [multiskillMapping release];
+        multiskillMapping = nil;
     }
     else if (appContinueRequestConnection == connection)
     {
@@ -3812,12 +3864,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
             [lastKnownContinueURL release];
             lastKnownContinueURL = nil;
-
-            /*
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownEnabledStatusKey];
-            [lastKnownEnabledStatus release];
-            lastKnownEnabledStatus = nil;
-            */
         }
     }
     
@@ -3862,7 +3908,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
-    return [lastKnownEnabledStatus boolValue];
+    // nil or empty
+    if (0 == [multiskillMapping count])
+        return NO;
+    
+    // See if the current skill has a mapping.
+    NSDictionary *aMap = [multiskillMapping objectForKey:currentRequiredSkill];
+    if ([aMap count])
+    {
+        NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+        return [enabledValue boolValue];
+    }
+    
+    // Nope. No current skill set. Try to find the default.
+    if (0 == [currentRequiredSkill length])
+    {
+        for (NSString *aSkillKey in multiskillMapping)
+        {
+            NSDictionary *aMap = [multiskillMapping objectForKey:aSkillKey];
+            NSNumber *defaultValue = [aMap objectForKey:@"default"];
+            if (defaultValue && YES == [defaultValue boolValue])
+            {
+                NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+                return [enabledValue boolValue];
+            }
+        }
+        
+        // No default? o_O
+    }
+
+    // Oh well.
+    return NO;
 }
 
 - (BOOL)sessionInProgress
