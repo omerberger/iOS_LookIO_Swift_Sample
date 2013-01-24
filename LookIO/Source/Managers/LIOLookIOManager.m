@@ -162,7 +162,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSMutableDictionary *registeredPlugins;
     NSMutableArray *pendingEvents;
     int failedContinueCount;
-    NSMutableDictionary *multiskillMapping;
+    NSDictionary *multiskillMapping;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -1981,221 +1981,303 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     //[controlButton setNeedsDisplay];
 }
 
-- (void)parseAndSaveSettingsPayload:(NSDictionary *)params
+- (NSDictionary *)resolveSettingsPayload:(NSDictionary *)params fromContinue:(BOOL)fromContinue
 {
-    LIOLog(@"Got settings payload: %@", params);
+    NSMutableDictionary *resolvedSettings = [NSMutableDictionary dictionary];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    
+    /*
     NSNumber *visitorIdNumber = [params objectForKey:@"visitor_id"];
     if (visitorIdNumber)
-    {
-        [userDefaults setObject:visitorIdNumber forKey:LIOLookIOManagerLastKnownVisitorIdKey];
-    }
+        [resolvedSettings setObject:visitorIdNumber forKey:@"visitor_id"];
+    */
     
-    // Merge existing skill map with the new one.
-    // If the new skill map is an empty hash {}, do not merge; erase all entries.
     NSDictionary *skillsDict = [params objectForKey:@"skills"];
     if (skillsDict)
     {
-        NSMutableDictionary *newMap = [multiskillMapping mutableCopy];
-        if (nil == newMap)
-            newMap = [[NSMutableDictionary alloc] init];
-        
-        if ([skillsDict count])
+        // Are these settings coming from a launch call? If so, replace current skill mapping wholesale.
+        if (NO == fromContinue)
         {
-            // Check for a "default=1" value.
-            NSString *newDefault = nil;
-            for (NSString *aSkillKey in skillsDict)
-            {
-                NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
-                NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
-                if (YES == [defaultValue boolValue])
-                {
-                    newDefault = aSkillKey;;
-                    break;
-                }
-            }
+            [resolvedSettings setObject:skillsDict forKey:@"skills"];
+        }
+        
+        // Merge existing skill map with the new one.
+        else
+        {
+            NSMutableDictionary *newMap = [[multiskillMapping mutableCopy] autorelease];
+            if (nil == newMap)
+                newMap = [NSMutableDictionary dictionary];
             
-            // Merge.
-            [newMap addEntriesFromDictionary:skillsDict];
-            
-            // Reset default values as needed.
-            if (newDefault)
+            if ([skillsDict count])
             {
-                NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
-                for (NSString *aSkillKey in newMap)
+                // Check for a "default=1" value.
+                NSString *newDefault = nil;
+                for (NSString *aSkillKey in skillsDict)
                 {
-                    NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
-                    NSNumber *defaultValue = [existingMap objectForKey:@"default"];
-                    if (defaultValue)
+                    NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
+                    NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
+                    if (YES == [defaultValue boolValue])
                     {
-                        if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
-                        {
-                            NSMutableDictionary *newDict = [existingMap mutableCopy];
-                            [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
-                            [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                        }
-                        else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
-                        {
-                            NSMutableDictionary *newDict = [existingMap mutableCopy];
-                            [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
-                            [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                        }
+                        newDefault = aSkillKey;;
+                        break;
                     }
                 }
                 
-                [newMap addEntriesFromDictionary:defaultReplacementDict];
+                // Merge.
+                [newMap addEntriesFromDictionary:skillsDict];
+                
+                // Reset default values as needed.
+                if (newDefault)
+                {
+                    NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
+                    for (NSString *aSkillKey in newMap)
+                    {
+                        NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
+                        NSNumber *defaultValue = [existingMap objectForKey:@"default"];
+                        if (defaultValue)
+                        {
+                            if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
+                            {
+                                NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
+                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                            }
+                            else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
+                            {
+                                NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
+                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                            }
+                        }
+                    }
+                    
+                    [newMap addEntriesFromDictionary:defaultReplacementDict];
+                }
             }
+            
+            // If the new skill map is an empty hash {}, do not merge; erase all entries.
+            else
+            {
+                [newMap removeAllObjects];
+            }
+            
+            [resolvedSettings setObject:newMap forKey:@"skills"];
         }
-        else
-        {
-            [newMap removeAllObjects];
-        }
-        
-        [multiskillMapping release];
-        multiskillMapping = newMap;
-        [userDefaults setObject:newMap forKey:LIOLookIOManagerMultiskillMappingKey];
-        
-        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
     }
     
     NSNumber *buttonVisibility = [params objectForKey:@"button_visibility"];
     if (buttonVisibility)
-    {
-        [lastKnownButtonVisibility release];
-        lastKnownButtonVisibility = [buttonVisibility retain];
-        
-        [userDefaults setObject:lastKnownButtonVisibility forKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
-        
-        [self refreshControlButtonVisibility];
-    }
+        [resolvedSettings setObject:buttonVisibility forKey:@"button_visibility"];
     
     NSString *buttonText = [params objectForKey:@"button_text"];
     if ([buttonText length])
-    {
-        [lastKnownButtonText release];
-        lastKnownButtonText = [buttonText retain];
-        
-        [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
-        
-        controlButton.labelText = buttonText;
-        [self rejiggerControlButtonFrame];
-    }
+        [resolvedSettings setObject:buttonText forKey:@"button_text"];
     
     NSString *welcomeText = [params objectForKey:@"welcome_text"];
     if ([welcomeText length])
-    {
-        [lastKnownWelcomeMessage release];
-        lastKnownWelcomeMessage = [welcomeText retain];
-        
-        [userDefaults setObject:lastKnownWelcomeMessage forKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
-    }
+        [resolvedSettings setObject:welcomeText forKey:@"welcome_text"];
     
     NSString *buttonTint = [params objectForKey:@"button_tint"];
     if ([buttonTint length])
-    {
-        [userDefaults setObject:buttonTint forKey:LIOLookIOManagerLastKnownButtonTintColorKey];
-        
-        unsigned int colorValue;
-        [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
-        UIColor *color = HEXCOLOR(colorValue);
-        
-        controlButton.tintColor = color;
-        
-        [lastKnownButtonTintColor release];
-        lastKnownButtonTintColor = [color retain];
-    }
+        [resolvedSettings setObject:buttonTint forKey:@"button_tint"];
     
     NSString *buttonTextColor = [params objectForKey:@"button_text_color"];
     if ([buttonTextColor length])
-    {
-        [userDefaults setObject:buttonTextColor forKey:LIOLookIOManagerLastKnownButtonTextColorKey];
-        
-        unsigned int colorValue;
-        [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
-        UIColor *color = HEXCOLOR(colorValue);
-        
-        controlButton.textColor = color;
-        
-        [lastKnownButtonTextColor release];
-        lastKnownButtonTextColor = [color retain];
-    }
+        [resolvedSettings setObject:buttonTextColor forKey:@"button_text_color"];
     
+    /*
     NSDictionary *proactiveChat = [params objectForKey:@"proactive_chat"];
     if (proactiveChat)
     {
         [proactiveChatRules removeAllObjects];
         [proactiveChatRules addEntriesFromDictionary:proactiveChat];
     }
+    */
     
     NSString *visitIdString = [params objectForKey:@"visit_id"];
     if ([visitIdString length])
-    {
-        [currentVisitId release];
-        currentVisitId = [visitIdString retain];
-    }
+        [resolvedSettings setObject:visitIdString forKey:@"visit_id"];
     
-    // { "locale": "nl_NL", "strings": { } }
     NSDictionary *localizedStrings = [params objectForKey:@"localized_strings"];
     if ([localizedStrings count])
-    {
-        [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
-        
-        NSDictionary *strings = [localizedStrings objectForKey:@"strings"];
-        NSString *newHash = [[LIOBundleManager sharedBundleManager] hashForLocalizedStringTable:strings];
-        [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
-        
-        LIOLog(@"Got a localized string table for locale \"%@\", hash: \"%@\"", [localizedStrings objectForKey:@"locale"], newHash);
-    }
+        [resolvedSettings setObject:localizedStrings forKey:@"localized_strings"];
     
     NSString *continueURLString = [params objectForKey:@"continue_url"];
     if ([continueURLString length])
-    {
-        [lastKnownContinueURL release];
-        lastKnownContinueURL = [continueURLString retain];
-    }
+        [resolvedSettings setObject:continueURLString forKey:@"continue_url"];
     
     NSNumber *nextIntervalNumber = [params objectForKey:@"next_interval"];
     if (nextIntervalNumber)
+        [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
+    
+    /*
+     NSDictionary *surveyDict = [params objectForKey:@"surveys"];
+     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
+     {
+     NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
+     
+     if (preSurvey)
+     {
+     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+     }
+     NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
+     if (postSurvey)
+     {
+     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+     }
+     }
+     */
+    
+    /*
+     // Fake survey for testing purposes.
+     NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
+     NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+     */
+    
+    return resolvedSettings;
+}
+
+- (void)parseAndSaveSettingsPayload:(NSDictionary *)params fromContinue:(BOOL)fromContinue
+{
+    LIOLog(@"Got settings payload: %@", params);
+
+    // Parse.
+    NSDictionary *resolvedSettings = nil;
+    @try
     {
-        nextTimeInterval = [nextIntervalNumber doubleValue];
+        resolvedSettings = [self resolveSettingsPayload:params fromContinue:fromContinue];
+    }
+    @catch (NSException *exception)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid settings payload received from the server! Exception: %@", exception];
         
-        [continuationTimer stopTimer];
-        [continuationTimer release];
-        continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
-                                                                 target:self
-                                                               selector:@selector(continuationTimerDidFire)];
+        // Delete multiskill mapping. This should force
+        // the lib to report "disabled" back to the host app.
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+        [multiskillMapping release];
+        multiskillMapping = nil;
     }
     
-    /*
-    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
-    if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
+    
+    // Save.
+    if ([resolvedSettings count])
     {
-        NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
-    
-        if (preSurvey)
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        
+        NSDictionary *skillsMap = [resolvedSettings objectForKey:@"skills"];
+        if (skillsMap)
         {
-            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+            [multiskillMapping release];
+            multiskillMapping = [skillsMap retain];
+            [userDefaults setObject:multiskillMapping forKey:LIOLookIOManagerMultiskillMappingKey];
+            
+            if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+                [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
         }
-        NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
-        if (postSurvey)
+        
+        NSNumber *buttonVisibility = [resolvedSettings objectForKey:@"button_visibility"];
+        if (buttonVisibility)
         {
-            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+            [lastKnownButtonVisibility release];
+            lastKnownButtonVisibility = [buttonVisibility retain];
+            
+            [userDefaults setObject:lastKnownButtonVisibility forKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
+            
+            [self refreshControlButtonVisibility];
         }
+        
+        NSString *buttonText = [resolvedSettings objectForKey:@"button_text"];
+        if ([buttonText length])
+        {
+            [lastKnownButtonText release];
+            lastKnownButtonText = [buttonText retain];
+            
+            [userDefaults setObject:lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
+            
+            controlButton.labelText = buttonText;
+            [self rejiggerControlButtonFrame];
+        }
+        
+        NSString *welcomeText = [resolvedSettings objectForKey:@"welcome_text"];
+        if ([welcomeText length])
+        {
+            [lastKnownWelcomeMessage release];
+            lastKnownWelcomeMessage = [welcomeText retain];
+            
+            [userDefaults setObject:lastKnownWelcomeMessage forKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
+        }
+        
+        NSString *buttonTint = [resolvedSettings objectForKey:@"button_tint"];
+        if ([buttonTint length])
+        {
+            [userDefaults setObject:buttonTint forKey:LIOLookIOManagerLastKnownButtonTintColorKey];
+            
+            unsigned int colorValue;
+            [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
+            UIColor *color = HEXCOLOR(colorValue);
+            
+            controlButton.tintColor = color;
+            
+            [lastKnownButtonTintColor release];
+            lastKnownButtonTintColor = [color retain];
+        }
+        
+        NSString *buttonTextColor = [resolvedSettings objectForKey:@"button_text_color"];
+        if ([buttonTextColor length])
+        {
+            [userDefaults setObject:buttonTextColor forKey:LIOLookIOManagerLastKnownButtonTextColorKey];
+            
+            unsigned int colorValue;
+            [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
+            UIColor *color = HEXCOLOR(colorValue);
+            
+            controlButton.textColor = color;
+            
+            [lastKnownButtonTextColor release];
+            lastKnownButtonTextColor = [color retain];
+        }
+        
+        NSString *visitIdString = [resolvedSettings objectForKey:@"visit_id"];
+        if ([visitIdString length])
+        {
+            [currentVisitId release];
+            currentVisitId = [visitIdString retain];
+        }
+        
+        NSDictionary *localizedStrings = [resolvedSettings objectForKey:@"localized_strings"];
+        if ([localizedStrings count])
+        {
+            [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
+            
+            NSDictionary *strings = [localizedStrings objectForKey:@"strings"];
+            NSString *newHash = [[LIOBundleManager sharedBundleManager] hashForLocalizedStringTable:strings];
+            [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
+            
+            LIOLog(@"Got a localized string table for locale \"%@\", hash: \"%@\"", [localizedStrings objectForKey:@"langauge"], newHash);
+        }
+        
+        NSString *continueURLString = [resolvedSettings objectForKey:@"continue_url"];
+        if ([continueURLString length])
+        {
+            [lastKnownContinueURL release];
+            lastKnownContinueURL = [continueURLString retain];
+        }
+        
+        NSNumber *nextIntervalNumber = [resolvedSettings objectForKey:@"next_interval"];
+        if (nextIntervalNumber)
+        {
+            nextTimeInterval = [nextIntervalNumber doubleValue];
+            
+            [continuationTimer stopTimer];
+            [continuationTimer release];
+            continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
+                                                                     target:self
+                                                                   selector:@selector(continuationTimerDidFire)];
+        }
+        
+        [self refreshControlButtonVisibility];
+        [self applicationDidChangeStatusBarOrientation:nil];
     }
-    */
-    
-    /*
-    // Fake survey for testing purposes.
-    NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with?\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
-    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
-    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-    */
-    
-    [self refreshControlButtonVisibility];
-    [self applicationDidChangeStatusBarOrientation:nil];
 }
 
 - (BOOL)shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
@@ -3721,7 +3803,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
         
             LIOLog(@"<LAUNCH> Success. HTTP code: %d. Response: %@", appLaunchRequestResponseCode, responseString);
-            [self parseAndSaveSettingsPayload:responseDict];
+            [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
         }
         
         else
@@ -3793,7 +3875,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             failedContinueCount = 0;
             
-            [self parseAndSaveSettingsPayload:responseDict];
+            [self parseAndSaveSettingsPayload:responseDict fromContinue:YES];
             
             // Continue call succeeded! Purge the event queue.
             [pendingEvents removeAllObjects];
