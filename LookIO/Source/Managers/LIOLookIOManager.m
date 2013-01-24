@@ -1455,6 +1455,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     currentRequiredSkill = [aRequiredSkill retain];
     
     [self sendContinuationReport];
+    
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+        [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
 }
 
 - (void)handlePacket:(NSString *)aJsonString
@@ -2053,6 +2056,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [multiskillMapping release];
         multiskillMapping = newMap;
         [userDefaults setObject:newMap forKey:LIOLookIOManagerMultiskillMappingKey];
+        
+        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
     }
     
     NSNumber *buttonVisibility = [params objectForKey:@"button_visibility"];
