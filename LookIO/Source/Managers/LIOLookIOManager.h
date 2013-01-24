@@ -52,7 +52,7 @@ extern NSString *const kLPEventAddedToCart;
 - (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey;
 - (id)customVariableForKey:(NSString *)aKey;
 - (void)addCustomVariable:(NSDictionary *)aDictionary;
-- (void)clearCustomVariable;
+- (void)clearCustomVariables;
 
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;
