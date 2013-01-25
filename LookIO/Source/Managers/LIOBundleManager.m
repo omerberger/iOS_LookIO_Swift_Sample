@@ -69,10 +69,6 @@ static LIOBundleManager *sharedBundleManager = nil;
         }
         
         // Set up the HTTP download request in case we need it.
-        NSURL *bundleDownloadURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/bundle.zip", LIOBundleManagerURLRoot, LOOKIO_VERSION_STRING]];
-        //NSURL *bundleDownloadURL = [NSURL URLWithString:@"http://cdn.look.io/ios/103/bundle.zip"];
-        bundleDownloadRequest = [[NSURLRequest alloc] initWithURL:bundleDownloadURL cachePolicy:NSURLCacheStorageNotAllowed timeoutInterval:LIOBundleManagerDownloadRequestTimeout];
-        
         UIImage *initialImage = [UIImage imageWithData:[NSData dataWithBytesNoCopy:(unsigned char *)lioTabInnerShadowBytes length:905]];
         lioTabInnerShadow = [[UIImage alloc] initWithCGImage:[initialImage CGImage] scale:1.0 orientation:UIImageOrientationUp];
         
@@ -185,6 +181,13 @@ static LIOBundleManager *sharedBundleManager = nil;
     {
         LIOLog(@"BUNDLE: Warning! Was asked to begin bundle download, but a download request is already in progress.");
         return;
+    }
+    
+    // First time setup.
+    if (nil == bundleDownloadRequest)
+    {
+        NSURL *bundleDownloadURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/bundle.zip", LIOBundleManagerURLRoot, LOOKIO_VERSION_STRING]];
+        bundleDownloadRequest = [[NSURLRequest alloc] initWithURL:bundleDownloadURL cachePolicy:NSURLCacheStorageNotAllowed timeoutInterval:LIOBundleManagerDownloadRequestTimeout];
     }
     
     LIOLog(@"BUNDLE: Starting bundle download...");
