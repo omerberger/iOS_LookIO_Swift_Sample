@@ -121,13 +121,11 @@
     }
 }
 
-/*
 - (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL
 {
     return @"lol";
 }
-*/
- 
+
 /*
 - (NSString *)lookIOManagerControlEndpointOverride:(LIOLookIOManager *)aManager
 {

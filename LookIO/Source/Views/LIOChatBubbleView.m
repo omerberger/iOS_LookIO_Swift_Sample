@@ -500,7 +500,7 @@ static NSDataDetector *dataDetector = nil;
         else
         {
             // Intra-app links don't require a warning.
-            [delegate chatBubbleView:self didTapIntraAppLinkWithURL:[NSURL URLWithString:aLink]];
+            [delegate chatBubbleView:self didTapIntraAppLinkWithURL:[NSURL URLWithString:aLinkURLString]];
         }
     }
     else if (NSTextCheckingTypePhoneNumber)
