@@ -1435,14 +1435,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSRange aRange = [chosenEndpoint rangeOfString:@":"];
     if (aRange.location != NSNotFound)
         chosenEndpoint = [chosenEndpoint substringToIndex:aRange.location];
-                          
-    BOOL connectResult = [controlSocket connectToHost:chosenEndpoint
-                                               onPort:chosenPort
-                                                error:anError];
     
-    LIOLog(@"Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
+    BOOL exceptionNotRaised = NO;
+    BOOL connectResult = NO;
+    @try
+    {
+        connectResult = [controlSocket connectToHost:chosenEndpoint
+                                              onPort:chosenPort
+                                               error:anError];
+        exceptionNotRaised = YES;
+        
+        LIOLog(@"Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
+    }
+    @catch (NSException *anException)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection attempt failed. Exception: %@", anException];
+    }
     
-    return connectResult;
+    return connectResult && exceptionNotRaised;
 }
 
 - (void)killConnection
