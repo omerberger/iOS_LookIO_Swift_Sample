@@ -384,6 +384,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendLaunchReport
 {
+    // First time setup.
+    if (nil == appLaunchRequest)
+    {
+        appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                        cachePolicy:NSURLCacheStorageNotAllowed
+                                                    timeoutInterval:10.0];
+        [appLaunchRequest setHTTPMethod:@"POST"];
+        [appLaunchRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        
+        appLaunchRequestData = [[NSMutableData alloc] init];
+        appLaunchRequestResponseCode = -1;
+    }
+    
     if ([overriddenEndpoint length])
     {
         NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerAppLaunchRequestURL]];
@@ -425,6 +438,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (appContinueRequestConnection)
         return;
+    
+    // First time setup.
+    if (nil == appContinueRequest)
+    {
+        appContinueRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                          cachePolicy:NSURLCacheStorageNotAllowed
+                                                      timeoutInterval:10.0];
+        [appContinueRequest setHTTPMethod:@"POST"];
+        [appContinueRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        
+        appContinueRequestData = [[NSMutableData alloc] init];
+        appContinueRequestResponseCode = -1;
+    }
     
     // Send it! ... if we have Internets, that is.
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
@@ -561,22 +587,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self refreshControlButtonVisibility];
     
     [self applicationDidChangeStatusBarOrientation:nil];
-    
-    appLaunchRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                    cachePolicy:NSURLCacheStorageNotAllowed
-                                                     timeoutInterval:10.0];
-    [appLaunchRequest setHTTPMethod:@"POST"];
-    [appLaunchRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    appLaunchRequestData = [[NSMutableData alloc] init];
-    appLaunchRequestResponseCode = -1;
-    
-    appContinueRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                      cachePolicy:NSURLCacheStorageNotAllowed
-                                                  timeoutInterval:10.0];
-    [appContinueRequest setHTTPMethod:@"POST"];
-    [appContinueRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    appContinueRequestData = [[NSMutableData alloc] init];
-    appContinueRequestResponseCode = -1;
     
     if (0.0 == nextTimeInterval)
         nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
