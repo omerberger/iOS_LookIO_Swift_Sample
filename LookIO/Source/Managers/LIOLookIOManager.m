@@ -1475,6 +1475,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     currentRequiredSkill = [aRequiredSkill retain];
     
     [self sendContinuationReport];
+    [self refreshControlButtonVisibility];
     
     if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
         [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
@@ -1893,8 +1894,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    // Trump card #1: "enabled" from server-side settings.
-    if (NO == [self enabled])
+    // Trump card #1: Not in a session, and "enabled" from server-side settings.
+    if (NO == [controlSocket isConnected] && NO == [self enabled])
     {
         controlButtonHidden = YES;
         controlButton.frame = controlButtonHiddenFrame;
