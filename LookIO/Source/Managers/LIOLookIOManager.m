@@ -963,9 +963,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = screenSize.width + 2.0;
+        aFrame.origin.x = screenSize.width + 7.0;
         controlButtonHiddenFrame = aFrame;
-
+        
         [self rejiggerControlButtonLabel];
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
@@ -979,7 +979,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.y = -aFrame.size.height - 2.0;
+        aFrame.origin.y = -aFrame.size.height - 10.0;
         controlButtonHiddenFrame = aFrame;
         
         [self rejiggerControlButtonLabel];
@@ -995,10 +995,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = -aFrame.size.width;
+        aFrame.origin.x = -aFrame.size.width - 7.0;
         controlButtonHiddenFrame = aFrame;
         
-        [self rejiggerControlButtonLabel];        
+        [self rejiggerControlButtonLabel];
     }
     else // Landscape, home button right
     {
@@ -1011,9 +1011,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.y = screenSize.height + 2.0;
+        aFrame.origin.y = screenSize.height + 10.0;
         controlButtonHiddenFrame = aFrame;
-
+        
         [self rejiggerControlButtonLabel];
     }
     
