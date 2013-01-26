@@ -963,7 +963,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = screenSize.width + 7.0;
+        aFrame.origin.x = screenSize.width + 10.0;
         controlButtonHiddenFrame = aFrame;
         
         [self rejiggerControlButtonLabel];
@@ -995,7 +995,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = -aFrame.size.width - 7.0;
+        aFrame.origin.x = -aFrame.size.width - 10.0;
         controlButtonHiddenFrame = aFrame;
         
         [self rejiggerControlButtonLabel];
