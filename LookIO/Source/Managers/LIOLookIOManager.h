@@ -39,7 +39,9 @@ extern NSString *const kLPEventAddedToCart;
 @property(nonatomic, retain) UIImage *touchImage;
 @property(nonatomic, retain) NSString *targetAgentId;
 @property(nonatomic, retain) UIWindow *mainWindow;
-@property(nonatomic, readonly) BOOL enabled, sessionInProgress;
+@property(nonatomic, readonly) BOOL enabled;
+@property(nonatomic, readonly) BOOL sessionInProgress;
+@property(nonatomic, readonly) BOOL chatMessageSent;
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;
 
 + (LIOLookIOManager *)sharedLookIOManager;

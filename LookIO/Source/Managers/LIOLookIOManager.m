@@ -4052,7 +4052,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)sessionInProgress
 {
-    return introduced && firstChatMessageSent;
+    return introduced;
+}
+
+- (BOOL)chatMessageSent
+{
+    return firstChatMessageSent;
 }
 
 @end
