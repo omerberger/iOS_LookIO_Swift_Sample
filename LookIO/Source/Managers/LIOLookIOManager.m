@@ -248,7 +248,7 @@ NSString *uniqueIdentifier()
 
 @synthesize touchImage, targetAgentId, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @synthesize resetAfterNextForegrounding, registeredPlugins;
-@dynamic enabled, sessionInProgress;
+@dynamic enabled, chatInProgress;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
 
@@ -4050,9 +4050,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return NO;
 }
 
-- (BOOL)sessionInProgress
+- (BOOL)chatInProgress
 {
-    return introduced && firstChatMessageSent;
+    return introduced;
 }
 
 @end
