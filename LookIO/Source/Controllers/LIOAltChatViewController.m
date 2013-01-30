@@ -432,6 +432,7 @@
     [chatBubbleHeights release];
     [tappableDismissalAreaForPadUI release];
     [pendingNotificationString release];
+    [lastSentMessageText release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -1407,6 +1408,9 @@
     
     [pendingChatText release];
     pendingChatText = nil;
+    
+    [lastSentMessageText release];
+    lastSentMessageText = [aString retain];
     
     [self.view endEditing:YES];
     

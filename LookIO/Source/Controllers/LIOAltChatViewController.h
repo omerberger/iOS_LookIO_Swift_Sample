@@ -78,6 +78,7 @@
     int numPreviousMessagesToShowInScrollback;
     NSMutableArray *messagesSentBeforeAvailabilityKnown;
     UIAlertView *alertView;
+    NSString *lastSentMessageText;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }
