@@ -133,4 +133,16 @@
 }
 */
 
+/*
+- (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager
+{
+    NSLog(@"\n\nHIDE\n\n");
+}
+
+- (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager
+{
+    NSLog(@"\n\nSHOW\n\n");
+}
+*/
+
 @end

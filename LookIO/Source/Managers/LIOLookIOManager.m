@@ -938,7 +938,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerControlButtonFrame
 {
-    CGSize screenSize = [[[UIApplication sharedApplication] keyWindow] bounds].size;
+    if (NO == [controlButton.superview isMemberOfClass:[UIWindow class]])
+        return;
+    
+    UIWindow *buttonWindow = (UIWindow *)controlButton.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
     [controlButton layoutSubviews];
@@ -3608,6 +3612,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 
     [self refreshControlButtonVisibility];
+    [self rejiggerControlButtonFrame];
+    [self rejiggerControlButtonLabel];
 }
 
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -3620,7 +3626,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
-    double delayInSeconds = 0.5;
+    double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         controlButton.hidden = NO;
