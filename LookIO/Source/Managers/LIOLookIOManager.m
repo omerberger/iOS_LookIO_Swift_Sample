@@ -2583,9 +2583,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *call = [jsonWriter stringWithObject:callDict];
         call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
         
-        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                         withTimeout:LIOLookIOManagerWriteTimeout
+                                 tag:0];
+        });
     }
     else
     {
@@ -2599,9 +2601,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *call = [jsonWriter stringWithObject:callDict];
         call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
         
-        [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
+                         withTimeout:LIOLookIOManagerWriteTimeout
+                                 tag:0];
+        });
     }
 }
 
