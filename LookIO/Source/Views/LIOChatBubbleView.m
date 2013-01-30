@@ -47,12 +47,7 @@ static NSDataDetector *dataDetector = nil;
         [self addGestureRecognizer:aLongPresser];
         
         if (nil == dataDetector)
-        {
-            //if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
-                dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
-            //else
-                //dataDetector = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
-        }
+            dataDetector = [[NSDataDetector alloc] initWithTypes:(NSTextCheckingTypeLink|NSTextCheckingTypePhoneNumber) error:nil];
         
         linkMessageViews = [[NSMutableArray alloc] init];
         links = [[NSMutableArray alloc] init];
@@ -241,9 +236,21 @@ static NSDataDetector *dataDetector = nil;
         NSString *currentLinkURLString = [[currentLink copy] autorelease];
         
         if (NSTextCheckingTypeLink == result.resultType)
+        {
+            // Omit telephone numbers if this device can't even make a call.
+            if ([[result.URL scheme] hasPrefix:@"tel"] && NO == [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
+                return;
+            
             [linkSchemes addObject:[result.URL scheme]];
+        }
         else if (NSTextCheckingTypePhoneNumber == result.resultType)
+        {
+            // Omit if this device can't call.
+            if (NO == [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
+                return;
+            
             [linkSchemes addObject:@"tel"];
+        }
         
         // Trim the URL scheme out of the link text to be drawn to the screen.
         NSRange schemeRange = [currentLink rangeOfString:@"://"];
