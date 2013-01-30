@@ -897,8 +897,7 @@
     if ([pendingEmailAddress length])
         aController.initialEmailAddress = pendingEmailAddress;
     
-    if ([pendingChatText length])
-        aController.initialMessage = pendingChatText;
+    aController.initialMessage = lastSentMessageText;
     
     if (padUI)
         aController.modalPresentationStyle = UIModalPresentationFormSheet;
