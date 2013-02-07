@@ -45,7 +45,7 @@
     UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"];
     texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
     
-    UIImageView *backgroundView = [[UIImageView alloc] init];
+    UIImageView *backgroundView = [[[UIImageView alloc] init] autorelease];
     backgroundView.image = texture;
     aFrame = CGRectZero;
     aFrame.size.width = rootView.bounds.size.width;
@@ -168,6 +168,9 @@
     [navBar release];
     navBar = nil;
     
+    [label01 release];
+    label01 = nil;
+    
     [label02 release];
     label02 = nil;
 }
@@ -186,6 +189,7 @@
     [inputField release];
     [submitButton release];
     [navBar release];
+    [label01 release];
     [label02 release];
     
     [super dealloc];

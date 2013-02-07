@@ -86,6 +86,10 @@
     [titleImage release];
     [titleImageView release];
     [titleLabel release];
+    [stretchableBackgroundPortrait release];
+    [stretchableBackgroundLandscape release];
+    [stretchableButtonPortrait release];
+    [stretchableButtonLandscape release];
     
     [super dealloc];
 }

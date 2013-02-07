@@ -178,6 +178,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
         if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
             wifi = NO;
         
+        CFRelease(reachability);
         return NO == wifi;
     }
     CFRelease(reachability);
