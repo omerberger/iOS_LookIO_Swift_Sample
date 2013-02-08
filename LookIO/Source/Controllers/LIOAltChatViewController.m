@@ -433,6 +433,7 @@
     [tappableDismissalAreaForPadUI release];
     [pendingNotificationString release];
     [lastSentMessageText release];
+    [dismissButton release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
