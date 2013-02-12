@@ -523,6 +523,37 @@ BOOL LIOIsUIKitFlatMode(void) {
     return md5String;
 }
 
+- (NSDictionary *)localizedStringTableForLanguage:(NSString *)aLangCode
+{
+    // Need a bundle for this to work.
+    if (NO == [self isAvailable])
+        return nil;
+    
+    NSString *path = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:aLangCode];
+    if (0 == [path length])
+    {
+        LIOLog(@"Couldn't open localized string bundle: %@", path);
+        return nil;
+    }
+
+    NSError *error = nil;
+    NSString *contents = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
+    if (0 == [contents length])
+        return nil;
+
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    NSArray *lines = [contents componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    for (NSString *aLine in lines)
+    {
+        if (0 == [aLine length])
+            continue;
+        
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\"\"$" options:0 error:nil];
+    }
+
+    return nil;
+}
+
 #pragma mark -
 #pragma mark NSURLConnectionDelegate methods
 

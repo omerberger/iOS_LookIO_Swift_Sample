@@ -47,7 +47,6 @@
                                     alpha:1.0]
 
 // Misc. constants
-#define LIOLookIOManagerDefaultLocalizationHash @"752c6e666849f07a26b98011d22bb42d"
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerScreenCaptureInterval       0.5
@@ -359,7 +358,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
         if (0 == [[userDefaults objectForKey:LIOBundleManagerStringTableHashKey] length])
-            [userDefaults setObject:LIOLookIOManagerDefaultLocalizationHash forKey:LIOBundleManagerStringTableHashKey];
+        {
+            NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
+            id oh = [[LIOBundleManager sharedBundleManager] localizedStringTableForLanguage:languageId];
+            
+            // 752c6e666849f07a26b98011d22bb42d
+            // [userDefaults setObject:LIOLookIOManagerDefaultLocalizationHash forKey:LIOBundleManagerStringTableHashKey];
+        }
         
         touchImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"] retain];
         cursorView = [[UIImageView alloc] initWithImage:touchImage];
