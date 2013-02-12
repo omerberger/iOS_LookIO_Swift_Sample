@@ -42,7 +42,7 @@ typedef enum
     LIOChatBubbleViewLinkMode linkMode;
     TTTAttributedLabel_LIO *mainMessageView;
     NSMutableArray *linkMessageViews, *links, *linkButtons, *linkTypes, *linkSupertypes, *intraAppLinkViews,
-        *linkURLStrings, *linkSchemes;
+        *linkURLs, *linkSchemes;
     UIImageView *backgroundImage;
     NSString *senderName;
     NSURL *urlBeingLaunched;

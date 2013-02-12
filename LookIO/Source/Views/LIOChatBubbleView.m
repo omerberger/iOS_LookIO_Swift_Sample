@@ -55,7 +55,7 @@ static NSDataDetector *dataDetector = nil;
         linkTypes = [[NSMutableArray alloc] init];
         intraAppLinkViews = [[NSMutableArray alloc] init];
         linkSupertypes = [[NSMutableArray alloc] init];
-        linkURLStrings = [[NSMutableArray alloc] init];
+        linkURLs = [[NSMutableArray alloc] init];
         linkSchemes = [[NSMutableArray alloc] init];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -86,7 +86,7 @@ static NSDataDetector *dataDetector = nil;
     [rawChatMessage release];
     [intraAppLinkViews release];
     [linkSupertypes release];
-    [linkURLStrings release];
+    [linkURLs release];
     [linkSchemes release];
     
     [super dealloc];
@@ -233,7 +233,7 @@ static NSDataDetector *dataDetector = nil;
     [dataDetector enumerateMatchesInString:aString options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
         
         NSString *currentLink = [aString substringWithRange:result.range];
-        NSString *currentLinkURLString = [[currentLink copy] autorelease];
+        NSURL *currentLinkURL = result.URL;
         
         if (NSTextCheckingTypeLink == result.resultType)
         {
@@ -258,18 +258,17 @@ static NSDataDetector *dataDetector = nil;
             currentLink = [currentLink substringFromIndex:schemeRange.location + schemeRange.length];
         
         [links addObject:currentLink];
-        [linkURLStrings addObject:currentLinkURLString];
+        [linkURLs addObject:currentLinkURL];
         [linkTypes addObject:[NSNumber numberWithLongLong:result.resultType]];
         [textCheckingResults addObject:result];
         
         // Special handling for links; could be intra-app!
         if (NSTextCheckingTypeLink == result.resultType)
         {
-            NSURL *currentURL = [NSURL URLWithString:currentLinkURLString];
-            if ([[LIOLookIOManager sharedLookIOManager] isIntraLink:currentURL])
+            if ([[LIOLookIOManager sharedLookIOManager] isIntraLink:currentLinkURL])
             {
                 [linkSupertypes addObject:[NSNumber numberWithInt:LIOChatBubbleViewLinkSupertypeIntra]];
-                id linkView = [[LIOLookIOManager sharedLookIOManager] linkViewForURL:currentURL];
+                id linkView = [[LIOLookIOManager sharedLookIOManager] linkViewForURL:currentLinkURL];
                 if (linkView && ([linkView isKindOfClass:[UIView class]] || [linkView isKindOfClass:[NSString class]]))
                 {
                     if ([linkView isKindOfClass:[UIView class]])
@@ -472,7 +471,7 @@ static NSDataDetector *dataDetector = nil;
         return;
     
     NSString *aLink = [links objectAtIndex:linkIndex];
-    NSString *aLinkURLString = [linkURLStrings objectAtIndex:linkIndex];
+    NSURL *aLinkURL = [linkURLs objectAtIndex:linkIndex];
     NSTextCheckingType aType = (NSTextCheckingType)[[linkTypes objectAtIndex:linkIndex] longLongValue];
     NSString *aScheme = [linkSchemes objectAtIndex:linkIndex];
     int aSupertype = [[linkSupertypes objectAtIndex:linkIndex] intValue];
@@ -495,7 +494,7 @@ static NSDataDetector *dataDetector = nil;
             }
             
             [urlBeingLaunched release];
-            urlBeingLaunched = [[NSURL URLWithString:aLinkURLString] retain];
+            urlBeingLaunched = [aLinkURL retain];
             
             alertView = [[UIAlertView alloc] initWithTitle:nil
                                                    message:alertMessage
@@ -507,7 +506,7 @@ static NSDataDetector *dataDetector = nil;
         else
         {
             // Intra-app links don't require a warning.
-            [delegate chatBubbleView:self didTapIntraAppLinkWithURL:[NSURL URLWithString:aLinkURLString]];
+            [delegate chatBubbleView:self didTapIntraAppLinkWithURL:aLinkURL];
         }
     }
     else if (NSTextCheckingTypePhoneNumber)
