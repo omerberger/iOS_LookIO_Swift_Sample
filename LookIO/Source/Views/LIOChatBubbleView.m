@@ -249,6 +249,7 @@ static NSDataDetector *dataDetector = nil;
             if (NO == [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
                 return;
             
+            currentLinkURL = [NSURL URLWithString:currentLink];
             [linkSchemes addObject:@"tel"];
         }
         
