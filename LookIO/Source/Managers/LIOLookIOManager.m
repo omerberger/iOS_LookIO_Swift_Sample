@@ -359,11 +359,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         if (0 == [[userDefaults objectForKey:LIOBundleManagerStringTableHashKey] length])
         {
+            LIOBundleManager *bundleManager = [LIOBundleManager sharedBundleManager];
             NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
-            id oh = [[LIOBundleManager sharedBundleManager] localizedStringTableForLanguage:languageId];
-            
-            // 752c6e666849f07a26b98011d22bb42d
-            // [userDefaults setObject:LIOLookIOManagerDefaultLocalizationHash forKey:LIOBundleManagerStringTableHashKey];
+            NSDictionary *builtInTable = [bundleManager localizedStringTableForLanguage:languageId];
+            if ([builtInTable count])
+            {
+                NSString *newHash = [bundleManager hashForLocalizedStringTable:builtInTable];
+                [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
+                
+                LIOLog(@"Hashing the bundled localization table (\"%@\") succeeded: %@", languageId, newHash);
+            }
+            else
+            {
+                LIOLog(@"Couldn't hash the bundled localization table (\"%@\"). Table might not exist for that language.", languageId);
+            }
         }
         
         touchImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"] retain];

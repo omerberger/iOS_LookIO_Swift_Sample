@@ -532,7 +532,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     NSString *path = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:aLangCode];
     if (0 == [path length])
     {
-        LIOLog(@"Couldn't open localized string bundle: %@", path);
+        LIOLog(@"[localizedStringTableForLanguage:] Couldn't open localized string bundle: %@", path);
         return nil;
     }
 
@@ -548,10 +548,35 @@ BOOL LIOIsUIKitFlatMode(void) {
         if (0 == [aLine length])
             continue;
         
-        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\"\"$" options:0 error:nil];
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\"(.+)\"\\s*=\\s*\"(.+)\".*;$" options:0 error:nil];
+        NSArray *matches = [regex matchesInString:aLine options:0 range:NSMakeRange(0, [aLine length])];
+        if ([matches count] == 1)
+        {
+            NSTextCheckingResult *match = [matches objectAtIndex:0];
+            NSRange keyRange = [match rangeAtIndex:1];
+            NSRange valueRange = [match rangeAtIndex:2];
+            
+            if (keyRange.location != NSNotFound || valueRange.location != NSNotFound)
+            {
+                NSString *aKey = [aLine substringWithRange:keyRange];
+                
+                // Get the value from the i18n subsystem.
+                NSString *aValue = [self localizedStringWithKey:aKey];
+                
+                [result setObject:aValue forKey:aKey];
+            }
+            else
+            {
+                LIOLog(@"[localizedStringTableForLanguage:] Match failed! keyRange: %@, valueRange: %@. Line was:\n%@", [NSValue valueWithRange:keyRange], [NSValue valueWithRange:valueRange], aLine);
+            }
+        }
+        else
+        {
+            LIOLog(@"[localizedStringTableForLanguage:] >1 match? Fail. Line was:\n%@\n\nmatches: %@", aLine, matches);
+        }
     }
 
-    return nil;
+    return result;
 }
 
 #pragma mark -
