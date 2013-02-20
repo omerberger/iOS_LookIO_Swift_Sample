@@ -160,6 +160,7 @@
         UITapGestureRecognizer *aTapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handlePadDismissalAreaTap:)] autorelease];
         
         tappableDismissalAreaForPadUI = [[UIView alloc] init];
+        tappableDismissalAreaForPadUI.accessibilityLabel = @"LIOAltChatViewController.tappableDismissalAreaForPadUI";
         [tappableDismissalAreaForPadUI addGestureRecognizer:aTapper];
         tappableDismissalAreaForPadUI.backgroundColor = [UIColor clearColor];
         //tappableDismissalAreaForPadUI.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
@@ -196,6 +197,7 @@
     if (NO == padUI)
     {
         dismissalBar = [[LIODismissalBarView alloc] init];
+        dismissalBar.accessibilityLabel = @"LIOAltChatViewController.dismissalBar";
         //dismissalBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
         dismissalBar.backgroundColor = [UIColor clearColor];
         CGRect aFrame = dismissalBar.frame;
@@ -212,6 +214,7 @@
         aFrame.size.height = LIOHeaderBarViewDefaultHeight;
         
         headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
+        headerBar.accessibilityLabel = @"LIOAltChatViewController.headerBar";
         //headerBar.backgroundColor = [UIColor colorWithRed:(arc4random()%256)/255.0 green:(arc4random()%256)/255.0 blue:(arc4random()%256)/255.0 alpha:1.0];
         headerBar.backgroundColor = [UIColor clearColor];
         headerBar.delegate = self;
@@ -236,6 +239,7 @@
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
     emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
     [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
     emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -257,6 +261,7 @@
         emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
 
     UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
     [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
     endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
