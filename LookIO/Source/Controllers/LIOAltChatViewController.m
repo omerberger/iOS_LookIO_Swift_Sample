@@ -1409,6 +1409,8 @@
     [pendingChatText release];
     pendingChatText = nil;
     
+    previousTextLength = 0;
+    
     [lastSentMessageText release];
     lastSentMessageText = [aString retain];
     
