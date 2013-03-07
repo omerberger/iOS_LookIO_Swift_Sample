@@ -513,11 +513,13 @@
                                              selector:@selector(keyboardWillChangeFrame:)
                                                  name:@"UIKeyboardWillChangeFrameNotification"
                                                object:nil];
-    
+
+    /*
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidChangeFrame:)
                                                  name:@"UIKeyboardDidChangeFrameNotification"
                                                object:nil];
+    */
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -1370,9 +1372,11 @@
     inputBar.frame = aFrame;
 }
 
+/*
 - (void)keyboardDidChangeFrame:(NSNotification *)aNotification
 {
 }
+*/
 
 #pragma mark -
 #pragma mark LIOInputBarViewDelegate methods
