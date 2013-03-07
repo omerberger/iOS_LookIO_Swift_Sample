@@ -100,6 +100,7 @@
     [scrollView addSubview:fieldBackground];
     
     inputField = [[UITextField alloc] init];
+    inputField.accessibilityLabel = @"LIOEmailHistoryViewController.inputField";
     inputField.delegate = self;
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
@@ -123,6 +124,7 @@
     UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
     
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    submitButton.accessibilityLabel = @"LIOEmailHistoryViewController.submitButton";
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
     [submitButton setTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SubmitButton") forState:UIControlStateNormal];

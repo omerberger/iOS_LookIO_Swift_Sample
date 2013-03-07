@@ -528,7 +528,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
     controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
     controlButton.delegate = self;
-    controlButton.accessibilityLabel = @"LIOTab";
+    controlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
     [keyWindow addSubview:controlButton];
     
     Class $CTCallCenter = NSClassFromString(@"CTCallCenter");

@@ -51,7 +51,7 @@
         }
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        sendButton.accessibilityLabel = @"LIOSendButton";
+        sendButton.accessibilityLabel = @"LIOInputBarView.sendButton";
         [sendButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
         sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
@@ -107,7 +107,7 @@
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
-        inputField.accessibilityLabel = @"LIOInputField";
+        inputField.accessibilityLabel = @"LIOInputBarView.inputField";
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
