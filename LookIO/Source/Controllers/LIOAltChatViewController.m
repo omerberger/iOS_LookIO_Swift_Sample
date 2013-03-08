@@ -511,6 +511,20 @@
                                              selector:@selector(applicationDidChangeStatusBarOrientation:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
+    
+    // These don't exist on iOS < 5.0, so... we just use bare strings here.
+    // Yes, this is a hack.
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillChangeFrame:)
+                                                 name:@"UIKeyboardWillChangeFrameNotification"
+                                               object:nil];
+
+    /*
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidChangeFrame:)
+                                                 name:@"UIKeyboardDidChangeFrameNotification"
+                                               object:nil];
+    */
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -1341,6 +1355,33 @@
 {
     [self refreshExpandingFooter];
 }
+
+- (void)keyboardWillChangeFrame:(NSNotification *)aNotification
+{
+    if (NO == keyboardShowing)
+        return;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
+    
+    keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
+    
+    CGRect aFrame = inputBar.frame;
+    aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
+    inputBar.frame = aFrame;
+}
+
+/*
+- (void)keyboardDidChangeFrame:(NSNotification *)aNotification
+{
+}
+*/
 
 #pragma mark -
 #pragma mark LIOInputBarViewDelegate methods
