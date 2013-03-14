@@ -249,7 +249,11 @@ static NSDataDetector *dataDetector = nil;
             if (NO == [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tel://1112223333"]])
                 return;
             
-            currentLinkURL = [NSURL URLWithString:currentLink];
+            NSString *cleanedString = [[currentLink componentsSeparatedByCharactersInSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789-+()"] invertedSet]] componentsJoinedByString:@""];
+            NSString *escapedPhoneNumber = [cleanedString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+            NSURL *result = [NSURL URLWithString:[NSString stringWithFormat:@"tel://%@", escapedPhoneNumber]];
+            
+            currentLinkURL = result;
             [linkSchemes addObject:@"tel"];
         }
         
@@ -512,12 +516,8 @@ static NSDataDetector *dataDetector = nil;
     }
     else if (NSTextCheckingTypePhoneNumber)
     {
-        NSString *cleanedString = [[aLink componentsSeparatedByCharactersInSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789-+()"] invertedSet]] componentsJoinedByString:@""];
-        NSString *escapedPhoneNumber = [cleanedString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        NSURL *result = [NSURL URLWithString:[NSString stringWithFormat:@"tel://%@", escapedPhoneNumber]];        
-        
         [urlBeingLaunched release];
-        urlBeingLaunched = [result retain];
+        urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
         
         NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
         alertView = [[UIAlertView alloc] initWithTitle:nil
