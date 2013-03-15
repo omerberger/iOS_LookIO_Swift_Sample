@@ -118,7 +118,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSMutableArray *chatHistory;
     NSNumber *lastKnownQueuePosition;
     UIBackgroundTaskIdentifier backgroundTaskId;
-    NSString *targetAgentId;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
     NSMutableURLRequest *appLaunchRequest, *appContinueRequest;
     NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection;
@@ -246,7 +245,7 @@ NSString *uniqueIdentifier()
 
 @implementation LIOLookIOManager
 
-@synthesize touchImage, targetAgentId, screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
+@synthesize screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
 @synthesize resetAfterNextForegrounding, registeredPlugins;
 @dynamic enabled, chatInProgress;
 
@@ -273,7 +272,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (0 == [[userDefaults objectForKey:LIOBundleManagerStringTableHashKey] length])
             [userDefaults setObject:LIOLookIOManagerDefaultLocalizationHash forKey:LIOBundleManagerStringTableHashKey];
         
-        self.touchImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"];
+        touchImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"] retain];
         cursorView = [[UIImageView alloc] initWithImage:touchImage];
         cursorView.frame = CGRectMake(-cursorView.frame.size.width, -cursorView.frame.size.height, cursorView.frame.size.width, cursorView.frame.size.height);
         [keyWindow addSubview:cursorView];
@@ -720,7 +719,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    self.touchImage = nil;
+    [touchImage release];
+    touchImage = nil;
     
     [callCenter release];
     callCenter = nil;
@@ -743,7 +743,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [jsonWriter release];
     [chatHistory release];
     [lastKnownQueuePosition release];
-    [targetAgentId release];
     [friendlyName release];
     [appLaunchRequest release];
     [appLaunchRequestConnection release];
@@ -2496,9 +2495,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (includeExtras)
     {
-        if ([targetAgentId length])
-            [introDict setObject:targetAgentId forKey:@"agent_id"];
-        
         [introDict setObject:LIOLookIOManagerVersion forKey:@"version"];
         
         // Detect some stuff about the client.
