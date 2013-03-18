@@ -162,6 +162,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSMutableArray *pendingEvents;
     int failedContinueCount;
     NSDictionary *multiskillMapping;
+    NSString *lastKnownPageViewValue;
     id<LIOLookIOManagerDelegate> delegate;
 }
 
@@ -719,6 +720,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    [lastKnownPageViewValue release];
+    lastKnownPageViewValue = nil;
+    
     [touchImage release];
     touchImage = nil;
     
@@ -821,6 +825,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [aPlugin resetPluginState];
     }
 
+    [lastKnownPageViewValue release];
+    lastKnownPageViewValue = nil;
+    
     [callCenter release];
     callCenter = nil;
     
@@ -2549,6 +2556,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([detectedDict count])
             [extrasDict setObject:detectedDict forKey:@"detected_settings"];
         
+        if ([lastKnownPageViewValue length])
+            [extrasDict setObject:lastKnownPageViewValue forKey:@"page_view"];
+        
         if ([extrasDict count])
         {
             [introDict setObject:extrasDict forKey:@"extras"];
@@ -2865,7 +2875,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // Immediately make a continue call, unless the event is the built-in "page view" one.
     if (NO == [anEvent isEqualToString:kLPEventPageView])
+    {
         [self sendContinuationReport];
+    }
+    else if ([someData isKindOfClass:[NSString class]])
+    {
+        // Okay, this IS a pageview event. Record it as the last known.
+        lastKnownPageViewValue = (NSString *)[someData retain];
+    }
 }
 
 #pragma mark -
