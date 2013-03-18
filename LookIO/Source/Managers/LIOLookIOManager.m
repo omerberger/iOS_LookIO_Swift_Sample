@@ -2557,7 +2557,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [extrasDict setObject:detectedDict forKey:@"detected_settings"];
         
         if ([lastKnownPageViewValue length])
-            [extrasDict setObject:lastKnownPageViewValue forKey:@"page_view"];
+            [extrasDict setObject:lastKnownPageViewValue forKey:@"view_name"];
         
         if ([extrasDict count])
         {
