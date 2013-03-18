@@ -2881,6 +2881,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([someData isKindOfClass:[NSString class]])
     {
         // Okay, this IS a pageview event. Record it as the last known.
+        [lastKnownPageViewValue release];
         lastKnownPageViewValue = (NSString *)[someData retain];
     }
 }
