@@ -438,6 +438,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appContinueRequestConnection)
         return;
     
+    if (0 == [lastKnownContinueURL length])
+        return;
+    
     // First time setup.
     if (nil == appContinueRequest)
     {
