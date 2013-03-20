@@ -517,7 +517,7 @@ static NSDataDetector *dataDetector = nil;
     else if (NSTextCheckingTypePhoneNumber)
     {
         [urlBeingLaunched release];
-        urlBeingLaunched = [[NSURL URLWithString:aLink] retain];
+        urlBeingLaunched = [aLinkURL retain];
         
         NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
         alertView = [[UIAlertView alloc] initWithTitle:nil
