@@ -533,6 +533,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.delegate = self;
     controlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
     [keyWindow addSubview:controlButton];
+    [self rejiggerControlButtonFrame];
+    controlButton.frame = controlButtonHiddenFrame;
     
     Class $CTCallCenter = NSClassFromString(@"CTCallCenter");
     if ($CTCallCenter)
