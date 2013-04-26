@@ -305,7 +305,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
-        queuedLaunchReportDates = [userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey];
+        queuedLaunchReportDates = [[userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey] mutableCopy];
         if (nil == queuedLaunchReportDates)
             queuedLaunchReportDates = [[NSMutableArray alloc] init];
         
