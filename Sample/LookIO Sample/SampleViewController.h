@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LIOLookIOManager.h"
 
-@interface SampleViewController : UIViewController <LIOLookIOManagerDelegate>
+@interface SampleViewController : UIViewController <LIOLookIOManagerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 {
     IBOutlet UILabel *availabilityLabel;
     IBOutlet UIButton *liveHelpButton;

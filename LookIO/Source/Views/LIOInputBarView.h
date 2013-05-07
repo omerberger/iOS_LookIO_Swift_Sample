@@ -17,6 +17,7 @@
 - (void)inputBarViewDidTypeStuff:(LIOInputBarView *)aView;
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView;
 - (void)inputBarViewDidStopPulseAnimation:(LIOInputBarView *)aView;
+- (void)inputBarViewDidTapAttachButton:(LIOInputBarView *)aView;
 @end
 
 // Misc. constants
@@ -32,7 +33,7 @@
     //UILabel *adLabel;
     //UIImageView *adLogo;
     //UIView *adArea;
-    UIButton *sendButton;
+    UIButton *sendButton, *attachButton;
     UITextView *inputField;
     UIImageView *inputFieldBackground, *inputFieldBackgroundGlowing;
     CGFloat singleLineHeight;
@@ -56,5 +57,6 @@
 @property(nonatomic, readonly) CGFloat desiredHeight;
 @property(nonatomic, readonly) UIView *adArea;
 @property(nonatomic, readonly) LIONotificationArea *notificationArea;
+@property(nonatomic, readonly) UIButton *attachButton;
 
 @end

@@ -32,6 +32,7 @@
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyQuestion.h"
 #import "LIOPlugin.h"
+#import "LIOMediaManager.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -471,6 +472,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    [[LIOMediaManager sharedInstance] purgeAllMedia];
     
     appForegrounded = YES;
     
@@ -1333,6 +1336,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self refreshControlButtonVisibility];
 }
 
+- (NSString *)chosenEndpoint
+{
+    return [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
+}
+
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
     // Survey needed? We need to wait until it's done before we try to connect.
@@ -1444,7 +1452,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == usesTLS)
         chosenPort = LIOLookIOManagerControlEndpointPort;
     
-    NSString *chosenEndpoint = [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
+    NSString *chosenEndpoint = [self chosenEndpoint];
     
     // Get rid of any port specifier at the end.
     NSRange aRange = [chosenEndpoint rangeOfString:@":"];
@@ -2436,6 +2444,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self clearSessionExtras];
 }
 
+- (NSString *)bundleId
+{
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerAppIdOverride:)])
+    {
+        NSString *overriddenBundleId = [delegate lookIOManagerAppIdOverride:self];
+        if ([overriddenBundleId length])
+            bundleId = overriddenBundleId;
+    }
+    
+    return bundleId;
+}
+
+- (NSString *)currentSessionId
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    return [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+}
+
+- (UInt32)enabledCollaborationComponents
+{
+    UInt32 result = kLPCollaborationComponentNone;
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerEnabledCollaborationComponents:)])
+        result = [delegate lookIOManagerEnabledCollaborationComponents:self];
+    
+    return result;
+}
+
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingSurveyResponses:(BOOL)includesSurveyResponses includingEvents:(BOOL)includeEvents
 {
     size_t size;
@@ -2445,14 +2481,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
     free(machine);
     
-    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
-    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerAppIdOverride:)])
-    {
-        NSString *overriddenBundleId = [delegate lookIOManagerAppIdOverride:self];
-        if ([overriddenBundleId length])
-            bundleId = overriddenBundleId;
-    }
     
+    NSString *bundleId = [self bundleId];
     NSString *udid = uniqueIdentifier();
     NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       udid, @"device_id",
@@ -3124,6 +3154,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [altChatViewController scrollToBottomDelayed:YES];
     
     firstChatMessageSent = YES;
+}
+
+- (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithAttachmentId:(NSString *)aString
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+    [userDefaults synchronize];
+    
+    NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:aString];
+    if (attachmentData)
+    {
+        // Upload the attachment.
+        NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:aString];
+        [[LIOMediaManager sharedInstance] uploadMediaData:attachmentData withType:mimeType];
+        
+        LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
+        newMessage.text = aString;
+        newMessage.date = [NSDate date];
+        newMessage.kind = LIOChatMessageKindLocal;
+        newMessage.attachmentId = aString;
+        [chatHistory addObject:newMessage];
+        
+        [altChatViewController reloadMessages];
+        [altChatViewController scrollToBottomDelayed:YES];
+        
+        firstChatMessageSent = YES;
+    }
 }
 
 - (void)altChatViewControllerDidTapEndSessionButton:(LIOAltChatViewController *)aController

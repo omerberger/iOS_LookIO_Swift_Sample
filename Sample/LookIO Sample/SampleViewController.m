@@ -145,4 +145,9 @@
 }
 */
 
+- (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOLookIOManager *)aManager
+{
+    return kLPCollaborationComponentPhoto;
+}
+
 @end

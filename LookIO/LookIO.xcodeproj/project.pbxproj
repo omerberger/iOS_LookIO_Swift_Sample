@@ -39,6 +39,8 @@
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
 		D446F41915AB435D00E40B19 /* LIOSurveyViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D446F41715AB435D00E40B19 /* LIOSurveyViewController.h */; };
 		D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D446F41815AB435D00E40B19 /* LIOSurveyViewController.m */; };
+		D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D447AC9917381460008919A1 /* LIOMediaManager.h */; };
+		D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D447AC9A17381460008919A1 /* LIOMediaManager.m */; };
 		D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7F71576D60300CF73CC /* LIORulesManager.h */; };
 		D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7F81576D60300CF73CC /* LIORulesManager.m */; };
 		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
@@ -148,6 +150,8 @@
 		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D446F41715AB435D00E40B19 /* LIOSurveyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewController.h; path = Source/Controllers/LIOSurveyViewController.h; sourceTree = "<group>"; };
 		D446F41815AB435D00E40B19 /* LIOSurveyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewController.m; path = Source/Controllers/LIOSurveyViewController.m; sourceTree = "<group>"; };
+		D447AC9917381460008919A1 /* LIOMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMediaManager.h; path = Source/Managers/LIOMediaManager.h; sourceTree = "<group>"; };
+		D447AC9A17381460008919A1 /* LIOMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMediaManager.m; path = Source/Managers/LIOMediaManager.m; sourceTree = "<group>"; };
 		D454B7F71576D60300CF73CC /* LIORulesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORulesManager.h; path = Source/Managers/LIORulesManager.h; sourceTree = "<group>"; };
 		D454B7F81576D60300CF73CC /* LIORulesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORulesManager.m; path = Source/Managers/LIORulesManager.m; sourceTree = "<group>"; };
 		D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORuleViewVisible.h; path = Source/Other/LIORuleViewVisible.h; sourceTree = "<group>"; };
@@ -306,6 +310,8 @@
 				D403F7B715335CC100101941 /* LIOLogManager.m */,
 				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
+				D447AC9917381460008919A1 /* LIOMediaManager.h */,
+				D447AC9A17381460008919A1 /* LIOMediaManager.m */,
 				D454B7F71576D60300CF73CC /* LIORulesManager.h */,
 				D454B7F81576D60300CF73CC /* LIORulesManager.m */,
 				D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */,
@@ -541,6 +547,7 @@
 				D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */,
 				D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */,
 				D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */,
+				D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -664,6 +671,7 @@
 				D446F41A15AB435D00E40B19 /* LIOSurveyViewController.m in Sources */,
 				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
 				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
+				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

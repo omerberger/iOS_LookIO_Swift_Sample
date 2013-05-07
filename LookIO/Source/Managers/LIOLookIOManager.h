@@ -19,6 +19,12 @@ extern NSString *const kLPEventSignUp;
 extern NSString *const kLPEventSignIn;
 extern NSString *const kLPEventAddedToCart;
 
+// Collaboration component constants.
+// Return these via the "lookIOManagerEnabledCollaborationComponents:" delegate method.
+#define kLPCollaborationComponentNone   0
+#define kLPCollaborationComponentPhoto  1
+#define kLPCollaborationComponentVideo  (1 << 1)
+
 @class LIOLookIOManager;
 @protocol LIOPlugin;
 
@@ -29,6 +35,7 @@ extern NSString *const kLPEventAddedToCart;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
 - (void)lookIOManagerDidEndChat:(LIOLookIOManager *)aManager;
 - (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
+- (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOLookIOManager *)aManager;
 
 // The following delegate methods should only be used when
 // troubleshooting UI / general integration issues.
