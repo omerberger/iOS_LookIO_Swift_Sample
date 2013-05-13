@@ -27,13 +27,19 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOTimerProxy.h"
 #import "LIOSurveyViewController.h"
+#import "LIOMediaManager.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
 #define LIOAltChatViewControllerChatboxMinHeight   100.0
+#define LIOAltChatViewControllerAttachmentRowHeight 180.0
+#define LIOAltChatViewControllerAttachmentSize      170.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
+
+#define LIOAltChatViewControllerPhotoSourceActionSheetTag 1002
+#define LIOAltChatViewControllerAttachConfirmAlertViewTag 1003
 
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
@@ -439,6 +445,7 @@
     [pendingNotificationString release];
     [lastSentMessageText release];
     [dismissButton release];
+    [pendingImageAttachment release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -838,28 +845,37 @@
     [chatBubbleHeights removeAllObjects];
     for (int i=0; i<[chatMessages count]; i++)
     {
-        LIOChatBubbleView *tempView = [[LIOChatBubbleView alloc] init];
-        
         LIOChatMessage *aMessage = [chatMessages objectAtIndex:i];
-        if (LIOChatMessageKindLocal == aMessage.kind)
+        
+        // Attachment? Fixed height.
+        if ([aMessage.attachmentId length])
         {
-            tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-            tempView.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
+            [chatBubbleHeights addObject:[NSNumber numberWithFloat:LIOAltChatViewControllerAttachmentRowHeight]];
         }
-        else if (LIOChatMessageKindRemote == aMessage.kind)
+        else
         {
-            tempView.formattingMode = LIOChatBubbleViewFormattingModeRemote;
-            tempView.senderName = aMessage.senderName;
+            LIOChatBubbleView *tempView = [[LIOChatBubbleView alloc] init];
+            
+            if (LIOChatMessageKindLocal == aMessage.kind)
+            {
+                tempView.formattingMode = LIOChatBubbleViewFormattingModeLocal;
+                tempView.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
+            }
+            else if (LIOChatMessageKindRemote == aMessage.kind)
+            {
+                tempView.formattingMode = LIOChatBubbleViewFormattingModeRemote;
+                tempView.senderName = aMessage.senderName;
+            }
+            
+            tempView.rawChatMessage = aMessage;
+            [tempView populateMessageViewWithText:aMessage.text];
+            [tempView layoutSubviews];
+            
+            NSNumber *aHeight = [NSNumber numberWithFloat:tempView.frame.size.height];
+            [chatBubbleHeights addObject:aHeight];
+            
+            [tempView release];
         }
-        
-        tempView.rawChatMessage = aMessage;
-        [tempView populateMessageViewWithText:aMessage.text];
-        [tempView layoutSubviews];
-        
-        NSNumber *aHeight = [NSNumber numberWithFloat:tempView.frame.size.height];
-        [chatBubbleHeights addObject:aHeight];
-        
-        [tempView release];
     }
     
     [tableView reloadData];
@@ -943,6 +959,95 @@
     }
 }
 
+- (void)showPhotoSourceActionSheet
+{
+    BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
+    
+    NSString *cancelString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceCancel"];
+    NSString *cameraString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceCamera"];
+    NSString *libraryString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceLibrary"];
+    
+    UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:nil
+                                                    delegate:self
+                                           cancelButtonTitle:cancelString
+                                      destructiveButtonTitle:nil
+                                           otherButtonTitles:cameraString, libraryString, nil];
+    as.tag = LIOAltChatViewControllerPhotoSourceActionSheetTag;
+    as.actionSheetStyle = UIActionSheetStyleBlackOpaque;
+    [as autorelease];
+    
+    if (padUI)
+        [as showFromRect:inputBar.attachButton.bounds inView:inputBar.attachButton animated:YES];
+    else
+        [as showInView:self.view];
+}
+
+- (void)showPhotoLibraryPicker
+{
+    BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
+    
+    UIImagePickerController *ipc = [[[UIImagePickerController alloc] init] autorelease];
+    ipc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary|UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    ipc.allowsEditing = NO;
+    ipc.delegate = self;
+    
+    if (padUI)
+    {
+        popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
+        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+        popover.delegate = self;
+        [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                 inView:inputBar.attachButton
+               permittedArrowDirections:UIPopoverArrowDirectionDown
+                               animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController:ipc animated:YES];
+    }
+}
+
+- (void)showCamera
+{
+    BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
+    
+    UIImagePickerController *ipc = [[[UIImagePickerController alloc] init] autorelease];
+    ipc.sourceType = UIImagePickerControllerSourceTypeCamera;
+    ipc.allowsEditing = NO;
+    ipc.delegate = self;
+    
+    if (padUI)
+    {
+        popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
+        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+        popover.delegate = self;
+        [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                 inView:inputBar.attachButton
+               permittedArrowDirections:UIPopoverArrowDirectionDown
+                               animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController:ipc animated:YES];
+    }
+}
+
+- (void)showAttachmentUploadConfirmation
+{
+    NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationBody"];
+    NSString *sendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationSend"];
+    NSString *dontSendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationDontSend"];
+    
+    UIAlertView *av = [[UIAlertView alloc] initWithTitle:nil
+                                                 message:bodyString
+                                                delegate:self
+                                       cancelButtonTitle:nil
+                                       otherButtonTitles:dontSendString, sendString, nil];
+    av.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
+    [av autorelease];
+    [av show];
+}
+
 #pragma mark -
 #pragma mark UITableViewDataSource methods
 
@@ -987,39 +1092,76 @@
     tappableDummyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [tappableDummyView addGestureRecognizer:tapper];
     [aCell.contentView addSubview:tappableDummyView];
-    
-    // ... this kinda defeats the purpose of reusable cells.
-    // OH WELL
-    LIOChatBubbleView *aBubble = [[[LIOChatBubbleView alloc] initWithFrame:CGRectZero] autorelease];
-    aBubble.backgroundColor = [UIColor clearColor];
-    aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
-    aBubble.delegate = self;
-    aBubble.index = indexPath.row;
-    
-    LIOChatMessage *aMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
-    if (LIOChatMessageKindLocal == aMessage.kind)
-    {
-        aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
-        aBubble.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
-    }
-    else if (LIOChatMessageKindRemote == aMessage.kind)
-    {
-        aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
-        aBubble.senderName = aMessage.senderName;
-    }
 
-    [aCell.contentView addSubview:aBubble];
+    LIOChatMessage *aMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
     
-    aBubble.rawChatMessage = aMessage;
-    [aBubble populateMessageViewWithText:aMessage.text];
+    // Attachment -- show as bare UIImageview for now.
+    // TODO: Fold attachment display into LIOChatBubbleView.
+    if ([aMessage.attachmentId length])
+    {
+        NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:aMessage.attachmentId];
+        if ([mimeType hasPrefix:@"image"])
+        {
+            NSData *imageData = [[LIOMediaManager sharedInstance] mediaDataWithId:aMessage.attachmentId];
+            if (imageData)
+            {
+                UIImage *attachmentImage = [[[UIImage alloc] initWithData:imageData] autorelease];
+                if (attachmentImage)
+                {
+                    UIImageView *imageBubble = [[[UIImageView alloc] init] autorelease];
+                    imageBubble.contentMode = UIViewContentModeScaleToFill;
+                    //imageBubble.layer.shadowColor = [UIColor blackColor].CGColor;
+                    //imageBubble.layer.shadowOffset = CGSizeMake(-2.0, 2.0);
+                    //imageBubble.layer.shadowOpacity = 1.0;
+                    //imageBubble.layer.shadowRadius = 2.0;
+                    imageBubble.layer.masksToBounds = YES;
+                    imageBubble.layer.cornerRadius = 6.0;
+                    [imageBubble setImage:attachmentImage];
+                    CGRect ibFrame;
+                    ibFrame.origin.x = tableView.bounds.size.width - LIOAltChatViewControllerAttachmentSize - 10.0;
+                    ibFrame.origin.y = 5.0;
+                    ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;
+                    ibFrame.size.height = LIOAltChatViewControllerAttachmentSize;
+                    imageBubble.frame = ibFrame;
+                    [aCell.contentView addSubview:imageBubble];
+                }
+            }
+        }
+    }
     
-    if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
-        aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
-    else if (LIOChatBubbleViewFormattingModeLocal == aBubble.formattingMode)
-        aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
-    
-    [aBubble setNeedsLayout];
-    [aBubble setNeedsDisplay];
+    // No attachment
+    else
+    {
+        LIOChatBubbleView *aBubble = [[[LIOChatBubbleView alloc] initWithFrame:CGRectZero] autorelease];
+        aBubble.backgroundColor = [UIColor clearColor];
+        aBubble.tag = LIOAltChatViewControllerTableViewCellBubbleViewTag;
+        aBubble.delegate = self;
+        aBubble.index = indexPath.row;
+        
+        if (LIOChatMessageKindLocal == aMessage.kind)
+        {
+            aBubble.formattingMode = LIOChatBubbleViewFormattingModeLocal;
+            aBubble.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");
+        }
+        else if (LIOChatMessageKindRemote == aMessage.kind)
+        {
+            aBubble.formattingMode = LIOChatBubbleViewFormattingModeRemote;
+            aBubble.senderName = aMessage.senderName;
+        }
+
+        [aCell.contentView addSubview:aBubble];
+        
+        aBubble.rawChatMessage = aMessage;
+        [aBubble populateMessageViewWithText:aMessage.text];
+        
+        if (LIOChatBubbleViewFormattingModeRemote == aBubble.formattingMode)
+            aBubble.frame = CGRectMake(0.0, 0.0, 290.0, 0.0);
+        else if (LIOChatBubbleViewFormattingModeLocal == aBubble.formattingMode)
+            aBubble.frame = CGRectMake(tableView.bounds.size.width - 290.0, 0.0, 290.0, 0.0);
+        
+        [aBubble setNeedsLayout];
+        [aBubble setNeedsDisplay];
+    }
     
     return aCell;
 }
@@ -1473,6 +1615,14 @@
 {
 }
 
+- (void)inputBarViewDidTapAttachButton:(LIOInputBarView *)aView
+{
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+        [self showPhotoSourceActionSheet];
+    else
+        [self showPhotoLibraryPicker];
+}
+
 #pragma mark -
 #pragma mark LIOHeaderBarViewDelegate methods
 
@@ -1688,6 +1838,76 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self viewDidAppear:NO];
         });
+    }
+}
+
+#pragma mark - UIActionSheetDelegate methods -
+
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (LIOAltChatViewControllerPhotoSourceActionSheetTag == actionSheet.tag)
+    {
+        if (0 == buttonIndex) // take photo/video
+            [self showCamera];
+        else if (1 == buttonIndex) // choose existing
+            [self showPhotoLibraryPicker];
+    }
+}
+
+#pragma mark - UIImagePickerControllerDelegate methods -
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (padUI)
+        [popover dismissPopoverAnimated:YES];
+    else
+        [self dismissModalViewControllerAnimated:YES];
+    
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    if (image)
+    {
+        pendingImageAttachment = [image retain];
+        [self showAttachmentUploadConfirmation];
+    }
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (padUI)
+    {
+        [popover dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [self dismissModalViewControllerAnimated:YES];
+    }
+}
+
+#pragma mark - UIAlertViewDelegate methods -
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (LIOAltChatViewControllerAttachConfirmAlertViewTag == alertView.tag)
+    {
+        if (buttonIndex == 1) // yes
+        {
+            if (pendingImageAttachment)
+            {
+                NSString *attachmentId = [[LIOMediaManager sharedInstance] commitImageMedia:pendingImageAttachment];
+                [delegate altChatViewController:self didChatWithAttachmentId:attachmentId];
+                [pendingImageAttachment release];
+                pendingImageAttachment = nil;
+            }
+        }
+        else
+        {
+            [pendingImageAttachment release];
+            pendingImageAttachment = nil;
+        }
     }
 }
 

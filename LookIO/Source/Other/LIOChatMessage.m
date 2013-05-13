@@ -10,7 +10,7 @@
 
 @implementation LIOChatMessage
 
-@synthesize kind, text, date, senderName;
+@synthesize kind, text, date, senderName, attachmentId;
 
 + (LIOChatMessage *)chatMessage
 {
@@ -19,6 +19,7 @@
 
 - (void)dealloc
 {
+    [attachmentId release];
     [text release];
     [date release];
     [senderName release];

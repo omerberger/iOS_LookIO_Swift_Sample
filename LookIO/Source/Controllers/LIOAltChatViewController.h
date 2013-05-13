@@ -23,6 +23,7 @@
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithAttachmentId:(NSString *)aString;
 - (void)altChatViewControllerDidTapEndSessionButton:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidTapEndScreenshotsButton:(LIOAltChatViewController *)aController;
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
@@ -49,7 +50,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
      LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
-     UIAlertViewDelegate, LIOSurveyViewControllerDelegate>
+     UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -79,6 +80,7 @@
     NSMutableArray *messagesSentBeforeAvailabilityKnown;
     UIAlertView *alertView;
     NSString *lastSentMessageText;
+    UIImage *pendingImageAttachment;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
 }

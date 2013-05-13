@@ -16,7 +16,7 @@
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea, attachButton;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -25,11 +25,14 @@
     if (self)
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
         
         self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
                 
         UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
+        
+        UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAttachIcon"];
         
         CGRect sendButtonFrame = CGRectZero;
         UIFont *sendButtonFont = nil;
@@ -60,6 +63,17 @@
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:sendButton];
         
+        CGRect attachButtonFrame = sendButton.frame;
+        attachButtonFrame.origin.x = 5.0;
+        attachButtonFrame.size.width = 40.0;
+        attachButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        attachButton.frame = attachButtonFrame;
+        attachButton.hidden = NO == attachNeeded;
+        [attachButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
+        [attachButton setImage:attachImage forState:UIControlStateNormal];
+        [attachButton addTarget:self action:@selector(attachButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:attachButton];
+        
         if (padUI)
         {
             CGRect notificationAreaFrame = CGRectZero;
@@ -70,22 +84,50 @@
             
             UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleAdAreaTap:)] autorelease];
             [notificationArea addGestureRecognizer:tapper];
+            
+            if (attachNeeded)
+            {
+                attachButtonFrame = attachButton.frame;
+                attachButtonFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width;
+                attachButton.frame = attachButtonFrame;
+            }
         }
         
         CGRect inputFieldBackgroundFrame = CGRectZero;
         if (padUI)
         {
-            inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width;
-            inputFieldBackgroundFrame.size.width = 450.0;
-            inputFieldBackgroundFrame.size.height = 50.0;
-            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
+            if (attachNeeded)
+            {
+                inputFieldBackgroundFrame.origin.x = attachButton.frame.origin.x + attachButton.frame.size.width + 25.0;
+                inputFieldBackgroundFrame.size.width = 450.0 - attachButton.frame.size.width - 10.0;
+                inputFieldBackgroundFrame.size.height = 50.0;
+                inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
+            }
+            else
+            {
+                inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width;
+                inputFieldBackgroundFrame.size.width = 450.0;
+                inputFieldBackgroundFrame.size.height = 50.0;
+                inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
+            }
         }
         else
         {
-            inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 13.0;
-            inputFieldBackgroundFrame.size.height = 39.0;
-            inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 3.0;
-            inputFieldBackgroundFrame.origin.x = 3.0;
+            // We need to shrink the input field if the attach button is present.
+            if (attachNeeded)
+            {
+                inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - attachButton.frame.size.width - 13.0;
+                inputFieldBackgroundFrame.size.height = 39.0;
+                inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 3.0;
+                inputFieldBackgroundFrame.origin.x = attachButton.frame.size.width + 7.0;
+            }
+            else
+            {
+                inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 13.0;
+                inputFieldBackgroundFrame.size.height = 39.0;
+                inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) + 3.0;
+                inputFieldBackgroundFrame.origin.x = 3.0;
+            }
         }
         
         inputFieldBackground = [[UIImageView alloc] initWithFrame:inputFieldBackgroundFrame];
@@ -152,6 +194,7 @@
     [pulseTimer release];
     pulseTimer = nil;
     
+    [attachButton release];
     [sendButton release];
     [inputField release];
     [inputFieldBackground release];
@@ -354,6 +397,11 @@
     inputField.text = [NSString string];
     [delegate inputBarView:self didReturnWithText:text];
     [self setNeedsLayout];
+}
+
+- (void)attachButtonWasTapped
+{
+    [delegate inputBarViewDidTapAttachButton:self];
 }
 
 #pragma mark -

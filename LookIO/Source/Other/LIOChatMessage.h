@@ -23,12 +23,14 @@ typedef enum
     NSString *text;
     NSDate *date;
     NSString *senderName;
+    NSString *attachmentId;
 }
 
 @property(nonatomic, assign) LIOChatMessageKind kind;
 @property(nonatomic, retain) NSString *text;
 @property(nonatomic, retain) NSDate *date;
 @property(nonatomic, retain) NSString *senderName;
+@property(nonatomic, retain) NSString *attachmentId;
 
 + (LIOChatMessage *)chatMessage;
 
