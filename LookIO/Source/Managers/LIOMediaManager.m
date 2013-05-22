@@ -98,7 +98,7 @@ static LIOMediaManager *sharedInstance = nil;
     [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[@"Content-Disposition: form-data; name=\"bundle\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[bundleId dataUsingEncoding:NSUTF8StringEncoding]];
-    [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
     //LIOLog(@"\n\nATTACHMENT UPLOAD REQUEST:\n%@\n\n", [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding]);
     
