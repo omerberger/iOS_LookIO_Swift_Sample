@@ -9,6 +9,7 @@
 #import "LIOMediaManager.h"
 #import "LIOLookIOManager.h"
 #import "NSData+Base64.h"
+#import "LIOLogManager.h"
 
 static LIOMediaManager *sharedInstance = nil;
 
@@ -55,7 +56,7 @@ static LIOMediaManager *sharedInstance = nil;
             BOOL dirWasCreated = [fileManager createDirectoryAtPath:attachmentsDirectory withIntermediateDirectories:NO attributes:nil error:&createDirectoryError];
             if (NO == dirWasCreated)
             {
-                NSLog(@"!!! WARNING !!! Unable to create Attachments directory! Reason: %@", createDirectoryError);
+                LIOLog(@"!!! WARNING !!! Unable to create Attachments directory! Reason: %@", createDirectoryError);
                 [self release];
                 return nil;
             }
@@ -69,7 +70,10 @@ static LIOMediaManager *sharedInstance = nil;
 - (void)uploadMediaData:(NSData *)someData withType:(NSString *)aType
 {
     if (uploadConnection)
+    {
+        LIOLog(@"Ignoring \"%@\"; already uploading something.", NSStringFromSelector(_cmd));
         return;
+    }
     
     NSString *sessionId = [[LIOLookIOManager sharedLookIOManager] currentSessionId];
     if (0 == [sessionId length])
@@ -85,7 +89,7 @@ static LIOMediaManager *sharedInstance = nil;
     
     NSMutableData *body = [NSMutableData data];
     [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-    [body appendData:[@"Content-Disposition: form-data; name=\"file\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"Content-Disposition: form-data; name=\"file\"; filename=\"lpmobile_ios_upload\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", aType] dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[dataBase64 dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -96,7 +100,7 @@ static LIOMediaManager *sharedInstance = nil;
     [body appendData:[bundleId dataUsingEncoding:NSUTF8StringEncoding]];
     [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
     
-    //NSLog(@"\n\nATTACHMENT UPLOAD REQUEST:\n%@\n\n", [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding]);
+    //LIOLog(@"\n\nATTACHMENT UPLOAD REQUEST:\n%@\n\n", [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding]);
     
     [uploadRequest setHTTPBody:body];
     
@@ -128,7 +132,7 @@ static LIOMediaManager *sharedInstance = nil;
         NSError *anError;
         NSString *fullPath = [attachmentsDirectory stringByAppendingPathComponent:aFilePath];
         if (NO == [fileManager removeItemAtPath:fullPath error:&anError])
-            NSLog(@"Unable to delete attachment file \"%@\". Reason: %@", aFilePath, [anError localizedDescription]);
+            LIOLog(@"Unable to delete attachment file \"%@\". Reason: %@", aFilePath, [anError localizedDescription]);
     }
     [fileManager release];
 }
@@ -162,23 +166,29 @@ static LIOMediaManager *sharedInstance = nil;
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    NSLog(@"response: %d", [(NSHTTPURLResponse *)response statusCode]);
+    LIOLog(@"response: %d", [(NSHTTPURLResponse *)response statusCode]);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
     NSString *lol = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
-    NSLog(@"data: %@", lol);
+    LIOLog(@"data: %@", lol);
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSLog(@"finished loading");
+    LIOLog(@"finished loading");
+    
+    [uploadConnection release];
+    uploadConnection = nil;
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    NSLog(@"hella fail: %@", error);
+    LIOLog(@"hella fail: %@", error);
+    
+    [uploadConnection release];
+    uploadConnection = nil;
 }
 
 @end
