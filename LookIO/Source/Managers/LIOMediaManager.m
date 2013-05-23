@@ -16,7 +16,6 @@ static LIOMediaManager *sharedInstance = nil;
 @interface LIOMediaManager () <NSURLConnectionDataDelegate, NSURLConnectionDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 {
     NSURLConnection *uploadConnection;
-    NSMutableURLRequest *uploadRequest;
 }
 
 @end
@@ -39,12 +38,6 @@ static LIOMediaManager *sharedInstance = nil;
     
     if (self)
     {
-        NSString *endpoint = [NSString stringWithFormat:@"https://%@/api/v1/media/upload", [[LIOLookIOManager sharedLookIOManager] chosenEndpoint]];
-        uploadRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:endpoint]
-                                                     cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                                 timeoutInterval:20.0];
-        [uploadRequest setHTTPMethod:@"POST"];
-        
         // Ensure that the attachments directory exists.
         NSString *attachmentsDirectory = [self mediaPath];
         NSFileManager *fileManager = [[[NSFileManager alloc] init] autorelease];
@@ -80,6 +73,12 @@ static LIOMediaManager *sharedInstance = nil;
         return;
     
     NSString *bundleId = [[LIOLookIOManager sharedLookIOManager] bundleId];
+    
+    NSString *endpoint = [NSString stringWithFormat:@"https://%@/api/v1/media/upload", [[LIOLookIOManager sharedLookIOManager] chosenEndpoint]];
+    NSMutableURLRequest *uploadRequest = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:endpoint]
+                                                                       cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                                                   timeoutInterval:20.0] autorelease];
+    [uploadRequest setHTTPMethod:@"POST"];
 
     NSString *boundary = @"0xKhTmLbOuNdArY";
     NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
