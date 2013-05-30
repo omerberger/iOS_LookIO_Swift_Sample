@@ -28,6 +28,7 @@
 #import "LIOTimerProxy.h"
 #import "LIOSurveyViewController.h"
 #import "LIOMediaManager.h"
+#import "LIOSurveyViewPre.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -40,6 +41,8 @@
 
 #define LIOAltChatViewControllerPhotoSourceActionSheetTag 1002
 #define LIOAltChatViewControllerAttachConfirmAlertViewTag 1003
+
+#define LIOSurveyViewPrePadding 10.0
 
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
@@ -472,7 +475,7 @@
             dismissalBar.hidden = YES;
             inputBar.hidden = YES;
             tableView.hidden = YES;
-            headerBar.hidden = YES;
+            //headerBar.hidden = YES;
         }
     }
     
@@ -555,6 +558,19 @@
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
+            CGRect surveyFrame;
+            surveyFrame.origin.x = tableView.frame.origin.x + LIOSurveyViewPrePadding;
+            surveyFrame.origin.y = tableView.frame.origin.y + LIOSurveyViewPrePadding;
+            surveyFrame.size.width = tableView.frame.size.width - 2*LIOSurveyViewPrePadding;
+            surveyFrame.size.height = tableView.frame.size.height;
+            
+            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:surveyFrame];
+            surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
+            surveyViewPre.headerString = surveyManager.preChatHeader;
+            [self.view addSubview:surveyViewPre];
+            [surveyViewPre setupViews];
+            
+            /*
             LIOSurveyViewController *surveyController = [[[LIOSurveyViewController alloc] initWithNibName:nil bundle:nil] autorelease];
             surveyController.delegate = self;
             surveyController.headerString = surveyManager.preChatHeader;
@@ -565,6 +581,9 @@
                 surveyController.modalPresentationStyle = UIModalPresentationFormSheet;
             
             [self presentModalViewController:surveyController animated:YES];
+             */
+            
+            
             
             return;
         }

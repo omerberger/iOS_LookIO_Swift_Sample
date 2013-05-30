@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */; };
+		A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
@@ -118,6 +120,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewPre.h; path = Source/Views/LIOSurveyViewPre.h; sourceTree = "<group>"; };
+		A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewPre.m; path = Source/Views/LIOSurveyViewPre.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
@@ -349,6 +353,8 @@
 				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
+				A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */,
+				A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -548,6 +554,7 @@
 				D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */,
 				D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */,
 				D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */,
+				A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,6 +679,7 @@
 				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
 				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
+				A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
