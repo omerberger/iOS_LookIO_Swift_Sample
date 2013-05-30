@@ -10,6 +10,7 @@
 #import "LIOSurveyManager.h"
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyQuestion.h"
+#import "LIOBundleManager.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define LIOSurveyViewPrePageControlHeight     15.0
@@ -90,13 +91,48 @@
     questionLabel.textColor = [UIColor whiteColor];
     questionLabel.numberOfLines = 0;
     questionLabel.text = question.label;
-    questionLabel.textAlignment = UITextAlignmentCenter;
     [questionLabel sizeToFit];
+    questionLabel.textAlignment = UITextAlignmentCenter;
     [scrollView addSubview:questionLabel];
     [questionLabel release];
+    
+    CGSize questionLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width - 20.0, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    CGRect aFrame = questionLabel.frame;
+    aFrame.size = questionLabelSize;
+    aFrame.origin.x = 10.0;
+    aFrame.origin.y = 10.0;
+    questionLabel.frame = aFrame;
 
     if (LIOSurveyQuestionDisplayTypeText == question.displayType) {
-//        UITextField* textField =
+        UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
+        UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+        
+        UIImageView *fieldBackground = [[[UIImageView alloc] initWithImage:stretchableFieldImage] autorelease];
+        fieldBackground.userInteractionEnabled = YES;
+        aFrame = fieldBackground.frame;
+        aFrame.origin.x = 10.0;
+        aFrame.size.width = self.bounds.size.width - 20.0;
+        aFrame.size.height = 48.0;
+        aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0;
+        fieldBackground.frame = aFrame;
+        fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [scrollView addSubview:fieldBackground];
+        
+        UITextField *inputField = [[[UITextField alloc] init] autorelease];
+        inputField.delegate = self;
+        inputField.backgroundColor = [UIColor clearColor];
+        aFrame.origin.x = 10.0;
+        aFrame.origin.y = 14.0;
+        aFrame.size.width = fieldBackground.frame.size.width - 20.0;
+        aFrame.size.height = 28.0;
+        inputField.frame = aFrame;
+        inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        inputField.font = [UIFont systemFontOfSize:14.0];
+        inputField.returnKeyType = UIReturnKeyNext;
+        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        [fieldBackground addSubview:inputField];
+        [inputField becomeFirstResponder];
+        
     }
     
     return [scrollView autorelease];

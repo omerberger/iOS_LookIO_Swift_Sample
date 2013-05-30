@@ -10,7 +10,7 @@
 
 @class LIOSurveyTemplate;
 
-@interface LIOSurveyViewPre : UIView {
+@interface LIOSurveyViewPre : UIView <UITextFieldDelegate> {
     LIOSurveyTemplate *currentSurvey;
     NSString *headerString;
     int currentQuestionIndex, nextQuestionIndex;
