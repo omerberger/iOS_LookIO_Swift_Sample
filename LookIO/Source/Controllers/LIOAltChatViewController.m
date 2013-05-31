@@ -473,6 +473,7 @@
         if (lastIndexCompleted < finalIndex)
         {
             dismissalBar.hidden = YES;
+            //dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, -45.0);
             inputBar.hidden = YES;
             tableView.hidden = YES;
             //headerBar.hidden = YES;
@@ -552,21 +553,22 @@
     
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate)
+    if (surveyManager.preChatTemplate && !surveyPreCompleted)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
             CGRect surveyFrame;
-            surveyFrame.origin.x = tableView.frame.origin.x + LIOSurveyViewPrePadding;
+            surveyFrame.origin.x = tableView.frame.origin.x;
             surveyFrame.origin.y = tableView.frame.origin.y + LIOSurveyViewPrePadding;
-            surveyFrame.size.width = tableView.frame.size.width - 2*LIOSurveyViewPrePadding;
+            surveyFrame.size.width = tableView.frame.size.width;
             surveyFrame.size.height = tableView.frame.size.height;
             
             LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:surveyFrame];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
+            surveyViewPre.delegate = self;
             [self.view addSubview:surveyViewPre];
             [surveyViewPre setupViews];
             
@@ -582,8 +584,6 @@
             
             [self presentModalViewController:surveyController animated:YES];
              */
-            
-            
             
             return;
         }
@@ -1822,6 +1822,53 @@
         });
     }
 }
+
+-(void)surveyViewDidFinish:(LIOSurveyViewPre *)aView {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    /*
+    // Collect responses for submission.
+    NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
+    for (int i=0; i<[aController.currentSurvey.questions count]; i++)
+    {
+        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aController.currentSurvey.questions objectAtIndex:i];
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
+        if (aResponse != nil)
+            [finalDict setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+    }
+    NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
+    [surveyDict setObject:aController.currentSurvey.surveyId forKey:@"id"];
+    [surveyDict setObject:finalDict forKey:@"responses"];
+    [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
+     */
+    
+    dismissalBar.hidden = NO;
+    inputBar.hidden = NO;
+    tableView.hidden = NO;
+    headerBar.hidden = NO;
+
+    [UIView animateWithDuration:0.3 animations:^{
+        aView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [aView removeFromSuperview];
+    }];
+    
+    surveyPreCompleted = YES;
+        
+    // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
+    // We manually invoke it here.
+//    if (padUI)
+//    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self viewDidAppear:NO];
+            [tableView reloadData];
+            NSLog(@"Number of messages in tableview is %d", chatMessages.count);
+        });
+//    }
+}
+
 
 - (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController
 {

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyViewPre;
 @class LIOTimerProxy;
 
 @protocol LIOInputBarViewDelegate;
@@ -19,6 +19,7 @@
 @protocol LIOChatBubbleViewDelegate;
 @protocol LIOToasterViewDelegate;
 @protocol LIOSurveyViewControllerDelegate;
+@protocol LIOSurveyViewDelegate;
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -50,7 +51,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
      LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
-     UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate>
+     UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -83,6 +84,8 @@
     UIImage *pendingImageAttachment;
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
+    
+    BOOL surveyPreCompleted;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
