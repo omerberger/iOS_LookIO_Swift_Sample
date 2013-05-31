@@ -466,7 +466,8 @@
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate)
+    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
+    if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -553,7 +554,8 @@
     
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && !surveyPreCompleted)
+    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
+    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -896,7 +898,7 @@
             [tempView release];
         }
     }
-    
+
     [tableView reloadData];
 }
 
@@ -1863,7 +1865,6 @@
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self viewDidAppear:NO];
-            [tableView reloadData];
             NSLog(@"Number of messages in tableview is %d", chatMessages.count);
         });
 //    }

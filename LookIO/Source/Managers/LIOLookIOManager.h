@@ -66,6 +66,9 @@ extern NSString *const kLPEventAddedToCart;
 - (void)clearCustomVariables;
 
 - (void)enableDevelopmentMode;
+- (void)enableDemoSurvey;
+- (void)disableDemoSurvey;
+- (BOOL)demoSurveyEnabled;
 
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;

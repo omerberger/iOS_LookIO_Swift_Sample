@@ -165,6 +165,7 @@
         inputField.frame = aFrame;
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputField.font = [UIFont systemFontOfSize:16.0];
+        inputField.autocorrectionType = UITextAutocorrectionTypeNo;
         if (currentQuestionIndex == numberOfQuestions - 1)
             inputField.returnKeyType = UIReturnKeyDone;
         else

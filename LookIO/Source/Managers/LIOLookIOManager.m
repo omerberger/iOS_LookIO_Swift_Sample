@@ -165,6 +165,8 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSDictionary *multiskillMapping;
     NSString *lastKnownPageViewValue;
     id<LIOLookIOManagerDelegate> delegate;
+    
+    BOOL demoSurveyEnabled;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -361,6 +363,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     developmentMode = NO;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
 }
+
+-(void)enableDemoSurvey {
+    demoSurveyEnabled = YES;
+}
+
+-(void)disableDemoSurvey {
+    demoSurveyEnabled = NO;
+}
+
+- (BOOL)demoSurveyEnabled {
+    return demoSurveyEnabled;
+}
+
 
 - (void)uploadLog:(NSString *)logBody
 {
@@ -1345,6 +1360,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     // Survey needed? We need to wait until it's done before we try to connect.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    /*
     if (surveyManager.preChatTemplate)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -1355,6 +1371,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             return;
         }
     }
+     */
     
     // Waiting for the "do you want to reconnect?" alert view.
     if (willAskUserToReconnect)
