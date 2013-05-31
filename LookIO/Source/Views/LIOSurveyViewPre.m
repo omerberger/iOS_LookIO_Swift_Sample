@@ -57,14 +57,16 @@
     
     CGRect pageControlFrame;
     pageControlFrame.origin.x = 0;
-    pageControlFrame.origin.y = LIOSurveyViewPrePageControlOriginY;
+    pageControlFrame.origin.y = self.bounds.size.height - LIOSurveyViewPrePageControlHeight + 60.0;
     pageControlFrame.size.width = self.bounds.size.width;
     pageControlFrame.size.height = LIOSurveyViewPrePageControlHeight;
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
     pageControl.numberOfPages = [currentSurvey.questions count];
     pageControl.alpha = 0.0;
+    pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
     [self addSubview:pageControl];
+    [pageControl release];
     
     currentScrollView = [self scrollViewForQuestionAtIndex:0];
     currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, self.superview.bounds.size.height);
@@ -80,13 +82,13 @@
         } completion:^(BOOL finished) {
             [headerLabel removeFromSuperview];
             
-            leftSwipeGestureRecognizer = [[UISwipeGestureRecognizer alloc]
-                                          initWithTarget:self action:@selector(handleLeftSwipeGesture:)];
+            leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
+                                          initWithTarget:self action:@selector(handleLeftSwipeGesture:)] autorelease];
             leftSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionLeft;
             [self addGestureRecognizer:leftSwipeGestureRecognizer];
             
-            rightSwipeGestureRecognizer = [[UISwipeGestureRecognizer alloc]
-                                           initWithTarget:self action:@selector(handleRightSwipeGesture:)];
+            rightSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
+                                           initWithTarget:self action:@selector(handleRightSwipeGesture:)] autorelease];
             rightSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionRight;
             [self addGestureRecognizer:rightSwipeGestureRecognizer];
             
@@ -151,7 +153,7 @@
         aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0;
         fieldBackground.frame = aFrame;
         fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [scrollView addSubview:fieldBackground];
+        [scrollView addSubview:fieldBackground];        
         
         UITextField *inputField = [[[UITextField alloc] init] autorelease];
         inputField.delegate = self;
@@ -183,6 +185,7 @@
                                    nil];
             [numberToolbar sizeToFit];
             inputField.inputAccessoryView = numberToolbar;
+            [numberToolbar release];
         }
         
         [fieldBackground addSubview:inputField];
@@ -206,6 +209,7 @@
         tableView.backgroundView = nil;
         tableView.scrollEnabled = NO;
         [scrollView addSubview:tableView];
+        [tableView release];
 
         /*
 
@@ -234,6 +238,7 @@
         tableView.backgroundView = nil;
         tableView.scrollEnabled = NO;
         [scrollView addSubview:tableView];
+        [tableView release];
         
         selectedIndices = [[NSMutableArray alloc] init];
         
@@ -250,6 +255,7 @@
                                nil];
         [pickerToolbar sizeToFit];
         [scrollView addSubview:pickerToolbar];
+        [pickerToolbar autorelease];
     }
     
     return [scrollView autorelease];
@@ -277,6 +283,7 @@
     LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];
     
     cell.textLabel.text = pickerEntry.label;
+    cell.textLabel.font = [UIFont systemFontOfSize:16.0];
     
     if (LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) {
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -289,10 +296,13 @@
             }
         }
         
-        if (isRowSelected)
+        if (isRowSelected) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        else
+            cell.textLabel.font = [UIFont boldSystemFontOfSize:16.0];
+        }
+        else {
             cell.accessoryType = UITableViewCellAccessoryNone;
+        }
     }
 
 
@@ -371,17 +381,13 @@
 
         if (question.displayType == LIOSurveyQuestionDisplayTypeText) {
             if (question.validationType == LIOSurveyQuestionValidationTypeAlphanumeric)
-                pageControl.transform = CGAffineTransformIdentity;
+                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
 
             if (question.validationType == LIOSurveyQuestionValidationTypeNumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -50.0);
+                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -254.0);
+        } else {
+            pageControl.transform = CGAffineTransformIdentity;
         }
-        
-        if (question.displayType == LIOSurveyQuestionDisplayTypePicker)
-            pageControl.transform = CGAffineTransformMakeTranslation(0.0, 200.0);
-        
-        if (question.displayType == LIOSurveyQuestionDisplayTypeMultiselect)
-            pageControl.transform = CGAffineTransformMakeTranslation(0.0, 200.0);
         
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
@@ -411,18 +417,13 @@
 
         if (question.displayType == LIOSurveyQuestionDisplayTypeText) {
             if (question.validationType == LIOSurveyQuestionValidationTypeAlphanumeric)
-                pageControl.transform = CGAffineTransformIdentity;
+                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
             
             if (question.validationType == LIOSurveyQuestionValidationTypeNumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -50.0);
+                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -254.0);
+        } else {
+            pageControl.transform = CGAffineTransformIdentity;
         }
-        
-        if (question.displayType == LIOSurveyQuestionDisplayTypePicker)
-            pageControl.transform = CGAffineTransformMakeTranslation(0.0, 200.0);
-        
-        if (question.displayType == LIOSurveyQuestionDisplayTypeMultiselect)
-            pageControl.transform = CGAffineTransformMakeTranslation(0.0, 200.0);
-
         
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
