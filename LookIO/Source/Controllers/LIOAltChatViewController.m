@@ -33,8 +33,9 @@
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
 #define LIOAltChatViewControllerChatboxMinHeight   100.0
-#define LIOAltChatViewControllerAttachmentRowHeight 155.0
+#define LIOAltChatViewControllerAttachmentRowHeight 170.0
 #define LIOAltChatViewControllerAttachmentSize      140.0
+#define LIOAltChatViewControllerMaximumAttachmentWidth 280.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
@@ -1008,7 +1009,7 @@
     BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
     
     UIImagePickerController *ipc = [[[UIImagePickerController alloc] init] autorelease];
-    ipc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary|UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    ipc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary | UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     ipc.allowsEditing = NO;
     ipc.delegate = self;
     
@@ -1060,13 +1061,29 @@
     NSString *dontSendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationDontSend"];
     
     UIAlertView *av = [[UIAlertView alloc] initWithTitle:nil
-                                                 message:bodyString
+                                                 message:[bodyString stringByAppendingString:@"\n\n\n\n\n"]
                                                 delegate:self
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
     av.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
+    
+    CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
+    
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:pendingImageAttachment];
+    CGFloat imageHeight = 80;
+    CGFloat imageWidth = imageHeight * pendingImageAttachment.size.width / pendingImageAttachment.size.height;
+    if (imageWidth > 260.0)
+        imageWidth = 260.0;
+    imageView.frame = CGRectMake(floor((284 - imageWidth)/2), expectedSize.height + 27.0, imageWidth, imageHeight);
+    imageView.layer.cornerRadius = 2.0;
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
+    imageView.clipsToBounds = YES;
+    
+    [av addSubview:imageView];
+
     [av autorelease];
     [av show];
+
 }
 
 #pragma mark -
@@ -1136,17 +1153,37 @@
                     //imageBubble.layer.shadowOpacity = 1.0;
                     //imageBubble.layer.shadowRadius = 2.0;
                     imageBubble.layer.masksToBounds = YES;
-                    imageBubble.layer.cornerRadius = 6.0;
+                    imageBubble.layer.cornerRadius = 5.0;
                     [imageBubble setImage:attachmentImage];
 
                     CGRect ibFrame;
-                    ibFrame.origin.x = tableView.bounds.size.width - LIOAltChatViewControllerAttachmentSize - 10.0;
-                    ibFrame.origin.y = 5.0;
-                    ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;
+                    if (attachmentImage.size.height > 0) {
+                        ibFrame.size.width = LIOAltChatViewControllerAttachmentSize*(attachmentImage.size.width/attachmentImage.size.height);
+                        if (ibFrame.size.width > LIOAltChatViewControllerMaximumAttachmentWidth)
+                            ibFrame.size.width = LIOAltChatViewControllerMaximumAttachmentWidth;
+                        
+                    }
+                    else
+                        ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;                    
                     ibFrame.size.height = LIOAltChatViewControllerAttachmentSize;
+                    
+                    ibFrame.origin.x = tableView.bounds.size.width - ibFrame.size.width - 15.0;
+                    ibFrame.origin.y = 11.0;
                     
                     imageBubble.frame = ibFrame;
                     [aCell.contentView addSubview:imageBubble];
+                    
+                    UIImage *stretchableBubble = stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];                    
+                    UIImageView* backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
+                    
+                    ibFrame.origin.x = ibFrame.origin.x - 15.0;
+                    ibFrame.origin.y = ibFrame.origin.y - 11.0;
+                    ibFrame.size.width = ibFrame.size.width + 29.0;
+                    ibFrame.size.height = ibFrame.size.height + 30.0;
+                    backgroundImage.frame = ibFrame;
+                    
+                    [aCell.contentView insertSubview:backgroundImage belowSubview:imageBubble];
+
                 }
             }
         }
