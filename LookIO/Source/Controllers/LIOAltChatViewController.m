@@ -33,8 +33,8 @@
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
 #define LIOAltChatViewControllerChatboxMinHeight   100.0
-#define LIOAltChatViewControllerAttachmentRowHeight 180.0
-#define LIOAltChatViewControllerAttachmentSize      170.0
+#define LIOAltChatViewControllerAttachmentRowHeight 155.0
+#define LIOAltChatViewControllerAttachmentSize      140.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
@@ -1130,7 +1130,7 @@
                 if (attachmentImage)
                 {
                     UIImageView *imageBubble = [[[UIImageView alloc] init] autorelease];
-                    imageBubble.contentMode = UIViewContentModeScaleToFill;
+                    imageBubble.contentMode = UIViewContentModeScaleAspectFill;
                     //imageBubble.layer.shadowColor = [UIColor blackColor].CGColor;
                     //imageBubble.layer.shadowOffset = CGSizeMake(-2.0, 2.0);
                     //imageBubble.layer.shadowOpacity = 1.0;
@@ -1138,11 +1138,13 @@
                     imageBubble.layer.masksToBounds = YES;
                     imageBubble.layer.cornerRadius = 6.0;
                     [imageBubble setImage:attachmentImage];
+
                     CGRect ibFrame;
                     ibFrame.origin.x = tableView.bounds.size.width - LIOAltChatViewControllerAttachmentSize - 10.0;
                     ibFrame.origin.y = 5.0;
                     ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;
                     ibFrame.size.height = LIOAltChatViewControllerAttachmentSize;
+                    
                     imageBubble.frame = ibFrame;
                     [aCell.contentView addSubview:imageBubble];
                 }
