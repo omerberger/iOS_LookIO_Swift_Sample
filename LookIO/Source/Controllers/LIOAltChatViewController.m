@@ -1175,7 +1175,7 @@
                     imageBubble.frame = ibFrame;
                     [aCell.contentView addSubview:imageBubble];
                     
-                    UIImage *stretchableShadow = stretchableShadow = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStrechablePhotoShadow"] stretchableImageWithLeftCapWidth:42 topCapHeight:42];
+                    UIImage *stretchableShadow = stretchableShadow = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchablePhotoShadow"] stretchableImageWithLeftCapWidth:42 topCapHeight:42];
                     UIImageView* foregroundImage = [[[UIImageView alloc] initWithImage:stretchableShadow] autorelease];
 
                     ibFrame.origin.x = ibFrame.origin.x - 3;
