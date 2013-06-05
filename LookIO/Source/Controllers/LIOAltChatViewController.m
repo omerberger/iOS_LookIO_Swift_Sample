@@ -466,8 +466,8 @@
     
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
+    /*
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -481,6 +481,7 @@
             //headerBar.hidden = YES;
         }
     }
+    */
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -556,6 +557,8 @@
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
+    
+    /*
     if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -575,7 +578,6 @@
             [self.view addSubview:surveyViewPre];
             [surveyViewPre setupViews];
             
-            /*
             LIOSurveyViewController *surveyController = [[[LIOSurveyViewController alloc] initWithNibName:nil bundle:nil] autorelease];
             surveyController.delegate = self;
             surveyController.headerString = surveyManager.preChatHeader;
@@ -586,11 +588,10 @@
                 surveyController.modalPresentationStyle = UIModalPresentationFormSheet;
             
             [self presentModalViewController:surveyController animated:YES];
-             */
-            
+     
             return;
         }
-    }
+    } */
     
     if (leavingMessage)
         return;
@@ -1070,16 +1071,21 @@
     CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
     
     UIImageView *imageView = [[UIImageView alloc] initWithImage:pendingImageAttachment];
-    CGFloat imageHeight = 80;
-    CGFloat imageWidth = imageHeight * pendingImageAttachment.size.width / pendingImageAttachment.size.height;
+
+    CGFloat imageHeight = 80.0;
+    CGFloat imageWidth = imageHeight * (pendingImageAttachment.size.width / pendingImageAttachment.size.height);
     if (imageWidth > 260.0)
         imageWidth = 260.0;
+    if (imageWidth < imageHeight)
+        imageWidth = imageHeight;
+    
     imageView.frame = CGRectMake(floor((284 - imageWidth)/2), expectedSize.height + 27.0, imageWidth, imageHeight);
     imageView.layer.cornerRadius = 2.0;
     imageView.contentMode = UIViewContentModeScaleAspectFill;
-    imageView.clipsToBounds = YES;
+    imageView.layer.masksToBounds = YES;
     
     [av addSubview:imageView];
+    [imageView autorelease];
 
     [av autorelease];
     [av show];
@@ -1904,7 +1910,6 @@
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self viewDidAppear:NO];
-            NSLog(@"Number of messages in tableview is %d", chatMessages.count);
         });
 //    }
 }
