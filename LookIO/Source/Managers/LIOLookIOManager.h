@@ -23,7 +23,6 @@ extern NSString *const kLPEventAddedToCart;
 // Return these via the "lookIOManagerEnabledCollaborationComponents:" delegate method.
 #define kLPCollaborationComponentNone   0
 #define kLPCollaborationComponentPhoto  1
-// #define kLPCollaborationComponentVideo  (1 << 1)
 
 @class LIOLookIOManager;
 @protocol LIOPlugin;
