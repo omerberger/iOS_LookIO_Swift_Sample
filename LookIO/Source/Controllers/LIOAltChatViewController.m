@@ -1154,10 +1154,6 @@
                 {
                     UIImageView *imageBubble = [[[UIImageView alloc] init] autorelease];
                     imageBubble.contentMode = UIViewContentModeScaleAspectFill;
-                    //imageBubble.layer.shadowColor = [UIColor blackColor].CGColor;
-                    //imageBubble.layer.shadowOffset = CGSizeMake(-2.0, 2.0);
-                    //imageBubble.layer.shadowOpacity = 1.0;
-                    //imageBubble.layer.shadowRadius = 2.0;
                     imageBubble.layer.masksToBounds = YES;
                     imageBubble.layer.cornerRadius = 3.0;
                     [imageBubble setImage:attachmentImage];
@@ -1180,7 +1176,7 @@
                     [aCell.contentView addSubview:imageBubble];
                     
                     UIImage *stretchableShadow = stretchableShadow = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStrechablePhotoShadow"] stretchableImageWithLeftCapWidth:42 topCapHeight:42];
-                    UIImageView* foregroundImage = [[UIImageView alloc] initWithImage:stretchableShadow];
+                    UIImageView* foregroundImage = [[[UIImageView alloc] initWithImage:stretchableShadow] autorelease];
 
                     ibFrame.origin.x = ibFrame.origin.x - 3;
                     ibFrame.origin.y = ibFrame.origin.y - 3;

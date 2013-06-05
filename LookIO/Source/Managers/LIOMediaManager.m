@@ -139,7 +139,7 @@ static LIOMediaManager *sharedInstance = nil;
 
 - (NSString *)commitImageMedia:(UIImage *)anImage
 {
-    NSData *dataToSave = UIImageJPEGRepresentation(anImage, 1.0);
+    NSData *dataToSave = UIImageJPEGRepresentation(anImage, 0.8);
     NSString *attachmentId = [NSString stringWithFormat:@"%@.image_jpeg", [[LIOLookIOManager sharedLookIOManager] nextGUID]];
     NSString *targetPath = [[self mediaPath] stringByAppendingPathComponent:attachmentId];
     [dataToSave writeToFile:targetPath atomically:YES];
