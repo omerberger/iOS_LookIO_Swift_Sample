@@ -466,8 +466,9 @@
     
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
-    /*
+
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+//    LIOLookIOManager *lookI
     if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -481,7 +482,6 @@
             //headerBar.hidden = YES;
         }
     }
-    */
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -558,7 +558,6 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    /*
     if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -578,6 +577,8 @@
             [self.view addSubview:surveyViewPre];
             [surveyViewPre setupViews];
             
+            /*
+            
             LIOSurveyViewController *surveyController = [[[LIOSurveyViewController alloc] initWithNibName:nil bundle:nil] autorelease];
             surveyController.delegate = self;
             surveyController.headerString = surveyManager.preChatHeader;
@@ -588,10 +589,12 @@
                 surveyController.modalPresentationStyle = UIModalPresentationFormSheet;
             
             [self presentModalViewController:surveyController animated:YES];
+             
+             */
      
             return;
         }
-    } */
+    } 
     
     if (leavingMessage)
         return;
