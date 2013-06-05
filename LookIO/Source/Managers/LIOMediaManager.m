@@ -10,6 +10,7 @@
 #import "LIOLookIOManager.h"
 #import "NSData+Base64.h"
 #import "LIOLogManager.h"
+#import "LIOBundleManager.h"
 
 static LIOMediaManager *sharedInstance = nil;
 
@@ -138,7 +139,7 @@ static LIOMediaManager *sharedInstance = nil;
 
 - (NSString *)commitImageMedia:(UIImage *)anImage
 {
-    NSData *dataToSave = UIImageJPEGRepresentation(anImage, 0.8);
+    NSData *dataToSave = UIImageJPEGRepresentation(anImage, 1.0);
     NSString *attachmentId = [NSString stringWithFormat:@"%@.image_jpeg", [[LIOLookIOManager sharedLookIOManager] nextGUID]];
     NSString *targetPath = [[self mediaPath] stringByAppendingPathComponent:attachmentId];
     [dataToSave writeToFile:targetPath atomically:YES];
@@ -166,6 +167,17 @@ static LIOMediaManager *sharedInstance = nil;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     LIOLog(@"response: %d", [(NSHTTPURLResponse *)response statusCode]);
+
+    if ([(NSHTTPURLResponse *)response statusCode] == 413) {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
+                                                            message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
+                                                  cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
+                                                  otherButtonTitles:nil];
+
+        [alertView show];
+        [alertView release];
+    }
+    
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data

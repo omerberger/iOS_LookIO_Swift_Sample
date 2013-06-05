@@ -33,8 +33,8 @@
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
 #define LIOAltChatViewControllerChatboxMinHeight   100.0
-#define LIOAltChatViewControllerAttachmentRowHeight 170.0
-#define LIOAltChatViewControllerAttachmentSize      140.0
+#define LIOAltChatViewControllerAttachmentRowHeight 95.0
+#define LIOAltChatViewControllerAttachmentSize      80.0
 #define LIOAltChatViewControllerMaximumAttachmentWidth 280.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
@@ -1159,7 +1159,7 @@
                     //imageBubble.layer.shadowOpacity = 1.0;
                     //imageBubble.layer.shadowRadius = 2.0;
                     imageBubble.layer.masksToBounds = YES;
-                    imageBubble.layer.cornerRadius = 5.0;
+                    imageBubble.layer.cornerRadius = 3.0;
                     [imageBubble setImage:attachmentImage];
 
                     CGRect ibFrame;
@@ -1173,22 +1173,22 @@
                         ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;                    
                     ibFrame.size.height = LIOAltChatViewControllerAttachmentSize;
                     
-                    ibFrame.origin.x = tableView.bounds.size.width - ibFrame.size.width - 15.0;
-                    ibFrame.origin.y = 11.0;
+                    ibFrame.origin.x = tableView.bounds.size.width - ibFrame.size.width - 7.0;
+                    ibFrame.origin.y = 5.0;
                     
                     imageBubble.frame = ibFrame;
                     [aCell.contentView addSubview:imageBubble];
                     
-                    UIImage *stretchableBubble = stretchableBubble = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];                    
-                    UIImageView* backgroundImage = [[UIImageView alloc] initWithImage:stretchableBubble];
+                    UIImage *stretchableShadow = stretchableShadow = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStrechablePhotoShadow"] stretchableImageWithLeftCapWidth:42 topCapHeight:42];
+                    UIImageView* foregroundImage = [[UIImageView alloc] initWithImage:stretchableShadow];
+
+                    ibFrame.origin.x = ibFrame.origin.x - 3;
+                    ibFrame.origin.y = ibFrame.origin.y - 3;
+                    ibFrame.size.width = ibFrame.size.width + 6.0;
+                    ibFrame.size.height = ibFrame.size.height + 8.0;
+                    foregroundImage.frame = ibFrame;
                     
-                    ibFrame.origin.x = ibFrame.origin.x - 15.0;
-                    ibFrame.origin.y = ibFrame.origin.y - 11.0;
-                    ibFrame.size.width = ibFrame.size.width + 29.0;
-                    ibFrame.size.height = ibFrame.size.height + 30.0;
-                    backgroundImage.frame = ibFrame;
-                    
-                    [aCell.contentView insertSubview:backgroundImage belowSubview:imageBubble];
+                    [aCell.contentView addSubview:foregroundImage];
 
                 }
             }
