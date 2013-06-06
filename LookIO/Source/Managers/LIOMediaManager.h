@@ -13,6 +13,7 @@
 @interface LIOMediaManager : NSObject
 
 + (LIOMediaManager *)sharedInstance;
+- (UIImage*)scaleImage:(UIImage*)sourceImage toSize:(CGSize)newSize;
 - (void)uploadMediaData:(NSData *)someData withType:(NSString *)aType;
 - (void)purgeAllMedia;
 - (NSString *)commitImageMedia:(UIImage *)anImage;

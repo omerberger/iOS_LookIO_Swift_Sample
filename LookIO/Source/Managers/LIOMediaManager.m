@@ -10,6 +10,7 @@
 #import "LIOLookIOManager.h"
 #import "NSData+Base64.h"
 #import "LIOLogManager.h"
+#import "LIOBundleManager.h"
 
 static LIOMediaManager *sharedInstance = nil;
 
@@ -58,6 +59,15 @@ static LIOMediaManager *sharedInstance = nil;
     
     return self;
 }
+
+- (UIImage*)scaleImage:(UIImage*)sourceImage toSize:(CGSize)newSize {
+    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
+    [sourceImage drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
 
 // TODO: Support multiple concurrent uploads.
 - (void)uploadMediaData:(NSData *)someData withType:(NSString *)aType
@@ -166,6 +176,17 @@ static LIOMediaManager *sharedInstance = nil;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     LIOLog(@"response: %d", [(NSHTTPURLResponse *)response statusCode]);
+
+    if ([(NSHTTPURLResponse *)response statusCode] == 413) {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
+                                                            message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
+                                                  cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
+                                                  otherButtonTitles:nil];
+
+        [alertView show];
+        [alertView release];
+    }
+    
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
