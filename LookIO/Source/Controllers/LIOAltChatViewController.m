@@ -29,13 +29,15 @@
 #import "LIOSurveyViewController.h"
 #import "LIOMediaManager.h"
 #import "LIOSurveyViewPre.h"
+#import "UIImage+LIO_resize.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
 #define LIOAltChatViewControllerChatboxMinHeight   100.0
-#define LIOAltChatViewControllerAttachmentRowHeight 95.0
-#define LIOAltChatViewControllerAttachmentSize      80.0
-#define LIOAltChatViewControllerMaximumAttachmentWidth 280.0
+#define LIOAltChatViewControllerAttachmentRowHeight 135.0
+#define LIOAltChatViewControllerAttachmentDisplayHeight      120.0
+#define LIOAltChatViewControllerMaximumAttachmentDisplayWidth 150.0
+#define LIOAltChatViewControllerMaximumAttachmentActualSize 800.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
@@ -1076,8 +1078,6 @@
     CGFloat imageWidth = imageHeight * (pendingImageAttachment.size.width / pendingImageAttachment.size.height);
     if (imageWidth > 260.0)
         imageWidth = 260.0;
-    if (imageWidth < imageHeight)
-        imageWidth = imageHeight;
     
     imageView.frame = CGRectMake(floor((284 - imageWidth)/2), expectedSize.height + 27.0, imageWidth, imageHeight);
     imageView.layer.cornerRadius = 2.0;
@@ -1160,14 +1160,14 @@
 
                     CGRect ibFrame;
                     if (attachmentImage.size.height > 0) {
-                        ibFrame.size.width = LIOAltChatViewControllerAttachmentSize*(attachmentImage.size.width/attachmentImage.size.height);
-                        if (ibFrame.size.width > LIOAltChatViewControllerMaximumAttachmentWidth)
-                            ibFrame.size.width = LIOAltChatViewControllerMaximumAttachmentWidth;
+                        ibFrame.size.width = LIOAltChatViewControllerAttachmentDisplayHeight*(attachmentImage.size.width/attachmentImage.size.height);
+                        if (ibFrame.size.width > LIOAltChatViewControllerMaximumAttachmentDisplayWidth)
+                            ibFrame.size.width = LIOAltChatViewControllerMaximumAttachmentDisplayWidth;
                         
                     }
                     else
-                        ibFrame.size.width = LIOAltChatViewControllerAttachmentSize;                    
-                    ibFrame.size.height = LIOAltChatViewControllerAttachmentSize;
+                        ibFrame.size.width = LIOAltChatViewControllerAttachmentDisplayHeight;                    
+                    ibFrame.size.height = LIOAltChatViewControllerAttachmentDisplayHeight;
                     
                     ibFrame.origin.x = tableView.bounds.size.width - ibFrame.size.width - 7.0;
                     ibFrame.origin.y = 5.0;
@@ -1679,10 +1679,21 @@
 
 - (void)inputBarViewDidTapAttachButton:(LIOInputBarView *)aView
 {
-    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
-        [self showPhotoSourceActionSheet];
-    else
-        [self showPhotoLibraryPicker];
+    if (chatMessages.count <= 1) {
+        UIAlertView* av = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
+                                                     message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
+                                                    delegate:nil
+                                           cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
+                                           otherButtonTitles:nil];
+        [av show];
+        [av release];
+    }
+    else {
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+            [self showPhotoSourceActionSheet];
+        else
+            [self showPhotoLibraryPicker];
+    }
 }
 
 #pragma mark -
@@ -1975,7 +1986,17 @@
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (image)
     {
-        pendingImageAttachment = [image retain];
+        CGSize resizedImageSize;
+        CGFloat targetSize = LIOAltChatViewControllerMaximumAttachmentActualSize / [[UIScreen mainScreen] scale];
+        if (image.size.height >= image.size.width) {
+            resizedImageSize.height = targetSize;
+            resizedImageSize.width = targetSize*(image.size.width/image.size.height);
+        } else {
+            resizedImageSize.width = targetSize;
+            resizedImageSize.height = targetSize*(image.size.height/image.size.width);
+        }
+        
+        pendingImageAttachment = [[UIImage LIO_imageWithImage:image scaledToSize:resizedImageSize] retain];
         [self showAttachmentUploadConfirmation];
     }
 }

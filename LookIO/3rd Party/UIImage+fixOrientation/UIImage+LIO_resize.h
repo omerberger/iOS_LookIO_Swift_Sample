@@ -8,8 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIImage (fixOrientationLIO)
+@interface UIImage (LIO_resize)
 
-- (UIImage *)fixOrientationLIO;
++ (UIImage*)LIO_imageWithImage:(UIImage*)sourceImage scaledToSize:(CGSize)newSize;
 
 @end
