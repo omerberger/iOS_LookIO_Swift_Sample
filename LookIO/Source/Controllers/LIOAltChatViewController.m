@@ -469,7 +469,7 @@
     // They will be revealed after the survey is complete.
 
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-//    LIOLookIOManager *lookI
+    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -575,6 +575,7 @@
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
             surveyViewPre.delegate = self;
+            surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             [self.view addSubview:surveyViewPre];
             [surveyViewPre setupViews];
             
@@ -1897,15 +1898,26 @@
     [surveyDict setObject:finalDict forKey:@"responses"];
     [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
      */
-    
-    dismissalBar.hidden = NO;
-    inputBar.hidden = NO;
-    tableView.hidden = NO;
-    headerBar.hidden = NO;
 
-    [UIView animateWithDuration:0.3 animations:^{
+    dismissalBar.alpha = 0.0;
+    dismissalBar.hidden = NO;
+    inputBar.alpha = 0.0;
+    inputBar.hidden = NO;
+    tableView.alpha = 0.0;
+    tableView.hidden = NO;
+
+    
+    [UIView animateWithDuration:0.5 animations:^{
         aView.alpha = 0.0;
+        aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+
     } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.5 animations:^{
+            dismissalBar.alpha = 1.0;
+            inputBar.alpha = 1.0;
+            tableView.alpha = 1.0;
+        } completion:^(BOOL finished) {
+        }];
         [aView removeFromSuperview];
     }];
     

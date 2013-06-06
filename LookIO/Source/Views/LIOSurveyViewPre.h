@@ -26,12 +26,14 @@
     int currentQuestionIndex, nextQuestionIndex;
     NSMutableArray* selectedIndices;
 
-    UIScrollView* currentScrollView, *nextScrollView;
+    UIScrollView* currentScrollView;
     UILabel *currentQuestionLabel;
     UIPageControl* pageControl;
     UITextField *currentInputField;
     
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
+    
+    BOOL isAnimating;
 }
 
 @property(nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
