@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A795B6DC175FE49B001AC61E /* UIImage+LIO_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = A795B6DA175FE49B001AC61E /* UIImage+LIO_resize.h */; };
-		A795B6DD175FE49B001AC61E /* UIImage+LIO_resize.m in Sources */ = {isa = PBXBuildFile; fileRef = A795B6DB175FE49B001AC61E /* UIImage+LIO_resize.m */; };
 		A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */; };
 		A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
@@ -122,8 +120,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A795B6DA175FE49B001AC61E /* UIImage+LIO_resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+LIO_resize.h"; path = "UIImage+fixOrientation/UIImage+LIO_resize.h"; sourceTree = "<group>"; };
-		A795B6DB175FE49B001AC61E /* UIImage+LIO_resize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+LIO_resize.m"; path = "UIImage+fixOrientation/UIImage+LIO_resize.m"; sourceTree = "<group>"; };
 		A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewPre.h; path = Source/Views/LIOSurveyViewPre.h; sourceTree = "<group>"; };
 		A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewPre.m; path = Source/Views/LIOSurveyViewPre.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
@@ -249,15 +245,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A795B6D9175FE474001AC61E /* UIImage+LIO_resize */ = {
-			isa = PBXGroup;
-			children = (
-				A795B6DA175FE49B001AC61E /* UIImage+LIO_resize.h */,
-				A795B6DB175FE49B001AC61E /* UIImage+LIO_resize.m */,
-			);
-			name = "UIImage+LIO_resize";
-			sourceTree = "<group>";
-		};
 		D41F9431158AA52C004BE9A0 /* Survey */ = {
 			isa = PBXGroup;
 			children = (
@@ -447,7 +434,6 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				A795B6D9175FE474001AC61E /* UIImage+LIO_resize */,
 				D440D47B1541E8450045DBFF /* TTTAttributedLabel */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
@@ -569,7 +555,6 @@
 				D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */,
 				D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */,
 				A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */,
-				A795B6DC175FE49B001AC61E /* UIImage+LIO_resize.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -695,7 +680,6 @@
 				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
 				A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */,
-				A795B6DD175FE49B001AC61E /* UIImage+LIO_resize.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

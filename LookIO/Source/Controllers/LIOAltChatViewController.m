@@ -29,7 +29,6 @@
 #import "LIOSurveyViewController.h"
 #import "LIOMediaManager.h"
 #import "LIOSurveyViewPre.h"
-#import "UIImage+LIO_resize.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -1995,8 +1994,7 @@
             resizedImageSize.width = targetSize;
             resizedImageSize.height = targetSize*(image.size.height/image.size.width);
         }
-        
-        pendingImageAttachment = [[UIImage LIO_imageWithImage:image scaledToSize:resizedImageSize] retain];
+        pendingImageAttachment = [[[LIOMediaManager sharedInstance] scaleImage:image toSize:resizedImageSize] retain];
         [self showAttachmentUploadConfirmation];
     }
 }
