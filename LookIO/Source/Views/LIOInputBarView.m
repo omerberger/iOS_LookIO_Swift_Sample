@@ -38,9 +38,9 @@
         UIFont *sendButtonFont = nil;
         if (padUI)
         {
-            sendButtonFrame.origin.x = self.bounds.size.width - 59.0 - 57.0;
+            sendButtonFrame.origin.x = self.bounds.size.width - 104.0 - 17.0;
             sendButtonFrame.origin.y = (self.bounds.size.height / 2.0) - 22.0;
-            sendButtonFrame.size.width = 75.0;
+            sendButtonFrame.size.width = 104.0;
             sendButtonFrame.size.height = 47.0;
             sendButtonFont = [UIFont boldSystemFontOfSize:16.0];
         }
@@ -65,7 +65,11 @@
         
         CGRect attachButtonFrame = sendButton.frame;
         attachButtonFrame.origin.x = 5.0;
-        attachButtonFrame.size.width = 40.0;
+        if (padUI)
+            attachButtonFrame.size.width = 64.0;
+        else
+            attachButtonFrame.size.width = 40.0;
+        
         attachButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         attachButton.frame = attachButtonFrame;
         attachButton.hidden = NO == attachNeeded;
@@ -98,15 +102,15 @@
         {
             if (attachNeeded)
             {
-                inputFieldBackgroundFrame.origin.x = attachButton.frame.origin.x + attachButton.frame.size.width + 25.0;
-                inputFieldBackgroundFrame.size.width = 450.0 - attachButton.frame.size.width - 10.0;
+                inputFieldBackgroundFrame.origin.x = attachButton.frame.origin.x + attachButton.frame.size.width + 14.0;
+                inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - attachButton.frame.size.width - 205.0;
                 inputFieldBackgroundFrame.size.height = 50.0;
                 inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
             }
             else
             {
                 inputFieldBackgroundFrame.origin.x = notificationArea.frame.origin.x + notificationArea.frame.size.width;
-                inputFieldBackgroundFrame.size.width = 450.0;
+                inputFieldBackgroundFrame.size.width = self.frame.size.width - sendButton.frame.size.width - 192.0;
                 inputFieldBackgroundFrame.size.height = 50.0;
                 inputFieldBackgroundFrame.origin.y = (self.frame.size.height / 2.0) - (inputFieldBackgroundFrame.size.height / 2.0) - 1.0;
             }

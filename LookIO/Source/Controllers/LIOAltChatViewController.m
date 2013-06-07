@@ -630,6 +630,18 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    if (alertView != nil) {
+        [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+        [alertView autorelease];
+        alertView = nil;
+    }
+    
+    if (actionSheet != nil) {
+        [actionSheet dismissWithClickedButtonIndex:-1 animated:NO];
+        [actionSheet autorelease];
+        actionSheet = nil;
+    }
+    
     [popover dismissPopoverAnimated:NO];
     [popover autorelease];
     popover = nil;
@@ -1002,19 +1014,18 @@
     NSString *cameraString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceCamera"];
     NSString *libraryString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceLibrary"];
     
-    UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:nil
+    actionSheet = [[UIActionSheet alloc] initWithTitle:nil
                                                     delegate:self
                                            cancelButtonTitle:cancelString
                                       destructiveButtonTitle:nil
                                            otherButtonTitles:cameraString, libraryString, nil];
-    as.tag = LIOAltChatViewControllerPhotoSourceActionSheetTag;
-    as.actionSheetStyle = UIActionSheetStyleBlackOpaque;
-    [as autorelease];
+    actionSheet.tag = LIOAltChatViewControllerPhotoSourceActionSheetTag;
+    actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
     
     if (padUI)
-        [as showFromRect:inputBar.attachButton.bounds inView:inputBar.attachButton animated:YES];
+        [actionSheet showFromRect:inputBar.attachButton.bounds inView:inputBar.attachButton animated:YES];
     else
-        [as showInView:self.view];
+        [actionSheet showInView:self.view];
 }
 
 - (void)showPhotoLibraryPicker
@@ -1073,12 +1084,12 @@
     NSString *sendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationSend"];
     NSString *dontSendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationDontSend"];
     
-    UIAlertView *av = [[UIAlertView alloc] initWithTitle:nil
+    alertView = [[UIAlertView alloc] initWithTitle:nil
                                                  message:[bodyString stringByAppendingString:@"\n\n\n\n\n"]
                                                 delegate:self
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
-    av.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
+    alertView.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
     
     CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
     
@@ -1094,11 +1105,10 @@
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.layer.masksToBounds = YES;
     
-    [av addSubview:imageView];
+    [alertView addSubview:imageView];
     [imageView autorelease];
 
-    [av autorelease];
-    [av show];
+    [alertView show];
 
 }
 
@@ -1381,9 +1391,6 @@
 
 - (void)applicationWillResignActive:(NSNotification *)aNotification
 {
-    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -1696,13 +1703,12 @@
 - (void)inputBarViewDidTapAttachButton:(LIOInputBarView *)aView
 {
     if (chatMessages.count <= 1) {
-        UIAlertView* av = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
+        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
                                                      message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
                                                     delegate:nil
                                            cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
                                            otherButtonTitles:nil];
-        [av show];
-        [av release];
+        [alertView show];
     }
     else {
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
