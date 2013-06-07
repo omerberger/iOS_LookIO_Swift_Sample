@@ -499,9 +499,7 @@
 
 
 -(BOOL)textFieldShouldReturn:(UITextField *)textField {
-    int numberOfQuestions = [currentSurvey.questions count];
-    if (currentQuestionIndex <= numberOfQuestions - 2)
-        [self switchToNextQuestion];
+    [self switchToNextQuestion];
     
     return NO;
 }

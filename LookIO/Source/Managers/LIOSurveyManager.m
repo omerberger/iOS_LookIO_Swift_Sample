@@ -38,11 +38,11 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         NSDictionary *savedPreChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
         if (savedPreChatDict)
             [self populateTemplateWithDictionary:savedPreChatDict type:LIOSurveyManagerSurveyTypePre];
-        
+        /*
         NSDictionary *savedPostChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
         if (savedPostChatDict)
             [self populateTemplateWithDictionary:savedPostChatDict type:LIOSurveyManagerSurveyTypePost];
-        
+        */
         preChatResponses = [[NSMutableDictionary alloc] init];
         postChatResponses = [[NSMutableDictionary alloc] init];
         
@@ -183,12 +183,15 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     NSNumber *idNumber = [aDict objectForKey:@"id"];
     
     LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
-    NSArray *questionsArray = [aDict objectForKey:@"questions"];
+    NSDictionary *questionsDict = [aDict objectForKey:@"questions"];
+    NSArray* questionIdsArray = [questionsDict allKeys];
     NSMutableArray *questions = [NSMutableArray array];
-    for (NSDictionary *aQuestionDict in questionsArray)
+    for (NSString* aQuestionId in questionIdsArray)
     {
         LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
-        newQuestion.questionId = [[aQuestionDict objectForKey:@"id"] intValue];
+        NSDictionary* aQuestionDict = [questionsDict objectForKey:aQuestionId];
+        
+        newQuestion.questionId = [aQuestionId intValue];
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
         newQuestion.label = [aQuestionDict objectForKey:@"label"];

@@ -470,7 +470,7 @@
 
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled &&  !surveyPreCompleted)
+    if (surveyManager.preChatTemplate && !surveyPreCompleted)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -559,7 +559,7 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.demoSurveyEnabled)
+    if (surveyManager.preChatTemplate && !surveyPreCompleted)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -568,6 +568,8 @@
             LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
+            NSLog(@"Survey header is %@", surveyManager.preChatHeader);
+            NSLog(@"Questions are %@", surveyManager.preChatTemplate.questions);
             surveyViewPre.delegate = self;
             surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             [self.view addSubview:surveyViewPre];
