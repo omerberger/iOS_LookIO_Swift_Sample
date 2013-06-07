@@ -15,15 +15,17 @@
 #import <QuartzCore/QuartzCore.h>
 
 #define LIOSurveyViewPrePageControlHeight     15.0
-#define LIOSurveyViewPreTopMargin             38.0
+#define LIOSurveyViewPreTopMarginPortrait     65.0
+#define LIOSurveyViewPreTopMarginLandscape    10.0
 #define LIOSurveyViewPreSideMargin            10.0
 #define LIOSurveyViewPrePageControlOriginY    265.0
 
-#define LIOSurveyViewPreTitleLabelTag         1001
-#define LIOSurveyViewPreInputTextFieldTag     1002
-#define LIOSurveyViewPreInputBackgroundTag    1003
-#define LIOSurveyViewPreTableViewTag          1004
-#define LIOSurveyViewPreButtonTag             1005
+#define LIOSurveyViewPreTitleLabelTag          1001
+#define LIOSurveyViewPreInputTextFieldTag      1002
+#define LIOSurveyViewPreInputBackgroundTag     1003
+#define LIOSurveyViewPreTableViewTag           1004
+#define LIOSurveyViewPreButtonTag              1005
+#define LIOSurveyViewPreTableCellBackgroundTag 1006
 
 @implementation LIOSurveyViewPre
 
@@ -33,11 +35,30 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(keyboardWillShow:)
+                                                     name:UIKeyboardWillShowNotification
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(keyboardWillHide:)
+                                                     name:UIKeyboardWillHideNotification
+                                                   object:nil];
         
     }
     return self;
 }
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [super dealloc];
+}
+
 
 -(void)setupViews {
     currentScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
@@ -62,7 +83,7 @@
 
     CGRect aFrame;
     aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = LIOSurveyViewPreTopMargin;
+    aFrame.origin.y = LIOSurveyViewPreTopMarginPortrait;
     aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
@@ -89,14 +110,13 @@
     
     CGRect pageControlFrame;
     pageControlFrame.origin.x = 0;
-    pageControlFrame.origin.y = self.bounds.size.height - LIOSurveyViewPrePageControlHeight + 60.0;
+    pageControlFrame.origin.y = self.bounds.size.height - 20.0;
     pageControlFrame.size.width = self.bounds.size.width;
-    pageControlFrame.size.height = LIOSurveyViewPrePageControlHeight;
+    pageControlFrame.size.height = 20.0;
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
     pageControl.numberOfPages = [currentSurvey.questions count];
     pageControl.alpha = 0.0;
-    pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
     [self addSubview:pageControl];
     [pageControl release];
     
@@ -115,7 +135,10 @@
 
     if (!isAnimating && currentScrollView != nil)
         [self rejiggerSurveyScrollView:currentScrollView];
-
+    
+    CGRect pageControlFrame = pageControl.frame;
+    pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
+    pageControl.frame = pageControlFrame;
 }
 
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
@@ -127,7 +150,7 @@
     UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreTitleLabelTag];
     if (questionLabel) {
         aFrame.origin.x = LIOSurveyViewPreSideMargin;
-        aFrame.origin.y = landscape ? 0.0 : LIOSurveyViewPreTopMargin;
+        aFrame.origin.y = landscape ? LIOSurveyViewPreTopMarginLandscape : LIOSurveyViewPreTopMarginPortrait;
         aFrame.size.width = self.bounds.size.width - LIOSurveyViewPreSideMargin*2;
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
@@ -139,7 +162,7 @@
         aFrame = fieldBackground.frame;
         aFrame.origin.x = 10.0;
         aFrame.size.width = self.bounds.size.width - 20.0;
-        aFrame.size.height = 48.0;
+        aFrame.size.height = landscape ? 40.0 : 48.0;
         aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0;
         fieldBackground.frame = aFrame;
     }
@@ -147,7 +170,7 @@
     UITextField* inputField = (UITextField*)[scrollView viewWithTag:LIOSurveyViewPreInputTextFieldTag];
     if (inputField) {
         aFrame.origin.x = 15.0;
-        aFrame.origin.y = 12.0;
+        aFrame.origin.y = landscape ? 8.0 : 12.0;
         aFrame.size.width = fieldBackground.frame.size.width - 20.0;
         aFrame.size.height = 28.0;
         inputField.frame = aFrame;
@@ -155,24 +178,25 @@
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewPreTableViewTag];
     if (tableView) {
-        CGFloat tableViewContentHeight = [self tableView:tableView heightForRowAtIndexPath:0];
-        CGFloat maxHeight = self.bounds.size.height - 53.0 - 40.0;
-        if (tableViewContentHeight > maxHeight)
+        CGFloat tableViewContentHeight = [self tableView:tableView heightForRowAtIndexPath:0]*[self tableView:tableView numberOfRowsInSection:0];
+        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 60.0;
+        if (tableViewContentHeight > maxHeight) {
+            tableView.scrollEnabled = YES;
             tableViewContentHeight = maxHeight;
+        } else {
+            tableView.scrollEnabled = NO;
+        }
     
-        tableView.frame = CGRectMake(0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 5.0, self.bounds.size.width, tableViewContentHeight);
+        tableView.frame = CGRectMake(9.0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.bounds.size.width - 18.0, tableViewContentHeight);
     
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreButtonTag];
-        aFrame.origin.x = (self.bounds.size.width - (320 - 2*LIOSurveyViewPreSideMargin))/2.0;
-        aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 20;
-        aFrame.size.width = 320 - 2*LIOSurveyViewPreSideMargin;
+        aFrame.origin.x = (self.bounds.size.width - (302.0))/2.0;
+        aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
+        aFrame.size.width = 302.0;
         aFrame.size.height = 53.0;
         nextButton.frame = aFrame;
     }
-    
-    pageControl.transform = CGAffineTransformMakeTranslation(0.0, self.bounds.size.height - 20.0);
-    
-    NSLog(@"View current dimensions are %f, %f", self.bounds.size.width, self.bounds.size.height);
+
 }
 
 -(void)dismissIntroView:(id)sender {
@@ -303,7 +327,7 @@
         inputField.backgroundColor = [UIColor clearColor];
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputField.font = [UIFont fontWithName:@"HelveticaNeue" size:18.0];
-        inputField.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+        inputField.textColor = [UIColor colorWithWhite:0.44 alpha:1.0];
         inputField.autocorrectionType = UITextAutocorrectionTypeNo;
         if (currentQuestionIndex == numberOfQuestions - 1)
             inputField.returnKeyType = UIReturnKeyDone;
@@ -334,13 +358,15 @@
     
     if (LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) {
         UITableView* tableView = [[UITableView alloc]
-                                  initWithFrame:CGRectZero style:UITableViewStyleGrouped];
+                                  initWithFrame:CGRectZero style:UITableViewStylePlain];
         tableView.tag = LIOSurveyViewPreTableViewTag;
         tableView.delegate = self;
         tableView.dataSource = self;
         tableView.backgroundColor = [UIColor clearColor];
         tableView.backgroundView = nil;
         tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        tableView.showsVerticalScrollIndicator = NO;
         [scrollView addSubview:tableView];
         [tableView release];
         
@@ -349,10 +375,13 @@
         UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
         UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
         [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
-        [nextButton addTarget:self action:@selector(dismissIntroView:) forControlEvents:UIControlEventTouchUpInside];
+        [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
         nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
         nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [nextButton setTitle:@"Next" forState:UIControlStateNormal];
+        if (currentQuestionIndex == numberOfQuestions - 1)
+            [nextButton setTitle:@"Done" forState:UIControlStateNormal];
+        else
+            [nextButton setTitle:@"Next" forState:UIControlStateNormal];                
         [scrollView addSubview:nextButton];
         [nextButton release];
         
@@ -371,7 +400,7 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 50;
+    return 55;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -387,11 +416,34 @@
     if (cell == nil) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
 
+        cell.textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:18.0];
+        cell.textLabel.textColor = [UIColor colorWithWhite:0.43 alpha:1.0];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        UIImageView* backgroundImageView = [[UIImageView alloc] initWithFrame:CGRectMake(9.0, 0, tableView.bounds.size.width - 20.0, 55.0)];
+        backgroundImageView.tag = LIOSurveyViewPreTableCellBackgroundTag;
+        backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        cell.backgroundView = backgroundImageView;
+        [backgroundImageView release];
     }
     
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
     LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];
+    
+    UIImageView* backgroundImageView = (UIImageView*)cell.backgroundView;
+
+
+    UIImage *backgroundImage;
+    if (indexPath.row == 0) {
+        backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableTopCell"];
+    } else {
+        if (indexPath.row == question.pickerEntries.count - 1)
+            backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableBottomCell"];
+        else
+            backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableMiddleCell"];
+    }
+    UIImage *stretchableBackgroundImage = [backgroundImage stretchableImageWithLeftCapWidth:5 topCapHeight:55];
+    backgroundImageView.image = stretchableBackgroundImage;
     
     cell.textLabel.text = pickerEntry.label;
     cell.textLabel.font = [UIFont systemFontOfSize:16.0];
@@ -443,8 +495,6 @@
     }
     
     [tableView reloadData];
-    
-
 }
 
 
@@ -483,16 +533,6 @@
         currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
         pageControl.currentPage += 1;
 
-        if (question.displayType == LIOSurveyQuestionDisplayTypeText) {
-            if (question.validationType == LIOSurveyQuestionValidationTypeAlphanumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
-
-            if (question.validationType == LIOSurveyQuestionValidationTypeNumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -254.0);
-        } else {
-            pageControl.transform = CGAffineTransformIdentity;
-        }
-        
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
         currentScrollView = nextQuestionScrollView;
@@ -518,16 +558,6 @@
 
         pageControl.currentPage -= 1;
 
-        if (question.displayType == LIOSurveyQuestionDisplayTypeText) {
-            if (question.validationType == LIOSurveyQuestionValidationTypeAlphanumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -210.0);
-            
-            if (question.validationType == LIOSurveyQuestionValidationTypeNumeric)
-                pageControl.transform = CGAffineTransformMakeTranslation(0.0, -254.0);
-        } else {
-            pageControl.transform = CGAffineTransformIdentity;
-        }
-        
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
         currentScrollView = previousQuestionScrollView;
@@ -536,6 +566,32 @@
     }];
 }
 
+- (void)keyboardWillShow:(NSNotification *)aNotification
+{
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
+    
+    keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
+}
+
+- (void)keyboardWillHide:(NSNotification *)aNotification
+{
+    keyboardHeight = 0.0;
+}
 
 
 @end

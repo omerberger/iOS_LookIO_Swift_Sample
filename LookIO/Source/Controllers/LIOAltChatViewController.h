@@ -86,6 +86,7 @@
     id<LIOAltChatViewControllerDataSource> dataSource;
     
     BOOL surveyPreCompleted;
+    BOOL surveyPreInProgress;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

@@ -34,9 +34,10 @@
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
     
     BOOL isAnimating;
+    CGFloat keyboardHeight;
 }
 
-@property(nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
+@property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
 @property (nonatomic, retain) LIOSurveyTemplate* currentSurvey;
 @property (nonatomic, copy) NSString* headerString;
 

@@ -470,7 +470,7 @@
 
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled)
+    if (surveyManager.preChatTemplate && lookIOManager.demoSurveyEnabled &&  !surveyPreCompleted)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -565,19 +565,15 @@
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
-            CGRect surveyFrame;
-            surveyFrame.origin.x = tableView.frame.origin.x;
-            surveyFrame.origin.y = tableView.frame.origin.y + LIOSurveyViewPrePadding;
-            surveyFrame.size.width = tableView.frame.size.width;
-            surveyFrame.size.height = tableView.frame.size.height;
-            
-            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:surveyFrame];
+            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
             surveyViewPre.delegate = self;
             surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             [self.view addSubview:surveyViewPre];
             [surveyViewPre setupViews];
+            
+            surveyPreInProgress = YES;
             
             /*
             
@@ -663,6 +659,17 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    if (surveyPreInProgress) {
+        CGRect headerFrame = headerBar.frame;
+
+        if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
+            headerFrame.origin.y = - headerFrame.size.height;
+        else
+            headerFrame.origin.y = 0;
+        
+        headerBar.frame = headerFrame;
+    }
+
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -1435,6 +1442,11 @@
         
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
             headerFrame.origin.y = -headerFrame.size.height;
+        else {
+            if (surveyPreInProgress)
+                headerFrame.origin.y = 0;
+        }
+
         
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
@@ -1513,7 +1525,8 @@
         dismissalBarFrame.origin.y += keyboardHeight - 15.0;
         dismissalBarFrame.size.height = 35.0;
         
-        headerFrame.origin.y = 0.0;
+        if (!surveyPreInProgress)
+            headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
         CGFloat newTableHeight = 0.0;
@@ -1921,6 +1934,7 @@
         [aView removeFromSuperview];
     }];
     
+    surveyPreInProgress = NO;
     surveyPreCompleted = YES;
         
     // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
