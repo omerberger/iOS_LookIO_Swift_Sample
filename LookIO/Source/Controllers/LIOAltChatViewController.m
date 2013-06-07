@@ -630,9 +630,17 @@
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
-    [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
+    if (alertView != nil) {
+        [alertView dismissWithClickedButtonIndex:-2742 animated:NO];
+        [alertView autorelease];
+        alertView = nil;
+    }
+    
+    if (actionSheet != nil) {
+        [actionSheet dismissWithClickedButtonIndex:-1 animated:NO];
+        [actionSheet autorelease];
+        actionSheet = nil;
+    }
     
     [popover dismissPopoverAnimated:NO];
     [popover autorelease];
@@ -995,19 +1003,18 @@
     NSString *cameraString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceCamera"];
     NSString *libraryString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachSourceLibrary"];
     
-    UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:nil
+    actionSheet = [[UIActionSheet alloc] initWithTitle:nil
                                                     delegate:self
                                            cancelButtonTitle:cancelString
                                       destructiveButtonTitle:nil
                                            otherButtonTitles:cameraString, libraryString, nil];
-    as.tag = LIOAltChatViewControllerPhotoSourceActionSheetTag;
-    as.actionSheetStyle = UIActionSheetStyleBlackOpaque;
-    [as autorelease];
+    actionSheet.tag = LIOAltChatViewControllerPhotoSourceActionSheetTag;
+    actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
     
     if (padUI)
-        [as showFromRect:inputBar.attachButton.bounds inView:inputBar.attachButton animated:YES];
+        [actionSheet showFromRect:inputBar.attachButton.bounds inView:inputBar.attachButton animated:YES];
     else
-        [as showInView:self.view];
+        [actionSheet showInView:self.view];
 }
 
 - (void)showPhotoLibraryPicker

@@ -80,6 +80,7 @@
     int numPreviousMessagesToShowInScrollback;
     NSMutableArray *messagesSentBeforeAvailabilityKnown;
     UIAlertView *alertView;
+    UIActionSheet *actionSheet;
     NSString *lastSentMessageText;
     UIImage *pendingImageAttachment;
     id<LIOAltChatViewControllerDelegate> delegate;
