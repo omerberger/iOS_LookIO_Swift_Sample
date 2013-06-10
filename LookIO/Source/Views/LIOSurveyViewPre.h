@@ -10,6 +10,9 @@
 
 @class LIOSurveyTemplate;
 @class LIOSurveyViewPre;
+@class LIOSurveyValidationView;
+@class LIOTimerProxy;
+@protocol LIOSurveyValidationViewDelegate;
 
 @protocol LIOSurveyViewDelegate
 - (BOOL)surveyView:(LIOSurveyViewPre*)aView shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -17,7 +20,7 @@
 - (void)surveyViewDidFinish:(LIOSurveyViewPre *)aView;
 @end
 
-@interface LIOSurveyViewPre : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDataSource, UITableViewDelegate> {
+@interface LIOSurveyViewPre : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
 
     id<LIOSurveyViewDelegate> delegate;
 
@@ -27,14 +30,16 @@
     NSMutableArray* selectedIndices;
 
     UIScrollView* currentScrollView;
-    UILabel *currentQuestionLabel;
     UIPageControl* pageControl;
-    UITextField *currentInputField;
     
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
     
     BOOL isAnimating;
     CGFloat keyboardHeight;
+    
+    LIOSurveyValidationView *validationView;
+    LIOTimerProxy *validationTimer;
+
 }
 
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;

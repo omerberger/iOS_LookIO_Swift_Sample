@@ -12,6 +12,8 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOBundleManager.h"
 #import "LIOSurveyPickerEntry.h"
+#import "LIOSurveyValidationView.h"
+#import "LIOTimerProxy.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define LIOSurveyViewPrePageControlHeight     15.0
@@ -26,6 +28,8 @@
 #define LIOSurveyViewPreTableViewTag           1004
 #define LIOSurveyViewPreButtonTag              1005
 #define LIOSurveyViewPreTableCellBackgroundTag 1006
+
+#define LIOSurveyViewControllerValidationDuration 5.0
 
 @implementation LIOSurveyViewPre
 
@@ -139,6 +143,12 @@
     CGRect pageControlFrame = pageControl.frame;
     pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
     pageControl.frame = pageControlFrame;
+ 
+    if (validationView != nil) {
+        CGRect aFrame = validationView.frame;
+        aFrame.origin.y = landscape ? 0 : 32;
+        validationView.frame = aFrame;
+    }
 }
 
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
@@ -352,6 +362,13 @@
             [numberToolbar release];
         }
         
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        if (aResponse && [aResponse isKindOfClass:[NSString class]])
+        {
+            NSString *responseString = (NSString *)aResponse;
+            inputField.text = responseString;
+        }
+
         [fieldBackground addSubview:inputField];
         [inputField becomeFirstResponder];
     }
@@ -385,11 +402,156 @@
         [scrollView addSubview:nextButton];
         [nextButton release];
         
-        selectedIndices = [[NSMutableArray alloc] init];
+        
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        if (aResponse && [aResponse isKindOfClass:[NSArray class]])
+        {
+            NSMutableArray *arrayResponse = (NSMutableArray*)aResponse;
+            selectedIndices = arrayResponse;
+        } else
+            selectedIndices = [[NSMutableArray alloc] init];
+
+
     }
     
     [self rejiggerSurveyScrollView:scrollView];
     return [scrollView autorelease];
+}
+
+- (void)showAlertWithMessage:(NSString *)aMessage
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
+
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = nil;
+    
+    validationView = [[LIOSurveyValidationView alloc] init];
+    CGRect aFrame = validationView.frame;
+    aFrame.origin.y = landscape ? 0 : 32;
+    validationView.verticallyMirrored = YES;
+    aFrame.size.width = self.frame.size.width;
+    validationView.frame = aFrame;
+    validationView.label.text = aMessage;
+    validationView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [self addSubview:validationView];
+    
+    [validationView layoutSubviews];
+    [validationView showAnimated];
+    
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOSurveyViewControllerValidationDuration
+                                                           target:self
+                                                         selector:@selector(validationTimerDidFire)];
+}
+
+- (void)validationTimerDidFire
+{
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
+    
+    validationView.delegate = self;
+    [validationView hideAnimated];
+}
+
+- (void)surveyValidationViewDidFinishDismissalAnimation:(LIOSurveyValidationView *)aView
+{
+    double delayInSeconds = 0.1;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [validationView removeFromSuperview];
+        [validationView release];
+        validationView = nil;
+    });
+}
+
+- (BOOL)validateAndRegisterCurrentAnswer {
+    LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    
+    if (LIOSurveyQuestionDisplayTypeText == currentQuestion.displayType)
+    {
+        UITextField* inputField = (UITextField*)[currentScrollView viewWithTag:LIOSurveyViewPreInputTextFieldTag];
+        NSString* stringResponse = inputField.text;
+
+        if (0 == [stringResponse length])
+        {
+            // An empty response is okay for optional questions.
+            if (NO == currentQuestion.mandatory) {
+                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                return YES;
+            }
+            else
+            {
+                [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
+                return NO;
+            }
+        }
+        else
+        {
+            BOOL validated = NO;
+            
+            if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType) {
+                NSMutableCharacterSet* wantedCharacters = [NSMutableCharacterSet alphanumericCharacterSet];
+                [wantedCharacters formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
+                NSCharacterSet *unwantedCharacters = [wantedCharacters invertedSet];
+                if ([stringResponse rangeOfCharacterFromSet:unwantedCharacters].location == NSNotFound)
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.AlphanumericValidationAlertBody")];
+            }
+
+            if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)
+            {
+                NSCharacterSet *unwantedCharacters = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+                if ([stringResponse rangeOfCharacterFromSet:unwantedCharacters].location == NSNotFound)
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.NumericValidationAlertBody")];
+            }
+            
+            if (LIOSurveyQuestionValidationTypeEmail == currentQuestion.validationType)
+            {
+                BOOL stricterFilter = YES; // Discussion http://blog.logichigh.com/2010/09/02/validating-an-e-mail-address/
+                NSString *stricterFilterString = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+                NSString *laxString = @".+@.+\\.[A-Za-z]{2}[A-Za-z]*";
+                NSString *emailRegex = stricterFilter ? stricterFilterString : laxString;
+                NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+                if ([emailTest evaluateWithObject:stringResponse])
+                    validated = YES;
+                else
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.EmailValidationAlertBody")];
+            }
+            
+            if (validated)
+            {
+                [surveyManager registerAnswerObject:stringResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                return YES;
+            } else
+                return NO;
+        }
+    }
+    else 
+    {
+        if (currentQuestion.mandatory && 0 == [selectedIndices count])
+        {
+            [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
+            return NO;
+        }
+        else
+        {
+            [surveyManager registerAnswerObject:selectedIndices forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+            surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+            return YES;
+        }
+    }
+    
+    return NO;
 }
 
 #pragma mark 
@@ -515,28 +677,38 @@
     if (currentQuestionIndex > numberOfQuestions - 2)
         return;
     
-    currentQuestionIndex += 1;
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
-    
-    UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
-    nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
-    [self addSubview:nextQuestionScrollView];
-    [self setNeedsLayout];
-    
-    isAnimating = YES;
-    [UIView animateWithDuration:0.3 animations:^{
-        [currentScrollView endEditing:YES];
-
-        nextQuestionScrollView.transform = CGAffineTransformIdentity;
-        currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
-        pageControl.currentPage += 1;
-
-    } completion:^(BOOL finished) {
-        [currentScrollView removeFromSuperview];
-        currentScrollView = nextQuestionScrollView;
+    if (![self validateAndRegisterCurrentAnswer]) {
+        [self bounceViewRight];
+        return;
+    } else {
+        currentQuestionIndex += 1;
         
-        isAnimating = NO;
-    }];
+        if (validationView) {
+            [validationTimer stopTimer];
+            [validationTimer release];
+            [self validationTimerDidFire];
+        }
+        
+        UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
+        nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
+        [self addSubview:nextQuestionScrollView];
+        [self setNeedsLayout];
+        
+        isAnimating = YES;
+        [UIView animateWithDuration:0.3 animations:^{
+            [currentScrollView endEditing:YES];
+            
+            nextQuestionScrollView.transform = CGAffineTransformIdentity;
+            currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
+            pageControl.currentPage += 1;
+            
+        } completion:^(BOOL finished) {
+            [currentScrollView removeFromSuperview];
+            currentScrollView = nextQuestionScrollView;
+            
+            isAnimating = NO;
+        }];
+    }
 }
 
 -(void)switchToPreviousQuestion {

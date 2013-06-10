@@ -565,15 +565,28 @@
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
-            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
-            surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
-            surveyViewPre.headerString = surveyManager.preChatHeader;
-            NSLog(@"Survey header is %@", surveyManager.preChatHeader);
-            NSLog(@"Questions are %@", surveyManager.preChatTemplate.questions);
-            surveyViewPre.delegate = self;
-            surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-            [self.view addSubview:surveyViewPre];
-            [surveyViewPre setupViews];
+            if (padUI)
+            {
+                popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
+                //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+                popover.delegate = self;
+                [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                         inView:inputBar.attachButton
+                       permittedArrowDirections:UIPopoverArrowDirectionDown
+                                       animated:YES];
+            }
+            else
+            {
+                LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
+                surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
+                surveyViewPre.headerString = surveyManager.preChatHeader;
+                NSLog(@"Survey header is %@", surveyManager.preChatHeader);
+                NSLog(@"Questions are %@", surveyManager.preChatTemplate.questions);
+                surveyViewPre.delegate = self;
+                surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+                [self.view insertSubview:surveyViewPre belowSubview:headerBar];
+                [surveyViewPre setupViews];
+            }
             
             surveyPreInProgress = YES;
             

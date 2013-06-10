@@ -191,6 +191,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
         NSDictionary* aQuestionDict = [questionsDict objectForKey:aQuestionId];
         
+        NSLog(@"%@", aQuestionDict);
         newQuestion.questionId = [aQuestionId intValue];
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
@@ -199,16 +200,18 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.validationRegexp = [aQuestionDict objectForKey:@"validationRegexp"];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
-        if ([typeString isEqualToString:@"picker"])
+        newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+
+        if ([typeString isEqualToString:@"Dropdown Box"])
             newQuestion.displayType = LIOSurveyQuestionDisplayTypePicker;
-        else if ([typeString isEqualToString:@"multiselect"])
+        if ([typeString isEqualToString:@"Radio Button"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypePicker;
+        if ([typeString isEqualToString:@"Radio Button (side by side)"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypePicker;
+        if ([typeString isEqualToString:@"Checkbox"])
             newQuestion.displayType = LIOSurveyQuestionDisplayTypeMultiselect;
-        else if ([typeString isEqualToString:@"switch"])
-            newQuestion.displayType = LIOSurveyQuestionDisplayTypeSwitch;
-        else
-            newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
         
-        NSString *validationString = [aQuestionDict objectForKey:@"validationType"];
+        NSString *validationString = [aQuestionDict objectForKey:@"validation_type"];
         if ([validationString isEqualToString:@"alpha_numeric"])
             newQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
         else if ([validationString isEqualToString:@"numeric"])
@@ -221,12 +224,15 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         if (LIOSurveyQuestionDisplayTypePicker == newQuestion.displayType || LIOSurveyQuestionDisplayTypeMultiselect == newQuestion.displayType)
         {
             NSMutableArray *entries = [NSMutableArray array];
-            NSArray *entryArray = [aQuestionDict objectForKey:@"entries"];
-            for (NSDictionary *anEntryDict in entryArray)
+            NSDictionary *entriesDict = [aQuestionDict objectForKey:@"entries"];
+            NSArray *entryNames = [entriesDict allKeys];
+            for (NSString* anEntryName in entryNames)
             {
+                NSDictionary* anEntryDict = [entriesDict objectForKey:anEntryName];
+                
                 LIOSurveyPickerEntry *newPickerEntry = [[[LIOSurveyPickerEntry alloc] init] autorelease];
                 newPickerEntry.initiallyChecked = [[anEntryDict objectForKey:@"checked"] boolValue];
-                newPickerEntry.label = [anEntryDict objectForKey:@"value"];
+                newPickerEntry.label = anEntryName;
                 
                 NSMutableArray *logicProps = [NSMutableArray array];
                 NSDictionary *logicDict = [anEntryDict objectForKey:@"logic"];
