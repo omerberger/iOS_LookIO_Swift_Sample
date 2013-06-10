@@ -14,10 +14,11 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOSurveyValidationView.h"
 #import "LIOTimerProxy.h"
+#import "LIOHeaderBarView.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define LIOSurveyViewPrePageControlHeight     15.0
-#define LIOSurveyViewPreTopMarginPortrait     65.0
+#define LIOSurveyViewPreTopMarginPortrait     70.0
 #define LIOSurveyViewPreTopMarginLandscape    10.0
 #define LIOSurveyViewPreSideMargin            10.0
 #define LIOSurveyViewPrePageControlOriginY    265.0
@@ -65,12 +66,15 @@
 
 
 -(void)setupViews {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     currentScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     currentScrollView.alpha = 0.0;
     currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height);
     currentScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:currentScrollView];
     [currentScrollView release];
+    
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -134,6 +138,8 @@
 }
 
 -(void)layoutSubviews {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
@@ -141,17 +147,22 @@
         [self rejiggerSurveyScrollView:currentScrollView];
     
     CGRect pageControlFrame = pageControl.frame;
-    pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
+    if (padUI)
+        pageControlFrame.origin.y = self.bounds.size.height - 20.0;
+    else
+        pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
     pageControl.frame = pageControlFrame;
  
     if (validationView != nil) {
         CGRect aFrame = validationView.frame;
-        aFrame.origin.y = landscape ? 0 : 32;
+        aFrame.origin.y = (landscape || padUI) ? 0 : 32;
         validationView.frame = aFrame;
     }
 }
 
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
@@ -160,7 +171,7 @@
     UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreTitleLabelTag];
     if (questionLabel) {
         aFrame.origin.x = LIOSurveyViewPreSideMargin;
-        aFrame.origin.y = landscape ? LIOSurveyViewPreTopMarginLandscape : LIOSurveyViewPreTopMarginPortrait;
+        aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewPreTopMarginLandscape : LIOSurveyViewPreTopMarginPortrait;
         aFrame.size.width = self.bounds.size.width - LIOSurveyViewPreSideMargin*2;
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
@@ -297,6 +308,8 @@
 
 
 -(UIScrollView*)scrollViewForQuestionAtIndex:(int)index {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     int numberOfQuestions = [currentSurvey.questions count];
     if (index > numberOfQuestions - 1 || index < 0)
         return nil;
@@ -317,6 +330,8 @@
     questionLabel.textColor = [UIColor whiteColor];
     questionLabel.numberOfLines = 0;
     questionLabel.text = question.label;
+    if (!question.mandatory)
+        questionLabel.text = [NSString stringWithFormat:@"%@ (optional)", questionLabel.text];
     questionLabel.textAlignment = UITextAlignmentCenter;
     [scrollView addSubview:questionLabel];
     [questionLabel release];
@@ -351,15 +366,17 @@
             if (currentQuestionIndex == numberOfQuestions - 1)
                 buttonTitle = @"Done";
 
-            UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
-            numberToolbar.barStyle = UIBarStyleBlackTranslucent;
-            numberToolbar.items = [NSArray arrayWithObjects:
+            if (!padUI) {
+                UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
+                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+                numberToolbar.items = [NSArray arrayWithObjects:
                                    [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
                                    [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)],
                                    nil];
-            [numberToolbar sizeToFit];
-            inputField.inputAccessoryView = numberToolbar;
-            [numberToolbar release];
+                [numberToolbar sizeToFit];
+                inputField.inputAccessoryView = numberToolbar;
+                [numberToolbar release];
+            }
         }
         
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
@@ -430,7 +447,7 @@
     
     validationView = [[LIOSurveyValidationView alloc] init];
     CGRect aFrame = validationView.frame;
-    aFrame.origin.y = landscape ? 0 : 32;
+    aFrame.origin.y = (landscape || padUI) ? 0 : 32;
     validationView.verticallyMirrored = YES;
     aFrame.size.width = self.frame.size.width;
     validationView.frame = aFrame;

@@ -565,29 +565,37 @@
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
+            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
+            surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
+            surveyViewPre.headerString = surveyManager.preChatHeader;
+            surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+            surveyViewPre.delegate = self;
+
             if (padUI)
             {
-                popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-                //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+                UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+                surveyViewPre.frame = controller.view.frame;
+                controller.view = surveyViewPre;
+                
+                popover = [[UIPopoverController alloc] initWithContentViewController:controller];                
                 popover.delegate = self;
-                [popover presentPopoverFromRect:inputBar.attachButton.bounds
-                                         inView:inputBar.attachButton
+                popover.popoverContentSize = CGSizeMake(320.0, 480.0);
+                
+                CGRect aRect = inputBar.frame;
+                aRect.origin.x = inputBar.frame.origin.x + inputBar.frame.size.width*0.5;
+                
+                
+                [popover presentPopoverFromRect:aRect
+                                         inView:self.view
                        permittedArrowDirections:UIPopoverArrowDirectionDown
                                        animated:YES];
             }
             else
             {
-                LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
-                surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
-                surveyViewPre.headerString = surveyManager.preChatHeader;
-                NSLog(@"Survey header is %@", surveyManager.preChatHeader);
-                NSLog(@"Questions are %@", surveyManager.preChatTemplate.questions);
-                surveyViewPre.delegate = self;
-                surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
                 [self.view insertSubview:surveyViewPre belowSubview:headerBar];
-                [surveyViewPre setupViews];
             }
             
+            [surveyViewPre setupViews];            
             surveyPreInProgress = YES;
             
             /*
@@ -1940,34 +1948,44 @@
     tableView.alpha = 0.0;
     tableView.hidden = NO;
 
-    
-    [UIView animateWithDuration:0.5 animations:^{
-        aView.alpha = 0.0;
-        aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-
-    } completion:^(BOOL finished) {
+    if (padUI) {
+        [popover dismissPopoverAnimated:YES];
         [UIView animateWithDuration:0.5 animations:^{
             dismissalBar.alpha = 1.0;
             inputBar.alpha = 1.0;
             tableView.alpha = 1.0;
         } completion:^(BOOL finished) {
         }];
-        [aView removeFromSuperview];
-    }];
+    }
+    else {
+        [UIView animateWithDuration:0.5 animations:^{
+            aView.alpha = 0.0;
+            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.5 animations:^{
+                dismissalBar.alpha = 1.0;
+                inputBar.alpha = 1.0;
+                tableView.alpha = 1.0;
+            } completion:^(BOOL finished) {
+            }];
+            [aView removeFromSuperview];
+        }];
+    }
     
     surveyPreInProgress = NO;
     surveyPreCompleted = YES;
         
     // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
     // We manually invoke it here.
-//    if (padUI)
-//    {
+    if (padUI)
+    {
         double delayInSeconds = 0.1;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self viewDidAppear:NO];
         });
-//    }
+    }
 }
 
 

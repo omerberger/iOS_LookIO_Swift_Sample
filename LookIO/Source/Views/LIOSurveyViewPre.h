@@ -12,6 +12,7 @@
 @class LIOSurveyViewPre;
 @class LIOSurveyValidationView;
 @class LIOTimerProxy;
+@class LIOHeaderBarView;
 @protocol LIOSurveyValidationViewDelegate;
 
 @protocol LIOSurveyViewDelegate
@@ -39,6 +40,8 @@
     
     LIOSurveyValidationView *validationView;
     LIOTimerProxy *validationTimer;
+    
+    LIOHeaderBarView* headerBar;
 
 }
 

@@ -58,5 +58,6 @@
 @property(nonatomic, readonly) UIView *adArea;
 @property(nonatomic, readonly) LIONotificationArea *notificationArea;
 @property(nonatomic, readonly) UIButton *attachButton;
+@property(nonatomic, readonly) UIButton *sendButton;
 
 @end
