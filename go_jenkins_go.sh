@@ -46,6 +46,7 @@ echo Publishing build #$1 into LookIO-Libraries branch: $2...
 pushd ../LookIO-Libraries
 git checkout .
 rm -rf iOS/*
+git pull origin $2
 git checkout $2
 rm -rf iOS/*
 cp -v -f -R  ../ios_lib/_LOOKIO_$1_/libLookIO.a ../ios_lib/_LOOKIO_$1_/LookIO.bundle ../ios_lib/_LOOKIO_$1_/LIOLookIOManager.h iOS
