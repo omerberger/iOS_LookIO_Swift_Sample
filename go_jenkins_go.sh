@@ -26,6 +26,11 @@ then
     COMMIT_DESCRIPTION="Unstable Enterprise version $1"
 fi
 
+if [ $2 == "pre_surveys_v2" ]
+then
+    COMMIT_DESCRIPTION="Pre surveys version $1"
+fi
+
 cd /Users/marc/Development/ios_lib
 ./build_lio.sh $1
 
