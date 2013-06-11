@@ -167,6 +167,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     id<LIOLookIOManagerDelegate> delegate;
     
     BOOL demoSurveyEnabled;
+    BOOL surveyEnabled;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -364,18 +365,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
 }
 
--(void)enableDemoSurvey {
+- (void)enableSurveys {
+    surveyEnabled = YES;
+}
+
+- (void)disableSurveys {
+    surveyEnabled = NO;
+}
+
+- (void)useRealSurvey {
+    demoSurveyEnabled = NO;
+}
+
+- (void)useDemoSurvey {
     demoSurveyEnabled = YES;
 }
 
--(void)disableDemoSurvey {
-    demoSurveyEnabled = NO;
+- (BOOL)surveyEnabled {
+    return surveyEnabled;
 }
 
 - (BOOL)demoSurveyEnabled {
     return demoSurveyEnabled;
 }
-
 
 - (void)uploadLog:(NSString *)logBody
 {
@@ -2171,26 +2183,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
     
-    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
-    if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
-    {
-        NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
+/*
+    if (surveyEnabled) {
+        NSDictionary *surveyDict = [params objectForKey:@"surveys"];
+        if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
+        {
+            NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
         
-        if (preSurvey)
-        {
-            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-        }
-        NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
-        if (postSurvey)
-        {
-            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+            if (preSurvey)
+            {
+                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+            }
+            NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
+            if (postSurvey)
+            {
+                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+            }
         }
     }
+ */
+
     
      // Fake survey for testing purposes.
 //    NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name and more text to make this question longer.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with? Please only select one option\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
-//    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
-//    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+
+    NSString* fakePreJSON = @"{\"id\":61454,\"header\":\"To help serve you better, please provide some information before we begin your chat.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"What is your name?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"},\"1338146\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":12,\"label\":\"This is an example of the longest text field question possible, we also need to support this kind of question!\",\"order\":3,\"last_known_value\":\"\"},\"1338142\":{\"type\":\"Dropdown Box\",\"validation_type\":\"alpha_numeric\",\"mandatory\":false,\"logic_id\":6,\"label\":\"What can we help you with today?\",\"order\":4,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"2nd option\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Best option!\":{\"checked\":false,\"order\":3}}},\"1338143\":{\"type\":\"Checkbox\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":7,\"label\":\"Which of these are relevant to you?\",\"order\":5,\"entries\":{\"Option #1\":{\"checked\":false,\"order\":0},\"Option #2\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Option #4\":{\"checked\":false,\"order\":3}}},\"1338144\":{\"type\":\"Radio Button\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":8,\"label\":\"What do you think?\",\"order\":6,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"Option 2\":{\"checked\":false,\"order\":1},\"Option 3\":{\"checked\":false,\"order\":2},\"Option 4\":{\"checked\":false,\"order\":3}}},\"1338145\":{\"type\":\"Radio Button (side by side)\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":9,\"label\":\"Side by side?\",\"order\":7,\"entries\":{\"One\":{\"checked\":false,\"order\":0},\"Two\":{\"checked\":false,\"order\":1},\"Three\":{\"checked\":false,\"order\":2}}}}}";
+    
+        NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
     
     return resolvedSettings;
 }

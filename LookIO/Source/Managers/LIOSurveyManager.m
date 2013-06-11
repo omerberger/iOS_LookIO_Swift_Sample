@@ -232,6 +232,8 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 
                 LIOSurveyPickerEntry *newPickerEntry = [[[LIOSurveyPickerEntry alloc] init] autorelease];
                 newPickerEntry.initiallyChecked = [[anEntryDict objectForKey:@"checked"] boolValue];
+                newPickerEntry.order = [[anEntryDict objectForKey:@"order"] intValue];
+                NSLog(@"order is %d", newPickerEntry.order);
                 newPickerEntry.label = anEntryName;
                 
                 NSMutableArray *logicProps = [NSMutableArray array];
@@ -253,7 +255,11 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 [entries addObject:newPickerEntry];
             }
             
+            NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE];
+            [entries sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+            
             newQuestion.pickerEntries = entries;
+            
             
             if ([newQuestion.pickerEntries count])
                 [questions addObject:newQuestion];

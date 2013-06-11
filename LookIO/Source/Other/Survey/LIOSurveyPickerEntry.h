@@ -10,11 +10,13 @@
 
 @interface LIOSurveyPickerEntry : NSObject
 {
+    int order;
     BOOL initiallyChecked;
     NSString *label;
     NSArray *logicProps;
 }
 
+@property int order;
 @property(nonatomic, assign) BOOL initiallyChecked;
 @property(nonatomic, retain) NSString *label;
 @property(nonatomic, retain) NSArray *logicProps;

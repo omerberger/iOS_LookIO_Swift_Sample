@@ -62,9 +62,12 @@ extern NSString *const kLPEventAddedToCart;
 - (void)addCustomVariables:(NSDictionary *)aDictionary;
 - (void)clearCustomVariables;
 
-- (void)enableDemoSurvey;
-- (void)disableDemoSurvey;
+- (void)enableSurveys;
+- (void)disableSurveys;
+- (void)useRealSurvey;
+- (void)useDemoSurvey;
 - (BOOL)demoSurveyEnabled;
+- (BOOL)surveyEnabled;
 
 
 // Deprecated methods.
