@@ -167,6 +167,12 @@
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     CGRect aFrame;
+    
+    if (!padUI) {
+        aFrame = scrollView.frame;
+        aFrame.size.height = self.frame.size.height - keyboardHeight;
+        currentScrollView.frame = aFrame;
+    }
 
     UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreTitleLabelTag];
     if (questionLabel) {
@@ -195,6 +201,15 @@
         aFrame.size.width = fieldBackground.frame.size.width - 20.0;
         aFrame.size.height = 28.0;
         inputField.frame = aFrame;
+        
+        // Set up the scroll view to allow scrolling down to the text field if needed
+        CGSize aSize;
+        aSize.width = scrollView.frame.size.width;
+        aSize.height = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 30.0;
+        scrollView.contentSize = aSize;
+        
+        NSLog(@"Scroll view size is %f, %f and content size is %f, %f", scrollView.frame.size.width, scrollView.frame.size.height, aSize.width, aSize.height);
+        
     }
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewPreTableViewTag];
@@ -316,8 +331,11 @@
     
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:index];
 
+    CGRect aFrame = self.bounds;
+    aFrame.size.height = aFrame.size.height - keyboardHeight;
     UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    scrollView.showsVerticalScrollIndicator = NO;
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     questionLabel.tag = LIOSurveyViewPreTitleLabelTag;
@@ -686,45 +704,44 @@
 -(void)switchToNextQuestion {
     int numberOfQuestions = [currentSurvey.questions count];
     
-    if (currentQuestionIndex == numberOfQuestions - 1) {
-        pageControl.alpha = 0.0;
-        [delegate surveyViewDidFinish:self];
-    }
-    
-    if (currentQuestionIndex > numberOfQuestions - 2)
+    if (currentQuestionIndex > numberOfQuestions - 1)
         return;
     
     if (![self validateAndRegisterCurrentAnswer]) {
         [self bounceViewRight];
         return;
     } else {
-        currentQuestionIndex += 1;
+        if (currentQuestionIndex == numberOfQuestions - 1) {
+            pageControl.alpha = 0.0;
+            [delegate surveyViewDidFinish:self];
+        } else {
+            currentQuestionIndex += 1;
         
-        if (validationView) {
-            [validationTimer stopTimer];
-            [validationTimer release];
-            [self validationTimerDidFire];
+            if (validationView) {
+                [validationTimer stopTimer];
+                [self validationTimerDidFire];
+            }
+        
+            UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
+            nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
+            [self addSubview:nextQuestionScrollView];
+            [self setNeedsLayout];
+        
+            isAnimating = YES;
+            [UIView animateWithDuration:0.3 animations:^{
+                [currentScrollView endEditing:YES];
+            
+                nextQuestionScrollView.transform = CGAffineTransformIdentity;
+                currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
+                pageControl.currentPage += 1;
+            
+            } completion:^(BOOL finished) {
+                [currentScrollView removeFromSuperview];
+                currentScrollView = nextQuestionScrollView;
+            
+                isAnimating = NO;
+            }];
         }
-        
-        UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
-        nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
-        [self addSubview:nextQuestionScrollView];
-        [self setNeedsLayout];
-        
-        isAnimating = YES;
-        [UIView animateWithDuration:0.3 animations:^{
-            [currentScrollView endEditing:YES];
-            
-            nextQuestionScrollView.transform = CGAffineTransformIdentity;
-            currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
-            pageControl.currentPage += 1;
-            
-        } completion:^(BOOL finished) {
-            [currentScrollView removeFromSuperview];
-            currentScrollView = nextQuestionScrollView;
-            
-            isAnimating = NO;
-        }];
     }
 }
 
@@ -744,6 +761,12 @@
         currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
 
         pageControl.currentPage -= 1;
+        
+        if (validationView) {
+            [validationTimer stopTimer];
+            [self validationTimerDidFire];
+        }
+
 
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
@@ -773,11 +796,18 @@
     keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
         keyboardHeight = keyboardBounds.size.width;
+    
+}
+
+- (void)keyboardDidShow:(NSNotification *)aNotification
+{
+    
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
     keyboardHeight = 0.0;
+    
 }
 
 

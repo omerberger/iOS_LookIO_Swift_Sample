@@ -86,6 +86,7 @@
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
     
+    LIOSurveyViewPre* surveyViewPre;
     BOOL surveyPreCompleted;
     BOOL surveyPreInProgress;
 }

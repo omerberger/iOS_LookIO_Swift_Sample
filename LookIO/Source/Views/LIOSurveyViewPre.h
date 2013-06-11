@@ -48,6 +48,7 @@
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
 @property (nonatomic, retain) LIOSurveyTemplate* currentSurvey;
 @property (nonatomic, copy) NSString* headerString;
+@property int currentQuestionIndex;
 
 -(void)setupViews;
 

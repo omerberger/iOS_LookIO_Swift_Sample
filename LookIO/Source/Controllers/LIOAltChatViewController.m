@@ -469,7 +469,6 @@
     // They will be revealed after the survey is complete.
 
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     if (surveyManager.preChatTemplate && !surveyPreCompleted)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
@@ -477,10 +476,8 @@
         if (lastIndexCompleted < finalIndex)
         {
             dismissalBar.hidden = YES;
-            //dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, -45.0);
             inputBar.hidden = YES;
             tableView.hidden = YES;
-            //headerBar.hidden = YES;
         }
     }
     
@@ -557,7 +554,6 @@
     
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
     if (surveyManager.preChatTemplate && !surveyPreCompleted)
     {
@@ -565,9 +561,10 @@
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
         if (lastIndexCompleted < finalIndex)
         {
-            LIOSurveyViewPre *surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
+            surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
+            surveyViewPre.currentQuestionIndex = lastIndexCompleted;
             surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             surveyViewPre.delegate = self;
 
@@ -581,38 +578,30 @@
                 popover.delegate = self;
                 popover.popoverContentSize = CGSizeMake(320.0, 480.0);
                 
-                CGRect aRect = inputBar.frame;
-                aRect.origin.x = inputBar.frame.origin.x + inputBar.frame.size.width*0.5;
-                
+                UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+                BOOL landscape = UIInterfaceOrientationIsLandscape(actualOrientation);
+
+                CGRect aRect;
+                aRect.origin.x = !landscape ? 590: 850;
+                aRect.origin.y = self.view.frame.size.height;
+                aRect.size = CGSizeMake(10, 10);
                 
                 [popover presentPopoverFromRect:aRect
                                          inView:self.view
                        permittedArrowDirections:UIPopoverArrowDirectionDown
-                                       animated:YES];
+                                    animated:YES];
             }
             else
             {
                 [self.view insertSubview:surveyViewPre belowSubview:headerBar];
             }
             
-            [surveyViewPre setupViews];            
+            [surveyViewPre setupViews];
             surveyPreInProgress = YES;
             
-            /*
+            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+                [self didRotateFromInterfaceOrientation:0];
             
-            LIOSurveyViewController *surveyController = [[[LIOSurveyViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-            surveyController.delegate = self;
-            surveyController.headerString = surveyManager.preChatHeader;
-            surveyController.currentQuestionIndex = lastIndexCompleted;
-            surveyController.currentSurvey = surveyManager.preChatTemplate;
-            
-            if (padUI)
-                surveyController.modalPresentationStyle = UIModalPresentationFormSheet;
-            
-            [self presentModalViewController:surveyController animated:YES];
-             
-             */
-     
             return;
         }
     } 
@@ -710,7 +699,8 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
+    BOOL landscape = UIInterfaceOrientationIsLandscape(fromInterfaceOrientation);
+
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
@@ -720,6 +710,22 @@
     
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
+    
+    if (padUI && surveyPreInProgress) {
+        CGRect aRect;
+        
+        aRect.origin.x = landscape ? 590: 850;
+        aRect.origin.y = self.view.frame.size.height;
+        aRect.size = CGSizeMake(10, 10);
+
+        NSLog(@"View size is %f, %f; positioning z at %f", self.view.frame.size.width, self.view.frame.size.height, aRect.origin.x);
+
+        [popover presentPopoverFromRect:aRect
+                                 inView:self.view
+               permittedArrowDirections:UIPopoverArrowDirectionDown
+                               animated:YES];
+    }
+
 }
 
 - (void)rejiggerTableViewFrame
@@ -1894,6 +1900,10 @@
 {
     [popover release];
     popover = nil;
+    
+    if (surveyPreInProgress && surveyViewPre) {
+        [self surveyViewDidFinish:surveyViewPre];
+    }
 }
 
 #pragma mark -
