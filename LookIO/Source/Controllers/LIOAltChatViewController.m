@@ -471,7 +471,7 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    if (surveyManager.preChatTemplate /*&& !surveyPreCompleted */ && lookIOManager.surveyEnabled)
+    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.surveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -557,7 +557,7 @@
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    if (surveyManager.preChatTemplate && /* !surveyPreCompleted && */ lookIOManager.surveyEnabled)
+    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.surveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -1941,14 +1941,18 @@
     NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
     for (int i=0; i<[aView.currentSurvey.questions count]; i++)
     {
+        NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
+
         LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aView.currentSurvey.questions objectAtIndex:i];
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
         if (aResponse != nil)
-            [finalDict setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+            [questionDict setObject:aResponse forKey:@"answer"];
+        [finalDict setObject:questionDict forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+
     }
     NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
     [surveyDict setObject:aView.currentSurvey.surveyId forKey:@"id"];
-    [surveyDict setObject:finalDict forKey:@"responses"];
+    [surveyDict setObject:finalDict forKey:@"questions"];
     NSLog(@"Response dict is %@", surveyDict);
     [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
 

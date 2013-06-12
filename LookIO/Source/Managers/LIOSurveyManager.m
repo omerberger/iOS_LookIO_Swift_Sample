@@ -34,14 +34,13 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     if (self)
     {
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        /*
         NSDictionary *savedPreChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
         if (savedPreChatDict)
             [self populateTemplateWithDictionary:savedPreChatDict type:LIOSurveyManagerSurveyTypePre];
         NSDictionary *savedPostChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
         if (savedPostChatDict)
             [self populateTemplateWithDictionary:savedPostChatDict type:LIOSurveyManagerSurveyTypePost];
-        */
+
         preChatResponses = [[NSMutableDictionary alloc] init];
         postChatResponses = [[NSMutableDictionary alloc] init];
         

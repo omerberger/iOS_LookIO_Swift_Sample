@@ -436,17 +436,20 @@
             [nextButton setTitle:@"Next" forState:UIControlStateNormal];                
         [scrollView addSubview:nextButton];
         [nextButton release];
-        
-        
+                
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        selectedIndices = [[NSMutableArray alloc] init];
+
         if (aResponse && [aResponse isKindOfClass:[NSArray class]])
         {
             NSMutableArray *arrayResponse = (NSMutableArray*)aResponse;
-            selectedIndices = arrayResponse;
-        } else
-            selectedIndices = [[NSMutableArray alloc] init];
-
-
+            for (NSString* response in arrayResponse)
+                for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
+                    if ([pickerEntry.label isEqualToString:response]) {
+                        int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                    }
+        }
     }
     
     [self rejiggerSurveyScrollView:scrollView];
@@ -580,7 +583,13 @@
         }
         else
         {
-            [surveyManager registerAnswerObject:selectedIndices forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+            NSMutableArray* selectedAnswers = [NSMutableArray array];
+            for (NSIndexPath* indexPath in selectedIndices) {
+                LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
+                [selectedAnswers addObject:selectedPickerEntry.label];
+            }
+            
+            [surveyManager registerAnswerObject:selectedAnswers forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
             surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
             return YES;
         }
