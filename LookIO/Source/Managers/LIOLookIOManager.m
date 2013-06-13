@@ -167,11 +167,9 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     id<LIOLookIOManagerDelegate> delegate;
     
     BOOL demoSurveyEnabled;
-<<<<<<< HEAD
     BOOL surveyEnabled;
-=======
+
     BOOL shouldLockOrientation;
->>>>>>> unstable
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
