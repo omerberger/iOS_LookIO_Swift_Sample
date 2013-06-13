@@ -167,7 +167,11 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     id<LIOLookIOManagerDelegate> delegate;
     
     BOOL demoSurveyEnabled;
+<<<<<<< HEAD
     BOOL surveyEnabled;
+=======
+    BOOL shouldLockOrientation;
+>>>>>>> unstable
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1107,6 +1111,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else
     {
         LIOLog(@"Hiding LookIO (0x%08X), restoring 0x%08X", (unsigned int)lookioWindow, (unsigned int)previousKeyWindow);
+        
+        shouldLockOrientation = NO;
         
         lookioWindow.hidden = YES;
         [lookioWindow.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
@@ -3445,6 +3451,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     [self beginSession];
 }
+
+- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController {
+    shouldLockOrientation = YES;
+}
+
+- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController {
+    shouldLockOrientation = NO;
+}
+
+- (BOOL)shouldLockInterfaceOrientation {
+    if (altChatViewController && shouldLockOrientation)
+        return shouldLockOrientation;
+    
+    return NO;
+}
+
 
 #pragma mark -
 #pragma mark LIOInterstitialViewControllerDelegate methods

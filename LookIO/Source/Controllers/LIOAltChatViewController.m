@@ -46,6 +46,10 @@
 
 #define LIOSurveyViewPrePadding 10.0
 
+#define LIOIpadPopoverTypeNone 0
+#define LIOIpadPopoverTypeImagePicker 1
+#define LIOIpadPopoverTypeSurvey 2
+
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
 @end
@@ -657,6 +661,7 @@
     }
     
     [popover dismissPopoverAnimated:NO];
+    currentPopoverType = LIOIpadPopoverTypeNone;
     [popover autorelease];
     popover = nil;
 }
@@ -703,6 +708,14 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     BOOL landscape = UIInterfaceOrientationIsLandscape(fromInterfaceOrientation);
 
+    if (padUI && popover) {
+         if (currentPopoverType == LIOIpadPopoverTypeImagePicker)
+            [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                     inView:inputBar.attachButton
+                   permittedArrowDirections:UIPopoverArrowDirectionDown
+                                   animated:YES];
+    }
+    
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
@@ -1026,6 +1039,7 @@
     if (popover)
     {
         [popover dismissPopoverAnimated:NO];
+        currentPopoverType = LIOIpadPopoverTypeNone;
         [popover release];
         popover = nil;
     }
@@ -1034,6 +1048,7 @@
     {
         [self.modalViewController.view endEditing:YES];
         [self dismissModalViewControllerAnimated:NO];
+        [delegate altChatViewControllerWillPresentImagePicker:self];
     }
 }
 
@@ -1070,9 +1085,11 @@
     
     if (padUI)
     {
+        [self.view endEditing:YES];
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
                                  inView:inputBar.attachButton
                permittedArrowDirections:UIPopoverArrowDirectionDown
@@ -1080,6 +1097,7 @@
     }
     else
     {
+        [delegate altChatViewControllerWillPresentImagePicker:self];
         [self presentModalViewController:ipc animated:YES];
     }
 }
@@ -1095,9 +1113,12 @@
     
     if (padUI)
     {
+        [self.view endEditing:YES];
+
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
                                  inView:inputBar.attachButton
                permittedArrowDirections:UIPopoverArrowDirectionDown
@@ -1105,6 +1126,7 @@
     }
     else
     {
+        [delegate altChatViewControllerWillPresentImagePicker:self];
         [self presentModalViewController:ipc animated:YES];
     }
 }
@@ -1767,6 +1789,7 @@
     {
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
+        currentPopoverType = LIOIpadPopoverTypeNone;
         popover = nil;
     }
     else
@@ -2060,10 +2083,14 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (padUI)
+    if (padUI) {
         [popover dismissPopoverAnimated:YES];
-    else
+        currentPopoverType = LIOIpadPopoverTypeNone;
+    }
+    else {
+        [delegate altChatViewControllerWillDismissImagePicker:self];
         [self dismissModalViewControllerAnimated:YES];
+    }
     
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (image)
@@ -2089,9 +2116,11 @@
     if (padUI)
     {
         [popover dismissPopoverAnimated:YES];
+        currentPopoverType = LIOIpadPopoverTypeNone;
     }
     else
     {
+        [delegate altChatViewControllerWillDismissImagePicker:self];
         [self dismissModalViewControllerAnimated:YES];
     }
 }
