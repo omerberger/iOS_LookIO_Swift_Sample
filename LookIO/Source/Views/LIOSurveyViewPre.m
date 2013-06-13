@@ -440,22 +440,24 @@
         selectedIndices = [[NSMutableArray alloc] init];
 
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
-        NSMutableArray* answersArray;
-        
-        if (aResponse && [aResponse isKindOfClass:[NSString class]]) {
-            NSString* answerString = (NSString*)aResponse;
-            answersArray = [NSMutableArray arrayWithObject:answerString];
+        if (aResponse) {
+            NSMutableArray* answersArray;
+            
+            if (aResponse && [aResponse isKindOfClass:[NSString class]]) {
+                NSString* answerString = (NSString*)aResponse;
+                answersArray = [[NSMutableArray alloc] initWithObjects:answerString, nil];
+            }
+            
+            if (aResponse && [aResponse isKindOfClass:[NSArray class]])
+                answersArray = (NSMutableArray*)aResponse;
+            
+            for (NSString* answer in answersArray)
+                for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
+                    if ([pickerEntry.label isEqualToString:answer]) {
+                        int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                    }
         }
-        
-        if (aResponse && [aResponse isKindOfClass:[NSArray class]])
-            answersArray = (NSMutableArray*)aResponse;
-        
-        for (NSString* answer in answersArray)
-            for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
-                if ([pickerEntry.label isEqualToString:answer]) {
-                    int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
-                    [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
-                }
     }
 
     [self rejiggerSurveyScrollView:scrollView];

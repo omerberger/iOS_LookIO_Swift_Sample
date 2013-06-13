@@ -9,8 +9,8 @@
 #import <UIKit/UIKit.h>
 
 // User defaults keys
-#define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastKnownPreChatSurveyDictKey"
-#define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastKnownPostChatSurveyDictKey"
+#define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastPreChatSurveyDictKey"
+#define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastPostChatSurveyDictKey"
 
 @class LIOSurveyManager, LIOSurveyTemplate;
 
