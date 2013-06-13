@@ -32,8 +32,10 @@
 
     UIScrollView* currentScrollView;
     UIPageControl* pageControl;
+    UIView* backgroundDismissableArea;
     
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
+    UITapGestureRecognizer* tapGestureRecognizer;
     
     BOOL isAnimating;
     CGFloat keyboardHeight;
@@ -51,5 +53,6 @@
 @property int currentQuestionIndex;
 
 -(void)setupViews;
+- (id)initWithFrame:(CGRect)frame headerString:(NSString*)headerString;
 
 @end

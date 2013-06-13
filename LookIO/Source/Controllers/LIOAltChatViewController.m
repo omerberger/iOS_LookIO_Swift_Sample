@@ -1957,6 +1957,34 @@
     }
 }
 
+-(void)surveyViewDidCancel:(LIOSurveyViewPre *)aView {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    [self.view endEditing:YES];
+    
+    if (padUI) {
+        [popover dismissPopoverAnimated:YES];
+        [UIView animateWithDuration:0.5 animations:^{
+            dismissalBar.alpha = 1.0;
+            inputBar.alpha = 1.0;
+            tableView.alpha = 1.0;
+        } completion:^(BOOL finished) {
+        }];
+    }
+    else {
+        [UIView animateWithDuration:0.5 animations:^{
+            aView.alpha = 0.0;
+            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+            
+        } completion:^(BOOL finished) {
+            [aView removeFromSuperview];
+            [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+        }];
+    }
+    surveyPreInProgress = NO;
+    surveyPreCompleted = NO;    
+}
+
 -(void)surveyViewDidFinish:(LIOSurveyViewPre *)aView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     

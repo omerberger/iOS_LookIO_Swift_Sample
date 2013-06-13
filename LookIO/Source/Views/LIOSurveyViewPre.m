@@ -30,13 +30,20 @@
 #define LIOSurveyViewPreButtonTag              1005
 #define LIOSurveyViewPreTableCellBackgroundTag 1006
 
+#define LIOSurveyViewPreIntroHeaderLabel       1007
+#define LIOSurveyViewPreIntroRequiredLabel     1008
+#define LIOSurveyViewPreIntroNextButton        1009
+#define LIOSurveyViewPreIntroCancelButton      1010
+
 #define LIOSurveyViewControllerValidationDuration 5.0
+
+#define LIOIndexForSurveyIntroPage  -1
 
 @implementation LIOSurveyViewPre
 
 @synthesize delegate, currentSurvey, headerString;
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame headerString:(NSString*)headerString
 {
     self = [super initWithFrame:frame];
     if (self) {
@@ -64,17 +71,57 @@
     [super dealloc];
 }
 
-
 -(void)setupViews {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
-    currentScrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
-    currentScrollView.alpha = 0.0;
-    currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height);
-    currentScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self addSubview:currentScrollView];
-    [currentScrollView release];
+    leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
+                                   initWithTarget:self action:@selector(handleLeftSwipeGesture:)] autorelease];
+    leftSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionLeft;
+    [self addGestureRecognizer:leftSwipeGestureRecognizer];
     
+    rightSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
+                                    initWithTarget:self action:@selector(handleRightSwipeGesture:)] autorelease];
+    rightSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionRight;
+    [self addGestureRecognizer:rightSwipeGestureRecognizer];
+    
+    tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
+    [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
+    
+    currentScrollView = [self scrollViewForIntroView];
+    currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height);
+    currentScrollView.alpha = 0.0;
+    [self addSubview:currentScrollView];
+    
+    currentQuestionIndex = LIOIndexForSurveyIntroPage;
+    
+    CGRect pageControlFrame;
+    pageControlFrame.origin.x = 0;
+    pageControlFrame.origin.y = self.bounds.size.height - 20.0;
+    pageControlFrame.size.width = self.bounds.size.width;
+    pageControlFrame.size.height = 20.0;
+    
+    pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
+    pageControl.numberOfPages = [currentSurvey.questions count] + 1;
+    [self addSubview:pageControl];
+    [pageControl release];
+    
+    isAnimating = YES;
+    [UIView animateWithDuration:0.5 animations:^{
+        currentScrollView.alpha = 1.0;
+        currentScrollView.transform = CGAffineTransformIdentity;
+    } completion:^(BOOL finished) {
+        isAnimating = NO;
+    }];
+
+}
+
+-(UIScrollView*)scrollViewForIntroView {
+    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
+    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+    [scrollView addSubview:dismissBackgroundView];
+    [dismissBackgroundView release];
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -88,53 +135,53 @@
     headerLabel.text = headerString;
     headerLabel.textAlignment = UITextAlignmentCenter;
     headerLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-
-    CGRect aFrame;
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = LIOSurveyViewPreTopMarginPortrait;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
-    CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-    aFrame.size.height = expectedLabelSize.height;
-    headerLabel.frame = aFrame;
-    [currentScrollView addSubview:headerLabel];
+    headerLabel.tag = LIOSurveyViewPreIntroHeaderLabel;
+    [scrollView addSubview:headerLabel];
     [headerLabel release];
+    
+    UILabel* requiredLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    requiredLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    requiredLabel.layer.shadowRadius = 1.0;
+    requiredLabel.layer.shadowOpacity = 1.0;
+    requiredLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    requiredLabel.backgroundColor = [UIColor clearColor];
+    requiredLabel.textColor = [UIColor whiteColor];
+    requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    requiredLabel.numberOfLines = 0;
+    requiredLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
+    requiredLabel.textAlignment = UITextAlignmentCenter;
+    requiredLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    requiredLabel.tag = LIOSurveyViewPreIntroRequiredLabel;
+    [scrollView addSubview:requiredLabel];
+    [requiredLabel release];
     
     UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
     UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
     UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
     [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
-    [nextButton addTarget:self action:@selector(dismissIntroView:) forControlEvents:UIControlEventTouchUpInside];
+    [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
     nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:@"Next" forState:UIControlStateNormal];
+    nextButton.tag = LIOSurveyViewPreIntroNextButton;
+    [scrollView addSubview:nextButton];
+    [nextButton release];
+
+    UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+    UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
+    [cancelButton setBackgroundImage:stretchableCancelButtonImage forState:UIControlStateNormal];
+    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
+    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    cancelButton.tag = LIOSurveyViewPreIntroCancelButton;
+    [scrollView addSubview:cancelButton];
+    [cancelButton release];
     
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 20;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
-    aFrame.size.height = 53.0;
-    nextButton.frame = aFrame;
-    [currentScrollView addSubview:nextButton];
-    [nextButton release];    
+    [self rejiggerIntroScrollView:scrollView];
     
-    CGRect pageControlFrame;
-    pageControlFrame.origin.x = 0;
-    pageControlFrame.origin.y = self.bounds.size.height - 20.0;
-    pageControlFrame.size.width = self.bounds.size.width;
-    pageControlFrame.size.height = 20.0;
-    
-    pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
-    pageControl.numberOfPages = [currentSurvey.questions count];
-    pageControl.alpha = 0.0;
-    [self addSubview:pageControl];
-    [pageControl release];
-    
-    isAnimating = YES;
-    [UIView animateWithDuration:0.5 animations:^{
-        currentScrollView.alpha = 1.0;
-        currentScrollView.transform = CGAffineTransformIdentity;
-    } completion:^(BOOL finished) {
-        isAnimating = NO;
-    }];
+    return [scrollView autorelease];
 }
 
 -(void)layoutSubviews {
@@ -142,9 +189,15 @@
     
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
-
-    if (!isAnimating && currentScrollView != nil)
-        [self rejiggerSurveyScrollView:currentScrollView];
+    
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
+        [self rejiggerIntroScrollView:currentScrollView];
+    } else {
+        if (!isAnimating && currentScrollView != nil)
+            [self rejiggerSurveyScrollView:currentScrollView];
+    }
+    
+    NSLog(@"Keyboard height is %f", keyboardHeight);
     
     CGRect pageControlFrame = pageControl.frame;
     if (padUI)
@@ -152,12 +205,50 @@
     else
         pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
     pageControl.frame = pageControlFrame;
- 
+    
     if (validationView != nil) {
         CGRect aFrame = validationView.frame;
         aFrame.origin.y = (landscape || padUI) ? 0 : 32;
         validationView.frame = aFrame;
     }
+}
+
+-(void)rejiggerIntroScrollView:(UIScrollView*)scrollView {
+    CGRect aFrame;
+    
+    UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroHeaderLabel];
+
+    aFrame.origin.x = LIOSurveyViewPreSideMargin;
+    aFrame.origin.y = LIOSurveyViewPreTopMarginPortrait;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame.size.height = expectedLabelSize.height;
+    headerLabel.frame = aFrame;
+    
+    UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroRequiredLabel];
+    
+    aFrame.origin.x = LIOSurveyViewPreSideMargin;
+    aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame.size.height = expectedLabelSize.height;
+    requiredLabel.frame = aFrame;
+    
+    UIButton* nextButton = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroNextButton];
+    
+    aFrame.origin.x = LIOSurveyViewPreSideMargin;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 20;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    aFrame.size.height = 53.0;
+    nextButton.frame = aFrame;
+    
+    UIButton* cancelButton = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroCancelButton];
+    
+    aFrame.origin.x = LIOSurveyViewPreSideMargin;
+    aFrame.origin.y = nextButton.frame.origin.y + nextButton.frame.size.height + 20;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    aFrame.size.height = 53.0;
+    cancelButton.frame = aFrame;
 }
 
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
@@ -250,16 +341,6 @@
         [currentScrollView removeFromSuperview];
         currentScrollView = nextQuestionScrollView;
 
-        leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
-                                       initWithTarget:self action:@selector(handleLeftSwipeGesture:)] autorelease];
-        leftSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionLeft;
-        [self addGestureRecognizer:leftSwipeGestureRecognizer];
-        
-        rightSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
-                                        initWithTarget:self action:@selector(handleRightSwipeGesture:)] autorelease];
-        rightSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionRight;
-        [self addGestureRecognizer:rightSwipeGestureRecognizer];
-        
         isAnimating = NO;
         
     }];
@@ -272,10 +353,24 @@
 
 -(void)handleRightSwipeGesture:(UISwipeGestureRecognizer*)sender
 {
-    if (currentQuestionIndex == 0)
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
         [self bounceViewLeft];
     else
         [self switchToPreviousQuestion];
+}
+
+-(void)cancelButtonWasTapped:(id)sender {
+    if (delegate) {
+        pageControl.alpha = 0.0;
+        [delegate surveyViewDidCancel:self];
+    }
+}
+
+-(void)handleTapGesture:(UITapGestureRecognizer*)sender {
+    if (delegate) {
+        pageControl.alpha = 0.0;
+        [delegate surveyViewDidCancel:self];
+    }
 }
 
 -(void)bounceViewLeft {
@@ -337,6 +432,12 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     scrollView.showsVerticalScrollIndicator = NO;
     
+    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+    [scrollView addSubview:dismissBackgroundView];
+    [dismissBackgroundView release];
+    
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     questionLabel.tag = LIOSurveyViewPreTitleLabelTag;
     questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -348,8 +449,8 @@
     questionLabel.textColor = [UIColor whiteColor];
     questionLabel.numberOfLines = 0;
     questionLabel.text = question.label;
-    if (!question.mandatory)
-        questionLabel.text = [NSString stringWithFormat:@"%@ (optional)", questionLabel.text];
+    if (question.mandatory)
+        questionLabel.text = [NSString stringWithFormat:@"%@ *", questionLabel.text];
     questionLabel.textAlignment = UITextAlignmentCenter;
     [scrollView addSubview:questionLabel];
     [questionLabel release];
@@ -377,7 +478,10 @@
         else
             inputField.returnKeyType = UIReturnKeyNext;
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
-        if (question.validationType == LIOSurveyQuestionValidationTypeNumeric) {
+
+        if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
+            inputField.keyboardType = UIKeyboardTypeEmailAddress;
+        if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
 
             NSString* buttonTitle = @"Next";
@@ -516,6 +620,9 @@
 }
 
 - (BOOL)validateAndRegisterCurrentAnswer {
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+        return YES;
+    
     LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     
@@ -775,9 +882,14 @@
 
 -(void)switchToPreviousQuestion {
     currentQuestionIndex -= 1;
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
     
-    UIScrollView* previousQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
+    UIScrollView* previousQuestionScrollView;
+    
+    if (LIOIndexForSurveyIntroPage == currentQuestionIndex)
+        previousQuestionScrollView = [self scrollViewForIntroView];
+    else
+        previousQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
+    
     previousQuestionScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
     [self addSubview:previousQuestionScrollView];
     

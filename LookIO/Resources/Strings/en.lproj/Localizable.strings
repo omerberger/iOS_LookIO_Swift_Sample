@@ -77,6 +77,7 @@
 "LIOSurveyViewController.EmailValidationAlertBody" = "Please enter a valid e-mail address.";
 "LIOSurveyViewController.NumericValidationAlertBody" = "Please enter a valid number.";
 "LIOSurveyViewController.RegexpValidationAlertBody" = "Please check your response and try again.";
+"LIOSurveyViewController.MandatoryQuestionsTitle" = "Required items indicated with *";
 
 "LIOLookIOManager.ConnectionFailedAlertTitle" = "Chat Connection Failed";
 "LIOLookIOManager.ConnectionFailedAlertBody" = "Sorry, we can't connect with the live chat support right now. Please try again later.";
