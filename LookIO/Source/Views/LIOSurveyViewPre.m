@@ -436,22 +436,28 @@
             [nextButton setTitle:@"Next" forState:UIControlStateNormal];                
         [scrollView addSubview:nextButton];
         [nextButton release];
-                
-        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+
         selectedIndices = [[NSMutableArray alloc] init];
 
-        if (aResponse && [aResponse isKindOfClass:[NSArray class]])
-        {
-            NSMutableArray *arrayResponse = (NSMutableArray*)aResponse;
-            for (NSString* response in arrayResponse)
-                for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
-                    if ([pickerEntry.label isEqualToString:response]) {
-                        int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
-                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
-                    }
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        NSMutableArray* answersArray;
+        
+        if (aResponse && [aResponse isKindOfClass:[NSString class]]) {
+            NSString* answerString = (NSString*)aResponse;
+            answersArray = [NSMutableArray arrayWithObject:answerString];
         }
+        
+        if (aResponse && [aResponse isKindOfClass:[NSArray class]])
+            answersArray = (NSMutableArray*)aResponse;
+        
+        for (NSString* answer in answersArray)
+            for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
+                if ([pickerEntry.label isEqualToString:answer]) {
+                    int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                    [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                }
     }
-    
+
     [self rejiggerSurveyScrollView:scrollView];
     return [scrollView autorelease];
 }
@@ -583,13 +589,24 @@
         }
         else
         {
-            NSMutableArray* selectedAnswers = [NSMutableArray array];
-            for (NSIndexPath* indexPath in selectedIndices) {
-                LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
-                [selectedAnswers addObject:selectedPickerEntry.label];
+            if (LIOSurveyQuestionDisplayTypeMultiselect) {
+                NSMutableArray* selectedAnswers = [NSMutableArray array];
+                for (NSIndexPath* indexPath in selectedIndices) {
+                    LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
+                    [selectedAnswers addObject:selectedPickerEntry.label];
+                }
+                [surveyManager registerAnswerObject:selectedAnswers forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+
             }
             
-            [surveyManager registerAnswerObject:selectedAnswers forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+            if (LIOSurveyQuestionDisplayTypePicker) {
+                if (selectedIndices.count == 1) {
+                    NSIndexPath* indexPath = (NSIndexPath*)[selectedIndices objectAtIndex:0];
+                    LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
+                    [surveyManager registerAnswerObject:selectedPickerEntry.label forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+                }                    
+            }
+            
             surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
             return YES;
         }
