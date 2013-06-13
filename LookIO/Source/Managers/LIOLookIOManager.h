@@ -62,7 +62,7 @@ extern NSString *const kLPEventAddedToCart;
 - (id)customVariableForKey:(NSString *)aKey;
 - (void)addCustomVariables:(NSDictionary *)aDictionary;
 - (void)clearCustomVariables;
-- (BOOL)shouldLookInterfaceOrientation;
+- (BOOL)shouldLockInterfaceOrientation;
 
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;

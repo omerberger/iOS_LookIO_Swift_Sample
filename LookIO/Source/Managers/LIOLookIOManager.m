@@ -3443,7 +3443,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     shouldLockOrientation = NO;
 }
 
-- (BOOL)shouldLookInterfaceOrientation {
+- (BOOL)shouldLockInterfaceOrientation {
     if (altChatViewController && shouldLockOrientation)
         return shouldLockOrientation;
     
