@@ -41,6 +41,9 @@
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerTypingDidStart:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerTypingDidStop:(LIOAltChatViewController *)aController;
+- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController;
+- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController;
+
 @end
 
 @protocol LIOAltChatViewControllerDataSource
@@ -87,6 +90,7 @@
     id<LIOAltChatViewControllerDataSource> dataSource;
     
     BOOL surveyPreCompleted;
+    BOOL isShowingImagePicker;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

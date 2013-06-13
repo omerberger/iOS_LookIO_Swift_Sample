@@ -992,6 +992,7 @@
     {
         [self.modalViewController.view endEditing:YES];
         [self dismissModalViewControllerAnimated:NO];
+        [delegate altChatViewControllerWillPresentImagePicker:self];
     }
 }
 
@@ -1038,6 +1039,7 @@
     }
     else
     {
+        [delegate altChatViewControllerWillPresentImagePicker:self];
         [self presentModalViewController:ipc animated:YES];
     }
 }
@@ -1063,6 +1065,7 @@
     }
     else
     {
+        [delegate altChatViewControllerWillPresentImagePicker:self];
         [self presentModalViewController:ipc animated:YES];
     }
 }
@@ -1985,8 +1988,10 @@
     
     if (padUI)
         [popover dismissPopoverAnimated:YES];
-    else
+    else {
+        [delegate altChatViewControllerWillDismissImagePicker:self];
         [self dismissModalViewControllerAnimated:YES];
+    }
     
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (image)
@@ -2015,6 +2020,7 @@
     }
     else
     {
+        [delegate altChatViewControllerWillDismissImagePicker:self];
         [self dismissModalViewControllerAnimated:YES];
     }
 }

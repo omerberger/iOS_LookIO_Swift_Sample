@@ -42,6 +42,7 @@ extern NSString *const kLPEventAddedToCart;
 - (BOOL)lookIOManager:(LIOLookIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 - (BOOL)lookIOManagerShouldAutorotate:(LIOLookIOManager *)aManager;
 - (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOLookIOManager *)aManager;
+
 @end
 
 @interface LIOLookIOManager : NSObject
@@ -61,6 +62,7 @@ extern NSString *const kLPEventAddedToCart;
 - (id)customVariableForKey:(NSString *)aKey;
 - (void)addCustomVariables:(NSDictionary *)aDictionary;
 - (void)clearCustomVariables;
+- (BOOL)shouldLookInterfaceOrientation;
 
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;
