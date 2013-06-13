@@ -90,7 +90,8 @@
     id<LIOAltChatViewControllerDataSource> dataSource;
     
     BOOL surveyPreCompleted;
-    BOOL isShowingImagePicker;
+    int currentPopoverType;
+    
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

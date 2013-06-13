@@ -46,6 +46,10 @@
 
 #define LIOSurveyViewPrePadding 10.0
 
+#define LIOIpadPopoverTypeNone 0
+#define LIOIpadPopoverTypeImagePicker 1
+#define LIOIpadPopoverTypeSurvey 2
+
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
 @end
@@ -643,6 +647,7 @@
     }
     
     [popover dismissPopoverAnimated:NO];
+    currentPopoverType = LIOIpadPopoverTypeNone;
     [popover autorelease];
     popover = nil;
 }
@@ -676,7 +681,16 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (padUI && popover) {
+         if (currentPopoverType == LIOIpadPopoverTypeImagePicker)
+            [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                     inView:inputBar.attachButton
+                   permittedArrowDirections:UIPopoverArrowDirectionDown
+                                   animated:YES];
+    }
     
+
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
@@ -686,6 +700,7 @@
     
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
+    
 }
 
 - (void)rejiggerTableViewFrame
@@ -984,6 +999,7 @@
     if (popover)
     {
         [popover dismissPopoverAnimated:NO];
+        currentPopoverType = LIOIpadPopoverTypeNone;
         [popover release];
         popover = nil;
     }
@@ -1029,9 +1045,11 @@
     
     if (padUI)
     {
+        [self.view endEditing:YES];
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
                                  inView:inputBar.attachButton
                permittedArrowDirections:UIPopoverArrowDirectionDown
@@ -1055,9 +1073,12 @@
     
     if (padUI)
     {
+        [self.view endEditing:YES];
+
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-        //popover.popoverContentSize = CGSizeMake(320.0, 240.0);
+//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
                                  inView:inputBar.attachButton
                permittedArrowDirections:UIPopoverArrowDirectionDown
@@ -1722,6 +1743,7 @@
     {
         [popover dismissPopoverAnimated:NO];
         [popover autorelease];
+        currentPopoverType = LIOIpadPopoverTypeNone;
         popover = nil;
     }
     else
@@ -1986,8 +2008,10 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (padUI)
+    if (padUI) {
         [popover dismissPopoverAnimated:YES];
+        currentPopoverType = LIOIpadPopoverTypeNone;
+    }
     else {
         [delegate altChatViewControllerWillDismissImagePicker:self];
         [self dismissModalViewControllerAnimated:YES];
@@ -2017,6 +2041,7 @@
     if (padUI)
     {
         [popover dismissPopoverAnimated:YES];
+        currentPopoverType = LIOIpadPopoverTypeNone;
     }
     else
     {
