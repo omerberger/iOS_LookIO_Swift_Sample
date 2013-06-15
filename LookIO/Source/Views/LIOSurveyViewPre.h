@@ -50,9 +50,9 @@
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
 @property (nonatomic, retain) LIOSurveyTemplate* currentSurvey;
 @property (nonatomic, copy) NSString* headerString;
-@property int currentQuestionIndex;
+@property (nonatomic, assign) int currentQuestionIndex;
 
--(void)setupViews;
-- (id)initWithFrame:(CGRect)frame headerString:(NSString*)headerString;
+- (void)setupViews;
+- (id)initWithFrame:(CGRect)frame;
 
 @end

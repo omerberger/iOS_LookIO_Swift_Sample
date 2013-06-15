@@ -475,7 +475,7 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.surveyEnabled)
+    if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -561,7 +561,7 @@
     // We might need to show the survey modal.
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    if (surveyManager.preChatTemplate && !surveyPreCompleted && lookIOManager.surveyEnabled)
+    if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -570,7 +570,10 @@
             surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
-            surveyViewPre.currentQuestionIndex = lastIndexCompleted;
+            if (lastIndexCompleted == -1)
+                surveyViewPre.currentQuestionIndex = lastIndexCompleted;
+            else
+                surveyViewPre.currentQuestionIndex = lastIndexCompleted + 1;
             surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             surveyViewPre.delegate = self;
 
@@ -593,9 +596,10 @@
                 aRect.size = CGSizeMake(10, 10);
                 
                 [popover presentPopoverFromRect:aRect
-                                         inView:self.view
-                       permittedArrowDirections:UIPopoverArrowDirectionDown
-                                    animated:YES];
+                                            inView:self.view
+                        permittedArrowDirections:UIPopoverArrowDirectionDown
+                                        animated:YES];
+
             }
             else
             {
@@ -783,23 +787,25 @@
     reconnectionOverlay.hidden = YES;
 }
 
-- (void)performRevealAnimation
+- (void)performRevealAnimationWithFadeIn:(BOOL)fadeIn
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (padUI)
     {
-        background.alpha = 0.0;
-        
-        [UIView animateWithDuration:0.2
-                              delay:0.45
-                            options:UIViewAnimationOptionCurveEaseOut
-                         animations:^{
-                             background.alpha = 1.0;
-                         }
-                         completion:^(BOOL finished) {
-                             background.alpha = 1.0;
-                         }];
+        if (fadeIn) {
+            background.alpha = 0.0;
+            
+            [UIView animateWithDuration:0.2
+                                  delay:0.45
+                                options:UIViewAnimationOptionCurveEaseOut
+                             animations:^{
+                                 background.alpha = 1.0;
+                             }
+                             completion:^(BOOL finished) {
+                                 background.alpha = 1.0;
+                             }];
+        }
         
         tableView.alpha = 0.5;
         
@@ -827,25 +833,29 @@
     }
     else
     {
-        background.alpha = 0.0;
+        if (fadeIn) {
+            background.alpha = 0.0;
         
-        [UIView animateWithDuration:0.4
-                              delay:0.0
-                            options:UIViewAnimationOptionCurveEaseOut
-                         animations:^{
-                             background.alpha = 1.0;
-                         }
-                         completion:^(BOOL finished) {
-                             background.alpha = 1.0;
-                         }];
+            [UIView animateWithDuration:0.4
+                                  delay:0.0
+                                options:UIViewAnimationOptionCurveEaseOut
+                             animations:^{
+                                 background.alpha = 1.0;
+                             }
+                             completion:^(BOOL finished) {
+                                 background.alpha = 1.0;
+                             }];
+        }
         
         tableView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
         headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.frame.size.height);
         inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
         dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.frame.size.height);
         
+        CGFloat delay = fadeIn ? 0.1 : 0.0;
+        
         [UIView animateWithDuration:0.3
-                              delay:0.1
+                              delay:delay
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
                              tableView.transform = CGAffineTransformIdentity;
@@ -1927,7 +1937,7 @@
     popover = nil;
     
     if (surveyPreInProgress && surveyViewPre) {
-        [self surveyViewDidFinish:surveyViewPre];
+        [self surveyViewDidCancel:surveyViewPre];
     }
 }
 
@@ -1969,6 +1979,8 @@
             inputBar.alpha = 1.0;
             tableView.alpha = 1.0;
         } completion:^(BOOL finished) {
+            [aView removeFromSuperview];
+            [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
         }];
     }
     else {
@@ -1982,7 +1994,6 @@
         }];
     }
     surveyPreInProgress = NO;
-    surveyPreCompleted = NO;    
 }
 
 -(void)surveyViewDidFinish:(LIOSurveyViewPre *)aView {
@@ -2014,44 +2025,51 @@
     tableView.alpha = 0.0;
     tableView.hidden = NO;
 
+    [self reloadMessages];
+    
     if (padUI) {
         [popover dismissPopoverAnimated:YES];
-        [UIView animateWithDuration:0.5 animations:^{
-            dismissalBar.alpha = 1.0;
-            inputBar.alpha = 1.0;
-            tableView.alpha = 1.0;
-        } completion:^(BOOL finished) {
-        }];
-    }
-    else {
-        [UIView animateWithDuration:0.5 animations:^{
-            aView.alpha = 0.0;
-            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
 
-        } completion:^(BOOL finished) {
-            [UIView animateWithDuration:0.5 animations:^{
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
-            } completion:^(BOOL finished) {
-            }];
-            [aView removeFromSuperview];
-        }];
-    }
-    
-    surveyPreInProgress = NO;
-    surveyPreCompleted = YES;
-        
-    // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
-    // We manually invoke it here.
-    if (padUI)
-    {
+        dismissalBar.alpha = 1.0;
+        inputBar.alpha = 1.0;
+        tableView.alpha = 1.0;
+
+        [self performRevealAnimationWithFadeIn:NO];
+        [aView removeFromSuperview];
+            
         double delayInSeconds = 0.1;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self viewDidAppear:NO];
         });
     }
+    else {
+        [UIView animateWithDuration:0.3 animations:^{
+            aView.alpha = 0.0;
+            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
+
+        } completion:^(BOOL finished) {
+            dismissalBar.alpha = 1.0;
+            inputBar.alpha = 1.0;
+            tableView.alpha = 1.0;
+            [self performRevealAnimationWithFadeIn:NO];
+            [aView removeFromSuperview];
+            
+            double delayInSeconds = 0.1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self viewDidAppear:NO];
+            });
+        }];
+    }
+    
+    surveyPreInProgress = NO;
+        
+    // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
+    // We manually invoke it here.
+//    if (padUI)
+//    {
+//    }
 }
 
 

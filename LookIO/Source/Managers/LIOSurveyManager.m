@@ -12,6 +12,7 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOSurveyLogicProp.h"
 #import "LIOLogManager.h"
+#import "LIOSurveyLogicItem.h"
 
 static LIOSurveyManager *sharedSurveyManager = nil;
 
@@ -138,6 +139,28 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     }
 }
 
+- (int)numberOfQuestionsWithCurrentStateForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
+    LIOSurveyTemplate *aSurvey;
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        aSurvey = preChatTemplate;
+    else
+        aSurvey = postChatTemplate;
+    
+    int numberOfQuestions = 0;
+    
+    // For each question, we need to see if the target of any of the logic elements.
+    // If it isn't, we should display it/count it
+    // If it is, we need to make sure that the correct answer was selected, otherwise we hide it
+    
+    for (LIOSurveyQuestion* question in aSurvey.questions) {
+        
+    }
+    
+    
+
+    return numberOfQuestions;
+}
+
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -185,6 +208,8 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     NSDictionary *questionsDict = [aDict objectForKey:@"questions"];
     NSArray* questionIdsArray = [questionsDict allKeys];
     NSMutableArray *questions = [NSMutableArray array];
+    NSMutableArray *logicItems = [NSMutableArray array];
+    
     for (NSString* aQuestionId in questionIdsArray)
     {
         LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
@@ -246,6 +271,15 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                     newLogicProp.targetLogicId = [[logicDict objectForKey:aKey] intValue];
                     
                     [logicProps addObject:newLogicProp];
+                    
+                    LIOSurveyLogicItem* logicItem = [[[LIOSurveyLogicItem alloc] init] autorelease];
+                    logicItem.targetLogicId = [[logicDict objectForKey:aKey] intValue];
+                    logicItem.sourceLogicId = newQuestion.logicId;
+                    logicItem.sourceAnswerLabel = newPickerEntry.label;
+                    logicItem.enabled = NO;
+                    logicItem.propType = LIOSurveyLogicPropTypeShow;
+                        
+                    [logicItems addObject:logicItem];
                 }
                 
                 if ([logicProps count])
@@ -267,10 +301,15 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         {
             [questions addObject:newQuestion];
         }
+        
+        NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE];
+        [questions sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+
     }
     
     newTemplate.surveyId = idNumber;
     newTemplate.questions = questions;
+    newTemplate.logicItems = logicItems;
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {

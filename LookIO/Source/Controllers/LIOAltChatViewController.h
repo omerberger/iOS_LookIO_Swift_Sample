@@ -90,7 +90,6 @@
     id<LIOAltChatViewControllerDataSource> dataSource;
     
     LIOSurveyViewPre* surveyViewPre;
-    BOOL surveyPreCompleted;
     BOOL surveyPreInProgress;
 
     int currentPopoverType;
@@ -104,7 +103,7 @@
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;
-- (void)performRevealAnimation;
+- (void)performRevealAnimationWithFadeIn:(BOOL)fadeIn;
 - (void)performDismissalAnimation;
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;

@@ -840,12 +840,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [super dealloc];
 }
 
+- (void)disconnectAndReset {
+    if (socketConnected)
+        [controlSocket disconnect];
+    [self reset];
+}
+
 - (void)reset
 {
-    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
-    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
-    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
-    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+//    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
+//    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
+//    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
+//    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
@@ -1346,7 +1352,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self rejiggerWindows];
     
     if (animated)
-        [altChatViewController performRevealAnimation];
+        [altChatViewController performRevealAnimationWithFadeIn:YES];
     
     [pendingChatText release];
     pendingChatText = nil;    
@@ -1372,12 +1378,77 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
 }
 
+-(void)beginSessionAfterSurveyImmediatelyShowingChat:(BOOL)showChat {
+    // Waiting for the "do you want to reconnect?" alert view.
+    if (willAskUserToReconnect)
+        return;
+    
+    // Prevent a new session from being established if the current one
+    // is ending.
+    if (sessionEnding)
+    {
+        LIOLog(@"beginSession ignored: current session is still ending...");
+        return;
+    }
+    
+    if (controlSocketConnecting)
+    {
+        LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
+        return;
+    }
+    
+    if (socketConnected)
+    {
+        if (introduced)
+        {
+            [self showChatAnimated:YES];
+            return;
+        }
+        else
+        {
+            LIOLog(@"beginSession ignored: already connected! (But not introduced)");
+            return;
+        }
+    }
+    
+    NSError *connectError = nil;
+    BOOL connectResult = [self beginConnectingWithError:&connectError];
+    if (NO == connectResult)
+    {
+        [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection failed. Reason: %@", [connectError localizedDescription]];
+        
+        if (NO == firstChatMessageSent)
+        {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertBody")
+                                                               delegate:nil
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertButton"), nil];
+            [alertView show];
+            [alertView autorelease];
+        }
+        
+        controlSocketConnecting = NO;
+        
+        [self killReconnectionTimer];
+        [self configureReconnectionTimer];
+        
+        return;
+    }
+    
+    controlSocketConnecting = YES;
+    
+    [self populateChatWithFirstMessage];
+}
+
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
     // Survey needed? We need to wait until it's done before we try to connect.
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
 
-    if (surveyManager.preChatTemplate)
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.preChatTemplate && surveyEnabled)
     {
         int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
         int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
@@ -3447,7 +3518,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [surveyResponsesToBeSent release];
     surveyResponsesToBeSent = [aResponseDict retain];
 
-    [self beginSession];
+    [self beginSessionAfterSurveyImmediatelyShowingChat:YES];
 }
 
 - (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController {

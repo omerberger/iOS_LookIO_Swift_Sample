@@ -7,11 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-
-typedef enum
-{
-    LIOSurveyLogicPropTypeShow
-} LIOSurveyLogicPropType;
+#import "LIOSurveyLogicItem.h"
 
 @interface LIOSurveyLogicProp : NSObject
 {
