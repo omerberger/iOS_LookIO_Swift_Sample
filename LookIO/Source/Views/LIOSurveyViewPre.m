@@ -354,12 +354,19 @@
             }
         }
         
+        // If the user has answered this survey, we should display their answer        
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
         if (aResponse && [aResponse isKindOfClass:[NSString class]])
         {
             NSString *responseString = (NSString *)aResponse;
             inputField.text = responseString;
         }
+        // If user hasn't answered, let's see if there's a last known response to populate
+        else {
+            if (question.lastKnownValue)
+                inputField.text = question.lastKnownValue;
+        }
+        
         
         [fieldBackground addSubview:inputField];
         [inputField becomeFirstResponder];
@@ -396,6 +403,8 @@
         
         selectedIndices = [[NSMutableArray alloc] init];
         
+        // If the user has answered this survey, we should display their answer
+
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
         if (aResponse) {
             NSMutableArray* answersArray;
@@ -414,6 +423,15 @@
                         int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                         [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
                     }
+        }
+        // If not, we should see if any of the answers are set to be checked by default
+        else {
+            for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries) {
+                if (pickerEntry.initiallyChecked) {
+                    int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                    [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                }
+            }
         }
     }
     
@@ -732,13 +750,11 @@
             BOOL validated = NO;
             
             if (LIOSurveyQuestionValidationTypeAlphanumeric == currentQuestion.validationType) {
-                NSMutableCharacterSet* wantedCharacters = [NSMutableCharacterSet alphanumericCharacterSet];
-                [wantedCharacters formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
-                NSCharacterSet *unwantedCharacters = [wantedCharacters invertedSet];
-                if ([stringResponse rangeOfCharacterFromSet:unwantedCharacters].location == NSNotFound)
+                NSString* responseAfterEliminatingSpaces = [stringResponse stringByReplacingOccurrencesOfString:@" " withString:@""];
+                if (![responseAfterEliminatingSpaces isEqualToString:@""])
                     validated = YES;
                 else
-                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.AlphanumericValidationAlertBody")];
+                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
             }
 
             if (LIOSurveyQuestionValidationTypeNumeric == currentQuestion.validationType)

@@ -12,6 +12,7 @@
 
 @synthesize questionId, mandatory, order, label, logicId, displayType;
 @synthesize validationType, pickerEntries, validationRegexp;
+@synthesize lastKnownValue;
 
 - (void)dealloc
 {

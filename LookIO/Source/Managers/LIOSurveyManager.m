@@ -222,6 +222,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logicId"] intValue];
         newQuestion.validationRegexp = [aQuestionDict objectForKey:@"validationRegexp"];
+        newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
         newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
