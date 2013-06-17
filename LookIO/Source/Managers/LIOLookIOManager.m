@@ -34,6 +34,7 @@
 #import "LIOPlugin.h"
 #import "LIOMediaManager.h"
 
+
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
                                      blue:((c)&0xFF)/255.0 \
@@ -2878,6 +2879,51 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     pendingIntraAppLinkURL = [aURL retain];
     
     [altChatViewController performDismissalAnimation];
+}
+
+- (BOOL)customBrandingAvailable
+{
+    return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingViewWithDimensions:)];
+}
+
+- (id)brandingViewWithDimensions:(CGSize)aSize
+{
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingViewWithDimensions:)])
+    {
+        id aView = [delegate lookIOManager:self brandingViewWithDimensions:aSize];
+        if (aView)
+        {
+            if ([aView isKindOfClass:[UIImage class]])
+            {
+                UIImage *anImage = (UIImage *)aView;
+//                if (NO == CGSizeEqualToSize(anImage.size, aSize))
+//                {
+//                    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"You are using a branding image which is outside of the suggested bounds. Expected: %@. Got: %@.", [NSValue valueWithCGSize:aSize], [NSValue valueWithCGSize:anImage.size]];
+//                }
+                return anImage;
+            }
+            else if ([aView isKindOfClass:[UIView class]])
+            {
+                UIView *lolView = (UIView *)aView;
+                CGRect aFrame = [lolView frame];
+                if (CGSizeEqualToSize(aFrame.size, aSize))
+                {
+                    // Use it!
+                    return lolView;
+                }
+                else
+                {
+                    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"You are using a branded UIView which is outside of the required bounds. %@. Got: %@.", [NSValue valueWithCGSize:aSize], [NSValue valueWithCGSize:lolView.frame.size]];
+                }
+            }
+            else
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Expected either a UIView subclass or a UIImage from \"brandingViewWithDimensions\". Got: \"%@\". Falling back to default branding!", NSStringFromClass([aView class])];
+            }
+        }
+    }
+    
+    return nil;
 }
 
 - (void)setUsesTLS:(NSNumber *)aNumber

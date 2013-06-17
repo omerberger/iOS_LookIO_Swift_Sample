@@ -133,6 +133,17 @@
 }
 */
 
+- (id)lookIOManager:(LIOLookIOManager *)aManager brandingViewWithDimensions:(CGSize)dimensions
+{
+    UILabel *blah = [[[UILabel alloc] init] autorelease];
+    blah.text = @"AT&T Wireless™";
+    blah.textColor = [UIColor whiteColor];
+    blah.textAlignment = UITextAlignmentCenter;
+    blah.backgroundColor = [UIColor clearColor];
+    blah.frame = CGRectMake(0.0, 0.0, dimensions.width, dimensions.height);
+    return blah;
+}
+
 /*
 - (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager
 {

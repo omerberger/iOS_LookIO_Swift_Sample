@@ -10,6 +10,7 @@
 #import "LIOBundleManager.h"
 #import "LIOTimerProxy.h"
 #import "LIOAnimatedKeyboardIcon.h"
+#import "LIOLookIOManager.h"
 #import <QuartzCore/QuartzCore.h>
 
 @implementation LIONotificationArea
@@ -35,103 +36,82 @@
         
         if (padUI)
         {
-            /*
-            UIView *lolcontainer = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
-            lolcontainer.backgroundColor = [UIColor clearColor];
-            aFrame = lolcontainer.frame;
-            aFrame.size.height = 32.0;
-            aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
-            lolcontainer.frame = aFrame;
-            lolcontainer.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-            [defaultNotification addSubview:lolcontainer];
+            UIView *finalBrandingView = nil;
             
-            UILabel *adLabel = [[[UILabel alloc] init] autorelease];
-            adLabel.backgroundColor = [UIColor clearColor];
-            adLabel.font = [UIFont boldSystemFontOfSize:12.0];
-            adLabel.textColor = [UIColor whiteColor];
-            adLabel.text = @"powered by";
-            [adLabel sizeToFit];
-            CGRect aFrame = adLabel.frame;
-            aFrame.origin.x = 5.0;
-            aFrame.origin.y = (lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            adLabel.frame = aFrame;
-            adLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-            [self addSubview:adLabel];
-
-            aFrame = lolcontainer.frame;
-            aFrame.size.width = adLabel.frame.size.width + adLogo.frame.size.width + 10.0;
-            aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-            lolcontainer.frame = aFrame;
+            CGSize brandingSize = CGSizeMake(130.0, 44.0);
+            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] brandingViewWithDimensions:brandingSize];
+            if (aBrandingView)
+            {
+                if ([aBrandingView isKindOfClass:[UIImage class]])
+                {
+                    UIImage *anImage = (UIImage *)aBrandingView;
+                    finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
+                    finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
+                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 130.0, 44.0);
+                }
+                else
+                    finalBrandingView = aBrandingView;
+            }
             
-            [lolcontainer addSubview:adLabel];
-            [lolcontainer addSubview:adLogo];
-             */
+            if (nil == finalBrandingView)
+            {
+                finalBrandingView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
+                finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
+                aFrame = finalBrandingView.frame;
+                aFrame.size.width = 130.0;
+                aFrame.size.height = 44.0;
+                finalBrandingView.frame = aFrame;
+            }
             
-            UIImageView *adLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
-            aFrame = adLogo.frame;
-            aFrame.size.width = 106.0;
-            aFrame.size.height = 15.0;
-            aFrame.origin.x = 27.0;//adLabel.frame.origin.x + adLabel.frame.size.width + 3.0;
-            aFrame.origin.y = 32.0;//(lolcontainer.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            adLogo.frame = aFrame;
-            adLogo.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-            adLogo.backgroundColor = [UIColor clearColor];
-            adLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
-            adLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
-            adLogo.layer.shadowOpacity = 0.33;
-            adLogo.layer.shadowRadius = 0.75;
-            [self addSubview:adLogo];
+            finalBrandingView.userInteractionEnabled = NO;
+            aFrame = finalBrandingView.frame;
+            aFrame.origin.x = 16.0;
+            aFrame.origin.y = 16.0;
+            finalBrandingView.frame = aFrame;
+//            finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+//            finalBrandingView.backgroundColor = [UIColor clearColor];
+//            finalBrandingView.layer.shadowColor = [UIColor whiteColor].CGColor;
+//            finalBrandingView.layer.shadowOffset = CGSizeMake(0.5, 0.5);
+//            finalBrandingView.layer.shadowOpacity = 0.33;
+//            finalBrandingView.layer.shadowRadius = 0.75;
+            [self addSubview:finalBrandingView];
         }
         else
         {
-            UIView *lolcontainer = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
-            lolcontainer.backgroundColor = [UIColor clearColor];
-//            aFrame = lolcontainer.frame;
-//            aFrame.size.height = 32.0;
-//            aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
-//            lolcontainer.frame = aFrame;
-            lolcontainer.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-            [defaultNotification addSubview:lolcontainer];
+            UIView *finalBrandingView = nil;
             
-            UILabel *adLabel = [[[UILabel alloc] init] autorelease];
-            adLabel.backgroundColor = [UIColor clearColor];
-            adLabel.font = [UIFont boldSystemFontOfSize:12.0];
-            adLabel.textColor = [UIColor whiteColor];
-            adLabel.text = LIOLocalizedString(@"LIONotificationArea.PoweredBy");
-            [adLabel sizeToFit];
-            aFrame = adLabel.frame;
-            aFrame.origin.x = 0.0;
+            CGSize brandingSize = CGSizeMake(240.0, 17.0);
+            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] brandingViewWithDimensions:brandingSize];
+            if (aBrandingView)
+            {
+                if ([aBrandingView isKindOfClass:[UIImage class]])
+                {
+                    UIImage *anImage = (UIImage *)aBrandingView;
+                    finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
+                    finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
+                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 240.0, 17.0);
+                }
+                else
+                    finalBrandingView = aBrandingView;
+            }
+            
+            if (nil == finalBrandingView)
+            {
+                finalBrandingView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
+            }
+            
+            finalBrandingView.userInteractionEnabled = NO;
+            aFrame = finalBrandingView.frame;
             aFrame.origin.y = 8.0;
-            adLabel.frame = aFrame;
+            aFrame.origin.x = (defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            finalBrandingView.frame = aFrame;
+            finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+//            finalBrandingView.layer.shadowColor = [UIColor whiteColor].CGColor;
+//            finalBrandingView.layer.shadowOffset = CGSizeMake(0.5, 0.5);
+//            finalBrandingView.layer.shadowOpacity = 0.33;
+//            finalBrandingView.layer.shadowRadius = 0.75;
             
-            UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
-            aFrame = tinyLogo.frame;
-            aFrame.origin.y = 8.0;
-            aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 5.0;
-            tinyLogo.frame = aFrame;
-            tinyLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
-            tinyLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
-            tinyLogo.layer.shadowOpacity = 0.33;
-            tinyLogo.layer.shadowRadius = 0.75;
-            
-            UIButton *plusButton = [UIButton buttonWithType:UIButtonTypeCustom];
-            [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-            [plusButton setBackgroundImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderPlusIcon"] forState:UIControlStateNormal];
-            [plusButton sizeToFit];
-            aFrame = plusButton.frame;
-            aFrame.size.height = 15.0;
-            aFrame.origin.y = 8.0;
-            aFrame.origin.x = tinyLogo.frame.origin.x + tinyLogo.frame.size.width + 5.0;
-            plusButton.frame = aFrame;
-            
-            aFrame = lolcontainer.frame;
-            aFrame.size.width = adLabel.frame.size.width + tinyLogo.frame.size.width + plusButton.frame.size.width + 10.0;
-            aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-            lolcontainer.frame = aFrame;
-            
-            [lolcontainer addSubview:adLabel];
-            [lolcontainer addSubview:tinyLogo];
-            [lolcontainer addSubview:plusButton];
+            [defaultNotification addSubview:finalBrandingView];
         }
         
         keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
