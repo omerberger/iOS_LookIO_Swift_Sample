@@ -848,10 +848,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)reset
 {
-//    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
-//    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
-//    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
-//    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];

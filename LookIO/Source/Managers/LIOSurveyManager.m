@@ -139,7 +139,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     }
 }
 
-- (int)numberOfQuestionsWithCurrentStateForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
+- (int)numberOfQuestionsWithLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
     LIOSurveyTemplate *aSurvey;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
@@ -153,13 +153,62 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     // If it is, we need to make sure that the correct answer was selected, otherwise we hide it
     
     for (LIOSurveyQuestion* question in aSurvey.questions) {
-        
+        BOOL shouldShowQuestion = YES;
+
+        // If the question is a target of any logic, it will be in the survey's logic dictionary
+        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.questionId]];
+        if (logicItem)
+            if (!logicItem.enabled)
+                shouldShowQuestion = NO;
+
+        if (shouldShowQuestion)
+            numberOfQuestions += 1;
     }
-    
-    
 
     return numberOfQuestions;
 }
+
+- (LIOSurveyQuestion*)questionWithLogicForIndex:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType {
+    LIOSurveyTemplate *aSurvey;
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        aSurvey = preChatTemplate;
+    else
+        aSurvey = postChatTemplate;
+    
+    int arrayIndex = 0;
+    int questionIndex = 0;
+    while (questionIndex <= index) {
+        // Let's make sure we're not accessing a non-existant index
+        if (arrayIndex > aSurvey.questions.count - 1)
+            return nil;
+        
+        LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:arrayIndex];
+
+        BOOL shouldShowQuestion = YES;
+        
+        // If the question is a target of any logic, it will be in the survey's logic dictionary
+        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.questionId]];
+        if (logicItem)
+            if (!logicItem.enabled)
+                shouldShowQuestion = NO;
+        
+        if (!shouldShowQuestion) {
+            // If this question is hidden, just advance past it, without increasing the index
+            arrayIndex += 1;
+        } else {
+            // If this is our target question, let's return it
+            if (questionIndex == index) {
+                NSLog(@"Question for index %d has a title %@ (Index in the array is %d)", index, question.label, arrayIndex);
+                return question;
+            }
+            
+            // If not, let's advance both indexes
+            arrayIndex += 1;
+            questionIndex += 1;
+        }
+    }
+}
+
 
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
@@ -208,7 +257,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     NSDictionary *questionsDict = [aDict objectForKey:@"questions"];
     NSArray* questionIdsArray = [questionsDict allKeys];
     NSMutableArray *questions = [NSMutableArray array];
-    NSMutableArray *logicItems = [NSMutableArray array];
+    NSMutableDictionary *logicDictionary = [NSMutableDictionary dictionary];
     
     for (NSString* aQuestionId in questionIdsArray)
     {
@@ -262,29 +311,28 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 newPickerEntry.label = anEntryName;
                 
                 NSMutableArray *logicProps = [NSMutableArray array];
-                NSDictionary *logicDict = [anEntryDict objectForKey:@"logic"];
-                for (NSString *aKey in logicDict)
+                NSDictionary *logicData = [anEntryDict objectForKey:@"logic"];
+                for (NSString *aKey in logicData)
                 {
                     LIOSurveyLogicProp *newLogicProp = [[[LIOSurveyLogicProp alloc] init] autorelease];
                     if ([aKey isEqualToString:@"showLogicId"])
                         newLogicProp.propType = LIOSurveyLogicPropTypeShow;
                     
-                    newLogicProp.targetLogicId = [[logicDict objectForKey:aKey] intValue];
+                    newLogicProp.targetLogicId = [[logicData objectForKey:aKey] intValue];
                     
                     [logicProps addObject:newLogicProp];
                     
                     LIOSurveyLogicItem* logicItem = [[[LIOSurveyLogicItem alloc] init] autorelease];
-                    logicItem.targetLogicId = [[logicDict objectForKey:aKey] intValue];
+                    logicItem.targetLogicId = [[logicData objectForKey:aKey] intValue];
                     logicItem.sourceLogicId = newQuestion.logicId;
                     logicItem.sourceAnswerLabel = newPickerEntry.label;
                     logicItem.enabled = NO;
                     logicItem.propType = LIOSurveyLogicPropTypeShow;
                         
-                    [logicItems addObject:logicItem];
+                    [logicDictionary setObject:logicItem forKey:[NSNumber numberWithInt:logicItem.targetLogicId]];
                 }
                 
-                if ([logicProps count])
-                    newPickerEntry.logicProps = logicProps;
+                newPickerEntry.logicProps = logicProps;
                 
                 [entries addObject:newPickerEntry];
             }
@@ -293,7 +341,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             [entries sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
             
             newQuestion.pickerEntries = entries;
-            
             
             if ([newQuestion.pickerEntries count])
                 [questions addObject:newQuestion];
@@ -310,7 +357,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     
     newTemplate.surveyId = idNumber;
     newTemplate.questions = questions;
-    newTemplate.logicItems = logicItems;
+    newTemplate.logicDictionary = logicDictionary;
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)
     {

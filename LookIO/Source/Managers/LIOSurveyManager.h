@@ -12,7 +12,7 @@
 #define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastPreChatSurveyDictKey"
 #define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastPostChatSurveyDictKey"
 
-@class LIOSurveyManager, LIOSurveyTemplate;
+@class LIOSurveyManager, LIOSurveyTemplate, LIOSurveyQuestion;
 
 typedef enum
 {
@@ -35,6 +35,8 @@ typedef enum
 - (BOOL)responsesRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (int)nextQuestionWithResponseRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (int)numberOfQuestionsWithLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (LIOSurveyQuestion*)questionWithLogicForIndex:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
 
 @property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
 @property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
