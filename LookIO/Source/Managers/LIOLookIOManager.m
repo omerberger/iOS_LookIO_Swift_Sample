@@ -841,9 +841,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (void)disconnectAndReset {
-    if (socketConnected)
-        [controlSocket disconnect];
-    [self reset];
+    sessionEnding = YES;
+    userWantsSessionTermination = YES;
+    
+    if (NO == socketConnected)
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self reset];
+        });
+    }
+    else
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            resetAfterDisconnect = YES;
+            [self killConnection];
+        });
+    }
 }
 
 - (void)reset
@@ -1832,6 +1849,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"leave_message"])
         {
+            NSLog(@"Feedback packet is %@", aPacket);
+            
             [altChatViewController forceLeaveMessageScreen];
         }
     }
