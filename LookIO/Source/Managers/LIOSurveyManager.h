@@ -26,6 +26,7 @@ typedef enum
     LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
     NSMutableDictionary *preChatResponses, *postChatResponses;
     int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
+    BOOL preSurveyCompleted;
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
@@ -36,10 +37,12 @@ typedef enum
 - (int)nextQuestionWithResponseRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (int)numberOfQuestionsWithLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
-- (LIOSurveyQuestion*)questionWithLogicForIndex:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (BOOL)shouldShowQuestion:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (int)realIndexWithLogicOfQuestionAtIndex:(int)anIndex forSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 
-@property(nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
-@property(nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
-@property(nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
+@property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
+@property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
+@property (nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
+@property (nonatomic, assign) BOOL preSurveyCompleted;
 
 @end

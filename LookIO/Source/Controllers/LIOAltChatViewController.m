@@ -477,9 +477,8 @@
     
     if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
     {
-        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
-        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
-        if (lastIndexCompleted < finalIndex)
+        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+        if (!surveyManager.preSurveyCompleted)
         {
             dismissalBar.hidden = YES;
             inputBar.hidden = YES;
@@ -563,13 +562,12 @@
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
     {
-        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
-        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
-        if (lastIndexCompleted < finalIndex)
+        if (!surveyManager.preSurveyCompleted)
         {
             surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
             surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
             surveyViewPre.headerString = surveyManager.preChatHeader;
+            int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
             if (lastIndexCompleted == -1)
                 surveyViewPre.currentQuestionIndex = lastIndexCompleted;
             else
@@ -1999,22 +1997,33 @@
 -(void)surveyViewDidFinish:(LIOSurveyViewPre *)aView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
+    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+    surveyManager.preSurveyCompleted = YES;
+    
     // Collect responses for submission.
-    NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
+    NSMutableArray* questionsArray = [NSMutableArray array];
+    
     for (int i=0; i<[aView.currentSurvey.questions count]; i++)
     {
-        NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
+        // Only send answers for questions that should be visible according to the current logic
+        if ([surveyManager shouldShowQuestion:i surveyType:LIOSurveyManagerSurveyTypePre]) {
+            NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
 
-        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aView.currentSurvey.questions objectAtIndex:i];
-        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
-        if (aResponse != nil)
-            [questionDict setObject:aResponse forKey:@"answer"];
-        [finalDict setObject:questionDict forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aView.currentSurvey.questions objectAtIndex:i];
+            [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
+
+            id aResponse = [surveyManager answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
+            if (aResponse != nil)
+                [questionDict setObject:aResponse forKey:@"answer"];
+
+            [questionsArray addObject:questionDict];
+        }
 
     }
+    
     NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
     [surveyDict setObject:aView.currentSurvey.surveyId forKey:@"id"];
-    [surveyDict setObject:finalDict forKey:@"questions"];
+    [surveyDict setObject:questionsArray forKey:@"questions"];
     NSLog(@"Response dict is %@", surveyDict);
     [delegate altChatViewController:self didFinishSurveyWithResponses:surveyDict];
 

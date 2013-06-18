@@ -10,14 +10,14 @@
 
 @implementation LIOSurveyTemplate
 
-@synthesize headerString, questions, surveyId, logicItems;
+@synthesize headerString, questions, surveyId, logicDictionary;
 
 - (void)dealloc
 {
     [surveyId release];
     [headerString release];
     [questions release];
-    [logicItems release];
+    [logicDictionary release];
     
     [super dealloc];
 }

@@ -13,12 +13,12 @@
     int order;
     BOOL initiallyChecked;
     NSString *label;
-    NSArray *logicProps;
+    NSArray *logicItems;
 }
 
 @property int order;
 @property(nonatomic, assign) BOOL initiallyChecked;
 @property(nonatomic, retain) NSString *label;
-@property(nonatomic, retain) NSArray *logicProps;
+@property(nonatomic, retain) NSArray *logicItems;
 
 @end

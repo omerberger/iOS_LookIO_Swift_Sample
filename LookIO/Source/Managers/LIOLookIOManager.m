@@ -852,6 +852,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+    [LIOSurveyManager sharedSurveyManager].preSurveyCompleted = NO;
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
@@ -1450,9 +1451,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (surveyManager.preChatTemplate && surveyEnabled)
     {
-        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
-        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
-        if (lastIndexCompleted < finalIndex)
+        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+        if (!surveyManager.preSurveyCompleted)
         {
             [self showChatAnimated:YES];
             return;

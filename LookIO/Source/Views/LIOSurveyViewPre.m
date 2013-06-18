@@ -106,8 +106,11 @@
     pageControlFrame.size.height = 20.0;
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
-    pageControl.numberOfPages = [currentSurvey.questions count] + 1;
-    pageControl.currentPage = currentQuestionIndex + 1;
+    pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+        pageControl.currentPage = 0;
+    else
+        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
     [self addSubview:pageControl];
     [pageControl release];
     
@@ -596,43 +599,71 @@
         [self bounceViewRight];
         return;
     } else {
-        if (currentQuestionIndex == numberOfQuestions - 1) {
-            pageControl.alpha = 0.0;
-            [delegate surveyViewDidFinish:self];
-        } else {
-            currentQuestionIndex += 1;
-            
-            if (validationView) {
-                [validationTimer stopTimer];
-                [self validationTimerDidFire];
+        BOOL foundNextPage = NO;
+        
+        while (!foundNextPage) {
+            // If we're at the last question, finish the survey
+            if (currentQuestionIndex == numberOfQuestions - 1) {
+                pageControl.alpha = 0.0;
+                [delegate surveyViewDidFinish:self];
+                return;
             }
             
-            UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
-            nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
-            [self addSubview:nextQuestionScrollView];
-            [self setNeedsLayout];
-            
-            isAnimating = YES;
-            [UIView animateWithDuration:0.3 animations:^{
-                [currentScrollView endEditing:YES];
-                
-                nextQuestionScrollView.transform = CGAffineTransformIdentity;
-                currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
-                pageControl.currentPage += 1;
-                
-            } completion:^(BOOL finished) {
-                [currentScrollView removeFromSuperview];
-                currentScrollView = nextQuestionScrollView;
-                
-                isAnimating = NO;
-            }];
+            // Mode to the next question, but check if we should show it taking into account logic issues
+            currentQuestionIndex += 1;
+            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:LIOSurveyManagerSurveyTypePre])
+                foundNextPage = YES;
         }
+
+
+        if (validationView) {
+            [validationTimer stopTimer];
+            [self validationTimerDidFire];
+        }
+            
+        UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
+        nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
+        [self addSubview:nextQuestionScrollView];
+        [self setNeedsLayout];
+            
+        isAnimating = YES;
+        [UIView animateWithDuration:0.3 animations:^{
+            [currentScrollView endEditing:YES];
+                
+            nextQuestionScrollView.transform = CGAffineTransformIdentity;
+            currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
+
+            pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+        } completion:^(BOOL finished) {
+            [currentScrollView removeFromSuperview];
+            currentScrollView = nextQuestionScrollView;
+                
+            isAnimating = NO;
+        }];
     }
 }
 
 -(void)switchToPreviousQuestion {
-    currentQuestionIndex -= 1;
+    BOOL foundPreviousPage = NO;
     
+    while (!foundPreviousPage) {
+        // If we're at the intro screen, just bounce the screen
+        if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
+            [self bounceViewLeft];
+            return;
+        }
+        
+        // Mode to the previous question, but check if we should show it taking into account logic issues
+        currentQuestionIndex -= 1;
+        
+        if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+            foundPreviousPage = YES;
+        else
+            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:LIOSurveyManagerSurveyTypePre])
+                foundPreviousPage = YES;
+    }
+
     UIScrollView* previousQuestionScrollView;
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex)
@@ -650,7 +681,8 @@
         previousQuestionScrollView.transform = CGAffineTransformIdentity;
         currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
         
-        pageControl.currentPage -= 1;
+        pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
         
         if (validationView) {
             [validationTimer stopTimer];
