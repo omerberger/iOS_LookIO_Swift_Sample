@@ -21,7 +21,7 @@
 - (void)surveyViewDidFinish:(LIOSurveyViewPre *)aView;
 @end
 
-@interface LIOSurveyViewPre : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
+@interface LIOSurveyViewPre : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
 
     id<LIOSurveyViewDelegate> delegate;
 

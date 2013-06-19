@@ -254,23 +254,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 
         // If the question is a target of any logic, it will be in the survey's logic dictionary
         LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
-        if (logicItem) {
-            if (!logicItem.enabled) {
+        if (logicItem)
+            if (!logicItem.enabled)
                 shouldShowQuestion = NO;
-                NSLog(@"Question with logic %d has a DISABLED logic item", question.logicId);
-            } else {
-                NSLog(@"Question with logic %d has an ENABLED logic item", question.logicId);
-            }
-        } else {
-            NSLog(@"Question with logic id %d does not have a logic item", question.logicId);
-        }
 
         if (shouldShowQuestion)
             numberOfQuestions += 1;
     }
 
-    NSLog(@"Number of questions for this logic state is %d", numberOfQuestions);
-    
     return numberOfQuestions;
 }
 

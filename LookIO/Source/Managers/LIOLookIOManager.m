@@ -2274,7 +2274,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSNumber *nextIntervalNumber = [params objectForKey:@"next_interval"];
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
-    
+
     if (surveyEnabled) {
         NSDictionary *surveyDict = [params objectForKey:@"surveys"];
         if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
@@ -2298,9 +2298,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 /*
     NSString* fakePreJSON = @"{\"id\":61454,\"header\":\"To help serve you better, please provide some information before we begin your chat.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"What is your name?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"},\"1338146\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":12,\"label\":\"This is an example of the longest text field question possible, we also need to support this kind of question!\",\"order\":3,\"last_known_value\":\"\"},\"1338142\":{\"type\":\"Dropdown Box\",\"validation_type\":\"alpha_numeric\",\"mandatory\":false,\"logic_id\":6,\"label\":\"What can we help you with today?\",\"order\":4,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"2nd option\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Best option!\":{\"checked\":false,\"order\":3}}},\"1338143\":{\"type\":\"Checkbox\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":7,\"label\":\"Which of these are relevant to you?\",\"order\":5,\"entries\":{\"Option #1\":{\"checked\":false,\"order\":0},\"Option #2\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Option #4\":{\"checked\":false,\"order\":3}}},\"1338144\":{\"type\":\"Radio Button\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":8,\"label\":\"What do you think?\",\"order\":6,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"Option 2\":{\"checked\":false,\"order\":1},\"Option 3\":{\"checked\":false,\"order\":2},\"Option 4\":{\"checked\":false,\"order\":3}}},\"1338145\":{\"type\":\"Radio Button (side by side)\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":9,\"label\":\"Side by side?\",\"order\":7,\"entries\":{\"One\":{\"checked\":false,\"order\":0},\"Two\":{\"checked\":false,\"order\":1},\"Three\":{\"checked\":false,\"order\":2}}}}}";
     
-        NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
-        [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-  */  
+    NSDictionary *preSurvey = [jsonParser objectWithString:fakePreJSON];
+    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+    */
     return resolvedSettings;
 }
 

@@ -544,6 +544,56 @@
     */
 }
 
+-(void)showPreSurveyView {
+    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
+    surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
+    surveyViewPre.headerString = surveyManager.preChatHeader;
+    int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+    if (lastIndexCompleted == -1)
+        surveyViewPre.currentQuestionIndex = lastIndexCompleted;
+    else
+        surveyViewPre.currentQuestionIndex = lastIndexCompleted + 1;
+    surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    surveyViewPre.delegate = self;
+    
+    if (padUI)
+    {
+        UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+        surveyViewPre.frame = controller.view.frame;
+        surveyViewPre.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        controller.view = surveyViewPre;
+        
+        popover = [[UIPopoverController alloc] initWithContentViewController:controller];
+        popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeSurvey;
+        popover.popoverContentSize = CGSizeMake(320.0, 480.0);
+        
+        CGRect aRect;
+        aRect.origin.x = self.view.bounds.size.width;
+        aRect.origin.y = self.view.bounds.size.height * 0.3;
+        aRect.size = CGSizeMake(10, 10);
+        
+        [popover presentPopoverFromRect:aRect
+                                 inView:self.view
+               permittedArrowDirections:UIPopoverArrowDirectionRight
+                               animated:YES];
+        
+    }
+    else
+    {
+        [self.view insertSubview:surveyViewPre belowSubview:headerBar];
+    }
+    
+    [surveyViewPre setupViews];
+    surveyPreInProgress = YES;
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+        [self didRotateFromInterfaceOrientation:0];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -561,58 +611,10 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
-    {
-        if (!surveyManager.preSurveyCompleted)
-        {
-            surveyViewPre = [[LIOSurveyViewPre alloc] initWithFrame:self.view.bounds];
-            surveyViewPre.currentSurvey = surveyManager.preChatTemplate;
-            surveyViewPre.headerString = surveyManager.preChatHeader;
-            int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
-            if (lastIndexCompleted == -1)
-                surveyViewPre.currentQuestionIndex = lastIndexCompleted;
-            else
-                surveyViewPre.currentQuestionIndex = lastIndexCompleted + 1;
-            surveyViewPre.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-            surveyViewPre.delegate = self;
-
-            if (padUI)
-            {
-                UIViewController* controller = [[[UIViewController alloc] init] autorelease];
-                surveyViewPre.frame = controller.view.frame;
-                controller.view = surveyViewPre;
-                
-                popover = [[UIPopoverController alloc] initWithContentViewController:controller];                
-                popover.delegate = self;
-                popover.popoverContentSize = CGSizeMake(320.0, 480.0);
-                
-                UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-                BOOL landscape = UIInterfaceOrientationIsLandscape(actualOrientation);
-
-                CGRect aRect;
-                aRect.origin.x = !landscape ? 590: 850;
-                aRect.origin.y = self.view.frame.size.height;
-                aRect.size = CGSizeMake(10, 10);
-                
-                [popover presentPopoverFromRect:aRect
-                                            inView:self.view
-                        permittedArrowDirections:UIPopoverArrowDirectionDown
-                                        animated:YES];
-
-            }
-            else
-            {
-                [self.view insertSubview:surveyViewPre belowSubview:headerBar];
-            }
-            
-            [surveyViewPre setupViews];
-            surveyPreInProgress = YES;
-            
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
-                [self didRotateFromInterfaceOrientation:0];
-            
+        if (!surveyManager.preSurveyCompleted) {
+            [self showPreSurveyView];
             return;
         }
-    } 
     
     if (leavingMessage)
         return;
@@ -708,7 +710,6 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    BOOL landscape = UIInterfaceOrientationIsLandscape(fromInterfaceOrientation);
 
     if (padUI && popover) {
          if (currentPopoverType == LIOIpadPopoverTypeImagePicker)
@@ -716,6 +717,18 @@
                                      inView:inputBar.attachButton
                    permittedArrowDirections:UIPopoverArrowDirectionDown
                                    animated:YES];
+        
+        if (currentPopoverType == LIOIpadPopoverTypeSurvey) {
+            CGRect aRect;
+            aRect.origin.x = self.view.bounds.size.width;
+            aRect.origin.y = self.view.bounds.size.height * 0.3;
+            aRect.size = CGSizeMake(10, 10);
+            
+            [popover presentPopoverFromRect:aRect
+                                     inView:self.view
+                   permittedArrowDirections:UIPopoverArrowDirectionRight
+                                   animated:YES];
+        }
     }
     
     vertGradient.frame = self.view.bounds;
@@ -728,21 +741,6 @@
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
     
-    if (padUI && surveyPreInProgress) {
-        CGRect aRect;
-        
-        aRect.origin.x = landscape ? 590: 850;
-        aRect.origin.y = self.view.frame.size.height;
-        aRect.size = CGSizeMake(10, 10);
-
-        NSLog(@"View size is %f, %f; positioning z at %f", self.view.frame.size.width, self.view.frame.size.height, aRect.origin.x);
-
-        [popover presentPopoverFromRect:aRect
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionDown
-                               animated:YES];
-    }
-
 }
 
 - (void)rejiggerTableViewFrame
@@ -1095,7 +1093,6 @@
     {
         [self.view endEditing:YES];
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
         currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
@@ -1124,7 +1121,6 @@
         [self.view endEditing:YES];
 
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
-//        popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
         currentPopoverType = LIOIpadPopoverTypeImagePicker;
         [popover presentPopoverFromRect:inputBar.attachButton.bounds
@@ -1732,8 +1728,6 @@
 
 - (void)inputBarView:(LIOInputBarView *)aView didReturnWithText:(NSString *)aString
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
     if ([aString length])
     {
         [delegate altChatViewControllerTypingDidStop:self];
@@ -1932,6 +1926,7 @@
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
 {
     [popover release];
+    currentPopoverType = LIOIpadPopoverTypeNone;
     popover = nil;
     
     if (surveyPreInProgress && surveyViewPre) {
@@ -1971,6 +1966,7 @@
     [self.view endEditing:YES];
     
     if (padUI) {
+        currentPopoverType = LIOIpadPopoverTypeNone;
         [popover dismissPopoverAnimated:YES];
         [UIView animateWithDuration:0.5 animations:^{
             dismissalBar.alpha = 1.0;
@@ -2037,6 +2033,7 @@
     [self reloadMessages];
     
     if (padUI) {
+        currentPopoverType = LIOIpadPopoverTypeNone;
         [popover dismissPopoverAnimated:YES];
 
         dismissalBar.alpha = 1.0;

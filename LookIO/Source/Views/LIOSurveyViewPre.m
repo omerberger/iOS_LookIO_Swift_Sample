@@ -29,6 +29,7 @@
 #define LIOSurveyViewPreTableViewTag           1004
 #define LIOSurveyViewPreButtonTag              1005
 #define LIOSurveyViewPreTableCellBackgroundTag 1006
+#define LIOSurveyViewTableCellLabelTag         1007
 
 #define LIOSurveyViewPreIntroHeaderLabel       1007
 #define LIOSurveyViewPreIntroRequiredLabel     1008
@@ -88,8 +89,6 @@
     tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
     [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
     
-    NSLog(@"Current question index is %d", currentQuestionIndex);
-    
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex)
         currentScrollView = [self scrollViewForIntroView];
     else
@@ -140,8 +139,6 @@
             [self rejiggerSurveyScrollView:currentScrollView];
     }
     
-    NSLog(@"Keyboard height is %f", keyboardHeight);
-    
     CGRect pageControlFrame = pageControl.frame;
     if (padUI)
         pageControlFrame.origin.y = self.bounds.size.height - 20.0;
@@ -174,7 +171,7 @@
     headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     headerLabel.backgroundColor = [UIColor clearColor];
     headerLabel.textColor = [UIColor whiteColor];
-    headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:18.0];
+    headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
     headerLabel.numberOfLines = 0;
     headerLabel.text = headerString;
     headerLabel.textAlignment = UITextAlignmentCenter;
@@ -201,10 +198,12 @@
     
     UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
     UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-    UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
+    UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
     [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
     [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
-    nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
+    nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+    nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:@"Next" forState:UIControlStateNormal];
     nextButton.tag = LIOSurveyViewPreIntroNextButton;
@@ -213,10 +212,12 @@
 
     UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
     UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-    UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
+    UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
     [cancelButton setBackgroundImage:stretchableCancelButtonImage forState:UIControlStateNormal];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-    cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
+    cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    cancelButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+    cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
     cancelButton.tag = LIOSurveyViewPreIntroCancelButton;
@@ -253,20 +254,19 @@
     aFrame.size.height = expectedLabelSize.height;
     requiredLabel.frame = aFrame;
     
-    UIButton* nextButton = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroNextButton];
-    
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 20;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
-    aFrame.size.height = 53.0;
+    UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroNextButton];
+    aFrame.origin.x = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin - 92.0;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 44.0;
     nextButton.frame = aFrame;
     
-    UIButton* cancelButton = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroCancelButton];
+    UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroCancelButton];
     
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = nextButton.frame.origin.y + nextButton.frame.size.height + 20;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
-    aFrame.size.height = 53.0;
+    aFrame.origin.x = 2*LIOSurveyViewPreSideMargin;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 44.0;
     cancelButton.frame = aFrame;
 }
 
@@ -301,7 +301,7 @@
     questionLabel.layer.shadowOpacity = 1.0;
     questionLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     questionLabel.backgroundColor = [UIColor clearColor];
-    questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:18.0];
+    questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
     questionLabel.textColor = [UIColor whiteColor];
     questionLabel.numberOfLines = 0;
     questionLabel.text = question.label;
@@ -313,7 +313,7 @@
     
     if (LIOSurveyQuestionDisplayTypeText == question.displayType) {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableWhiteTextField"];
-        UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:1 topCapHeight:0];
+        UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         
         UIImageView *fieldBackground = [[[UIImageView alloc] initWithImage:stretchableFieldImage] autorelease];
         fieldBackground.tag = LIOSurveyViewPreInputBackgroundTag;
@@ -326,7 +326,7 @@
         inputField.delegate = self;
         inputField.backgroundColor = [UIColor clearColor];
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        inputField.font = [UIFont fontWithName:@"HelveticaNeue" size:18.0];
+        inputField.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
         inputField.textColor = [UIColor colorWithWhite:0.44 alpha:1.0];
         inputField.autocorrectionType = UITextAutocorrectionTypeNo;
         if (currentQuestionIndex == numberOfQuestions - 1)
@@ -378,6 +378,9 @@
     if (LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) {
         UITableView* tableView = [[UITableView alloc]
                                   initWithFrame:CGRectZero style:UITableViewStylePlain];
+        CGFloat tableViewContentHeight = [self heightForTableView:tableView];
+        tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
+        
         tableView.tag = LIOSurveyViewPreTableViewTag;
         tableView.delegate = self;
         tableView.dataSource = self;
@@ -392,10 +395,13 @@
         UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         nextButton.tag = LIOSurveyViewPreButtonTag;
         UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:2 topCapHeight:0];
+        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+        nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
         [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
-        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:20.0];
+        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         if (currentQuestionIndex == numberOfQuestions - 1)
             [nextButton setTitle:@"Done" forState:UIControlStateNormal];
@@ -471,15 +477,15 @@
         aFrame = fieldBackground.frame;
         aFrame.origin.x = 10.0;
         aFrame.size.width = self.bounds.size.width - 20.0;
-        aFrame.size.height = landscape ? 40.0 : 48.0;
-        aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0;
+        aFrame.size.height = landscape ? 43.0 : 43.0;
+        aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
         fieldBackground.frame = aFrame;
     }
     
     UITextField* inputField = (UITextField*)[scrollView viewWithTag:LIOSurveyViewPreInputTextFieldTag];
     if (inputField) {
         aFrame.origin.x = 15.0;
-        aFrame.origin.y = landscape ? 8.0 : 12.0;
+        aFrame.origin.y = landscape ? 10.0 : 10.0;
         aFrame.size.width = fieldBackground.frame.size.width - 20.0;
         aFrame.size.height = 28.0;
         inputField.frame = aFrame;
@@ -490,14 +496,15 @@
         aSize.height = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 30.0;
         scrollView.contentSize = aSize;
         
-        NSLog(@"Scroll view size is %f, %f and content size is %f, %f", scrollView.frame.size.width, scrollView.frame.size.height, aSize.width, aSize.height);
-        
     }
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewPreTableViewTag];
     if (tableView) {
-        CGFloat tableViewContentHeight = [self tableView:tableView heightForRowAtIndexPath:0]*[self tableView:tableView numberOfRowsInSection:0];
-        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 60.0;
+        [tableView reloadData];
+
+        CGFloat tableViewContentHeight = [self heightForTableView:tableView];
+        
+        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 50.0;
         if (tableViewContentHeight > maxHeight) {
             tableView.scrollEnabled = YES;
             tableViewContentHeight = maxHeight;
@@ -505,16 +512,26 @@
             tableView.scrollEnabled = NO;
         }
     
-        tableView.frame = CGRectMake(9.0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.bounds.size.width - 18.0, tableViewContentHeight);
-    
+        tableView.frame = CGRectMake(15.0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.bounds.size.width - 34.0, tableViewContentHeight);
+        
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreButtonTag];
-        aFrame.origin.x = (self.bounds.size.width - (302.0))/2.0;
+        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewPreSideMargin*2 - 92.0;
         aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
-        aFrame.size.width = 302.0;
-        aFrame.size.height = 53.0;
+        aFrame.size.width = 92.0;
+        aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
     }
 
+}
+
+-(CGFloat)heightForTableView:(UITableView*)tableView {
+    CGFloat tableViewContentHeight = 0.0;
+    int numberOfTableRows = [self tableView:tableView numberOfRowsInSection:0];
+    for (int i=0; i<numberOfTableRows; i++) {
+        tableViewContentHeight += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
+    }
+    
+    return tableViewContentHeight;
 }
 
 #pragma mark
@@ -822,7 +839,8 @@
     }
     else 
     {
-        if (currentQuestion.mandatory && 0 == [selectedIndices count])
+        // We have to make an exception for checkbox type questions, because they can be submitted without an answer
+        if (currentQuestion.mandatory && 0 == [selectedIndices count] && currentQuestion.displayType != LIOSurveyQuestionDisplayTypeMultiselect)
         {
             [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
             return NO;
@@ -863,7 +881,12 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 55;
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
+    
+    CGSize expectedSize = [entry.label sizeWithFont:[UIFont fontWithName:@"HelveticaNeue" size:17.0] constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    
+    return expectedSize.height + 33.0;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -879,8 +902,14 @@
     if (cell == nil) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
 
-        cell.textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:18.0];
-        cell.textLabel.textColor = [UIColor colorWithWhite:0.43 alpha:1.0];
+        UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
+        textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+        textLabel.textColor = [UIColor blackColor];
+        textLabel.backgroundColor = [UIColor clearColor];
+        textLabel.tag = LIOSurveyViewTableCellLabelTag;
+        [cell.contentView addSubview:textLabel];
+        [textLabel release];
+        
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         
         UIImageView* backgroundImageView = [[UIImageView alloc] initWithFrame:CGRectMake(9.0, 0, tableView.bounds.size.width - 20.0, 55.0)];
@@ -895,21 +924,28 @@
     
     UIImageView* backgroundImageView = (UIImageView*)cell.backgroundView;
 
-
     UIImage *backgroundImage;
     if (indexPath.row == 0) {
-        backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableTopCell"];
+        if ([self tableView:tableView numberOfRowsInSection:0] == 1)
+            backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableSingleCell"];
+        else
+            backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableTopCell"];
     } else {
         if (indexPath.row == question.pickerEntries.count - 1)
             backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableBottomCell"];
         else
             backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableMiddleCell"];
     }
-    UIImage *stretchableBackgroundImage = [backgroundImage stretchableImageWithLeftCapWidth:5 topCapHeight:55];
+    UIImage *stretchableBackgroundImage = [backgroundImage stretchableImageWithLeftCapWidth:142 topCapHeight:10];
     backgroundImageView.image = stretchableBackgroundImage;
-    
-    cell.textLabel.text = pickerEntry.label;
-    cell.textLabel.font = [UIFont systemFontOfSize:16.0];
+
+    UILabel* textLabel = (UILabel*)[cell.contentView viewWithTag:LIOSurveyViewTableCellLabelTag];
+    textLabel.text = pickerEntry.label;
+    textLabel.numberOfLines = 0;
+    CGSize expectedSize = [pickerEntry.label sizeWithFont:textLabel.font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    CGRect aFrame = textLabel.frame;
+    aFrame.size = expectedSize;
+    textLabel.frame = aFrame;
     
     BOOL isRowSelected = NO;
         
