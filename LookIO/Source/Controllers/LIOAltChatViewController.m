@@ -483,6 +483,16 @@
             dismissalBar.hidden = YES;
             inputBar.hidden = YES;
             tableView.hidden = YES;
+            
+            UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+
+            CGRect headerFrame = headerBar.frame;
+            if (UIInterfaceOrientationIsLandscape(actualOrientation))
+                headerFrame.origin.y = -headerFrame.size.height;
+            else
+                headerFrame.origin.y = 0;
+            headerBar.frame = headerFrame;
+
         }
     }
     

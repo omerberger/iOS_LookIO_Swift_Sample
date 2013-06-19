@@ -11,21 +11,23 @@
 // User defaults keys
 #define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastPreChatSurveyDictKey"
 #define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastPostChatSurveyDictKey"
+#define LIOSurveyManagerLastKnownOfflineSurveyDictKey  @"LIOSurveyManagerLastOfflineSurveyDictKey"
 
 @class LIOSurveyManager, LIOSurveyTemplate, LIOSurveyQuestion;
 
 typedef enum
 {
     LIOSurveyManagerSurveyTypePre,
-    LIOSurveyManagerSurveyTypePost
+    LIOSurveyManagerSurveyTypePost,
+    LIOSurveyManagerSurveyTypeOffline
 } LIOSurveyManagerSurveyType;
 
 @interface LIOSurveyManager : NSObject
 {
-    NSString *preChatHeader, *postChatHeader;
-    LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
-    NSMutableDictionary *preChatResponses, *postChatResponses;
-    int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
+    NSString *preChatHeader, *postChatHeader, *offlineHeader;
+    LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;
+    NSMutableDictionary *preChatResponses, *postChatResponses, *offlineResponses;
+    int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
     BOOL preSurveyCompleted;
 }
 
@@ -40,9 +42,9 @@ typedef enum
 - (BOOL)shouldShowQuestion:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (int)realIndexWithLogicOfQuestionAtIndex:(int)anIndex forSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 
-@property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader;
-@property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate;
-@property (nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost;
+@property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader, *offlineHeader;
+@property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;
+@property (nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
 @property (nonatomic, assign) BOOL preSurveyCompleted;
 
 @end

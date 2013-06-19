@@ -23,6 +23,10 @@
 #define LIOSurveyViewPreSideMargin            10.0
 #define LIOSurveyViewPrePageControlOriginY    265.0
 
+#define LIOSurveyViewPreIntroButtonMargin          15.0
+#define LIOSurveyViewPreIntroTopMarginPortrait     90.0
+#define LIOSurveyViewPreIntroTopMarginLandscape    50.0
+
 #define LIOSurveyViewPreTitleLabelTag          1001
 #define LIOSurveyViewPreInputTextFieldTag      1002
 #define LIOSurveyViewPreInputBackgroundTag     1003
@@ -211,7 +215,7 @@
     [nextButton release];
 
     UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
-    UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+    UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRedButton"];
     UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
     [cancelButton setBackgroundImage:stretchableCancelButtonImage forState:UIControlStateNormal];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -239,7 +243,7 @@
     UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroHeaderLabel];
 
     aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = landscape ? LIOSurveyViewPreTopMarginLandscape : LIOSurveyViewPreTopMarginPortrait;
+    aFrame.origin.y = landscape ? LIOSurveyViewPreIntroTopMarginLandscape : LIOSurveyViewPreIntroTopMarginPortrait;
     aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
@@ -255,7 +259,7 @@
     requiredLabel.frame = aFrame;
     
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroNextButton];
-    aFrame.origin.x = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin - 92.0;
+    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewPreIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -263,7 +267,7 @@
     
     UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroCancelButton];
     
-    aFrame.origin.x = 2*LIOSurveyViewPreSideMargin;
+    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewPreIntroButtonMargin - 92.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -319,6 +323,7 @@
         fieldBackground.tag = LIOSurveyViewPreInputBackgroundTag;
         fieldBackground.userInteractionEnabled = YES;
         fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        fieldBackground.alpha = 0.85;
         [scrollView addSubview:fieldBackground];
         
         UITextField *inputField = [[[UITextField alloc] init] autorelease];
@@ -327,7 +332,7 @@
         inputField.backgroundColor = [UIColor clearColor];
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         inputField.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        inputField.textColor = [UIColor colorWithWhite:0.44 alpha:1.0];
+        inputField.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         inputField.autocorrectionType = UITextAutocorrectionTypeNo;
         if (currentQuestionIndex == numberOfQuestions - 1)
             inputField.returnKeyType = UIReturnKeyDone;
@@ -699,7 +704,11 @@
         currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
         
         pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
-        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+
+        if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+            pageControl.currentPage = 0;
+        else
+            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
         
         if (validationView) {
             [validationTimer stopTimer];
@@ -904,7 +913,7 @@
 
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
         textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        textLabel.textColor = [UIColor blackColor];
+        textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         textLabel.backgroundColor = [UIColor clearColor];
         textLabel.tag = LIOSurveyViewTableCellLabelTag;
         [cell.contentView addSubview:textLabel];
