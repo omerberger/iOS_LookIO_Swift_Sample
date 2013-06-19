@@ -1,5 +1,5 @@
 //
-//  LIOPreSurveyView.h
+//  LIOSurveyView.h
 //  LookIO
 //
 //  Created by Yaron Karasik on 5/30/13.
@@ -10,19 +10,19 @@
 #import "LIOSurveyManager.h"
 
 @class LIOSurveyTemplate;
-@class LIOSurveyViewPre;
+@class LIOSurveyView;
 @class LIOSurveyValidationView;
 @class LIOTimerProxy;
 @class LIOHeaderBarView;
 @protocol LIOSurveyValidationViewDelegate;
 
 @protocol LIOSurveyViewDelegate
-- (BOOL)surveyView:(LIOSurveyViewPre*)aView shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-- (void)surveyViewDidCancel:(LIOSurveyViewPre *)aView;
-- (void)surveyViewDidFinish:(LIOSurveyViewPre *)aView;
+- (BOOL)surveyView:(LIOSurveyView*)aView shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (void)surveyViewDidCancel:(LIOSurveyView *)aView;
+- (void)surveyViewDidFinish:(LIOSurveyView *)aView;
 @end
 
-@interface LIOSurveyViewPre : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
+@interface LIOSurveyView : UIView <UITextFieldDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
 
     id<LIOSurveyViewDelegate> delegate;
 
@@ -53,6 +53,7 @@
 @property (nonatomic, retain) LIOSurveyTemplate* currentSurvey;
 @property (nonatomic, copy) NSString* headerString;
 @property (nonatomic, assign) int currentQuestionIndex;
+@property (nonatomic, assign) LIOSurveyManagerSurveyType currentSurveyType;
 
 - (void)setupViews;
 - (id)initWithFrame:(CGRect)frame;

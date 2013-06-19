@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyViewPre;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
 @class LIOTimerProxy;
 
 @protocol LIOInputBarViewDelegate;
@@ -89,8 +89,8 @@
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
     
-    LIOSurveyViewPre* surveyViewPre;
-    BOOL surveyPreInProgress;
+    LIOSurveyView* surveyView;
+    BOOL surveyInProgress;
 
     int currentPopoverType;
     

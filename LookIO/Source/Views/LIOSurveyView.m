@@ -1,12 +1,12 @@
 //
-//  LIOPreSurveyView.m
+//  LIOSurveyView.m
 //  LookIO
 //
 //  Created by Yaron Karasik on 5/30/13.
 //
 //
 
-#import "LIOSurveyViewPre.h"
+#import "LIOSurveyView.h"
 #import "LIOSurveyManager.h"
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyQuestion.h"
@@ -44,9 +44,9 @@
 
 #define LIOIndexForSurveyIntroPage  -1
 
-@implementation LIOSurveyViewPre
+@implementation LIOSurveyView
 
-@synthesize delegate, currentSurvey, headerString, currentQuestionIndex;
+@synthesize delegate, currentSurvey, headerString, currentQuestionIndex,currentSurveyType;
 
 #pragma mark
 #pragma mark Initial setup methods
