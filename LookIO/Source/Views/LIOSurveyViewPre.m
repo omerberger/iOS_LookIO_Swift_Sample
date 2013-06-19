@@ -17,28 +17,28 @@
 #import "LIOHeaderBarView.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define LIOSurveyViewPrePageControlHeight     15.0
-#define LIOSurveyViewPreTopMarginPortrait     70.0
-#define LIOSurveyViewPreTopMarginLandscape    10.0
-#define LIOSurveyViewPreSideMargin            10.0
-#define LIOSurveyViewPrePageControlOriginY    265.0
+#define LIOSurveyViewPageControlHeight          15.0
+#define LIOSurveyViewTopMarginPortrait          70.0
+#define LIOSurveyViewTopMarginLandscape         10.0
+#define LIOSurveyViewSideMargin                 10.0
+#define LIOSurveyViewPageControlOriginY         265.0
 
-#define LIOSurveyViewPreIntroButtonMargin          15.0
-#define LIOSurveyViewPreIntroTopMarginPortrait     90.0
-#define LIOSurveyViewPreIntroTopMarginLandscape    50.0
+#define LIOSurveyViewIntroButtonMargin          15.0
+#define LIOSurveyViewIntroTopMarginPortrait     90.0
+#define LIOSurveyViewIntroTopMarginLandscape    50.0
 
-#define LIOSurveyViewPreTitleLabelTag          1001
-#define LIOSurveyViewPreInputTextFieldTag      1002
-#define LIOSurveyViewPreInputBackgroundTag     1003
-#define LIOSurveyViewPreTableViewTag           1004
-#define LIOSurveyViewPreButtonTag              1005
-#define LIOSurveyViewPreTableCellBackgroundTag 1006
-#define LIOSurveyViewTableCellLabelTag         1007
+#define LIOSurveyViewTitleLabelTag              1001
+#define LIOSurveyViewInputTextFieldTag          1002
+#define LIOSurveyViewInputBackgroundTag         1003
+#define LIOSurveyViewTableViewTag               1004
+#define LIOSurveyViewButtonTag                  1005
+#define LIOSurveyViewTableCellBackgroundTag     1006
+#define LIOSurveyViewTableCellLabelTag          1007
 
-#define LIOSurveyViewPreIntroHeaderLabel       1007
-#define LIOSurveyViewPreIntroRequiredLabel     1008
-#define LIOSurveyViewPreIntroNextButton        1009
-#define LIOSurveyViewPreIntroCancelButton      1010
+#define LIOSurveyViewIntroHeaderLabel        1007
+#define LIOSurveyViewIntroRequiredLabel      1008
+#define LIOSurveyViewIntroNextButton         1009
+#define LIOSurveyViewIntroCancelButton       1010
 
 #define LIOSurveyViewControllerValidationDuration 5.0
 
@@ -109,11 +109,11 @@
     pageControlFrame.size.height = 20.0;
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
-    pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+    pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
         pageControl.currentPage = 0;
     else
-        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
     [self addSubview:pageControl];
     [pageControl release];
     
@@ -180,7 +180,7 @@
     headerLabel.text = headerString;
     headerLabel.textAlignment = UITextAlignmentCenter;
     headerLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    headerLabel.tag = LIOSurveyViewPreIntroHeaderLabel;
+    headerLabel.tag = LIOSurveyViewIntroHeaderLabel;
     [scrollView addSubview:headerLabel];
     [headerLabel release];
     
@@ -196,7 +196,7 @@
     requiredLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
     requiredLabel.textAlignment = UITextAlignmentCenter;
     requiredLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    requiredLabel.tag = LIOSurveyViewPreIntroRequiredLabel;
+    requiredLabel.tag = LIOSurveyViewIntroRequiredLabel;
     [scrollView addSubview:requiredLabel];
     [requiredLabel release];
     
@@ -210,7 +210,7 @@
     nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:@"Next" forState:UIControlStateNormal];
-    nextButton.tag = LIOSurveyViewPreIntroNextButton;
+    nextButton.tag = LIOSurveyViewIntroNextButton;
     [scrollView addSubview:nextButton];
     [nextButton release];
 
@@ -224,7 +224,7 @@
     cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
-    cancelButton.tag = LIOSurveyViewPreIntroCancelButton;
+    cancelButton.tag = LIOSurveyViewIntroCancelButton;
     [scrollView addSubview:cancelButton];
     [cancelButton release];
     
@@ -240,34 +240,34 @@
     
     CGRect aFrame;
     
-    UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroHeaderLabel];
+    UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
 
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
-    aFrame.origin.y = landscape ? LIOSurveyViewPreIntroTopMarginLandscape : LIOSurveyViewPreIntroTopMarginPortrait;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.y = landscape ? LIOSurveyViewIntroTopMarginLandscape : LIOSurveyViewIntroTopMarginPortrait;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     headerLabel.frame = aFrame;
     
-    UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreIntroRequiredLabel];
+    UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroRequiredLabel];
     
-    aFrame.origin.x = LIOSurveyViewPreSideMargin;
+    aFrame.origin.x = LIOSurveyViewSideMargin;
     aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewPreSideMargin;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
     expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     requiredLabel.frame = aFrame;
     
-    UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroNextButton];
-    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewPreIntroButtonMargin;
+    UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
+    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
     nextButton.frame = aFrame;
     
-    UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreIntroCancelButton];
+    UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
     
-    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewPreIntroButtonMargin - 92.0;
+    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -299,7 +299,7 @@
     [dismissBackgroundView release];
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    questionLabel.tag = LIOSurveyViewPreTitleLabelTag;
+    questionLabel.tag = LIOSurveyViewTitleLabelTag;
     questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     questionLabel.layer.shadowRadius = 1.0;
     questionLabel.layer.shadowOpacity = 1.0;
@@ -320,14 +320,14 @@
         UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         
         UIImageView *fieldBackground = [[[UIImageView alloc] initWithImage:stretchableFieldImage] autorelease];
-        fieldBackground.tag = LIOSurveyViewPreInputBackgroundTag;
+        fieldBackground.tag = LIOSurveyViewInputBackgroundTag;
         fieldBackground.userInteractionEnabled = YES;
         fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         fieldBackground.alpha = 0.85;
         [scrollView addSubview:fieldBackground];
         
         UITextField *inputField = [[[UITextField alloc] init] autorelease];
-        inputField.tag = LIOSurveyViewPreInputTextFieldTag;
+        inputField.tag = LIOSurveyViewInputTextFieldTag;
         inputField.delegate = self;
         inputField.backgroundColor = [UIColor clearColor];
         inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -363,7 +363,7 @@
         }
         
         // If the user has answered this survey, we should display their answer        
-        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
         if (aResponse && [aResponse isKindOfClass:[NSString class]])
         {
             NSString *responseString = (NSString *)aResponse;
@@ -386,7 +386,7 @@
         CGFloat tableViewContentHeight = [self heightForTableView:tableView];
         tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
         
-        tableView.tag = LIOSurveyViewPreTableViewTag;
+        tableView.tag = LIOSurveyViewTableViewTag;
         tableView.delegate = self;
         tableView.dataSource = self;
         tableView.backgroundColor = [UIColor clearColor];
@@ -398,7 +398,7 @@
         [tableView release];
         
         UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        nextButton.tag = LIOSurveyViewPreButtonTag;
+        nextButton.tag = LIOSurveyViewButtonTag;
         UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
         UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
@@ -419,7 +419,7 @@
         
         // If the user has answered this survey, we should display their answer
 
-        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:index];
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
         if (aResponse) {
             NSMutableArray* answersArray;
             
@@ -467,17 +467,17 @@
         currentScrollView.frame = aFrame;
     }
 
-    UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewPreTitleLabelTag];
+    UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewTitleLabelTag];
     if (questionLabel) {
-        aFrame.origin.x = LIOSurveyViewPreSideMargin;
-        aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewPreTopMarginLandscape : LIOSurveyViewPreTopMarginPortrait;
-        aFrame.size.width = self.bounds.size.width - LIOSurveyViewPreSideMargin*2;
+        aFrame.origin.x = LIOSurveyViewSideMargin;
+        aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
+        aFrame.size.width = self.bounds.size.width - LIOSurveyViewSideMargin*2;
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
         questionLabel.frame = aFrame;
     }
     
-    UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewPreInputBackgroundTag];
+    UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
     if (fieldBackground) {
         aFrame = fieldBackground.frame;
         aFrame.origin.x = 10.0;
@@ -487,7 +487,7 @@
         fieldBackground.frame = aFrame;
     }
     
-    UITextField* inputField = (UITextField*)[scrollView viewWithTag:LIOSurveyViewPreInputTextFieldTag];
+    UITextField* inputField = (UITextField*)[scrollView viewWithTag:LIOSurveyViewInputTextFieldTag];
     if (inputField) {
         aFrame.origin.x = 15.0;
         aFrame.origin.y = landscape ? 10.0 : 10.0;
@@ -503,7 +503,7 @@
         
     }
     
-    UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewPreTableViewTag];
+    UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewTableViewTag];
     if (tableView) {
         [tableView reloadData];
 
@@ -519,8 +519,8 @@
     
         tableView.frame = CGRectMake(15.0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.bounds.size.width - 34.0, tableViewContentHeight);
         
-        UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewPreButtonTag];
-        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewPreSideMargin*2 - 92.0;
+        UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
+        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewSideMargin*2 - 92.0;
         aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
@@ -633,7 +633,7 @@
             
             // Mode to the next question, but check if we should show it taking into account logic issues
             currentQuestionIndex += 1;
-            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:LIOSurveyManagerSurveyTypePre])
+            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:currentSurveyType])
                 foundNextPage = YES;
         }
 
@@ -655,8 +655,8 @@
             nextQuestionScrollView.transform = CGAffineTransformIdentity;
             currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
 
-            pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
-            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+            pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
+            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
         } completion:^(BOOL finished) {
             [currentScrollView removeFromSuperview];
             currentScrollView = nextQuestionScrollView;
@@ -682,7 +682,7 @@
         if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
             foundPreviousPage = YES;
         else
-            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:LIOSurveyManagerSurveyTypePre])
+            if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:currentSurveyType])
                 foundPreviousPage = YES;
     }
 
@@ -703,12 +703,12 @@
         previousQuestionScrollView.transform = CGAffineTransformIdentity;
         currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
         
-        pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+        pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
 
         if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
             pageControl.currentPage = 0;
         else
-            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:LIOSurveyManagerSurveyTypePre] + 1;
+            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
         
         if (validationView) {
             [validationTimer stopTimer];
@@ -787,14 +787,20 @@
     
     if (LIOSurveyQuestionDisplayTypeText == currentQuestion.displayType)
     {
-        UITextField* inputField = (UITextField*)[currentScrollView viewWithTag:LIOSurveyViewPreInputTextFieldTag];
+        UITextField* inputField = (UITextField*)[currentScrollView viewWithTag:LIOSurveyViewInputTextFieldTag];
         NSString* stringResponse = inputField.text;
 
         if (0 == [stringResponse length])
         {
             // An empty response is okay for optional questions.
             if (NO == currentQuestion.mandatory) {
-                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                if (currentSurveyType == LIOSurveyManagerSurveyTypePre)
+                    surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+                    surveyManager.lastCompletedQuestionIndexPost = currentQuestionIndex;
+                if (currentSurveyType == LIOSurveyManagerSurveyTypeOffline)
+                    surveyManager.lastCompletedQuestionIndexOffline = currentQuestionIndex;
+
                 return YES;
             }
             else
@@ -839,8 +845,13 @@
             
             if (validated)
             {
-                [surveyManager registerAnswerObject:stringResponse forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
-                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                [surveyManager registerAnswerObject:stringResponse forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
+                if (currentSurveyType == LIOSurveyManagerSurveyTypePre)
+                    surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+                if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+                    surveyManager.lastCompletedQuestionIndexPost = currentQuestionIndex;
+                if (currentSurveyType == LIOSurveyManagerSurveyTypeOffline)
+                    surveyManager.lastCompletedQuestionIndexOffline = currentQuestionIndex;
                 return YES;
             } else
                 return NO;
@@ -862,7 +873,7 @@
                     LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
                     [selectedAnswers addObject:selectedPickerEntry.label];
                 }
-                [surveyManager registerAnswerObject:selectedAnswers forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+                [surveyManager registerAnswerObject:selectedAnswers forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
 
             }
             
@@ -870,11 +881,16 @@
                 if (selectedIndices.count == 1) {
                     NSIndexPath* indexPath = (NSIndexPath*)[selectedIndices objectAtIndex:0];
                     LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
-                    [surveyManager registerAnswerObject:selectedPickerEntry.label forSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:currentQuestionIndex];
+                    [surveyManager registerAnswerObject:selectedPickerEntry.label forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
                 }                    
             }
             
-            surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+            if (currentSurveyType == LIOSurveyManagerSurveyTypePre)
+                surveyManager.lastCompletedQuestionIndexPre = currentQuestionIndex;
+            if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+                surveyManager.lastCompletedQuestionIndexPost = currentQuestionIndex;
+            if (currentSurveyType == LIOSurveyManagerSurveyTypeOffline)
+                surveyManager.lastCompletedQuestionIndexOffline = currentQuestionIndex;
             return YES;
         }
     }
@@ -934,7 +950,7 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         
         UIImageView* backgroundImageView = [[UIImageView alloc] initWithFrame:CGRectMake(9.0, 0, tableView.bounds.size.width - 20.0, 55.0)];
-        backgroundImageView.tag = LIOSurveyViewPreTableCellBackgroundTag;
+        backgroundImageView.tag = LIOSurveyViewTableCellBackgroundTag;
         backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         cell.backgroundView = backgroundImageView;
         [backgroundImageView release];

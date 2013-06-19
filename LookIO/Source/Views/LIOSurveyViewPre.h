@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOSurveyManager.h"
 
 @class LIOSurveyTemplate;
 @class LIOSurveyViewPre;
@@ -26,6 +27,7 @@
     id<LIOSurveyViewDelegate> delegate;
 
     LIOSurveyTemplate *currentSurvey;
+    LIOSurveyManagerSurveyType currentSurveyType;
     NSString *headerString;
     int currentQuestionIndex, nextQuestionIndex;
     NSMutableArray* selectedIndices;
