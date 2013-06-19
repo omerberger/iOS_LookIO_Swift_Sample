@@ -890,10 +890,22 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    BOOL isRowSelected = NO;
+    
+    for (NSIndexPath* selectedIndexPath in selectedIndices) {
+        if (indexPath.row == selectedIndexPath.row) {
+            isRowSelected = YES;
+        }
+    }
+
+    UIFont* font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+    if (isRowSelected)
+        font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
     
-    CGSize expectedSize = [entry.label sizeWithFont:[UIFont fontWithName:@"HelveticaNeue" size:17.0] constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
     
     return expectedSize.height + 33.0;
 }
@@ -949,6 +961,24 @@
     backgroundImageView.image = stretchableBackgroundImage;
 
     UILabel* textLabel = (UILabel*)[cell.contentView viewWithTag:LIOSurveyViewTableCellLabelTag];
+    
+    BOOL isRowSelected = NO;
+    
+    for (NSIndexPath* selectedIndexPath in selectedIndices) {
+        if (indexPath.row == selectedIndexPath.row) {
+            isRowSelected = YES;
+        }
+    }
+    
+    if (isRowSelected) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    }
+    else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+    }
+
     textLabel.text = pickerEntry.label;
     textLabel.numberOfLines = 0;
     CGSize expectedSize = [pickerEntry.label sizeWithFont:textLabel.font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
@@ -956,22 +986,6 @@
     aFrame.size = expectedSize;
     textLabel.frame = aFrame;
     
-    BOOL isRowSelected = NO;
-        
-    for (NSIndexPath* selectedIndexPath in selectedIndices) {
-        if (indexPath.row == selectedIndexPath.row) {
-            isRowSelected = YES;
-        }
-    }
-        
-    if (isRowSelected) {
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        cell.textLabel.font = [UIFont boldSystemFontOfSize:16.0];
-    }
-    else {
-        cell.accessoryType = UITableViewCellAccessoryNone;
-    }
-
     return cell;
 }
 
@@ -1003,6 +1017,7 @@
     }
     
     [tableView reloadData];
+    [self rejiggerSurveyScrollView:currentScrollView];
 }
 
 #pragma mark
