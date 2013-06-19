@@ -2883,42 +2883,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)customBrandingAvailable
 {
-    return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingViewWithDimensions:)];
+    return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
 }
 
 - (id)brandingViewWithDimensions:(CGSize)aSize
 {
-    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingViewWithDimensions:)])
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)])
     {
-        id aView = [delegate lookIOManager:self brandingViewWithDimensions:aSize];
+        id aView = [delegate lookIOManager:self brandingImageForDimensions:aSize];
         if (aView)
         {
             if ([aView isKindOfClass:[UIImage class]])
             {
                 UIImage *anImage = (UIImage *)aView;
-//                if (NO == CGSizeEqualToSize(anImage.size, aSize))
-//                {
-//                    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"You are using a branding image which is outside of the suggested bounds. Expected: %@. Got: %@.", [NSValue valueWithCGSize:aSize], [NSValue valueWithCGSize:anImage.size]];
-//                }
                 return anImage;
             }
-            else if ([aView isKindOfClass:[UIView class]])
+            else 
             {
-                UIView *lolView = (UIView *)aView;
-                CGRect aFrame = [lolView frame];
-                if (CGSizeEqualToSize(aFrame.size, aSize))
-                {
-                    // Use it!
-                    return lolView;
-                }
-                else
-                {
-                    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"You are using a branded UIView which is outside of the required bounds. %@. Got: %@.", [NSValue valueWithCGSize:aSize], [NSValue valueWithCGSize:lolView.frame.size]];
-                }
-            }
-            else
-            {
-                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Expected either a UIView subclass or a UIImage from \"brandingViewWithDimensions\". Got: \"%@\". Falling back to default branding!", NSStringFromClass([aView class])];
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Expected a UIImage from \"brandingImageForDimensions\". Got: \"%@\". Falling back to default branding!", NSStringFromClass([aView class])];
             }
         }
     }

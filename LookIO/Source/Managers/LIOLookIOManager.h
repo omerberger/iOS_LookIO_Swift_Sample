@@ -35,7 +35,7 @@ extern NSString *const kLPEventAddedToCart;
 - (void)lookIOManagerDidEndChat:(LIOLookIOManager *)aManager;
 - (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 - (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOLookIOManager *)aManager;
-- (id)lookIOManager:(LIOLookIOManager *)aManager brandingViewWithDimensions:(CGSize)dimensions;
+- (UIImage*)lookIOManager:(LIOLookIOManager*)aManager brandingImageForDimensions:(CGSize)dimensions;
 
 // The following delegate methods should only be used when
 // troubleshooting UI / general integration issues.
