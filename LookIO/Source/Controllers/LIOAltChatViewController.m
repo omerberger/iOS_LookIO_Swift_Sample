@@ -41,8 +41,9 @@
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
 
-#define LIOAltChatViewControllerPhotoSourceActionSheetTag 1002
-#define LIOAltChatViewControllerAttachConfirmAlertViewTag 1003
+#define LIOAltChatViewControllerPhotoSourceActionSheetTag        1002
+#define LIOAltChatViewControllerAttachConfirmAlertViewTag        1003
+#define LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag 1004
 
 #define LIOSurveyViewPadding 10.0
 
@@ -2108,19 +2109,36 @@
     
     if (LIOSurveyManagerSurveyTypeOffline == aView.currentSurveyType) {
         [delegate altChatViewController:self didFinishOfflineSurveyWithResponses:surveyDict];
-        [aView endEditing:YES];
         
-        [UIView animateWithDuration:0.3 animations:^{
-            aView.alpha = 0.0;
-            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
-            
-        } completion:^(BOOL finished) {
-            double delayInSeconds = 0.1;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                [delegate altChatViewControllerWantsSessionTermination:self];
-            });
-        }];
+        NSString *titleString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertTitle"];
+        NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertBody"];
+        NSString *buttonString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertButton"];
+        
+        alertView = [[UIAlertView alloc] initWithTitle:titleString
+                                               message:bodyString
+                                              delegate:self
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:buttonString, nil];
+        alertView.tag = LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag;
+        [alertView show];
+        
+        if (surveyView) {
+            [surveyView endEditing:YES];
+
+            if (padUI) {
+                if (popover) {
+                    currentPopoverType = LIOIpadPopoverTypeNone;
+                    [popover dismissPopoverAnimated:YES];
+                }
+            } else {
+                [UIView animateWithDuration:0.3 animations:^{
+                    surveyView.alpha = 0.0;
+                    surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
+                
+                } completion:^(BOOL finished) {
+                }];
+            }
+        }
     }
     
     if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {
@@ -2295,6 +2313,14 @@
             [pendingImageAttachment release];
             pendingImageAttachment = nil;
         }
+    }
+    
+    if (LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag == alertView.tag) {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [delegate altChatViewControllerWantsSessionTermination:self];
+        });
     }
 }
 
