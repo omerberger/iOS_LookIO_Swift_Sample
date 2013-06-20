@@ -102,7 +102,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     for (int i=0; i<aSurvey.questions.count; i++) {
         LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
         
-        if (question.displayType != LIOSurveyQuestionDisplayTypeText) {
+        if (question.displayType == LIOSurveyQuestionDisplayTypeMultiselect || question.displayType == LIOSurveyQuestionDisplayTypePicker ) {
     
             id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:surveyType withQuestionIndex:i];
     
@@ -353,7 +353,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     emailQuestion.logicId = 0;
     emailQuestion.lastKnownValue = @"";
     emailQuestion.label = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyLeaveEmailTitle");
-    emailQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+    emailQuestion.displayType = LIOSurveyQuestionDisplayTypeTextField;
     emailQuestion.validationType = LIOSurveyQuestionValidationTypeEmail;
     
     LIOSurveyQuestion *messageQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
@@ -363,7 +363,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     messageQuestion.logicId = 1;
     messageQuestion.lastKnownValue = @"";
     messageQuestion.label = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyLeaveMessageTitle");
-    messageQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+    messageQuestion.displayType = LIOSurveyQuestionDisplayTypeTextArea;
     emailQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
 
     newTemplate.surveyId = [NSNumber numberWithInt:0];
@@ -457,8 +457,10 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
-        newQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+        newQuestion.displayType = LIOSurveyQuestionDisplayTypeTextField;
 
+        if ([typeString isEqualToString:@"Text Area"])
+            newQuestion.displayType = LIOSurveyQuestionDisplayTypeTextArea;
         if ([typeString isEqualToString:@"Dropdown Box"])
             newQuestion.displayType = LIOSurveyQuestionDisplayTypePicker;
         if ([typeString isEqualToString:@"Radio Button"])

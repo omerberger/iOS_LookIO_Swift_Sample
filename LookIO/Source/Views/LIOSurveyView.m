@@ -34,6 +34,7 @@
 #define LIOSurveyViewButtonTag                  1005
 #define LIOSurveyViewTableCellBackgroundTag     1006
 #define LIOSurveyViewTableCellLabelTag          1007
+#define LIOSurveyViewInputTextViewTag           1008
 
 #define LIOSurveyViewIntroHeaderLabel        1007
 #define LIOSurveyViewIntroRequiredLabel      1008
@@ -315,7 +316,7 @@
     [scrollView addSubview:questionLabel];
     [questionLabel release];
     
-    if (LIOSurveyQuestionDisplayTypeText == question.displayType) {
+    if (LIOSurveyQuestionDisplayTypeTextField == question.displayType) {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableWhiteTextField"];
         UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         
@@ -363,6 +364,71 @@
         }
         
         // If the user has answered this survey, we should display their answer        
+        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
+        if (aResponse && [aResponse isKindOfClass:[NSString class]])
+        {
+            NSString *responseString = (NSString *)aResponse;
+            inputField.text = responseString;
+        }
+        // If user hasn't answered, let's see if there's a last known response to populate
+        else {
+            if (question.lastKnownValue)
+                inputField.text = question.lastKnownValue;
+        }
+        
+        
+        [fieldBackground addSubview:inputField];
+        [inputField becomeFirstResponder];
+    }
+    
+    if (LIOSurveyQuestionDisplayTypeTextArea == question.displayType) {
+        UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableWhiteTextField"];
+        UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:5 topCapHeight:5];
+        
+        UIImageView *fieldBackground = [[[UIImageView alloc] initWithImage:stretchableFieldImage] autorelease];
+        fieldBackground.tag = LIOSurveyViewInputBackgroundTag;
+        fieldBackground.userInteractionEnabled = YES;
+        fieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        fieldBackground.alpha = 0.85;
+        [scrollView addSubview:fieldBackground];
+        
+        UITextView *inputField = [[[UITextView alloc] init] autorelease];
+        inputField.tag = LIOSurveyViewInputTextViewTag;
+        inputField.delegate = self;
+        inputField.backgroundColor = [UIColor clearColor];
+        inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        inputField.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+        inputField.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        inputField.autocorrectionType = UITextAutocorrectionTypeNo;
+        if (currentQuestionIndex == numberOfQuestions - 1)
+            inputField.returnKeyType = UIReturnKeyDone;
+        else
+            inputField.returnKeyType = UIReturnKeyNext;
+        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        
+        if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
+            inputField.keyboardType = UIKeyboardTypeEmailAddress;
+        if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
+            inputField.keyboardType = UIKeyboardTypeNumberPad;
+            
+            NSString* buttonTitle = @"Next";
+            if (currentQuestionIndex == numberOfQuestions - 1)
+                buttonTitle = @"Done";
+            
+            if (!padUI) {
+                UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
+                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+                numberToolbar.items = [NSArray arrayWithObjects:
+                                       [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                                       [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)],
+                                       nil];
+                [numberToolbar sizeToFit];
+                inputField.inputAccessoryView = numberToolbar;
+                [numberToolbar release];
+            }
+        }
+        
+        // If the user has answered this survey, we should display their answer
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
         if (aResponse && [aResponse isKindOfClass:[NSString class]])
         {
@@ -477,18 +543,18 @@
         questionLabel.frame = aFrame;
     }
     
-    UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
-    if (fieldBackground) {
-        aFrame = fieldBackground.frame;
-        aFrame.origin.x = 10.0;
-        aFrame.size.width = self.bounds.size.width - 20.0;
-        aFrame.size.height = landscape ? 43.0 : 43.0;
-        aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
-        fieldBackground.frame = aFrame;
-    }
-    
     UITextField* inputField = (UITextField*)[scrollView viewWithTag:LIOSurveyViewInputTextFieldTag];
     if (inputField) {
+        UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
+        if (fieldBackground) {
+            aFrame = fieldBackground.frame;
+            aFrame.origin.x = 10.0;
+            aFrame.size.width = self.bounds.size.width - 20.0;
+            aFrame.size.height = landscape ? 43.0 : 43.0;
+            aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
+            fieldBackground.frame = aFrame;
+        }
+        
         aFrame.origin.x = 15.0;
         aFrame.origin.y = landscape ? 10.0 : 10.0;
         aFrame.size.width = fieldBackground.frame.size.width - 20.0;
@@ -499,8 +565,33 @@
         CGSize aSize;
         aSize.width = scrollView.frame.size.width;
         aSize.height = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 30.0;
-        scrollView.contentSize = aSize;
+        scrollView.contentSize = aSize;        
+    }
+    
+    
+    UITextView* textView = (UITextView*)[scrollView viewWithTag:LIOSurveyViewInputTextViewTag];
+    if (textView) {
+        UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
+        if (fieldBackground) {
+            aFrame = fieldBackground.frame;
+            aFrame.origin.x = 10.0;
+            aFrame.size.width = self.bounds.size.width - 20.0;
+            aFrame.size.height = landscape ? 75.0 : 105.0;
+            aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
+            fieldBackground.frame = aFrame;
+        }
         
+        aFrame.origin.x = 5.0;
+        aFrame.origin.y = landscape ? 7.0 : 5.0;
+        aFrame.size.width = fieldBackground.frame.size.width - 20.0;
+        aFrame.size.height = landscape ? 60.0 : 88.0;
+        textView.frame = aFrame;
+        
+        // Set up the scroll view to allow scrolling down to the text field if needed
+        CGSize aSize;
+        aSize.width = scrollView.frame.size.width;
+        aSize.height = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 30.0;
+        scrollView.contentSize = aSize;
     }
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewTableViewTag];
@@ -785,10 +876,17 @@
     LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     
-    if (LIOSurveyQuestionDisplayTypeText == currentQuestion.displayType)
+    if (LIOSurveyQuestionDisplayTypeTextField == currentQuestion.displayType || LIOSurveyQuestionDisplayTypeTextArea == currentQuestion.displayType)
     {
-        UITextField* inputField = (UITextField*)[currentScrollView viewWithTag:LIOSurveyViewInputTextFieldTag];
-        NSString* stringResponse = inputField.text;
+        NSString* stringResponse = @"";
+        if (LIOSurveyQuestionDisplayTypeTextField == currentQuestion.displayType) {
+            UITextField* inputField = (UITextField*)[currentScrollView viewWithTag:LIOSurveyViewInputTextFieldTag];
+            stringResponse = inputField.text;
+        }
+        if (LIOSurveyQuestionDisplayTypeTextArea == currentQuestion.displayType) {
+            UITextView* textView = (UITextView*)[currentScrollView viewWithTag:LIOSurveyViewInputTextViewTag];
+            stringResponse = textView.text;
+        }
 
         if (0 == [stringResponse length])
         {
@@ -1045,6 +1143,15 @@
     return NO;
 }
 
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
+{
+	if ([text isEqualToString:@"\n"]) {
+        [self switchToNextQuestion];
+        return NO;
+    }
+    return YES;
+}
+          
 #pragma mark
 #pragma mark Keyboard notifications
 

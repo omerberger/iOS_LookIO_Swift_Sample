@@ -10,10 +10,11 @@
 
 typedef enum
 {
-    LIOSurveyQuestionDisplayTypeText,
+    LIOSurveyQuestionDisplayTypeTextField,
     LIOSurveyQuestionDisplayTypePicker,
     LIOSurveyQuestionDisplayTypeMultiselect,
-    LIOSurveyQuestionDisplayTypeSwitch
+    LIOSurveyQuestionDisplayTypeSwitch,
+    LIOSurveyQuestionDisplayTypeTextArea
 } LIOSurveyQuestionDisplayType;
 
 typedef enum

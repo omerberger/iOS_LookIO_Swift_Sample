@@ -256,7 +256,7 @@
         navBar.rightButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonRight");
     [navBar layoutSubviews];
     
-    if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
+    if (LIOSurveyQuestionDisplayTypeTextField == nextQuestion.displayType)
     {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
         UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
