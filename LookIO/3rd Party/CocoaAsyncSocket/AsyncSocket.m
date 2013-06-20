@@ -3882,7 +3882,7 @@ Failed:
 	if (theFlags & kForbidReadsWrites) return;
 	
 	AsyncWritePacket_LIO *packet = [[AsyncWritePacket_LIO alloc] initWithData:data timeout:timeout tag:tag];
-	
+	    
 	[theWriteQueue addObject:packet];
 	[self scheduleDequeueWrite];
 	

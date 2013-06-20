@@ -35,7 +35,9 @@
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController;
-- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPreSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishOfflineSurveyWithResponses:(NSDictionary*)aResponseDict;
+
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;

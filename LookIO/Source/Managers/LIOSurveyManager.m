@@ -13,12 +13,13 @@
 #import "LIOSurveyLogicProp.h"
 #import "LIOLogManager.h"
 #import "LIOSurveyLogicItem.h"
+#import "LIOBundleManager.h"
 
 static LIOSurveyManager *sharedSurveyManager = nil;
 
 @implementation LIOSurveyManager
 
-@synthesize preChatHeader, postChatHeader, offlineHeader, preChatTemplate, postChatTemplate, offlineTemplate, lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline, preSurveyCompleted;
+@synthesize preChatHeader, postChatHeader, offlineHeader, preChatTemplate, postChatTemplate, offlineTemplate, lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline, preSurveyCompleted, offlineSurveyIsDefault;
 
 + (LIOSurveyManager *)sharedSurveyManager
 {
@@ -302,6 +303,81 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     return shouldShowQuestion;
 }
 
+-(NSDictionary*)responseDictForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
+    LIOSurveyTemplate *aSurvey;
+    
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        aSurvey = preChatTemplate;
+    if (LIOSurveyManagerSurveyTypePost == surveyType)
+        aSurvey = postChatTemplate;
+    if (LIOSurveyManagerSurveyTypeOffline == surveyType)
+        aSurvey = offlineTemplate;
+
+    NSMutableArray* questionsArray = [NSMutableArray array];
+
+    for (int i=0; i<[aSurvey.questions count]; i++)
+    {
+        // Only send answers for questions that should be visible according to the current logic
+        if ([self shouldShowQuestion:i surveyType:surveyType]) {
+            NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
+            
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+            [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
+            
+            id aResponse = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+            if (aResponse != nil)
+                [questionDict setObject:aResponse forKey:@"answer"];
+            
+            [questionsArray addObject:questionDict];
+        }
+    }
+    
+    NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
+    [surveyDict setObject:aSurvey.surveyId forKey:@"id"];
+    [surveyDict setObject:questionsArray forKey:@"questions"];
+    NSLog(@"Response dict is %@", surveyDict);
+
+    return surveyDict;
+}
+
+- (void)populateDefaultOfflineSurvey {    
+    NSString *headerString = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyHeader");
+    
+    LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
+    NSMutableDictionary *logicDictionary = [[NSMutableDictionary alloc] init];
+
+    LIOSurveyQuestion *emailQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
+    emailQuestion.questionId = 0;
+    emailQuestion.mandatory = YES;
+    emailQuestion.order = 0;
+    emailQuestion.logicId = 0;
+    emailQuestion.lastKnownValue = @"";
+    emailQuestion.label = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyLeaveEmailTitle");
+    emailQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+    emailQuestion.validationType = LIOSurveyQuestionValidationTypeEmail;
+    
+    LIOSurveyQuestion *messageQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
+    messageQuestion.questionId = 0;
+    messageQuestion.mandatory = YES;
+    messageQuestion.order = 1;
+    messageQuestion.logicId = 1;
+    messageQuestion.lastKnownValue = @"";
+    messageQuestion.label = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyLeaveMessageTitle");
+    messageQuestion.displayType = LIOSurveyQuestionDisplayTypeText;
+    emailQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
+
+    newTemplate.surveyId = [NSNumber numberWithInt:0];
+    newTemplate.questions = [NSArray arrayWithObjects:emailQuestion, messageQuestion, nil];
+    newTemplate.logicDictionary = logicDictionary;
+    
+    [offlineResponses removeAllObjects];
+
+    [offlineHeader release];
+    offlineHeader = [headerString retain];
+        
+    [offlineTemplate release];
+    offlineTemplate = newTemplate;
+}
 
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {

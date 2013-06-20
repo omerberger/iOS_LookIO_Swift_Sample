@@ -28,7 +28,7 @@ typedef enum
     LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;
     NSMutableDictionary *preChatResponses, *postChatResponses, *offlineResponses;
     int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
-    BOOL preSurveyCompleted;
+    BOOL preSurveyCompleted, offlineSurveyIsDefault;
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
@@ -41,10 +41,12 @@ typedef enum
 - (int)numberOfQuestionsWithLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (BOOL)shouldShowQuestion:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (int)realIndexWithLogicOfQuestionAtIndex:(int)anIndex forSurveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (NSDictionary*)responseDictForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
+- (void)populateDefaultOfflineSurvey;
 
 @property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader, *offlineHeader;
 @property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;
 @property (nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
-@property (nonatomic, assign) BOOL preSurveyCompleted;
+@property (nonatomic, assign) BOOL preSurveyCompleted, offlineSurveyIsDefault;
 
 @end

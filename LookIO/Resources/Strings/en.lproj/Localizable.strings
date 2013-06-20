@@ -62,6 +62,10 @@
 "LIOLeaveMessageViewController.SuccessAlertBody" = "Your message has been sent.";
 "LIOLeaveMessageViewController.SuccessAlertButton" = "Dismiss";
 
+"LIOSurveyView.DefaultOfflineSurveyHeader" = "No agents are available - please enter your email and a message for further help.";
+"LIOSurveyView.DefaultOfflineSurveyLeaveEmailTitle" = "What is your e-mail address?";
+"LIOSurveyView.DefaultOfflineSurveyLeaveMessageTitle" = "Please enter a message:";
+
 "LIONotificationArea.PoweredBy" = "Powered by";
 
 "LIOSurveyPickerView.DoneButton" = "Next";
