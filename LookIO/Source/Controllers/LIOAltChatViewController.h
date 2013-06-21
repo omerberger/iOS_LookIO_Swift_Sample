@@ -113,5 +113,5 @@
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
-
+- (void)showPostSurveyView;
 @end

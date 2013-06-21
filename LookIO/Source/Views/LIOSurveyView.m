@@ -15,6 +15,8 @@
 #import "LIOSurveyValidationView.h"
 #import "LIOTimerProxy.h"
 #import "LIOHeaderBarView.h"
+#import "LIOStarRatingView.h"
+
 #import <QuartzCore/QuartzCore.h>
 
 #define LIOSurveyViewPageControlHeight          15.0
@@ -35,11 +37,14 @@
 #define LIOSurveyViewTableCellBackgroundTag     1006
 #define LIOSurveyViewTableCellLabelTag          1007
 #define LIOSurveyViewInputTextViewTag           1008
+#define LIOSurveyViewStarRatingViewTag          1009
 
-#define LIOSurveyViewIntroHeaderLabel        1007
-#define LIOSurveyViewIntroRequiredLabel      1008
-#define LIOSurveyViewIntroNextButton         1009
-#define LIOSurveyViewIntroCancelButton       1010
+#define LIOSurveyViewIntroHeaderLabel           1101
+#define LIOSurveyViewIntroRequiredLabel         1102
+#define LIOSurveyViewIntroNextButton            1103
+#define LIOSurveyViewIntroCancelButton          1104
+#define LIOSurveyViewIntroNeedHelpLabel         1105
+#define LIOSurveyViewIntroLiveChatButton        1106
 
 #define LIOSurveyViewControllerValidationDuration 5.0
 
@@ -94,8 +99,12 @@
     tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
     [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
     
-    if (LIOIndexForSurveyIntroPage == currentQuestionIndex)
-        currentScrollView = [self scrollViewForIntroView];
+    if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
+        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+            currentScrollView = [self scrollViewForRatingView];
+        else
+            currentScrollView = [self scrollViewForIntroView];
+    }
     else
         currentScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
     
@@ -138,7 +147,10 @@
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
-        [self rejiggerIntroScrollView:currentScrollView];
+        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+            [self rejiggerRatingScrollView:currentScrollView];
+        else
+            [self rejiggerIntroScrollView:currentScrollView];
     } else {
         if (!isAnimating && currentScrollView != nil)
             [self rejiggerSurveyScrollView:currentScrollView];
@@ -158,6 +170,184 @@
     }
 }
 
+-(UIScrollView*)scrollViewForRatingView {
+    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
+    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+    [scrollView addSubview:dismissBackgroundView];
+    [dismissBackgroundView release];
+    
+    UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    headerLabel.layer.shadowRadius = 1.0;
+    headerLabel.layer.shadowOpacity = 1.0;
+    headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.textColor = [UIColor whiteColor];
+    headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    headerLabel.numberOfLines = 0;
+    headerLabel.text = LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveyTitle");
+    headerLabel.textAlignment = UITextAlignmentCenter;
+    headerLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    headerLabel.tag = LIOSurveyViewIntroHeaderLabel;
+    [scrollView addSubview:headerLabel];
+    [headerLabel release];
+    
+    UILabel* requiredLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    requiredLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    requiredLabel.layer.shadowRadius = 1.0;
+    requiredLabel.layer.shadowOpacity = 1.0;
+    requiredLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    requiredLabel.backgroundColor = [UIColor clearColor];
+    requiredLabel.textColor = [UIColor whiteColor];
+    requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    requiredLabel.numberOfLines = 0;
+    requiredLabel.text = LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveyRateTitle");
+    requiredLabel.textAlignment = UITextAlignmentCenter;
+    requiredLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    requiredLabel.tag = LIOSurveyViewIntroRequiredLabel;
+    [scrollView addSubview:requiredLabel];
+    [requiredLabel release];
+    
+    LIOStarRatingView* starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
+    starRatingView.tag = LIOSurveyViewStarRatingViewTag;
+    [scrollView addSubview:starRatingView];
+    [starRatingView release];
+    
+    UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+    UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+    [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+    [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
+    nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+    nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveySubmitButton") forState:UIControlStateNormal];
+    nextButton.tag = LIOSurveyViewIntroNextButton;
+    [scrollView addSubview:nextButton];
+    [nextButton release];
+    
+    UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRedButton"];
+    UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+    [cancelButton setBackgroundImage:stretchableCancelButtonImage forState:UIControlStateNormal];
+    [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    cancelButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+    cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveyCancelButton") forState:UIControlStateNormal];
+    cancelButton.tag = LIOSurveyViewIntroCancelButton;
+    [scrollView addSubview:cancelButton];
+    [cancelButton release];
+
+    UILabel* needHelpLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    needHelpLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+    needHelpLabel.layer.shadowRadius = 1.0;
+    needHelpLabel.layer.shadowOpacity = 1.0;
+    needHelpLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    needHelpLabel.backgroundColor = [UIColor clearColor];
+    needHelpLabel.textColor = [UIColor whiteColor];
+    needHelpLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    needHelpLabel.numberOfLines = 0;
+    needHelpLabel.text = LIOLocalizedString(@"LIOSurveyView.DefaultPostNeedHelpTitle");
+    needHelpLabel.textAlignment = UITextAlignmentCenter;
+    needHelpLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    needHelpLabel.tag = LIOSurveyViewIntroNeedHelpLabel;
+    [scrollView addSubview:needHelpLabel];
+    [needHelpLabel release];
+    
+    UIButton* liveChatButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    UIImage *liveChatButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+    UIImage *liveChatStretchableGrayButton = [liveChatButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+    [liveChatButton setBackgroundImage:liveChatStretchableGrayButton forState:UIControlStateNormal];
+    [liveChatButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    liveChatButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+    liveChatButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+    liveChatButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    liveChatButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    [liveChatButton setTitle:LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveyLiveChatButton") forState:UIControlStateNormal];
+    liveChatButton.tag = LIOSurveyViewIntroLiveChatButton;
+    [scrollView addSubview:liveChatButton];
+    [liveChatButton release];
+    
+    [scrollView setNeedsLayout];
+    [self rejiggerRatingScrollView:scrollView];
+    
+    return [scrollView autorelease];
+}
+
+
+-(void)rejiggerRatingScrollView:(UIScrollView*)scrollView {
+    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
+    
+    CGRect aFrame;
+    
+    UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
+    
+    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.y = landscape ? LIOSurveyViewIntroTopMarginLandscape : LIOSurveyViewIntroTopMarginPortrait;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame.size.height = expectedLabelSize.height;
+    headerLabel.frame = aFrame;
+    
+    UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroRequiredLabel];
+    
+    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+    aFrame.size.height = expectedLabelSize.height;
+    requiredLabel.frame = aFrame;
+    
+    LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
+    aFrame.size.width = 150.0;
+    aFrame.size.height = 40.0;
+    aFrame.origin.x = scrollView.bounds.size.width/2.0 - aFrame.size.width/2.0;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 20;
+    starRatingView.frame = aFrame;    
+    
+    UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
+    
+    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 100;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 44.0;
+    nextButton.frame = aFrame;
+    
+    UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
+    
+    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 100;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 44.0;
+    cancelButton.frame = aFrame;
+    
+    UILabel* needhelpLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroNeedHelpLabel];
+    
+    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 250;
+    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.height = 16.0;
+    needhelpLabel.frame = aFrame;
+    
+
+    UIButton* liveChatButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroLiveChatButton];
+    
+    aFrame.origin.x = self.bounds.size.width/2 - 92.0/2.0;
+    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 275;
+    aFrame.size.width = 92.0;
+    aFrame.size.height = 44.0;
+    liveChatButton.frame = aFrame;
+    
+    
+}
 
 -(UIScrollView*)scrollViewForIntroView {
     UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
@@ -210,7 +400,7 @@
     nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
     nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    [nextButton setTitle:@"Next" forState:UIControlStateNormal];
+    [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
     nextButton.tag = LIOSurveyViewIntroNextButton;
     [scrollView addSubview:nextButton];
     [nextButton release];
@@ -224,7 +414,7 @@
     cancelButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
     cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    [cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
     cancelButton.tag = LIOSurveyViewIntroCancelButton;
     [scrollView addSubview:cancelButton];
     [cancelButton release];
@@ -346,9 +536,9 @@
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
             
-            NSString* buttonTitle = @"Next";
+            NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
             if (currentQuestionIndex == numberOfQuestions - 1)
-                buttonTitle = @"Done";
+                buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
             
             if (!padUI) {
                 UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
@@ -411,9 +601,9 @@
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
             
-            NSString* buttonTitle = @"Next";
+            NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
             if (currentQuestionIndex == numberOfQuestions - 1)
-                buttonTitle = @"Done";
+                buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
             
             if (!padUI) {
                 UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
@@ -475,9 +665,9 @@
         nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         if (currentQuestionIndex == numberOfQuestions - 1)
-            [nextButton setTitle:@"Done" forState:UIControlStateNormal];
+            [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
         else
-            [nextButton setTitle:@"Next" forState:UIControlStateNormal];
+            [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
         [scrollView addSubview:nextButton];
         [nextButton release];
         

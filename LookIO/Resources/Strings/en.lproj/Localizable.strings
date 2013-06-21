@@ -71,6 +71,23 @@
 "LIOSurveyPickerView.DoneButton" = "Next";
 "LIOSurveyPickerView.HeaderText" = "Choose an option below:";
 
+"LIOSurveyView.NextButtonTitle" = "Next";
+"LIOSurveyView.DoneButtonTitle" = "Done";
+"LIOSurveyView.CancelButtonTitle" = "Cancel";
+
+"LIOSurveyView.DefaultPostSurveyTitle" = "Your support session has ended.";
+"LIOSurveyView.DefaultPostSurveyRateTitle" = "Please rate your satisfaction with company name overall:";
+"LIOSurveyView.DefaultPostSurveyCancelButton" = "No thanks";
+"LIOSurveyView.DefaultPostSurveySubmitButton" = "Submit";
+"LIOSurveyView.DefaultPostNeedHelpTitle" = "Still need help?";
+"LIOSurveyView.DefaultPostSurveyLiveChatButton" = "Live Chat";
+
+"LIOStarRatingView.ExcellentRatingTitle" = "Excellent";
+"LIOStarRatingView.GoodRatingTitle" = "Good";
+"LIOStarRatingView.OkRatingTitle" = "Ok";
+"LIOStarRatingView.NotGoodRatingTitle" = "Not Good";
+"LIOStarRatingView.BadRatingTitle" = "Poor";
+
 "LIOSurveyViewController.NavButtonLeft" = "Cancel";
 "LIOSurveyViewController.NavButtonLeftAlt" = "Back";
 "LIOSurveyViewController.NavButtonRight" = "Next";

@@ -574,6 +574,59 @@
     }
 }
 
+-(void)showPostSurveyView {
+    [self hideChatUIForSurvey:YES];
+
+    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    surveyView = [[LIOSurveyView alloc] initWithFrame:self.view.bounds];
+    surveyView.currentSurvey = surveyManager.postChatTemplate;
+    surveyView.currentSurveyType = LIOSurveyManagerSurveyTypePost;
+    surveyView.headerString = surveyManager.postChatHeader;
+    int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPost;
+    if (lastIndexCompleted == -1)
+        surveyView.currentQuestionIndex = lastIndexCompleted;
+    else
+        surveyView.currentQuestionIndex = lastIndexCompleted + 1;
+    surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    surveyView.delegate = self;
+    
+    if (padUI)
+    {
+        UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+        surveyView.frame = controller.view.frame;
+        surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        controller.view = surveyView;
+        
+        popover = [[UIPopoverController alloc] initWithContentViewController:controller];
+        popover.delegate = self;
+        currentPopoverType = LIOIpadPopoverTypeSurvey;
+        popover.popoverContentSize = CGSizeMake(320.0, 480.0);
+        
+        CGRect aRect;
+        aRect.origin.x = self.view.bounds.size.width;
+        aRect.origin.y = self.view.bounds.size.height * 0.3;
+        aRect.size = CGSizeMake(10, 10);
+        
+        [popover presentPopoverFromRect:aRect
+                                 inView:self.view
+               permittedArrowDirections:UIPopoverArrowDirectionRight
+                               animated:YES];
+        
+    }
+    else
+    {
+        [self.view insertSubview:surveyView belowSubview:headerBar];
+    }
+    
+    [surveyView setupViews];
+    surveyInProgress = YES;
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+        [self didRotateFromInterfaceOrientation:0];
+}
+
 -(void)showOfflineSurveyView {
     [self hideChatUIForSurvey:YES];
     
@@ -2055,8 +2108,9 @@
 }
 
 -(void)surveyViewDidCancel:(LIOSurveyView *)aView {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         [self.view endEditing:YES];
         
@@ -2086,19 +2140,59 @@
     }
     
     if (LIOSurveyManagerSurveyTypeOffline == aView.currentSurveyType) {
+        [self.view endEditing:YES];
         
-        [UIView animateWithDuration:0.3 animations:^{
-            aView.alpha = 0.0;
-            aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
-            
-        } completion:^(BOOL finished) {
-            double delayInSeconds = 0.1;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (padUI) {
+            currentPopoverType = LIOIpadPopoverTypeNone;
+            [popover dismissPopoverAnimated:YES];
+            [UIView animateWithDuration:0.5 animations:^{
+                dismissalBar.alpha = 1.0;
+                inputBar.alpha = 1.0;
+                tableView.alpha = 1.0;
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
                 [delegate altChatViewControllerWantsSessionTermination:self];
-            });
-        }];
+            }];
+        }
+        else {
+            [UIView animateWithDuration:0.5 animations:^{
+                aView.alpha = 0.0;
+                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+                
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            }];
+        }
+        surveyInProgress = NO;
+    }
+    
+    if (LIOSurveyManagerSurveyTypePost == aView.currentSurveyType) {
+        [self.view endEditing:YES];
         
+        if (padUI) {
+            currentPopoverType = LIOIpadPopoverTypeNone;
+            [popover dismissPopoverAnimated:YES];
+            [UIView animateWithDuration:0.5 animations:^{
+                dismissalBar.alpha = 1.0;
+                inputBar.alpha = 1.0;
+                tableView.alpha = 1.0;
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            }];
+        }
+        else {
+            [UIView animateWithDuration:0.5 animations:^{
+                aView.alpha = 0.0;
+                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+                
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            }];
+        }
+        surveyInProgress = NO;
     }
 }
 
@@ -2109,6 +2203,33 @@
     surveyInProgress = NO;
     
     NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
+    
+    if (LIOSurveyManagerSurveyTypePost == aView.currentSurveyType) {
+        [self.view endEditing:YES];
+        
+        if (padUI) {
+            currentPopoverType = LIOIpadPopoverTypeNone;
+            [popover dismissPopoverAnimated:YES];
+            [UIView animateWithDuration:0.5 animations:^{
+                dismissalBar.alpha = 1.0;
+                inputBar.alpha = 1.0;
+                tableView.alpha = 1.0;
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            }];
+        }
+        else {
+            [UIView animateWithDuration:0.5 animations:^{
+                aView.alpha = 0.0;
+                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
+                
+            } completion:^(BOOL finished) {
+                [aView removeFromSuperview];
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            }];
+        }
+    }
     
     if (LIOSurveyManagerSurveyTypeOffline == aView.currentSurveyType) {
         [delegate altChatViewController:self didFinishOfflineSurveyWithResponses:surveyDict];
