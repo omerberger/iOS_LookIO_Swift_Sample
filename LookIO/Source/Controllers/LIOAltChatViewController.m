@@ -1071,6 +1071,9 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
+    if (surveyInProgress)
+        return;
+    
     if (padUI)
     {
         if (toasterView.isShown)
