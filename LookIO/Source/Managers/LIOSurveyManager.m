@@ -335,7 +335,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
     [surveyDict setObject:aSurvey.surveyId forKey:@"id"];
     [surveyDict setObject:questionsArray forKey:@"questions"];
-    NSLog(@"Response dict is %@", surveyDict);
 
     return surveyDict;
 }
@@ -447,7 +446,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
         NSDictionary* aQuestionDict = [questionsDict objectForKey:aQuestionId];
         
-        NSLog(@"%@", aQuestionDict);
         newQuestion.questionId = [aQuestionId intValue];
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];

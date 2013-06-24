@@ -1851,8 +1851,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"leave_message"])
         {
-            NSLog(@"Feedback packet is %@", aPacket);
-            
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
             surveyManager.offlineSurveyIsDefault = YES;
             
@@ -2294,7 +2292,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
 
-    if (surveyEnabled) {
+//    if (surveyEnabled) {
         NSDictionary *surveyDict = [params objectForKey:@"surveys"];
         if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
         {
@@ -2311,7 +2309,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
             }
         }
-    }
+//    }
     
      // Fake survey for testing purposes.
 //    NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name and more text to make this question longer.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with? Please only select one option\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
@@ -2323,8 +2321,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString* shortFakePostJSON = @"{\"id\":61454,\"header\":\"Your support session has ended. Please answer a few questions about the service you received.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"How would you describe the support session?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"}}}";
     
-    NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
-    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+//    NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
+//    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
 
     return resolvedSettings;
 }
@@ -3529,8 +3527,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
         feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
         
-        NSLog(@"Sending feedback: %@", feedback);
-
         [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
@@ -3564,9 +3560,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
     feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    NSLog(@"Sending feedback: %@", feedback);
-    
+        
     [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];

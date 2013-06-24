@@ -969,8 +969,12 @@
 
     UIScrollView* previousQuestionScrollView;
     
-    if (LIOIndexForSurveyIntroPage == currentQuestionIndex)
-        previousQuestionScrollView = [self scrollViewForIntroView];
+    if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
+        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+            previousQuestionScrollView = [self scrollViewForRatingView];
+        else
+            previousQuestionScrollView = [self scrollViewForIntroView];
+    }
     else
         previousQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
     
