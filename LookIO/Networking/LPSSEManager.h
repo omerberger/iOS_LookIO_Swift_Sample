@@ -15,6 +15,7 @@
 
 @class LPSSEManager;
 @class GCDAsyncSocket;
+@protocol GCDAsyncSocketDelegate;
 
 @protocol LPSSEManagerDelegate <NSObject>
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
@@ -22,7 +23,7 @@
 - (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
 @end
 
-@interface LPSSEManager : NSObject
+@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate>
 
 - (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint;
 - (void)connect;

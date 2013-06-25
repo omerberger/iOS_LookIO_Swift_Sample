@@ -68,13 +68,13 @@
 #define LIOLookIOManagerAppContinueRequestURL       @"api/v1/app/continue"
 #define LIOLookIOManagerLogUploadRequestURL         @"api/v1/app/log"
 
-#define LIOLookIOManagerChatIntroRequestURL         @"/api/v2/chat/intro"
-#define LIOLookIOManagerChatOutroRequestURL         @"/api/v2/chat/outro"
-#define LIOLookIOManagerChatLineRequestURL          @"/api/v2/chat/line"
-#define LIOLookIOManagerChatFeedbackRequestURL      @"/api/v2/chat/feedback"
-#define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
-#define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
-#define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
+#define LIOLookIOManagerChatIntroRequestURL         @"api/v2/chat/intro"
+#define LIOLookIOManagerChatOutroRequestURL         @"api/v2/chat/outro"
+#define LIOLookIOManagerChatLineRequestURL          @"api/v2/chat/line"
+#define LIOLookIOManagerChatFeedbackRequestURL      @"api/v2/chat/feedback"
+#define LIOLookIOManagerChatCapabilitiesRequestURL  @"api/v2/chat/capabilities"
+#define LIOLookIOManagerChatHistoryRequestURL       @"api/v2/chat/chat_history"
+#define LIOLookIOManagerChatAdvisoryRequestURL      @"api/v2/chat/advisory"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -131,10 +131,10 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSNumber *lastKnownQueuePosition;
     UIBackgroundTaskIdentifier backgroundTaskId;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
-    NSMutableURLRequest *appLaunchRequest, *appContinueRequest, *appIntroRequest;
-    NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection, *appIntroRequestConnection;
-    NSMutableData *appLaunchRequestData, *appContinueRequestData, *appIntroRequestData;
-    NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode, appIntroRequestResponseCode;
+    NSMutableURLRequest *appLaunchRequest, *appContinueRequest, *appIntroRequest, *appLineRequest;
+    NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection, *appIntroRequestConnection, *appLineRequestConnection;
+    NSMutableData *appLaunchRequestData, *appContinueRequestData, *appIntroRequestData, *appLineRequestData;
+    NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode, appIntroRequestResponseCode, appLineRequestResponseCode;
     LIOAltChatViewController *altChatViewController;
     LIOInterstitialViewController *interstitialViewController;
     NSString *pendingEmailAddress;
@@ -1398,19 +1398,57 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
-        [appIntroRequest setURL:[NSURL URLWithString:LIOLookIOManagerChatIntroRequestURL]];
+        
+        if ([overriddenEndpoint length])
+        {
+            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerChatIntroRequestURL]];
+            [appIntroRequest setURL:url];
+        }
+        else
+        {
+            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerChatIntroRequestURL]];
+            [appIntroRequest setURL:url];
+        }        
         [appIntroRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<INTRO> Endpoint: \"%@\"\n    Request: %@", LIOLookIOManagerChatIntroRequestURL, introDictJSONEncoded);
+        LIOLog(@"<INTRO> Endpoint: \"%@\"\n    Request: %@", appIntroRequest.URL.absoluteString, introDictJSONEncoded);
         appIntroRequestConnection = [[NSURLConnection alloc] initWithRequest:appIntroRequest delegate:self];
     }
 }
 
-- (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params 
+- (void)sendLinePacketWithText:(NSString*)text {
+    if (nil == appLineRequest)
+    {
+        appLineRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                       cachePolicy:NSURLCacheStorageNotAllowed
+                                                   timeoutInterval:10.0];
+        [appLineRequest setHTTPMethod:@"POST"];
+        [appLineRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        
+        appLineRequestData = [[NSMutableData alloc] init];
+        appLineRequestResponseCode = -1;
+    }
+    
+    // Send it! ... if we have Internets, that is.
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", text, @"text", @"test", @"sender_name", nil];
+        NSString *lineDictJSONEncoded = [jsonWriter stringWithObject:lineDict];
+
+        NSString* lineRequestString = [NSString stringWithFormat:@"%@%@%@", chatPostUrlString, @"line/", chatEngagementId];
+        NSLog(@"Line request string is %@", lineRequestString);
+        NSURL *url = [NSURL URLWithString:lineRequestString];
+        [appLineRequest setURL:url];
+        
+        [appLineRequest setHTTPBody:[lineDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+        LIOLog(@"<LINE> Endpoint: \"%@\"\n    Request: %@", appLineRequest.URL.absoluteString, lineDictJSONEncoded);
+        appLineRequestConnection = [[NSURLConnection alloc] initWithRequest:appLineRequest delegate:self];
+    }
+}
+
+- (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params
 {
     NSMutableDictionary *resolvedPayload = [NSMutableDictionary dictionary];
-    /*
-     Example: {"type":"engagement_info","engagement_id":"305833920c445117958b01bea1eea848","sse_url":"http://10.10.10.20:8800/api/v2/chat/sse/","post_url":"http://10.10.10.20:8800/api/v2/chat/"}
-     */
     
     NSString* engagementId = [params objectForKey:@"engagement_id"];
     if ([engagementId length])
@@ -1444,18 +1482,391 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Save.
     if ([resolvedPayload count])
     {
-        chatEngagementId = [resolvedPayload objectForKey:@"engagement_id"];
-        chatSSEUrlString = [resolvedPayload objectForKey:@"sse_url"];
-        chatPostUrlString = [resolvedPayload objectForKey:@"post_url"];
+        chatEngagementId = [[resolvedPayload objectForKey:@"engagement_id"] retain];
+        chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
+        chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
+        
+        NSLog(@"Post url is %@", chatPostUrlString);
+        NSLog(@"Engagement Id is %@", chatEngagementId);
         
         [self connectSSESocket];
     }
 }
 
 -(void)connectSSESocket {
-    sse
+    if (sseManager) {
+        [sseManager release];
+        sseManager = nil;
+    }
+    
+    int portToUse = 443;
+    NSURL* url = [NSURL URLWithString:chatSSEUrlString];
+    if (url.port != 0)
+        portToUse = url.port;
+    
+    NSLog(@"Port received is %d; Using %d", url.port.intValue, portToUse);
+    
+    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId]];
+    sseManager.delegate = self;
+    [sseManager connect];
 }
 
+
+-(void)sseManagerDidConnect:(LPSSEManager *)aManager {
+    socketConnected = YES;
+    [self configureReconnectionTimer];
+}
+
+-(void)sseManagerDidDisconnect:(LPSSEManager *)aManager {
+    LIOLog(@"Socket did disconnect.");
+    
+    socketConnected = NO;
+    controlSocketConnecting = NO;
+    
+    if (resetAfterDisconnect)
+    {
+        if ((NSObject *)[delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+            [delegate lookIOManagerDidEndChat:self];
+        
+        sessionEnding = YES;
+        [self reset];
+    }
+    else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent)
+    {
+        LIOLog(@"Unexpected disconnection! Asking user for resume mode...");
+        
+        [altChatViewController bailOnSecondaryViews];
+        [altChatViewController.view removeFromSuperview];
+        [altChatViewController release];
+        altChatViewController = nil;
+        
+        [self rejiggerWindows];
+        
+        [self showReconnectionQuery];
+    }
+}
+
+-(void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aJsonString {
+    NSDictionary *aPacket = [jsonParser objectWithString:aJsonString];
+    if (nil == aPacket)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", aJsonString];
+        return;
+    }
+    
+    LIOLog(@"<<<FROM BACKEND (objc)<<< %@", aPacket);
+    
+    NSString *type = [aPacket objectForKey:@"type"];
+    
+    if ([type isEqualToString:@"ack"])
+    {
+        if (waitingForIntroAck)
+        {
+            LIOLog(@"Introduction complete.");
+            introduced = YES;
+            waitingForIntroAck = NO;
+            enqueued = YES;
+            
+            [self sendCapabilitiesPacket];
+        }
+        else if (waitingForScreenshotAck)
+        {
+            LIOLog(@"Screenshot received by remote host.");
+            waitingForScreenshotAck = NO;
+        }
+    }
+    else if ([type isEqualToString:@"session_info"])
+    {
+        NSDictionary *dataDict = [aPacket objectForKey:@"data"];
+        NSString *sessionIdString = [dataDict objectForKey:@"session_id"];
+        if ([sessionIdString length])
+        {
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            [userDefaults setObject:sessionIdString forKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults synchronize];
+            
+            // Well, we've got a session. Start the realtime extras timer.
+            [realtimeExtrasTimer stopTimer];
+            [realtimeExtrasTimer release];
+            realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
+        }
+    }
+    else if ([type isEqualToString:@"line"])
+    {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+        [userDefaults synchronize];
+        
+        NSString *text = [aPacket objectForKey:@"text"];
+        NSString *senderName = [aPacket objectForKey:@"sender_name"];
+        
+        LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
+        newMessage.text = text;
+        newMessage.senderName = senderName;
+        newMessage.kind = LIOChatMessageKindRemote;
+        newMessage.date = [NSDate date];
+        [chatHistory addObject:newMessage];
+        
+        if (nil == altChatViewController)
+        {
+            [self showChatAnimated:YES];
+        }
+        else
+        {
+            [altChatViewController reloadMessages];
+            [altChatViewController scrollToBottomDelayed:YES];
+        }
+        
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        {
+            UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+            localNotification.soundName = @"LookIODing.caf";
+            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
+            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            
+            chatReceivedWhileAppBackgrounded = YES;
+        }
+    }
+    else if ([type isEqualToString:@"cursor"])
+    {
+        if (altChatViewController)
+            return;
+        
+        cursorView.hidden = NO == screenshotsAllowed || cursorEnded;
+        
+        NSNumber *x = [aPacket objectForKey:@"x"];
+        NSNumber *y = [aPacket objectForKey:@"y"];
+        CGRect aFrame = cursorView.frame;
+        aFrame.origin.x = [x floatValue];
+        aFrame.origin.y = [y floatValue];
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState)
+                         animations:^{ cursorView.frame = aFrame; }
+                         completion:nil];
+    }
+    else if ([type isEqualToString:@"advisory"])
+    {
+        NSString *action = [aPacket objectForKey:@"action"];
+        
+        if ([action isEqualToString:@"notification"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSString *message = [data objectForKey:@"message"];
+            if ([message length] && altChatViewController)
+                [altChatViewController revealNotificationString:message withAnimatedKeyboard:NO];
+        }
+        else if ([action isEqualToString:@"send_logs"])
+        {
+            [[LIOLogManager sharedLogManager] uploadLog];
+        }
+        else if ([action isEqualToString:@"typing_start"])
+        {
+            altChatViewController.agentTyping = YES;
+        }
+        else if ([action isEqualToString:@"typing_stop"])
+        {
+            altChatViewController.agentTyping = NO;
+        }
+        else if ([action isEqualToString:@"cursor_start"])
+        {
+            cursorEnded = NO;
+            
+            if (altChatViewController)
+            {
+                cursorView.hidden = YES;
+                return;
+            }
+            
+            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+            
+            CGRect aFrame = CGRectZero;
+            aFrame.size.width = cursorView.image.size.width * 8.0;
+            aFrame.size.height = cursorView.image.size.height * 8.0;
+            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            cursorView.frame = aFrame;
+            cursorView.alpha = 0.0;
+            
+            aFrame.size.width = cursorView.image.size.width;
+            aFrame.size.height = cursorView.image.size.height;
+            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+            
+            [UIView animateWithDuration:0.25
+                                  delay:0.0
+                                options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                             animations:^{
+                                 cursorView.frame = aFrame;
+                                 cursorView.alpha = 1.0;
+                             }
+                             completion:nil];
+            
+        }
+        else if ([action isEqualToString:@"cursor_end"])
+        {
+            cursorEnded = YES;
+            cursorView.hidden = YES;
+        }
+        else if ([action isEqualToString:@"connected"])
+        {
+            LIOLog(@"We're live!");
+            enqueued = NO;
+            
+            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+            {
+                UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+                
+                [self showChatAnimated:NO];
+            }
+        }
+        else if ([action isEqualToString:@"permission"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSString *permission = [data objectForKey:@"permission"];
+            if ([permission isEqualToString:@"screenshot"] && NO == screenshotsAllowed)
+            {
+                if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+                {
+                    UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                    localNotification.soundName = @"LookIODing.caf";
+                    localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+                    localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
+                    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+                }
+                
+                [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+                
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertBody")
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonDisallow"), LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonAllow"), nil];
+                alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
+                [alertView show];
+                [alertView autorelease];
+            }
+        }
+        else if ([action isEqualToString:@"unprovisioned"])
+        {
+            unprovisioned = YES;
+            
+            [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertBody")
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertButton"), nil];
+            alertView.tag = LIOLookIOManagerUnprovisionedAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+        }
+        else if ([action isEqualToString:@"feedback_message"])
+        {
+            [altChatViewController forceLeaveMessageScreen];
+        }
+    }
+    else if ([type isEqualToString:@"click"])
+    {
+        if (altChatViewController)
+            return;
+        
+        clickView.hidden = NO == screenshotsAllowed || cursorEnded;
+        
+        NSNumber *x = [aPacket objectForKey:@"x"];
+        NSNumber *y = [aPacket objectForKey:@"y"];
+        
+        CGRect aFrame = CGRectZero;
+        aFrame.size.width = clickView.image.size.width;
+        aFrame.size.height = clickView.image.size.height;
+        clickView.bounds = aFrame;
+        clickView.alpha = 0.0;
+        
+        clickView.center = CGPointMake([x floatValue], [y floatValue]);
+        
+        aFrame = CGRectZero;
+        aFrame.size.width = clickView.image.size.width * 3.0;
+        aFrame.size.height = clickView.image.size.height * 3.0;
+        
+        [UIView animateWithDuration:0.1
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                         animations:^{
+                             clickView.bounds = aFrame;
+                             clickView.alpha = 1.0;
+                         }
+                         completion:^(BOOL finished) {
+                             [UIView animateWithDuration:0.1
+                                                   delay:0.2
+                                                 options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                                              animations:^{
+                                                  clickView.alpha = 0.0;
+                                              }
+                                              completion:nil];
+                         }];
+    }
+    else if ([type isEqualToString:@"outro"])
+    {
+        sessionEnding = YES;
+        resetAfterDisconnect = YES;
+        outroReceived = YES;
+        firstChatMessageSent = NO;
+    }
+    else if ([type isEqualToString:@"reintroed"])
+    {
+        NSNumber *success = [aPacket objectForKey:@"success"];
+        if ([success boolValue])
+        {
+            [reintroTimeoutTimer stopTimer];
+            [reintroTimeoutTimer release];
+            reintroTimeoutTimer = nil;
+            
+            resumeMode = NO;
+            sessionEnding = NO;
+            resetAfterDisconnect = NO;
+            introduced = YES;
+            killConnectionAfterChatViewDismissal = NO;
+            
+            [self populateChatWithFirstMessage];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
+            alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+        }
+        else
+        {
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults synchronize];
+            
+            resumeMode = NO;
+            firstChatMessageSent = NO;
+            resetAfterDisconnect = YES;
+            [self killConnection];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
+            [alertView show];
+            [alertView autorelease];
+        }
+    }
+}
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
@@ -1486,11 +1897,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    /*
     if (controlSocketConnecting)
     {
         LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
         return;
     }
+    */
     
     if (socketConnected)
     {
@@ -1506,6 +1919,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
     
+    [self sendIntroPacket];
+    
+    /*
     NSError *connectError = nil;
     BOOL connectResult = [self beginConnectingWithError:&connectError];
     if (NO == connectResult)
@@ -1534,6 +1950,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     controlSocketConnecting = YES;
+     */
 
     [self populateChatWithFirstMessage];
     
@@ -3275,6 +3692,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
     [userDefaults synchronize];
     
+    /*
     NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"chat", @"type",
                                                     aString, @"text",
@@ -3286,6 +3704,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [controlSocket writeData:chatData
                  withTimeout:LIOLookIOManagerWriteTimeout
                          tag:0];
+     */
+    [self sendLinePacketWithText:aString];
     
     LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
     newMessage.date = [NSDate date];
@@ -4035,6 +4455,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [appIntroRequestData setData:[NSData data]];
         appIntroRequestResponseCode = [httpResponse statusCode];
     }
+    else if (appLineRequestConnection == connection)
+    {
+        [appLineRequestData setData:[NSData data]];
+        appLineRequestResponseCode = [httpResponse statusCode];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -4050,7 +4475,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (appIntroRequestConnection == connection)
     {
         [appIntroRequestData appendData:data];
-    }        
+    }
+    else if (appLineRequestConnection == connection)
+    {
+        [appLineRequestData appendData:data];
+    }
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
@@ -4174,7 +4603,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Save all queued events to the user defaults store.
             [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
         }
-    } else if (appIntroRequestResponseCode == connection) {
+    } else if (appIntroRequestConnection == connection) {
         BOOL failure = NO;
         
         if (404 == appIntroRequestResponseCode)
@@ -4200,7 +4629,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
             LIOLog(@"<INTRO> Success! Response: %@", responseString);
             
+            introduced = YES;
+            enqueued = YES;
+            
             [self parseAndSaveEngagementInfoPayload:responseDict];
+            
         }
         else
         {
@@ -4213,6 +4646,44 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appIntroRequestConnection = nil;
         
         appIntroRequestResponseCode = -1;
+    } else if (appLineRequestConnection == connection) {
+        BOOL failure = NO;
+        
+        if (404 == appLineRequestResponseCode)
+        {
+            // New launch.
+            
+            failure = YES;
+            
+            LIOLog(@"<LINE> Failure. HTTP code: 404.");
+        }
+        else if (appLineRequestResponseCode >= 400)
+        {
+            // Retry logic.
+            
+            LIOLog(@"<LINE> Failure. HTTP code: %d.", appLineRequestResponseCode);
+            
+        }
+        else if (appLineRequestResponseCode < 300 && appLineRequestResponseCode >= 200)
+        {
+            // Success.
+            
+            NSString *responseString = [[[NSString alloc] initWithData:appLineRequestData encoding:NSUTF8StringEncoding] autorelease];
+            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
+            LIOLog(@"<LINE> Success! Response: %@", responseString);
+            
+        }
+        else
+        {
+            // Wat.
+            
+            LIOLog(@"<LINE> Unhandled HTTP code: %d", appLineRequestResponseCode);
+        }
+        
+        [appLineRequestConnection release];
+        appLineRequestConnection = nil;
+        
+        appLineRequestResponseCode = -1;
     }
     
     [self refreshControlButtonVisibility];
@@ -4275,7 +4746,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appIntroRequestConnection = nil;
         
         appIntroRequestResponseCode = -1;
+    }  else if (appLineRequestConnection == connection)
+    {
+        LIOLog(@"<LINE> Failed. Reason: %@", [error localizedDescription]);
+        
+        [appLineRequestConnection release];
+        appLineRequestConnection = nil;
+        
+        appIntroRequestResponseCode = -1;
     }
+    
     
     [self refreshControlButtonVisibility];
 }

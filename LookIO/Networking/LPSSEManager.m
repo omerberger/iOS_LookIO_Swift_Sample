@@ -17,7 +17,9 @@
     NSMutableString *partialPacket;
     NSData *sepData;
 }
-@property(nonatomic, strong) GCDAsyncSocket *socket;
+
+@property(nonatomic, retain) GCDAsyncSocket *socket;
+
 @end
 
 @implementation LPSSEManager
@@ -33,6 +35,7 @@
         
         delegateQueue = dispatch_queue_create("com.liveperson.LPSSEManager", 0);
         socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:delegateQueue];
+        
         self.host = aHost;
         self.port = aPort;
         self.urlEndpoint = anEndpoint;
@@ -44,7 +47,7 @@
 - (void)connect
 {
     NSError *anError = nil;
-    [socket connectToHost:host onPort:port error:&anError];
+    [socket connectToHost:self.host onPort:self.port error:&anError];
     if (anError)
     {
         NSLog(@"[LPSSEManager] Couldn't connect: %@", anError);
@@ -61,7 +64,6 @@
 
 #pragma mark - GCDAsyncSocketDelegate methods -
 
-
 - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)aHost port:(uint16_t)aPort
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -74,10 +76,12 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] SSL/TLS established");
         
-        NSString *httpRequest = [NSString stringWithFormat:@"GET %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\n\n",
+        NSString *httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\n\n",
                                  urlEndpoint,
                                  host];
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
+        
+        NSLog(@"%@", httpRequest);
         
         [socket readDataWithTimeout:-1 tag:0];
         
@@ -96,13 +100,15 @@
             partialPacket = nil;
         }
         
-        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", s);
+//        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", s);
         
         NSRange sepRange = [s rangeOfString:@"\n\n"];
         if (sepRange.location != NSNotFound)
         {
             NSRange dataRange = [s rangeOfString:@"data: "];
             if (dataRange.location != NSNotFound) {
+                dataRange.length -= 5;
+                dataRange.location += 5;
                 NSString *packet = [s substringWithRange:NSUnionRange(dataRange, sepRange)];
                 [delegate sseManager:self didReceivePacket:packet];
                 int afterSep = sepRange.location + sepRange.length;
