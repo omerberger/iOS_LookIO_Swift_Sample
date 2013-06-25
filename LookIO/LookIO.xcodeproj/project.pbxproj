@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C859371779E26B00493BF8 /* LPSSEManager.h */; };
+		A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C859381779E26B00493BF8 /* LPSSEManager.m */; };
+		A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */; };
+		A7C8593E1779E45C00493BF8 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C8593C1779E45C00493BF8 /* GCDAsyncSocket.m */; };
 		A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */; };
 		A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
@@ -120,6 +124,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Networking/LPSSEManager.h; sourceTree = "<group>"; };
+		A7C859381779E26B00493BF8 /* LPSSEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSSEManager.m; path = Networking/LPSSEManager.m; sourceTree = "<group>"; };
+		A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
+		A7C8593C1779E45C00493BF8 /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
 		A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewPre.h; path = Source/Views/LIOSurveyViewPre.h; sourceTree = "<group>"; };
 		A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewPre.m; path = Source/Views/LIOSurveyViewPre.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
@@ -245,6 +253,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A7C859361779E23100493BF8 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				A7C859371779E26B00493BF8 /* LPSSEManager.h */,
+				A7C859381779E26B00493BF8 /* LPSSEManager.m */,
+			);
+			name = Networking;
+			sourceTree = "<group>";
+		};
 		D41F9431158AA52C004BE9A0 /* Survey */ = {
 			isa = PBXGroup;
 			children = (
@@ -423,6 +440,7 @@
 		D48ABF2D14046E4B00835205 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				A7C859361779E23100493BF8 /* Networking */,
 				D47C98EA14C9EFEB00E1223F /* Controllers */,
 				D47C98EB14C9EFF900E1223F /* Managers */,
 				D47C98ED14C9F01900E1223F /* Other */,
@@ -449,6 +467,8 @@
 			children = (
 				D4868A76155AFE800081164D /* AsyncSocket.h */,
 				D4868A77155AFE800081164D /* AsyncSocket.m */,
+				A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */,
+				A7C8593C1779E45C00493BF8 /* GCDAsyncSocket.m */,
 			);
 			path = CocoaAsyncSocket;
 			sourceTree = "<group>";
@@ -555,6 +575,8 @@
 				D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */,
 				D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */,
 				A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */,
+				A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */,
+				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -680,6 +702,8 @@
 				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
 				A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */,
+				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,
+				A7C8593E1779E45C00493BF8 /* GCDAsyncSocket.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

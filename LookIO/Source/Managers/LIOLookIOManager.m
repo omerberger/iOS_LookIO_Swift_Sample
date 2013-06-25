@@ -34,6 +34,8 @@
 #import "LIOPlugin.h"
 #import "LIOMediaManager.h"
 
+#import "LPSSEManager.h"
+
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -62,9 +64,17 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL     @"api/v1/app/launch"
-#define LIOLookIOManagerAppContinueRequestURL   @"api/v1/app/continue"
-#define LIOLookIOManagerLogUploadRequestURL     @"api/v1/app/log"
+#define LIOLookIOManagerAppLaunchRequestURL         @"api/v1/app/launch"
+#define LIOLookIOManagerAppContinueRequestURL       @"api/v1/app/continue"
+#define LIOLookIOManagerLogUploadRequestURL         @"api/v1/app/log"
+
+#define LIOLookIOManagerChatIntroRequestURL         @"/api/v2/chat/intro"
+#define LIOLookIOManagerChatOutroRequestURL         @"/api/v2/chat/outro"
+#define LIOLookIOManagerChatLineRequestURL          @"/api/v2/chat/line"
+#define LIOLookIOManagerChatFeedbackRequestURL      @"/api/v2/chat/feedback"
+#define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
+#define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
+#define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -105,7 +115,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 @class CTCall, CTCallCenter;
 
 @interface LIOLookIOManager ()
-    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO>
+    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -121,10 +131,10 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSNumber *lastKnownQueuePosition;
     UIBackgroundTaskIdentifier backgroundTaskId;
     UIWindow *lookioWindow, *previousKeyWindow, *mainWindow;
-    NSMutableURLRequest *appLaunchRequest, *appContinueRequest;
-    NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection;
-    NSMutableData *appLaunchRequestData, *appContinueRequestData;
-    NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode;
+    NSMutableURLRequest *appLaunchRequest, *appContinueRequest, *appIntroRequest;
+    NSURLConnection *appLaunchRequestConnection, *appContinueRequestConnection, *appIntroRequestConnection;
+    NSMutableData *appLaunchRequestData, *appContinueRequestData, *appIntroRequestData;
+    NSInteger appLaunchRequestResponseCode, appContinueRequestResponseCode, appIntroRequestResponseCode;
     LIOAltChatViewController *altChatViewController;
     LIOInterstitialViewController *interstitialViewController;
     NSString *pendingEmailAddress;
@@ -169,6 +179,12 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     
     BOOL demoSurveyEnabled;
     BOOL shouldLockOrientation;
+
+    NSString* chatEngagementId;
+    NSString* chatSSEUrlString;
+    NSString* chatPostUrlString;
+    
+    LPSSEManager* sseManager;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1359,6 +1375,87 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     return [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
 }
+
+# pragma
+# pragma mark Chat API v2 Methods
+
+- (void)sendIntroPacket {
+    if (nil == appIntroRequest)
+    {
+        appIntroRequest = [[NSMutableURLRequest alloc] initWithURL:nil
+                                                              cachePolicy:NSURLCacheStorageNotAllowed
+                                                          timeoutInterval:10.0];
+        [appIntroRequest setHTTPMethod:@"POST"];
+        [appIntroRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+            
+        appIntroRequestData = [[NSMutableData alloc] init];
+        appIntroRequestResponseCode = -1;
+    }
+        
+    // Send it! ... if we have Internets, that is.
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
+        NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
+        [appIntroRequest setURL:[NSURL URLWithString:LIOLookIOManagerChatIntroRequestURL]];
+        [appIntroRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+        LIOLog(@"<INTRO> Endpoint: \"%@\"\n    Request: %@", LIOLookIOManagerChatIntroRequestURL, introDictJSONEncoded);
+        appIntroRequestConnection = [[NSURLConnection alloc] initWithRequest:appIntroRequest delegate:self];
+    }
+}
+
+- (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params 
+{
+    NSMutableDictionary *resolvedPayload = [NSMutableDictionary dictionary];
+    /*
+     Example: {"type":"engagement_info","engagement_id":"305833920c445117958b01bea1eea848","sse_url":"http://10.10.10.20:8800/api/v2/chat/sse/","post_url":"http://10.10.10.20:8800/api/v2/chat/"}
+     */
+    
+    NSString* engagementId = [params objectForKey:@"engagement_id"];
+    if ([engagementId length])
+        [resolvedPayload setObject:engagementId forKey:@"engagement_id"];
+
+    NSString* sseUrl = [params objectForKey:@"sse_url"];
+    if ([engagementId length])
+        [resolvedPayload setObject:sseUrl forKey:@"sse_url"];
+
+    NSString* postUrl = [params objectForKey:@"post_url"];
+    if ([engagementId length])
+        [resolvedPayload setObject:postUrl forKey:@"post_url"];
+    
+    return resolvedPayload;
+}
+
+-(void)parseAndSaveEngagementInfoPayload:(NSDictionary*)params {
+    LIOLog(@"Got engagement payload: %@", params);
+    
+    // Parse.
+    NSDictionary *resolvedPayload = nil;
+    @try
+    {
+        resolvedPayload = [self resolveEngagementPayload:params];
+    }
+    @catch (NSException *exception)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid engagement payload received from the server! Exception: %@", exception];
+    }    
+    
+    // Save.
+    if ([resolvedPayload count])
+    {
+        chatEngagementId = [resolvedPayload objectForKey:@"engagement_id"];
+        chatSSEUrlString = [resolvedPayload objectForKey:@"sse_url"];
+        chatPostUrlString = [resolvedPayload objectForKey:@"post_url"];
+        
+        [self connectSSESocket];
+    }
+}
+
+-(void)connectSSESocket {
+    sse
+}
+
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
@@ -3933,6 +4030,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [appContinueRequestData setData:[NSData data]];
         appContinueRequestResponseCode = [httpResponse statusCode];
     }
+    else if (appIntroRequestConnection == connection)
+    {
+        [appIntroRequestData setData:[NSData data]];
+        appIntroRequestResponseCode = [httpResponse statusCode];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -3945,6 +4047,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [appContinueRequestData appendData:data];
     }
+    else if (appIntroRequestConnection == connection)
+    {
+        [appIntroRequestData appendData:data];
+    }        
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
@@ -4068,6 +4174,45 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Save all queued events to the user defaults store.
             [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
         }
+    } else if (appIntroRequestResponseCode == connection) {
+        BOOL failure = NO;
+        
+        if (404 == appIntroRequestResponseCode)
+        {
+            // New launch.
+            
+            failure = YES;
+            
+            LIOLog(@"<INTRO> Failure. HTTP code: 404.");
+        }
+        else if (appIntroRequestResponseCode >= 400)
+        {
+            // Retry logic.
+            
+            LIOLog(@"<INTRO> Failure. HTTP code: %d.", appIntroRequestResponseCode);
+            
+        }
+        else if (appIntroRequestResponseCode < 300 && appIntroRequestResponseCode >= 200)
+        {
+            // Success.
+            
+            NSString *responseString = [[[NSString alloc] initWithData:appIntroRequestData encoding:NSUTF8StringEncoding] autorelease];
+            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
+            LIOLog(@"<INTRO> Success! Response: %@", responseString);
+            
+            [self parseAndSaveEngagementInfoPayload:responseDict];
+        }
+        else
+        {
+            // Wat.
+            
+            LIOLog(@"<INTRO> Unhandled HTTP code: %d", appIntroRequestResponseCode);
+        }
+        
+        [appIntroRequestConnection release];
+        appIntroRequestConnection = nil;
+        
+        appIntroRequestResponseCode = -1;
     }
     
     [self refreshControlButtonVisibility];
@@ -4122,6 +4267,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [lastKnownContinueURL release];
             lastKnownContinueURL = nil;
         }
+    } else if (appIntroRequestConnection == connection)
+    {
+        LIOLog(@"<INTRO> Failed. Reason: %@", [error localizedDescription]);
+        
+        [appIntroRequestConnection release];
+        appIntroRequestConnection = nil;
+        
+        appIntroRequestResponseCode = -1;
     }
     
     [self refreshControlButtonVisibility];
