@@ -9,14 +9,14 @@
 "LIOAltChatViewController.AttachSourceCamera" = "Take Photo";
 "LIOAltChatViewController.AttachSourceLibrary" = "Choose Existing";
 "LIOAltChatViewController.AttachSourceCancel" = "Cancel";
-"LIOAltChatViewController.AttachConfirmationBody" = "Are you sure you want to send this photo to our representatives?";
+"LIOAltChatViewController.AttachConfirmationBody" = "Are you sure you want to send this photo to our agents?";
 "LIOAltChatViewController.AttachConfirmationSend" = "Send";
 "LIOAltChatViewController.AttachConfirmationDontSend" = "Don't Send";
 "LIOAltChatViewController.AttachFailureLargeFileTitle" = "Photo too large";
 "LIOAltChatViewController.AttachFailureLargeFileBody" = "The photo you've sent is too large. Please try sending a smaller photo.";
 "LIOAltChatViewController.AttachFailureLargeFileButton" = "Dismiss";
 "LIOAltChatViewController.AttachStartChatAlertTitle" = "Please start chat";
-"LIOAltChatViewController.AttachStartChatAlertBody" = "Please start a chat with our representatives before sending a photo.";
+"LIOAltChatViewController.AttachStartChatAlertBody" = "Please start a chat with our agents before sending a photo.";
 "LIOAltChatViewController.AttachStartChatAlertButton" = "Dismiss";
 
 "LIOChatBubbleView.LinkAlert" = "Are you sure you want to leave the app and visit \"%@\"?";
