@@ -1352,8 +1352,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)showChatAnimated:(BOOL)animated
 {
-    if (altChatViewController)
-        return;
+//    if (altChatViewController)
+//        return;
     
     if (NO == [[LIOBundleManager sharedBundleManager] isAvailable])
     {

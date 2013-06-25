@@ -1188,7 +1188,7 @@
 }
 
 - (void)bailOnSecondaryViews
-{
+{    
     if (popover)
     {
         [popover dismissPopoverAnimated:NO];
