@@ -68,13 +68,13 @@
 #define LIOLookIOManagerAppContinueRequestURL       @"api/v1/app/continue"
 #define LIOLookIOManagerLogUploadRequestURL         @"api/v1/app/log"
 
-#define LIOLookIOManagerChatIntroRequestURL         @"api/v2/chat/intro"
-#define LIOLookIOManagerChatOutroRequestURL         @"api/v2/chat/outro"
-#define LIOLookIOManagerChatLineRequestURL          @"api/v2/chat/line"
-#define LIOLookIOManagerChatFeedbackRequestURL      @"api/v2/chat/feedback"
-#define LIOLookIOManagerChatCapabilitiesRequestURL  @"api/v2/chat/capabilities"
-#define LIOLookIOManagerChatHistoryRequestURL       @"api/v2/chat/chat_history"
-#define LIOLookIOManagerChatAdvisoryRequestURL      @"api/v2/chat/advisory"
+#define LIOLookIOManagerChatIntroRequestURL         @"/api/v2/chat/intro"
+#define LIOLookIOManagerChatOutroRequestURL         @"/api/v2/chat/outro"
+#define LIOLookIOManagerChatLineRequestURL          @"/api/v2/chat/line"
+#define LIOLookIOManagerChatFeedbackRequestURL      @"/api/v2/chat/feedback"
+#define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
+#define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
+#define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -101,6 +101,10 @@
 #define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 #define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
+
+#define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
+#define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
+#define LIOLookIOManagerLastKnownChatPostUrlString      @"LIOLookIOManagerLastKnownChatPostUrlString"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -693,14 +697,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == padUI)
         [keyWindow addSubview:statusBarUnderlayBlackout];
 
+    // LIOLookIOManagerLastKnownSessionIdKey
     NSString *sessionId = [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
-    if ([sessionId length])
+    NSString *engagementId = [userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
+    if ([engagementId length])
     {
         NSDate *lastActivity = [userDefaults objectForKey:LIOLookIOManagerLastActivityDateKey];
         NSTimeInterval timeSinceLastActivity = [lastActivity timeIntervalSinceNow];
         if (lastActivity && timeSinceLastActivity > -LIOLookIOManagerReconnectionAfterCrashTimeLimit)
         {
-            LIOLog(@"Found a saved session id! Trying to reconnect...");
+            LIOLog(@"Found a saved engagement id! Trying to reconnect...");
             willAskUserToReconnect = YES;
             
             double delayInSeconds = 2.0;
@@ -712,10 +718,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
         {
             // Too much time has passed.
-            LIOLog(@"Found a saved session id, but it's old. Discarding...");
+            LIOLog(@"Found a saved engagement id, but it's old. Discarding...");
             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
             [userDefaults synchronize];
         }
     }
@@ -964,6 +970,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+    
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+    
     [userDefaults synchronize];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
@@ -1392,84 +1403,51 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma mark Chat API v2 Methods
 
 -(void)sendIntroPacket {
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
+    // Yaron TODO - Depending on protocol, possibly need to send a reintro here as well
     
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success! Response is %@", responseObject);
         
-        
+        introduced = YES;
+        enqueued = YES;
+
+        NSDictionary* responseDict = (NSDictionary*)responseObject;
+        [self parseAndSaveEngagementInfoPayload:responseDict];
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failure! Error is %@", error);
     }];
 }
 
+- (void)sendLinePacketWithText:(NSString*)text {
+    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", text, @"text", @"test", @"sender_name", nil];
+    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
+    NSString* lineRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/line/", chatEngagementId];
 
-- (void)sendIntroPacketOld {
-    if (nil == appIntroRequest)
-    {
-        appIntroRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                              cachePolicy:NSURLCacheStorageNotAllowed
-                                                          timeoutInterval:10.0];
-        [appIntroRequest setHTTPMethod:@"POST"];
-        [appIntroRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-            
-        appIntroRequestData = [[NSMutableData alloc] init];
-        appIntroRequestResponseCode = -1;
-    }
+    [[LPChatAPIClient sharedClient] postPath:lineRequestUrl parameters:lineDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success! Response is %@", responseObject);
         
-    // Send it! ... if we have Internets, that is.
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
-        NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
-        
-        if ([overriddenEndpoint length])
-        {
-            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", overriddenEndpoint, LIOLookIOManagerChatIntroRequestURL]];
-            [appIntroRequest setURL:url];
-        }
-        else
-        {
-            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerChatIntroRequestURL]];
-            [appIntroRequest setURL:url];
-        }        
-        [appIntroRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<INTRO> Endpoint: \"%@\"\n    Request: %@", appIntroRequest.URL.absoluteString, introDictJSONEncoded);
-        appIntroRequestConnection = [[NSURLConnection alloc] initWithRequest:appIntroRequest delegate:self];
-    }
+        LIOLog(@"<LINE> Success! Response: %@", responseObject);
+
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failure! Error is %@", error);
+    
+    }];
 }
 
-- (void)sendLinePacketWithText:(NSString*)text {
-    if (nil == appLineRequest)
-    {
-        appLineRequest = [[NSMutableURLRequest alloc] initWithURL:nil
-                                                       cachePolicy:NSURLCacheStorageNotAllowed
-                                                   timeoutInterval:10.0];
-        [appLineRequest setHTTPMethod:@"POST"];
-        [appLineRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-        
-        appLineRequestData = [[NSMutableData alloc] init];
-        appLineRequestResponseCode = -1;
-    }
+-(void)sendOutroPacket {
+    [sseManager disconnect];
     
-    // Send it! ... if we have Internets, that is.
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", text, @"text", @"test", @"sender_name", nil];
-        NSString *lineDictJSONEncoded = [jsonWriter stringWithObject:lineDict];
+    NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
+    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
+    NSString* outroRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/outro/", chatEngagementId];
 
-        NSString* lineRequestString = [NSString stringWithFormat:@"%@%@%@", chatPostUrlString, @"line/", chatEngagementId];
-        NSLog(@"Line request string is %@", lineRequestString);
-        NSURL *url = [NSURL URLWithString:lineRequestString];
-        [appLineRequest setURL:url];
-        
-        [appLineRequest setHTTPBody:[lineDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-        LIOLog(@"<LINE> Endpoint: \"%@\"\n    Request: %@", appLineRequest.URL.absoluteString, lineDictJSONEncoded);
-        appLineRequestConnection = [[NSURLConnection alloc] initWithRequest:appLineRequest delegate:self];
-    }
+    [[LPChatAPIClient sharedClient] postPath:outroRequestUrl parameters:outroDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success! Response is %@", responseObject);
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failure! Error is %@", error);
+    }];
 }
 
 - (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params
@@ -1511,6 +1489,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatEngagementId = [[resolvedPayload objectForKey:@"engagement_id"] retain];
         chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
         chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:chatEngagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
+        [userDefaults setObject:chatSSEUrlString forKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
+        [userDefaults setObject:chatPostUrlString forKey:LIOLookIOManagerLastKnownChatPostUrlString];
+
+        [userDefaults synchronize];
         
         NSLog(@"Post url is %@", chatPostUrlString);
         NSLog(@"Engagement Id is %@", chatEngagementId);
@@ -1880,6 +1865,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+            
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            
             [userDefaults synchronize];
             
             resumeMode = NO;
@@ -2045,6 +2035,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)killConnection
 {
+    [self sendOutroPacket];
+    /*
     NSString *outro = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
                                                     @"outro", @"type",
                                                     nil]];
@@ -2055,6 +2047,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                          tag:0];
     
     [controlSocket disconnectAfterWriting];
+     */
 }
 
 - (void)setSkill:(NSString *)aRequiredSkill
@@ -4482,16 +4475,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [appContinueRequestData setData:[NSData data]];
         appContinueRequestResponseCode = [httpResponse statusCode];
     }
-    else if (appIntroRequestConnection == connection)
-    {
-        [appIntroRequestData setData:[NSData data]];
-        appIntroRequestResponseCode = [httpResponse statusCode];
-    }
-    else if (appLineRequestConnection == connection)
-    {
-        [appLineRequestData setData:[NSData data]];
-        appLineRequestResponseCode = [httpResponse statusCode];
-    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -4503,14 +4486,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if (appContinueRequestConnection == connection)
     {
         [appContinueRequestData appendData:data];
-    }
-    else if (appIntroRequestConnection == connection)
-    {
-        [appIntroRequestData appendData:data];
-    }
-    else if (appLineRequestConnection == connection)
-    {
-        [appLineRequestData appendData:data];
     }
 }
 
@@ -4635,88 +4610,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Save all queued events to the user defaults store.
             [[NSUserDefaults standardUserDefaults] setObject:pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
         }
-    } else if (appIntroRequestConnection == connection) {
-        BOOL failure = NO;
-        
-        if (404 == appIntroRequestResponseCode)
-        {
-            // New launch.
-            
-            failure = YES;
-            
-            LIOLog(@"<INTRO> Failure. HTTP code: 404.");
-        }
-        else if (appIntroRequestResponseCode >= 400)
-        {
-            // Retry logic.
-            
-            LIOLog(@"<INTRO> Failure. HTTP code: %d.", appIntroRequestResponseCode);
-            
-        }
-        else if (appIntroRequestResponseCode < 300 && appIntroRequestResponseCode >= 200)
-        {
-            // Success.
-            
-            NSString *responseString = [[[NSString alloc] initWithData:appIntroRequestData encoding:NSUTF8StringEncoding] autorelease];
-            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-            LIOLog(@"<INTRO> Success! Response: %@", responseString);
-            
-            introduced = YES;
-            enqueued = YES;
-            
-            [self parseAndSaveEngagementInfoPayload:responseDict];
-            
-        }
-        else
-        {
-            // Wat.
-            
-            LIOLog(@"<INTRO> Unhandled HTTP code: %d", appIntroRequestResponseCode);
-        }
-        
-        [appIntroRequestConnection release];
-        appIntroRequestConnection = nil;
-        
-        appIntroRequestResponseCode = -1;
-    } else if (appLineRequestConnection == connection) {
-        BOOL failure = NO;
-        
-        if (404 == appLineRequestResponseCode)
-        {
-            // New launch.
-            
-            failure = YES;
-            
-            LIOLog(@"<LINE> Failure. HTTP code: 404.");
-        }
-        else if (appLineRequestResponseCode >= 400)
-        {
-            // Retry logic.
-            
-            LIOLog(@"<LINE> Failure. HTTP code: %d.", appLineRequestResponseCode);
-            
-        }
-        else if (appLineRequestResponseCode < 300 && appLineRequestResponseCode >= 200)
-        {
-            // Success.
-            
-            NSString *responseString = [[[NSString alloc] initWithData:appLineRequestData encoding:NSUTF8StringEncoding] autorelease];
-            NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-            LIOLog(@"<LINE> Success! Response: %@", responseString);
-            
-        }
-        else
-        {
-            // Wat.
-            
-            LIOLog(@"<LINE> Unhandled HTTP code: %d", appLineRequestResponseCode);
-        }
-        
-        [appLineRequestConnection release];
-        appLineRequestConnection = nil;
-        
-        appLineRequestResponseCode = -1;
-    }
+    } 
     
     [self refreshControlButtonVisibility];
 }
@@ -4770,24 +4664,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [lastKnownContinueURL release];
             lastKnownContinueURL = nil;
         }
-    } else if (appIntroRequestConnection == connection)
-    {
-        LIOLog(@"<INTRO> Failed. Reason: %@", [error localizedDescription]);
-        
-        [appIntroRequestConnection release];
-        appIntroRequestConnection = nil;
-        
-        appIntroRequestResponseCode = -1;
-    }  else if (appLineRequestConnection == connection)
-    {
-        LIOLog(@"<LINE> Failed. Reason: %@", [error localizedDescription]);
-        
-        [appLineRequestConnection release];
-        appLineRequestConnection = nil;
-        
-        appIntroRequestResponseCode = -1;
     }
-    
     
     [self refreshControlButtonVisibility];
 }

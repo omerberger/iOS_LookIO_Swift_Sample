@@ -7,8 +7,8 @@
 //
 
 #import "LPHTTPRequestOperation.h"
-#import "SBJSON.h"
 #import "LIOLogManager.h"
+#import "SBJsonParser.h"
 
 @interface LPHTTPRequestOperation ()
 
@@ -66,20 +66,19 @@
 }
 
 - (void)operationDidStart {
+    NSLog(@"Connecting to %@", self.request.URL.absoluteString);
+
     if (! [self isCancelled]) {
-        
-        NSLog(@"Is%@ main thread", ([NSThread isMainThread] ? @"" : @" NOT"));
-        dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
             self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self];
-            
-            NSLog(@"Is%@ main thread", ([NSThread isMainThread] ? @"" : @" NOT"));
-            
             [self.connection start];
         });
     }
     
     if ([self isCancelled]) {
+        [self willChangeValueForKey:@"isFinished"];
         [self finish];
+        [self didChangeValueForKey:@"isFinished"];
     }
 }
 

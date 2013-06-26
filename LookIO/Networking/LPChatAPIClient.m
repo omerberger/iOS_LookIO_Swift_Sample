@@ -66,7 +66,7 @@ static LPChatAPIClient *sharedClient = nil;
         path = @"";
     }
     
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", baseURL, path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
 	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
                                                                 cachePolicy:NSURLCacheStorageNotAllowed
                                                             timeoutInterval:10.0] retain];
