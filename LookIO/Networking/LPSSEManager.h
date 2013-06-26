@@ -14,8 +14,8 @@
 #import <UIKit/UIKit.h>
 
 @class LPSSEManager;
-@class GCDAsyncSocket;
-@protocol GCDAsyncSocketDelegate;
+@class GCDAsyncSocket_LIO;
+@protocol GCDAsyncSocketDelegate_LIO;
 
 @protocol LPSSEManagerDelegate <NSObject>
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
@@ -23,7 +23,7 @@
 - (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
 @end
 
-@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate>
+@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate_LIO>
 
 - (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint;
 - (void)connect;

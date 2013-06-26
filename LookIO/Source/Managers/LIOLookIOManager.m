@@ -35,7 +35,7 @@
 #import "LIOMediaManager.h"
 
 #import "LPSSEManager.h"
-
+#import "LPChatAPIClient.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -365,6 +365,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  selector:@selector(locationWasDetermined:)
                                                      name:LIOAnalyticsManagerLocationWasDeterminedNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        
+        // Init the ChatAPIClient
+        LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
+        chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint];
+        chatClient.usesTLS = usesTLS;
     }
     
     return self;
@@ -374,12 +379,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     developmentMode = YES;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_Dev;
+
+    LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
+    chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint_Dev];
+
 }
 
 - (void)disableDevelopmentMode
 {
     developmentMode = NO;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
+    
+    LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
+    chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint];
 }
 
 -(void)enableDemoSurvey {
@@ -1379,7 +1391,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma
 # pragma mark Chat API v2 Methods
 
-- (void)sendIntroPacket {
+-(void)sendIntroPacket {
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
+    
+    [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success! Response is %@", responseObject);
+        
+        
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failure! Error is %@", error);
+    }];
+}
+
+
+- (void)sendIntroPacketOld {
     if (nil == appIntroRequest)
     {
         appIntroRequest = [[NSMutableURLRequest alloc] initWithURL:nil
@@ -1769,6 +1795,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView autorelease];
         }
         else if ([action isEqualToString:@"feedback_message"])
+        {
+            [altChatViewController forceLeaveMessageScreen];
+        }
+        else if ([action isEqualToString:@"leave_message"])
         {
             [altChatViewController forceLeaveMessageScreen];
         }
@@ -3425,6 +3455,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setUsesTLS:(NSNumber *)aNumber
 {
     usesTLS = [aNumber boolValue];
+    
+    [[LPChatAPIClient sharedClient] setUsesTLS:usesTLS];
 }
 
 - (BOOL)registerPlugin:(id<LIOPlugin>)aPlugin

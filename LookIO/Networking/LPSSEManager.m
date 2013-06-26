@@ -11,14 +11,14 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import "NSData+Base64.h"
 
-@interface LPSSEManager () <GCDAsyncSocketDelegate>
+@interface LPSSEManager () <GCDAsyncSocketDelegate_LIO>
 {
     dispatch_queue_t delegateQueue;
     NSMutableString *partialPacket;
     NSData *sepData;
 }
 
-@property(nonatomic, retain) GCDAsyncSocket *socket;
+@property(nonatomic, retain) GCDAsyncSocket_LIO *socket;
 
 @end
 
@@ -34,7 +34,7 @@
         sepData = [@"\n\n" dataUsingEncoding:NSUTF8StringEncoding];
         
         delegateQueue = dispatch_queue_create("com.liveperson.LPSSEManager", 0);
-        socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:delegateQueue];
+        socket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
         
         self.host = aHost;
         self.port = aPort;
@@ -64,14 +64,14 @@
 
 #pragma mark - GCDAsyncSocketDelegate methods -
 
-- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)aHost port:(uint16_t)aPort
+- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)aHost port:(uint16_t)aPort
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] Connected to %@:%u", aHost, aPort);
     });
 }
 
-- (void)socketDidSecure:(GCDAsyncSocket *)sock
+- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] SSL/TLS established");
@@ -89,7 +89,7 @@
     });
 }
 
-- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+- (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -100,7 +100,7 @@
             partialPacket = nil;
         }
         
-//        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", s);
+        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", s);
         
         NSRange sepRange = [s rangeOfString:@"\n\n"];
         if (sepRange.location != NSNotFound)
@@ -125,7 +125,7 @@
     });
 }
 
-- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
+- (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] Connection closed. Error: %@", err);

@@ -11,6 +11,10 @@
 		A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C859381779E26B00493BF8 /* LPSSEManager.m */; };
 		A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */; };
 		A7C8593E1779E45C00493BF8 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C8593C1779E45C00493BF8 /* GCDAsyncSocket.m */; };
+		A7C85943177B3F1900493BF8 /* LPChatAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C85941177B3F1900493BF8 /* LPChatAPIClient.h */; };
+		A7C85944177B3F1900493BF8 /* LPChatAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C85942177B3F1900493BF8 /* LPChatAPIClient.m */; };
+		A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */; };
+		A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */; };
 		A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */; };
 		A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
@@ -128,6 +132,10 @@
 		A7C859381779E26B00493BF8 /* LPSSEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSSEManager.m; path = Networking/LPSSEManager.m; sourceTree = "<group>"; };
 		A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
 		A7C8593C1779E45C00493BF8 /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
+		A7C85941177B3F1900493BF8 /* LPChatAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPChatAPIClient.h; path = Networking/LPChatAPIClient.h; sourceTree = "<group>"; };
+		A7C85942177B3F1900493BF8 /* LPChatAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPChatAPIClient.m; path = Networking/LPChatAPIClient.m; sourceTree = "<group>"; };
+		A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPHTTPRequestOperation.h; path = Networking/LPHTTPRequestOperation.h; sourceTree = "<group>"; };
+		A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPHTTPRequestOperation.m; path = Networking/LPHTTPRequestOperation.m; sourceTree = "<group>"; };
 		A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewPre.h; path = Source/Views/LIOSurveyViewPre.h; sourceTree = "<group>"; };
 		A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewPre.m; path = Source/Views/LIOSurveyViewPre.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
@@ -258,6 +266,10 @@
 			children = (
 				A7C859371779E26B00493BF8 /* LPSSEManager.h */,
 				A7C859381779E26B00493BF8 /* LPSSEManager.m */,
+				A7C85941177B3F1900493BF8 /* LPChatAPIClient.h */,
+				A7C85942177B3F1900493BF8 /* LPChatAPIClient.m */,
+				A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */,
+				A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */,
 			);
 			name = Networking;
 			sourceTree = "<group>";
@@ -577,6 +589,8 @@
 				A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */,
 				A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */,
 				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
+				A7C85943177B3F1900493BF8 /* LPChatAPIClient.h in Headers */,
+				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -704,6 +718,8 @@
 				A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */,
 				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,
 				A7C8593E1779E45C00493BF8 /* GCDAsyncSocket.m in Sources */,
+				A7C85944177B3F1900493BF8 /* LPChatAPIClient.m in Sources */,
+				A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

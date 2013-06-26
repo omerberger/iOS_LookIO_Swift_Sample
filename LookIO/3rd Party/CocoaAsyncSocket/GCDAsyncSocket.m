@@ -125,19 +125,19 @@ static const int logLevel = LOG_LEVEL_VERBOSE;
 #define SOCKET_NULL -1
 
 
-NSString *const GCDAsyncSocketException = @"GCDAsyncSocketException";
-NSString *const GCDAsyncSocketErrorDomain = @"GCDAsyncSocketErrorDomain";
+NSString *const GCDAsyncSocketException_LIO = @"GCDAsyncSocketException";
+NSString *const GCDAsyncSocketErrorDomain_LIO = @"GCDAsyncSocketErrorDomain";
 
-NSString *const GCDAsyncSocketQueueName = @"GCDAsyncSocket";
-NSString *const GCDAsyncSocketThreadName = @"GCDAsyncSocket-CFStream";
+NSString *const GCDAsyncSocketQueueName_LIO = @"GCDAsyncSocket";
+NSString *const GCDAsyncSocketThreadName_LIO = @"GCDAsyncSocket-CFStream";
 
 #if SECURE_TRANSPORT_MAYBE_AVAILABLE
-NSString *const GCDAsyncSocketSSLCipherSuites = @"GCDAsyncSocketSSLCipherSuites";
+NSString *const GCDAsyncSocketSSLCipherSuites_LIO = @"GCDAsyncSocketSSLCipherSuites";
 #if TARGET_OS_IPHONE
-NSString *const GCDAsyncSocketSSLProtocolVersionMin = @"GCDAsyncSocketSSLProtocolVersionMin";
-NSString *const GCDAsyncSocketSSLProtocolVersionMax = @"GCDAsyncSocketSSLProtocolVersionMax";
+NSString *const GCDAsyncSocketSSLProtocolVersionMin_LIO = @"GCDAsyncSocketSSLProtocolVersionMin";
+NSString *const GCDAsyncSocketSSLProtocolVersionMax_LIO = @"GCDAsyncSocketSSLProtocolVersionMax";
 #else
-NSString *const GCDAsyncSocketSSLDiffieHellmanParameters = @"GCDAsyncSocketSSLDiffieHellmanParameters";
+NSString *const GCDAsyncSocketSSLDiffieHellmanParameters_LIO = @"GCDAsyncSocketSSLDiffieHellmanParameters";
 #endif
 #endif
 
@@ -178,7 +178,7 @@ enum GCDAsyncSocketConfig
 static NSThread *cfstreamThread;  // Used for CFStreams
 #endif
 
-@interface GCDAsyncSocket ()
+@interface GCDAsyncSocket_LIO ()
 {
 	uint32_t flags;
 	uint16_t config;
@@ -209,12 +209,12 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 	NSMutableArray *readQueue;
 	NSMutableArray *writeQueue;
     
-	GCDAsyncReadPacket *currentRead;
-	GCDAsyncWritePacket *currentWrite;
+	GCDAsyncReadPacket_LIO *currentRead;
+	GCDAsyncWritePacket_LIO *currentWrite;
     
 	unsigned long socketFDBytesAvailable;
     
-	GCDAsyncSocketPreBuffer *preBuffer;
+	GCDAsyncSocketPreBuffer_LIO *preBuffer;
     
 #if TARGET_OS_IPHONE
 	CFStreamClientContext streamContext;
@@ -223,7 +223,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 #endif
 #if SECURE_TRANSPORT_MAYBE_AVAILABLE
 	SSLContextRef sslContext;
-	GCDAsyncSocketPreBuffer *sslPreBuffer;
+	GCDAsyncSocketPreBuffer_LIO *sslPreBuffer;
 	size_t sslWriteCachedLength;
 	OSStatus sslErrCode;
 #endif
@@ -358,7 +358,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
  * The current design is very simple and straight-forward, while also keeping memory requirements lower.
  **/
 
-@interface GCDAsyncSocketPreBuffer : NSObject
+@interface GCDAsyncSocketPreBuffer_LIO : NSObject
 {
 	uint8_t *preBuffer;
 	size_t preBufferSize;
@@ -388,7 +388,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 
 @end
 
-@implementation GCDAsyncSocketPreBuffer
+@implementation GCDAsyncSocketPreBuffer_LIO
 
 - (id)initWithCapacity:(size_t)numBytes
 {
@@ -499,7 +499,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
  *  - reading to a certain separator
  *  - or simply reading the first chunk of available data
  **/
-@interface GCDAsyncReadPacket : NSObject
+@interface GCDAsyncReadPacket_LIO : NSObject
 {
 @public
 	NSMutableData *buffer;
@@ -527,13 +527,13 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 
 - (NSUInteger)readLengthForNonTermWithHint:(NSUInteger)bytesAvailable;
 - (NSUInteger)readLengthForTermWithHint:(NSUInteger)bytesAvailable shouldPreBuffer:(BOOL *)shouldPreBufferPtr;
-- (NSUInteger)readLengthForTermWithPreBuffer:(GCDAsyncSocketPreBuffer *)preBuffer found:(BOOL *)foundPtr;
+- (NSUInteger)readLengthForTermWithPreBuffer:(GCDAsyncSocketPreBuffer_LIO *)preBuffer found:(BOOL *)foundPtr;
 
 - (NSInteger)searchForTermAfterPreBuffering:(ssize_t)numBytes;
 
 @end
 
-@implementation GCDAsyncReadPacket
+@implementation GCDAsyncReadPacket_LIO
 
 - (id)initWithData:(NSMutableData *)d
        startOffset:(NSUInteger)s
@@ -791,7 +791,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
  *
  * It is assumed the terminator has not already been read.
  **/
-- (NSUInteger)readLengthForTermWithPreBuffer:(GCDAsyncSocketPreBuffer *)preBuffer found:(BOOL *)foundPtr
+- (NSUInteger)readLengthForTermWithPreBuffer:(GCDAsyncSocketPreBuffer_LIO *)preBuffer found:(BOOL *)foundPtr
 {
 	NSAssert(term != nil, @"This method does not apply to non-term reads");
 	NSAssert([preBuffer availableBytes] > 0, @"Invoked with empty pre buffer!");
@@ -965,7 +965,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 /**
  * The GCDAsyncWritePacket encompasses the instructions for any given write.
  **/
-@interface GCDAsyncWritePacket : NSObject
+@interface GCDAsyncWritePacket_LIO : NSObject
 {
 @public
 	NSData *buffer;
@@ -976,7 +976,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 - (id)initWithData:(NSData *)d timeout:(NSTimeInterval)t tag:(long)i;
 @end
 
-@implementation GCDAsyncWritePacket
+@implementation GCDAsyncWritePacket_LIO
 
 - (id)initWithData:(NSData *)d timeout:(NSTimeInterval)t tag:(long)i
 {
@@ -1001,7 +1001,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
  * The GCDAsyncSpecialPacket encompasses special instructions for interruptions in the read/write queues.
  * This class my be altered to support more than just TLS in the future.
  **/
-@interface GCDAsyncSpecialPacket : NSObject
+@interface GCDAsyncSpecialPacket_LIO : NSObject
 {
 @public
 	NSDictionary *tlsSettings;
@@ -1009,7 +1009,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 - (id)initWithTLSSettings:(NSDictionary *)settings;
 @end
 
-@implementation GCDAsyncSpecialPacket
+@implementation GCDAsyncSpecialPacket_LIO
 
 - (id)initWithTLSSettings:(NSDictionary *)settings
 {
@@ -1027,7 +1027,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@implementation GCDAsyncSocket
+@implementation GCDAsyncSocket_LIO
 
 - (id)init
 {
@@ -1075,7 +1075,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 		}
 		else
 		{
-			socketQueue = dispatch_queue_create([GCDAsyncSocketQueueName UTF8String], NULL);
+			socketQueue = dispatch_queue_create([GCDAsyncSocketQueueName_LIO UTF8String], NULL);
 		}
         
 		// The dispatch_queue_set_specific() and dispatch_get_specific() functions take a "void *key" parameter.
@@ -1106,7 +1106,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 		writeQueue = [[NSMutableArray alloc] initWithCapacity:5];
 		currentWrite = nil;
         
-		preBuffer = [[GCDAsyncSocketPreBuffer alloc] initWithCapacity:(1024 * 4)];
+		preBuffer = [[GCDAsyncSocketPreBuffer_LIO alloc] initWithCapacity:(1024 * 4)];
 	}
 	return self;
 }
@@ -1820,7 +1820,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
             
 			// Create GCDAsyncSocket instance for accepted socket
             
-			GCDAsyncSocket *acceptedSocket = [[GCDAsyncSocket alloc] initWithDelegate:theDelegate
+			GCDAsyncSocket_LIO *acceptedSocket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:theDelegate
 			                                                            delegateQueue:delegateQueue
 			                                                              socketQueue:childSocketQueue];
             
@@ -2916,14 +2916,14 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 {
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketBadConfigError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketBadConfigError_LIO userInfo:userInfo];
 }
 
 - (NSError *)badParamError:(NSString *)errMsg
 {
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketBadParamError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketBadParamError_LIO userInfo:userInfo];
 }
 
 - (NSError *)gaiError:(int)gai_error
@@ -2967,7 +2967,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketConnectTimeoutError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketConnectTimeoutError_LIO userInfo:userInfo];
 }
 
 /**
@@ -2981,7 +2981,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	NSDictionary *info = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketReadMaxedOutError userInfo:info];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketReadMaxedOutError_LIO userInfo:info];
 }
 
 /**
@@ -2995,7 +2995,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketReadTimeoutError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketReadTimeoutError_LIO userInfo:userInfo];
 }
 
 /**
@@ -3009,7 +3009,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketWriteTimeoutError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketWriteTimeoutError_LIO userInfo:userInfo];
 }
 
 - (NSError *)connectionClosedError
@@ -3020,14 +3020,14 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketClosedError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketClosedError_LIO userInfo:userInfo];
 }
 
 - (NSError *)otherError:(NSString *)errMsg
 {
 	NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errMsg forKey:NSLocalizedDescriptionKey];
     
-	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain code:GCDAsyncSocketOtherError userInfo:userInfo];
+	return [NSError errorWithDomain:GCDAsyncSocketErrorDomain_LIO code:GCDAsyncSocketOtherError_LIO userInfo:userInfo];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3820,7 +3820,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 		return;
 	}
     
-	GCDAsyncReadPacket *packet = [[GCDAsyncReadPacket alloc] initWithData:buffer
+	GCDAsyncReadPacket_LIO *packet = [[GCDAsyncReadPacket_LIO alloc] initWithData:buffer
 	                                                          startOffset:offset
 	                                                            maxLength:length
 	                                                              timeout:timeout
@@ -3863,7 +3863,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 		return;
 	}
     
-	GCDAsyncReadPacket *packet = [[GCDAsyncReadPacket alloc] initWithData:buffer
+	GCDAsyncReadPacket_LIO *packet = [[GCDAsyncReadPacket_LIO alloc] initWithData:buffer
 	                                                          startOffset:offset
 	                                                            maxLength:0
 	                                                              timeout:timeout
@@ -3925,7 +3925,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 		return;
 	}
     
-	GCDAsyncReadPacket *packet = [[GCDAsyncReadPacket alloc] initWithData:buffer
+	GCDAsyncReadPacket_LIO *packet = [[GCDAsyncReadPacket_LIO alloc] initWithData:buffer
 	                                                          startOffset:offset
 	                                                            maxLength:maxLength
 	                                                              timeout:timeout
@@ -3954,7 +3954,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	dispatch_block_t block = ^{
         
-		if (!currentRead || ![currentRead isKindOfClass:[GCDAsyncReadPacket class]])
+		if (!currentRead || ![currentRead isKindOfClass:[GCDAsyncReadPacket_LIO class]])
 		{
 			// We're not reading anything right now.
             
@@ -4017,7 +4017,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 			[readQueue removeObjectAtIndex:0];
             
             
-			if ([currentRead isKindOfClass:[GCDAsyncSpecialPacket class]])
+			if ([currentRead isKindOfClass:[GCDAsyncSpecialPacket_LIO class]])
 			{
 				LogVerbose(@"Dequeued GCDAsyncSpecialPacket");
                 
@@ -5071,7 +5071,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 	if (delegateQueue && [delegate respondsToSelector:@selector(socket:didReadData:withTag:)])
 	{
 		__strong id theDelegate = delegate;
-		GCDAsyncReadPacket *theRead = currentRead; // Ensure currentRead retained since result may not own buffer
+		GCDAsyncReadPacket_LIO *theRead = currentRead; // Ensure currentRead retained since result may not own buffer
         
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
             
@@ -5131,7 +5131,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 	if (delegateQueue && [delegate respondsToSelector:@selector(socket:shouldTimeoutReadWithTag:elapsed:bytesDone:)])
 	{
 		__strong id theDelegate = delegate;
-		GCDAsyncReadPacket *theRead = currentRead;
+		GCDAsyncReadPacket_LIO *theRead = currentRead;
         
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
             
@@ -5186,7 +5186,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 {
 	if ([data length] == 0) return;
     
-	GCDAsyncWritePacket *packet = [[GCDAsyncWritePacket alloc] initWithData:data timeout:timeout tag:tag];
+	GCDAsyncWritePacket_LIO *packet = [[GCDAsyncWritePacket_LIO alloc] initWithData:data timeout:timeout tag:tag];
     
 	dispatch_async(socketQueue, ^{ @autoreleasepool {
         
@@ -5209,7 +5209,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
     
 	dispatch_block_t block = ^{
         
-		if (!currentWrite || ![currentWrite isKindOfClass:[GCDAsyncWritePacket class]])
+		if (!currentWrite || ![currentWrite isKindOfClass:[GCDAsyncWritePacket_LIO class]])
 		{
 			// We're not writing anything right now.
             
@@ -5266,7 +5266,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 			[writeQueue removeObjectAtIndex:0];
             
             
-			if ([currentWrite isKindOfClass:[GCDAsyncSpecialPacket class]])
+			if ([currentWrite isKindOfClass:[GCDAsyncSpecialPacket_LIO class]])
 			{
 				LogVerbose(@"Dequeued GCDAsyncSpecialPacket");
                 
@@ -5761,7 +5761,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 	if (delegateQueue && [delegate respondsToSelector:@selector(socket:shouldTimeoutWriteWithTag:elapsed:bytesDone:)])
 	{
 		__strong id theDelegate = delegate;
-		GCDAsyncWritePacket *theWrite = currentWrite;
+		GCDAsyncWritePacket_LIO *theWrite = currentWrite;
         
 		dispatch_async(delegateQueue, ^{ @autoreleasepool {
             
@@ -5829,7 +5829,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
         tlsSettings = [NSDictionary dictionary];
     }
     
-	GCDAsyncSpecialPacket *packet = [[GCDAsyncSpecialPacket alloc] initWithTLSSettings:tlsSettings];
+	GCDAsyncSpecialPacket_LIO *packet = [[GCDAsyncSpecialPacket_LIO alloc] initWithTLSSettings:tlsSettings];
     
 	dispatch_async(socketQueue, ^{ @autoreleasepool {
         
@@ -5861,7 +5861,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
         
 #if TARGET_OS_IPHONE
 		{
-			GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
+			GCDAsyncSpecialPacket_LIO *tlsPacket = (GCDAsyncSpecialPacket_LIO *)currentRead;
 			NSDictionary *tlsSettings = tlsPacket->tlsSettings;
             
 			NSNumber *value;
@@ -6126,7 +6126,7 @@ static NSThread *cfstreamThread;  // Used for CFStreams
 
 static OSStatus SSLReadFunction(SSLConnectionRef connection, void *data, size_t *dataLength)
 {
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)connection;
+	GCDAsyncSocket_LIO *asyncSocket = (__bridge GCDAsyncSocket_LIO *)connection;
     
 	NSCAssert(dispatch_get_specific(asyncSocket->IsOnSocketQueueOrTargetQueueKey), @"What the deuce?");
     
@@ -6135,7 +6135,7 @@ static OSStatus SSLReadFunction(SSLConnectionRef connection, void *data, size_t 
 
 static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, size_t *dataLength)
 {
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)connection;
+	GCDAsyncSocket_LIO *asyncSocket = (__bridge GCDAsyncSocket_LIO *)connection;
     
 	NSCAssert(dispatch_get_specific(asyncSocket->IsOnSocketQueueOrTargetQueueKey), @"What the deuce?");
     
@@ -6150,7 +6150,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
     
 	OSStatus status;
     
-	GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
+	GCDAsyncSpecialPacket_LIO *tlsPacket = (GCDAsyncSpecialPacket_LIO *)currentRead;
 	NSDictionary *tlsSettings = tlsPacket->tlsSettings;
     
 	// Create SSLContext, and setup IO callbacks and connection ref
@@ -6333,8 +6333,8 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 	{
 		NSString *sslLevel = [tlsSettings objectForKey:(NSString *)kCFStreamSSLLevel];
         
-		NSString *sslMinLevel = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMin];
-		NSString *sslMaxLevel = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMax];
+		NSString *sslMinLevel = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMin_LIO];
+		NSString *sslMaxLevel = [tlsSettings objectForKey:GCDAsyncSocketSSLProtocolVersionMax_LIO];
         
 		if (sslLevel)
 		{
@@ -6454,7 +6454,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
     
 	// 8. GCDAsyncSocketSSLCipherSuites
     
-	value = [tlsSettings objectForKey:GCDAsyncSocketSSLCipherSuites];
+	value = [tlsSettings objectForKey:GCDAsyncSocketSSLCipherSuites_LIO];
 	if (value)
 	{
 		NSArray *cipherSuites = (NSArray *)value;
@@ -6498,7 +6498,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 	// Any data in the preBuffer needs to be moved into the sslPreBuffer,
 	// as this data is now part of the secure read stream.
     
-	sslPreBuffer = [[GCDAsyncSocketPreBuffer alloc] initWithCapacity:(1024 * 4)];
+	sslPreBuffer = [[GCDAsyncSocketPreBuffer_LIO alloc] initWithCapacity:(1024 * 4)];
     
 	size_t preBufferLength  = [preBuffer availableBytes];
     
@@ -6658,10 +6658,10 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 		return;
 	}
     
-	NSAssert([currentRead isKindOfClass:[GCDAsyncSpecialPacket class]], @"Invalid read packet for startTLS");
-	NSAssert([currentWrite isKindOfClass:[GCDAsyncSpecialPacket class]], @"Invalid write packet for startTLS");
+	NSAssert([currentRead isKindOfClass:[GCDAsyncSpecialPacket_LIO class]], @"Invalid read packet for startTLS");
+	NSAssert([currentWrite isKindOfClass:[GCDAsyncSpecialPacket_LIO class]], @"Invalid write packet for startTLS");
     
-	GCDAsyncSpecialPacket *tlsPacket = (GCDAsyncSpecialPacket *)currentRead;
+	GCDAsyncSpecialPacket_LIO *tlsPacket = (GCDAsyncSpecialPacket_LIO *)currentRead;
 	CFDictionaryRef tlsSettings = (__bridge CFDictionaryRef)tlsPacket->tlsSettings;
     
 	// Getting an error concerning kCFStreamPropertySSLSettings ?
@@ -6726,7 +6726,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 
 + (void)cfstreamThread { @autoreleasepool
     {
-        [[NSThread currentThread] setName:GCDAsyncSocketThreadName];
+        [[NSThread currentThread] setName:GCDAsyncSocketThreadName_LIO];
         
         LogInfo(@"CFStreamThread: Started");
         
@@ -6743,7 +6743,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
         LogInfo(@"CFStreamThread: Stopped");
     }}
 
-+ (void)scheduleCFStreams:(GCDAsyncSocket *)asyncSocket
++ (void)scheduleCFStreams:(GCDAsyncSocket_LIO *)asyncSocket
 {
 	LogTrace();
 	NSAssert([NSThread currentThread] == cfstreamThread, @"Invoked on wrong thread");
@@ -6757,7 +6757,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 		CFWriteStreamScheduleWithRunLoop(asyncSocket->writeStream, runLoop, kCFRunLoopDefaultMode);
 }
 
-+ (void)unscheduleCFStreams:(GCDAsyncSocket *)asyncSocket
++ (void)unscheduleCFStreams:(GCDAsyncSocket_LIO *)asyncSocket
 {
 	LogTrace();
 	NSAssert([NSThread currentThread] == cfstreamThread, @"Invoked on wrong thread");
@@ -6773,7 +6773,7 @@ static OSStatus SSLWriteFunction(SSLConnectionRef connection, const void *data, 
 
 static void CFReadStreamCallback (CFReadStreamRef stream, CFStreamEventType type, void *pInfo)
 {
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)pInfo;
+	GCDAsyncSocket_LIO *asyncSocket = (__bridge GCDAsyncSocket_LIO *)pInfo;
     
 	switch(type)
 	{
@@ -6840,7 +6840,7 @@ static void CFReadStreamCallback (CFReadStreamRef stream, CFStreamEventType type
 
 static void CFWriteStreamCallback (CFWriteStreamRef stream, CFStreamEventType type, void *pInfo)
 {
-	GCDAsyncSocket *asyncSocket = (__bridge GCDAsyncSocket *)pInfo;
+	GCDAsyncSocket_LIO *asyncSocket = (__bridge GCDAsyncSocket_LIO *)pInfo;
     
 	switch(type)
 	{

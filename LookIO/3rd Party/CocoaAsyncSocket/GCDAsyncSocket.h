@@ -13,9 +13,9 @@
 #import <Security/SecureTransport.h>
 #import <dispatch/dispatch.h>
 
-@class GCDAsyncReadPacket;
-@class GCDAsyncWritePacket;
-@class GCDAsyncSocketPreBuffer;
+@class GCDAsyncReadPacket_LIO;
+@class GCDAsyncWritePacket_LIO;
+@class GCDAsyncSocketPreBuffer_LIO;
 
 #if TARGET_OS_IPHONE
 
@@ -59,41 +59,41 @@
 
 #endif
 
-extern NSString *const GCDAsyncSocketException;
-extern NSString *const GCDAsyncSocketErrorDomain;
+extern NSString *const GCDAsyncSocketException_LIO;
+extern NSString *const GCDAsyncSocketErrorDomain_LIO;
 
-extern NSString *const GCDAsyncSocketQueueName;
-extern NSString *const GCDAsyncSocketThreadName;
+extern NSString *const GCDAsyncSocketQueueName_LIO;
+extern NSString *const GCDAsyncSocketThreadName_LIO;
 
 #if SECURE_TRANSPORT_MAYBE_AVAILABLE
-extern NSString *const GCDAsyncSocketSSLCipherSuites;
+extern NSString *const GCDAsyncSocketSSLCipherSuites_LIO;
 #if TARGET_OS_IPHONE
-extern NSString *const GCDAsyncSocketSSLProtocolVersionMin;
-extern NSString *const GCDAsyncSocketSSLProtocolVersionMax;
+extern NSString *const GCDAsyncSocketSSLProtocolVersionMin_LIO;
+extern NSString *const GCDAsyncSocketSSLProtocolVersionMax_LIO;
 #else
 extern NSString *const GCDAsyncSocketSSLDiffieHellmanParameters;
 #endif
 #endif
 
-enum GCDAsyncSocketError
+enum GCDAsyncSocketError_LIO
 {
-	GCDAsyncSocketNoError = 0,           // Never used
-	GCDAsyncSocketBadConfigError,        // Invalid configuration
-	GCDAsyncSocketBadParamError,         // Invalid parameter was passed
-	GCDAsyncSocketConnectTimeoutError,   // A connect operation timed out
-	GCDAsyncSocketReadTimeoutError,      // A read operation timed out
-	GCDAsyncSocketWriteTimeoutError,     // A write operation timed out
-	GCDAsyncSocketReadMaxedOutError,     // Reached set maxLength without completing
-	GCDAsyncSocketClosedError,           // The remote peer closed the connection
-	GCDAsyncSocketOtherError,            // Description provided in userInfo
+	GCDAsyncSocketNoError_LIO = 0,           // Never used
+	GCDAsyncSocketBadConfigError_LIO,        // Invalid configuration
+	GCDAsyncSocketBadParamError_LIO,         // Invalid parameter was passed
+	GCDAsyncSocketConnectTimeoutError_LIO,   // A connect operation timed out
+	GCDAsyncSocketReadTimeoutError_LIO,      // A read operation timed out
+	GCDAsyncSocketWriteTimeoutError_LIO,     // A write operation timed out
+	GCDAsyncSocketReadMaxedOutError_LIO,     // Reached set maxLength without completing
+	GCDAsyncSocketClosedError_LIO,           // The remote peer closed the connection
+	GCDAsyncSocketOtherError_LIO,            // Description provided in userInfo
 };
-typedef enum GCDAsyncSocketError GCDAsyncSocketError;
+typedef enum GCDAsyncSocketError GCDAsyncSocketError_LIO;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@interface GCDAsyncSocket : NSObject
+@interface GCDAsyncSocket_LIO : NSObject
 
 /**
  * GCDAsyncSocket uses the standard delegate paradigm,
@@ -162,7 +162,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
 
 /**
  * Tells the socket to begin listening and accepting connections on the given port.
- * When a connection is accepted, a new instance of GCDAsyncSocket will be spawned to handle it,
+ * When a connection is accepted, a new instance of LIOLIOwill be spawned to handle it,
  * and the socket:didAcceptNewSocket: delegate method will be invoked.
  *
  * The socket will listen on all available interfaces (e.g. wifi, ethernet, etc)
@@ -312,7 +312,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * will be queued onto the delegateQueue asynchronously (behind any previously queued delegate methods).
  * In other words, the disconnected delegate method will be invoked sometime shortly after this method returns.
  *
- * Please note the recommended way of releasing a GCDAsyncSocket instance (e.g. in a dealloc method)
+ * Please note the recommended way of releasing a LIOLIOinstance (e.g. in a dealloc method)
  * [asyncSocket setDelegate:nil];
  * [asyncSocket disconnect];
  * [asyncSocket release];
@@ -951,7 +951,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
 #pragma mark -
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@protocol GCDAsyncSocketDelegate
+@protocol GCDAsyncSocketDelegate_LIO
 @optional
 
 /**
@@ -972,7 +972,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * dispatch_retain(myExistingQueue);
  * return myExistingQueue;
  **/
-- (dispatch_queue_t)newSocketQueueForConnectionFromAddress:(NSData *)address onSocket:(GCDAsyncSocket *)sock;
+- (dispatch_queue_t)newSocketQueueForConnectionFromAddress:(NSData *)address onSocket:(GCDAsyncSocket_LIO *)sock;
 
 /**
  * Called when a socket accepts a connection.
@@ -984,37 +984,37 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * By default the new socket will have the same delegate and delegateQueue.
  * You may, of course, change this at any time.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket;
+- (void)socket:(GCDAsyncSocket_LIO *)sock didAcceptNewSocket:(GCDAsyncSocket_LIO *)newSocket;
 
 /**
  * Called when a socket connects and is ready for reading and writing.
  * The host parameter will be an IP address, not a DNS name.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port;
+- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(uint16_t)port;
 
 /**
  * Called when a socket has completed reading the requested data into memory.
  * Not called if there is an error.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag;
+- (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag;
 
 /**
  * Called when a socket has read in data, but has not yet completed the read.
  * This would occur if using readToData: or readToLength: methods.
  * It may be used to for things such as updating progress bars.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didReadPartialDataOfLength:(NSUInteger)partialLength tag:(long)tag;
+- (void)socket:(GCDAsyncSocket_LIO*)sock didReadPartialDataOfLength:(NSUInteger)partialLength tag:(long)tag;
 
 /**
  * Called when a socket has completed writing the requested data. Not called if there is an error.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag;
+- (void)socket:(GCDAsyncSocket_LIO*)sock didWriteDataWithTag:(long)tag;
 
 /**
  * Called when a socket has written some data, but has not yet completed the entire write.
  * It may be used to for things such as updating progress bars.
  **/
-- (void)socket:(GCDAsyncSocket *)sock didWritePartialDataOfLength:(NSUInteger)partialLength tag:(long)tag;
+- (void)socket:(GCDAsyncSocket_LIO*)sock didWritePartialDataOfLength:(NSUInteger)partialLength tag:(long)tag;
 
 /**
  * Called if a read operation has reached its timeout without completing.
@@ -1027,7 +1027,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  *
  * Note that this method may be called multiple times for a single read if you return positive numbers.
  **/
-- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutReadWithTag:(long)tag
+- (NSTimeInterval)socket:(GCDAsyncSocket_LIO*)sock shouldTimeoutReadWithTag:(long)tag
                  elapsed:(NSTimeInterval)elapsed
                bytesDone:(NSUInteger)length;
 
@@ -1042,7 +1042,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  *
  * Note that this method may be called multiple times for a single write if you return positive numbers.
  **/
-- (NSTimeInterval)socket:(GCDAsyncSocket *)sock shouldTimeoutWriteWithTag:(long)tag
+- (NSTimeInterval)socket:(GCDAsyncSocket_LIO*)sock shouldTimeoutWriteWithTag:(long)tag
                  elapsed:(NSTimeInterval)elapsed
                bytesDone:(NSUInteger)length;
 
@@ -1052,7 +1052,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * This delegate method is only called if autoDisconnectOnClosedReadStream has been set to NO.
  * See the discussion on the autoDisconnectOnClosedReadStream method for more information.
  **/
-- (void)socketDidCloseReadStream:(GCDAsyncSocket *)sock;
+- (void)socketDidCloseReadStream:(GCDAsyncSocket_LIO*)sock;
 
 /**
  * Called when a socket disconnects with or without error.
@@ -1060,7 +1060,7 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * If you call the disconnect method, and the socket wasn't already disconnected,
  * this delegate method will be called before the disconnect method returns.
  **/
-- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err;
+- (void)socketDidDisconnect:(GCDAsyncSocket_LIO*)sock withError:(NSError *)err;
 
 /**
  * Called after the socket has successfully completed SSL/TLS negotiation.
@@ -1069,6 +1069,6 @@ typedef enum GCDAsyncSocketError GCDAsyncSocketError;
  * If a SSL/TLS negotiation fails (invalid certificate, etc) then the socket will immediately close,
  * and the socketDidDisconnect:withError: delegate method will be called with the specific SSL error code.
  **/
-- (void)socketDidSecure:(GCDAsyncSocket *)sock;
+- (void)socketDidSecure:(GCDAsyncSocket_LIO*)sock;
 
 @end
