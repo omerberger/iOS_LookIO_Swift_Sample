@@ -2321,8 +2321,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString* shortFakePostJSON = @"{\"id\":61454,\"header\":\"Your support session has ended. Please answer a few questions about the service you received.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"How would you describe the support session?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"}}}";
     
-//    NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
-//    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+    NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
+    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
 
     return resolvedSettings;
 }
