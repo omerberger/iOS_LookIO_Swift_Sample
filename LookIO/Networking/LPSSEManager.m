@@ -22,17 +22,21 @@
 
     NSMutableDictionary *events;
     NSString *lastEventId;
+    
+    int readyState;
 }
 
-@property(nonatomic, retain) GCDAsyncSocket_LIO *socket;
-@property(nonatomic, retain) NSMutableDictionary *events;
-@property(nonatomic, retain) NSString *lastEventId;
+@property (nonatomic, retain) GCDAsyncSocket_LIO *socket;
+@property (nonatomic, retain) NSMutableDictionary *events;
+@property (nonatomic, retain) NSString *lastEventId;
+@property (nonatomic, assign) int readyState;
+
 
 @end
 
 @implementation LPSSEManager
 
-@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId;
+@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState;
 
 - (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint
 {
@@ -50,6 +54,8 @@
         lastEventId = @"";
         
         events = [[NSMutableDictionary alloc] init];
+        
+        readyState = LPSSEManagerReadyStateConnecting;
     }
     
     return self;
@@ -72,6 +78,8 @@
     lastEventId = @"";
     
     NSLog(@"[LPSSEManager] Manager reset");
+    readyState = LPSSEManagerReadyStateConnecting;
+
 
 }
 
@@ -108,15 +116,22 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] SSL/TLS established");
         
-        NSString *httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n\n",
-                                 urlEndpoint,
-                                 host];
+        NSString* httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n",
+                                   urlEndpoint,
+                                   host];
+        if (lastEventId)
+            if (![lastEventId isEqualToString:@""])
+                httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@", lastEventId]];
+        
+        httpRequest = [httpRequest stringByAppendingString:@"\n"];        
+        
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
         
         NSLog(@"%@", httpRequest);
         
         [socket readDataWithTimeout:-1 tag:0];
         
+        readyState = LPSSEManagerReadyStateOpen;
         [delegate sseManagerDidConnect:self];
     });
 }
@@ -126,17 +141,10 @@
     event.eventId = @"";
     event.eventType = @"";
     event.data = @"";
-    
-    
+        
     NSArray *lines = [streamString componentsSeparatedByString:@"\n"];
     for (NSString* line in lines) {
         NSLog(@"Parsing line with content: %@", line);
-
-        // If the line is empty, dispatch the event
-        if ([line isEqualToString:@"\n"]) {
-            [delegate sseManager:self didDispatchEvent:event];
-            break;
-        }
         
         // Check if the line contains a colon character
         NSRange colonRange = [line rangeOfString:@":"];
@@ -176,7 +184,20 @@
         }
     }
     
-    [delegate sseManager:self didDispatchEvent:event];
+    // Let's check if this event has already been dispatched
+    if (![event.eventId isEqualToString:@""]) {
+        if ([events objectForKey:event.eventId])
+            return;
+        else {
+            [events setObject:event forKey:event.eventId];
+            lastEventId = event.eventId;
+            [delegate sseManager:self didDispatchEvent:event];            
+        }
+        
+    }
+    // If event doesn't have an id, dispatch it
+    else
+        [delegate sseManager:self didDispatchEvent:event];
 }
 
 - (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
@@ -216,6 +237,7 @@
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] Connection closed. Error: %@", err);
+        readyState = LPSSEManagerReadyStateClosed;
         [delegate sseManagerDidDisconnect:self];
     });
 }
@@ -234,8 +256,7 @@
     for(int i = 0; i < CC_SHA1_DIGEST_LENGTH; i++)
         [output appendFormat:@"%02x", digest[i]];
     
-    return output;
-    
+    return output;    
 }
 
 

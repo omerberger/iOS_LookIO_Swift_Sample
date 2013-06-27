@@ -25,6 +25,12 @@
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent;
 @end
 
+typedef enum {
+    LPSSEManagerReadyStateConnecting      = 0,
+    LPSSEManagerReadyStateOpen            = 1,
+    LPSSEManagerReadyStateClosed          = 2
+} LPSSEManagerReadyState;
+
 @interface LPSSEManager : NSObject <GCDAsyncSocketDelegate_LIO> {
     NSString* host;
     NSString* urlEndpoint;
