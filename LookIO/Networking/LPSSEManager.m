@@ -10,21 +10,29 @@
 #import "GCDAsyncSocket.h"
 #import <CommonCrypto/CommonCrypto.h>
 #import "NSData+Base64.h"
+#import "LPSSEvent.h"
 
 @interface LPSSEManager () <GCDAsyncSocketDelegate_LIO>
 {
     dispatch_queue_t delegateQueue;
     NSMutableString *partialPacket;
     NSData *sepData;
+    
+    GCDAsyncSocket_LIO *socket;
+
+    NSMutableDictionary *events;
+    NSString *lastEventId;
 }
 
 @property(nonatomic, retain) GCDAsyncSocket_LIO *socket;
+@property(nonatomic, retain) NSMutableDictionary *events;
+@property(nonatomic, retain) NSString *lastEventId;
 
 @end
 
 @implementation LPSSEManager
 
-@synthesize host, port, urlEndpoint, delegate, socket;
+@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId;
 
 - (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint
 {
@@ -39,10 +47,34 @@
         self.host = aHost;
         self.port = aPort;
         self.urlEndpoint = anEndpoint;
+        lastEventId = @"";
+        
+        events = [[NSMutableDictionary alloc] init];
     }
     
     return self;
 }
+
+-(void)dealloc {    
+    [events removeAllObjects];
+    [events release];
+    events = nil;
+    
+    [super dealloc];
+}
+
+- (void)reset {
+    self.host = nil;
+    self.port = 0;
+    self.urlEndpoint = nil;
+    
+    [events removeAllObjects];
+    lastEventId = @"";
+    
+    NSLog(@"[LPSSEManager] Manager reset");
+
+}
+
 
 - (void)connect
 {
@@ -76,7 +108,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] SSL/TLS established");
         
-        NSString *httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\n\n",
+        NSString *httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n\n",
                                  urlEndpoint,
                                  host];
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
@@ -89,36 +121,91 @@
     });
 }
 
+- (void)createEventFromStreamString:(NSString*)streamString {
+    LPSSEvent* event = [[LPSSEvent alloc] init];
+    event.eventId = @"";
+    event.eventType = @"";
+    event.data = @"";
+    
+    
+    NSArray *lines = [streamString componentsSeparatedByString:@"\n"];
+    for (NSString* line in lines) {
+        NSLog(@"Parsing line with content: %@", line);
+
+        // If the line is empty, dispatch the event
+        if ([line isEqualToString:@"\n"]) {
+            [delegate sseManager:self didDispatchEvent:event];
+            break;
+        }
+        
+        // Check if the line contains a colon character
+        NSRange colonRange = [line rangeOfString:@":"];
+        if (colonRange.location != NSNotFound) {
+            // If the colon is the first character, ignore this line
+            if (colonRange.location == 0 && colonRange.length == 1) {
+                // Do nothing
+            }
+            // If not, parse the data before the colon as field, and the data after the colon as value (removing the first white space)
+            else {
+                NSString* field = [line substringToIndex:colonRange.location];
+                NSString* value = [line substringFromIndex:colonRange.location + colonRange.length];
+                NSRange whiteSpaceRange = [value rangeOfString:@" "];
+                if (whiteSpaceRange.location != NSNotFound)
+                    if (whiteSpaceRange.location == 0)
+                        value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:@""];
+                
+                NSLog(@"Read field: %@ value: %@", field, value);
+                
+                if ([field isEqualToString:@"id"])
+                    event.eventId = value;
+                if ([field isEqualToString:@"event"])
+                    event.eventType = value;
+                if ([field isEqualToString:@"data"])
+                    event.data = [event.data stringByAppendingString:value];
+            }
+        }
+        // If not colon is found, the line serves as the field name with a value of ""
+        else {
+            NSString* field = line;
+            if ([field isEqualToString:@"id"])
+                event.eventId = @"";
+            if ([field isEqualToString:@"event"])
+                event.eventType = @"";
+            if ([field isEqualToString:@"data"])
+                event.data = [event.data stringByAppendingString:@""];
+        }
+    }
+    
+    [delegate sseManager:self didDispatchEvent:event];
+}
+
 - (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
+    NSLog(@"<DID READ DATA>: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSString *readString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         
         if ([partialPacket length])
         {
-            s = [NSString stringWithFormat:@"%@%@", partialPacket, s];
+            readString = [NSString stringWithFormat:@"%@%@", partialPacket, readString];
             partialPacket = nil;
         }
         
-        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", s);
+        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", readString);
         
-        NSRange sepRange = [s rangeOfString:@"\n\n"];
+        NSRange sepRange = [readString rangeOfString:@"\n\n"];
         if (sepRange.location != NSNotFound)
         {
-            NSRange dataRange = [s rangeOfString:@"data: "];
-            if (dataRange.location != NSNotFound) {
-                dataRange.length -= 5;
-                dataRange.location += 5;
-                NSString *packet = [s substringWithRange:NSUnionRange(dataRange, sepRange)];
-                [delegate sseManager:self didReceivePacket:packet];
-                int afterSep = sepRange.location + sepRange.length;
-                if (afterSep < [s length])
-                    partialPacket = [[s substringFromIndex:afterSep] mutableCopy];
-            }
+            NSArray *eventStreamStrings = [readString componentsSeparatedByString:@"\n\n"];
+            NSLog(@"Received %d events", eventStreamStrings.count);
+
+            for (NSString* eventStreamString in eventStreamStrings)
+                [self createEventFromStreamString:eventStreamString];
         }
         else
         {
-            partialPacket = [s mutableCopy];
+            partialPacket = [readString mutableCopy];
         }
         
         [socket readDataWithTimeout:-1 tag:0];

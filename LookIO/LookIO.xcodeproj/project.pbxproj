@@ -17,6 +17,8 @@
 		A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */; };
 		A7C96CB11757D40B0028F39C /* LIOSurveyViewPre.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */; };
 		A7C96CB21757D40B0028F39C /* LIOSurveyViewPre.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */; };
+		A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = A7CF0497177C833200AFDC5D /* LPSSEvent.h */; };
+		A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = A7CF0498177C833200AFDC5D /* LPSSEvent.m */; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
 		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
@@ -138,6 +140,8 @@
 		A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPHTTPRequestOperation.m; path = Networking/LPHTTPRequestOperation.m; sourceTree = "<group>"; };
 		A7C96CAF1757D40B0028F39C /* LIOSurveyViewPre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyViewPre.h; path = Source/Views/LIOSurveyViewPre.h; sourceTree = "<group>"; };
 		A7C96CB01757D40B0028F39C /* LIOSurveyViewPre.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyViewPre.m; path = Source/Views/LIOSurveyViewPre.m; sourceTree = "<group>"; };
+		A7CF0497177C833200AFDC5D /* LPSSEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEvent.h; path = Networking/LPSSEvent.h; sourceTree = "<group>"; };
+		A7CF0498177C833200AFDC5D /* LPSSEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSSEvent.m; path = Networking/LPSSEvent.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
@@ -270,6 +274,8 @@
 				A7C85942177B3F1900493BF8 /* LPChatAPIClient.m */,
 				A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */,
 				A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */,
+				A7CF0497177C833200AFDC5D /* LPSSEvent.h */,
+				A7CF0498177C833200AFDC5D /* LPSSEvent.m */,
 			);
 			name = Networking;
 			sourceTree = "<group>";
@@ -591,6 +597,7 @@
 				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
 				A7C85943177B3F1900493BF8 /* LPChatAPIClient.h in Headers */,
 				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
+				A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -720,6 +727,7 @@
 				A7C8593E1779E45C00493BF8 /* GCDAsyncSocket.m in Sources */,
 				A7C85944177B3F1900493BF8 /* LPChatAPIClient.m in Sources */,
 				A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */,
+				A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

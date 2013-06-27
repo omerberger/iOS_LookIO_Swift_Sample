@@ -10,7 +10,10 @@
 
 @class LPHTTPRequestOperation;
 
-@interface LPChatAPIClient : NSObject
+@interface LPChatAPIClient : NSObject {
+    NSURL *baseURL;
+    BOOL usesTLS;
+}
 
 @property (nonatomic, retain) NSURL *baseURL;
 @property (nonatomic, assign) BOOL usesTLS;

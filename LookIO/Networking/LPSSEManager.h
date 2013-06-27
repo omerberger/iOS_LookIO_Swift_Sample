@@ -15,19 +15,27 @@
 
 @class LPSSEManager;
 @class GCDAsyncSocket_LIO;
+@class LPSSEvent;
 @protocol GCDAsyncSocketDelegate_LIO;
 
 @protocol LPSSEManagerDelegate <NSObject>
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager;
 - (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
+- (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent;
 @end
 
-@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate_LIO>
+@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate_LIO> {
+    NSString* host;
+    NSString* urlEndpoint;
+    int port;
+    id <LPSSEManagerDelegate> delegate;
+}
 
 - (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint;
 - (void)connect;
 - (void)disconnect;
+- (void)reset;
 
 @property(nonatomic, retain) NSString *host;
 @property(nonatomic, retain) NSString *urlEndpoint;

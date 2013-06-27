@@ -36,6 +36,7 @@
 
 #import "LPSSEManager.h"
 #import "LPChatAPIClient.h"
+#import "LPSSEvent.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -1557,11 +1558,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
--(void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aJsonString {
-    NSDictionary *aPacket = [jsonParser objectWithString:aJsonString];
+-(void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent {
+    NSDictionary *aPacket = [jsonParser objectWithString:anEvent.data];
     if (nil == aPacket)
     {
-        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", aJsonString];
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", anEvent.data];
         return;
     }
     
