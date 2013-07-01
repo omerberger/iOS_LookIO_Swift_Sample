@@ -1453,16 +1453,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendOutroPacket {
-    [sseManager disconnect];
-    
     NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* outroRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/outro/", chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:outroRequestUrl parameters:outroDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Send outro packet - Success! Response is %@", responseObject);
+        [sseManager disconnect];
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Send outro packet - Failure! Error is %@", error);
+        [sseManager disconnect];        
     }];
 }
 
