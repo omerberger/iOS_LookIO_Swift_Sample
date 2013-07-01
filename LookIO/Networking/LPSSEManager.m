@@ -79,10 +79,7 @@
     
     NSLog(@"[LPSSEManager] Manager reset");
     readyState = LPSSEManagerReadyStateConnecting;
-
-
 }
-
 
 - (void)connect
 {
@@ -238,7 +235,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] Connection closed. Error: %@", err);
         readyState = LPSSEManagerReadyStateClosed;
-        [delegate sseManagerDidDisconnect:self];
+        [self reset];
+        [delegate sseManagerDidDisconnect:self withError:err];
     });
 }
 

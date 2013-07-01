@@ -20,7 +20,7 @@
 
 @protocol LPSSEManagerDelegate <NSObject>
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
-- (void)sseManagerDidDisconnect:(LPSSEManager *)aManager;
+- (void)sseManagerDidDisconnect:(LPSSEManager *)aManager withError:(NSError*)err;
 - (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent;
 @end

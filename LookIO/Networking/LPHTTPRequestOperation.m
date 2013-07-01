@@ -22,11 +22,13 @@
 @property (nonatomic, assign) NSInteger requestResponseCode;
 @property (nonatomic, assign) LPOperationState state;
 
+@property (nonatomic, assign) int retriesLeft;
+
 @end
 
 @implementation LPHTTPRequestOperation
 
-@synthesize connection, request, response, HTTPError, responseData, responseString, requestResponseCode;
+@synthesize connection, request, response, HTTPError, responseData, responseString, requestResponseCode, retriesLeft;
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest {
     self = [super init];
@@ -35,8 +37,8 @@
     }
     
     self.request = urlRequest;
-
     self.state = LPOperationReadyState;
+    self.retriesLeft = 3;
     
     return self;
 }
@@ -190,13 +192,24 @@
 {
     self.error = error;
     LIOLog(@"<LPHTTPRequestOperation> Failed. Reason: %@", [error localizedDescription]);
+    
+    if (retriesLeft > 0) {
+        retriesLeft -= 1;
+        NSLog(@"<LPHTTPRequestOperation> Retry %d or 3", 3-retriesLeft);
+        
+        [self.connection release];
+        self.connection = nil;
+        
+        self.state = LPOperationReadyState;
+        [self start];
+    } else {
+        [self willChangeValueForKey:@"isFinished"];
+        [self finish];
+        [self didChangeValueForKey:@"isFinished"];
 
-    [self willChangeValueForKey:@"isFinished"];
-    [self finish];
-    [self didChangeValueForKey:@"isFinished"];
-
-    [self.connection release];
-    self.connection = nil;
+        [self.connection release];
+        self.connection = nil;
+    }
 }
 
 @end
