@@ -78,13 +78,15 @@ static LIOMediaManager *sharedInstance = nil;
         return;
     }
     
-    NSString *sessionId = [[LIOLookIOManager sharedLookIOManager] currentSessionId];
+    NSString *sessionId = [[LIOLookIOManager sharedLookIOManager] currentChatEngagementId];
     if (0 == [sessionId length])
         return;
     
     NSString *bundleId = [[LIOLookIOManager sharedLookIOManager] bundleId];
     
     NSString *endpoint = [NSString stringWithFormat:@"https://%@/api/v1/media/upload", [[LIOLookIOManager sharedLookIOManager] chosenEndpoint]];
+    
+    NSLog(@"Photo endpoint is %@", endpoint);
     NSMutableURLRequest *uploadRequest = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:endpoint]
                                                                        cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                                                    timeoutInterval:20.0] autorelease];

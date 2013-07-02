@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyViewPre;
-@class LIOTimerProxy;
+@class LIOTimerProxy, LIOChatMessage;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -36,6 +36,7 @@
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didResendChatMessage:(LIOChatMessage*)aMessage;
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
@@ -91,6 +92,9 @@
     
     BOOL surveyPreCompleted;
     int currentPopoverType;
+
+    LIOChatMessage *clickedFailedMessage;
+    int clickedFailedMessageIndex;
     
 }
 

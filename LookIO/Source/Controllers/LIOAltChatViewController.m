@@ -39,11 +39,12 @@
 #define LIOAltChatViewControllerMaximumAttachmentActualSize 800.0
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
-#define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
+#define LIOAltChatViewControllerTableViewCellBubbleViewTag           1001
+#define LIOAltChatViewControllerTableViewCellFailedMessageButtonTag  1004
 
-#define LIOAltChatViewControllerPhotoSourceActionSheetTag 1002
-#define LIOAltChatViewControllerAttachConfirmAlertViewTag 1003
-
+#define LIOAltChatViewControllerPhotoSourceActionSheetTag            1002
+#define LIOAltChatViewControllerAttachConfirmAlertViewTag            1003
+#define LIOAltChatViewControllerResendMessageActionSheetTag          1005
 #define LIOSurveyViewPrePadding 10.0
 
 #define LIOIpadPopoverTypeNone 0
@@ -736,7 +737,7 @@
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
+{    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI && popover) {
@@ -1215,6 +1216,7 @@
         aCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
         aCell.selectionStyle = UITableViewCellSelectionStyleNone;
         [aCell autorelease];
+        
     }
     
     [aCell.contentView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
@@ -1313,6 +1315,15 @@
         
         [aBubble setNeedsLayout];
         [aBubble setNeedsDisplay];
+                
+        if (LIOChatMessageKindLocal == aMessage.kind && aMessage.sendingFailed) {
+            UIButton* failedMessageButton = [[UIButton alloc] initWithFrame:CGRectMake(tableView.bounds.size.width - 313.0, 20, 22, 22)];
+            UIImage* failedMessageButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFailedMessageAlertIcon"];
+            [failedMessageButton setImage:failedMessageButtonImage forState:UIControlStateNormal];
+            [failedMessageButton addTarget:self action:@selector(failedMessageButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+            failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
+            [aCell.contentView addSubview:failedMessageButton];
+        }
     }
     
     return aCell;
@@ -1382,6 +1393,45 @@
 
 #pragma mark -
 #pragma mark UIControl actions
+
+- (void)failedMessageButtonWasTapped:(UIButton*)aButton {
+    CGPoint buttonPosition = [aButton convertPoint:CGPointZero toView:tableView];
+    NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:buttonPosition];
+    
+    if (indexPath) {
+        clickedFailedMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
+        clickedFailedMessageIndex = indexPath.row;        
+        
+        BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
+        
+        NSString *titleString =  [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLookIOManager.ResendMessageQuestionTitle"];
+        NSString *resendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLookIOManager.ResendMessageQuestionSend"];
+        NSString *cancelString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLookIOManager.ResendMessageQuestionCancel"];        
+        
+        if (padUI) {
+            actionSheet = [[UIActionSheet alloc] initWithTitle:titleString
+                                                      delegate:self
+                                             cancelButtonTitle:cancelString
+                                        destructiveButtonTitle:nil
+                                             otherButtonTitles:resendString, cancelString, nil];
+            actionSheet.tag = LIOAltChatViewControllerResendMessageActionSheetTag;
+            actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
+
+            [actionSheet showFromRect:aButton.bounds inView:aButton animated:YES];
+        }
+        else {
+            actionSheet = [[UIActionSheet alloc] initWithTitle:titleString
+                                                      delegate:self
+                                             cancelButtonTitle:cancelString
+                                        destructiveButtonTitle:nil
+                                             otherButtonTitles:resendString, nil];
+            actionSheet.tag = LIOAltChatViewControllerResendMessageActionSheetTag;
+            actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
+
+            [actionSheet showInView:self.view];
+        }
+    }
+}
 
 - (void)emailConvoButtonWasTapped
 {
@@ -2061,6 +2111,13 @@
             [self showCamera];
         else if (1 == buttonIndex) // choose existing
             [self showPhotoLibraryPicker];
+    }
+    
+    if (LIOAltChatViewControllerResendMessageActionSheetTag == actionSheet.tag)
+    {
+        if (0 == buttonIndex) {
+            [delegate altChatViewController:self didResendChatMessage:clickedFailedMessage];
+        }
     }
 }
 

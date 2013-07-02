@@ -1444,8 +1444,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }];
 }
 
-- (void)sendLinePacketWithText:(NSString*)text {
-    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", text, @"text", @"test", @"sender_name", nil];
+- (void)sendLinePacketWithMessage:(LIOChatMessage*)aMessage {
+    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", nil];
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/line/", chatEngagementId];
 
@@ -1453,28 +1453,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSLog(@"Success! Response is %@", responseObject);
         
         LIOLog(@"<LINE> Success! Response: %@", responseObject);
-        
-        LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
-        newMessage.date = [NSDate date];
-        newMessage.kind = LIOChatMessageKindLocal;
-        newMessage.text = text;
-        [chatHistory addObject:newMessage];
-        
-        [altChatViewController reloadMessages];
-        [altChatViewController scrollToBottomDelayed:YES];
-        
-        firstChatMessageSent = YES;
 
+        // If this is a resending of a failed message, let's update it and refresh the tableview
+        if (aMessage.sendingFailed) {
+            aMessage.sendingFailed = NO;
+            if (altChatViewController)
+                [altChatViewController reloadMessages];
+        }
+        
+        
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failure! Error is %@", error);
         
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
+        aMessage.sendingFailed = YES;
+        if (altChatViewController)
+            [altChatViewController reloadMessages];
+        else {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
                                                            delegate:nil
                                                   cancelButtonTitle:@"LIOLookIOManager.FailedMessageSendButton"
                                                   otherButtonTitles:nil];
-        [alertView show];
-        [alertView autorelease];
+            [alertView show];
+            [alertView autorelease];
+        }
     }];
 }
 
@@ -3196,6 +3198,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [userDefaults objectForKey:LIOLookIOManagerLastKnownSessionIdKey];
 }
 
+- (NSString*) currentChatEngagementId
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    return [userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
+}
+
 - (UInt32)enabledCollaborationComponents
 {
     UInt32 result = kLPCollaborationComponentNone;
@@ -3894,23 +3902,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
     [userDefaults synchronize];
     
-    /*
-    NSString *chat = [jsonWriter stringWithObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                    @"chat", @"type",
-                                                    aString, @"text",
-                                                    nil]];
+    LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
+    newMessage.date = [NSDate date];
+    newMessage.kind = LIOChatMessageKindLocal;
+    newMessage.text = aString;
+    newMessage.sendingFailed = NO;
+    [chatHistory addObject:newMessage];
     
-    chat = [chat stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    NSData *chatData = [chat dataUsingEncoding:NSUTF8StringEncoding];
+    [altChatViewController reloadMessages];
+    [altChatViewController scrollToBottomDelayed:YES];
     
-    [controlSocket writeData:chatData
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-     */
-    [self sendLinePacketWithText:aString];
-    
+    firstChatMessageSent = YES;
 
+    [self sendLinePacketWithMessage:newMessage];
 }
+
+- (void)altChatViewController:(LIOAltChatViewController *)aController didResendChatMessage:(LIOChatMessage *)aMessage {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+    [userDefaults synchronize];
+    
+    [self sendLinePacketWithMessage:aMessage];
+}
+
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithAttachmentId:(NSString *)aString
 {

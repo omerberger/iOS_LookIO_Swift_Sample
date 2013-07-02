@@ -24,6 +24,7 @@ typedef enum
     NSDate *date;
     NSString *senderName;
     NSString *attachmentId;
+    BOOL sendingFailed;
 }
 
 @property(nonatomic, assign) LIOChatMessageKind kind;
@@ -31,6 +32,7 @@ typedef enum
 @property(nonatomic, retain) NSDate *date;
 @property(nonatomic, retain) NSString *senderName;
 @property(nonatomic, retain) NSString *attachmentId;
+@property(nonatomic, assign) BOOL sendingFailed;
 
 + (LIOChatMessage *)chatMessage;
 
