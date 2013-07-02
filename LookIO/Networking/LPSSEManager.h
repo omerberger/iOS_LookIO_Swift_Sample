@@ -38,7 +38,7 @@ typedef enum {
     id <LPSSEManagerDelegate> delegate;
 }
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint;
+- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint lastEventId:(NSString*)anEventId;
 - (void)connect;
 - (void)disconnect;
 - (void)reset;

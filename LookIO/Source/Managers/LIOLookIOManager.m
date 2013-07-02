@@ -106,6 +106,7 @@
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
 #define LIOLookIOManagerLastKnownChatPostUrlString      @"LIOLookIOManagerLastKnownChatPostUrlString"
+#define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -188,6 +189,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSString* chatEngagementId;
     NSString* chatSSEUrlString;
     NSString* chatPostUrlString;
+    NSString* chatLastEventId;
     
     LPSSEManager* sseManager;
 }
@@ -711,6 +713,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             chatEngagementId = engagementId;
             chatPostUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
             chatSSEUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
+            chatLastEventId = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             
             double delayInSeconds = 2.0;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -723,10 +726,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Too much time has passed.
             LIOLog(@"Found a saved engagement id, but it's old. Discarding...");
             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            
             [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+            
             [userDefaults synchronize];
         }
     }
@@ -982,10 +988,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     
     chatEngagementId = nil;
     chatSSEUrlString = nil;
     chatPostUrlString = nil;
+    chatLastEventId = nil;
     
     [sseManager release];
     sseManager = nil;
@@ -1577,8 +1585,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         portToUse = url.port;
     
     NSLog(@"Port received is %d; Using %d", url.port.intValue, portToUse);
+    NSLog(@"Using Last-Event-Id as %@", chatLastEventId);
+
     
-    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId]];
+    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] lastEventId:chatLastEventId];
     sseManager.delegate = self;
     [sseManager connect];
 }
@@ -1698,6 +1708,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", anEvent.data];
         return;
     }
+    
+    if (anEvent.eventId)
+        if (![anEvent.eventId isEqualToString:@""])
+            chatLastEventId = anEvent.eventId;
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:chatLastEventId forKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+    [userDefaults synchronize];
+    
+    NSLog(@"Set Last-Event-Id as %@", chatLastEventId);
     
     LIOLog(@"<<<FROM BACKEND (objc)<<< %@", aPacket);
     
@@ -2005,6 +2025,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             
             [userDefaults synchronize];
             

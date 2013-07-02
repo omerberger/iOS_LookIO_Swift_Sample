@@ -38,7 +38,7 @@
 
 @synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState;
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint
+- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint lastEventId:(NSString *)anEventId
 {
     self = [super init];
     if (self)
@@ -52,7 +52,9 @@
         self.port = aPort;
         self.urlEndpoint = anEndpoint;
         lastEventId = @"";
-        
+        if (lastEventId)
+            self.lastEventId = anEventId;
+            
         events = [[NSMutableDictionary alloc] init];
         
         readyState = LPSSEManagerReadyStateConnecting;
@@ -76,6 +78,8 @@
     
     [events removeAllObjects];
     lastEventId = @"";
+    
+    self.socket.delegate = nil;
     
     NSLog(@"[LPSSEManager] Manager reset");
     readyState = LPSSEManagerReadyStateConnecting;
@@ -116,9 +120,12 @@
         NSString* httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n",
                                    urlEndpoint,
                                    host];
+        
+        NSLog(@"Socket did secure, last-event-id is %@", self.lastEventId);
+        
         if (lastEventId)
             if (![lastEventId isEqualToString:@""])
-                httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@", lastEventId]];
+                httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@\n", lastEventId]];
         
         httpRequest = [httpRequest stringByAppendingString:@"\n"];        
         
@@ -180,6 +187,8 @@
                 event.data = [event.data stringByAppendingString:@""];
         }
     }
+    
+    NSLog(@"Received event with id %@", event.eventId);
     
     // Let's check if this event has already been dispatched
     if (![event.eventId isEqualToString:@""]) {

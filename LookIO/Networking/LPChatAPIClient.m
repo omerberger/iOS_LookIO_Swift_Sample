@@ -80,6 +80,7 @@ static LPChatAPIClient *sharedClient = nil;
         } else {
             NSString *parametersJSONEncoded = [jsonWriter stringWithObject:parameters];
             [request setHTTPBody:[parametersJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+            NSLog(@"Request body is %@", parametersJSONEncoded);
         }
     }
     
