@@ -190,6 +190,10 @@
     
     NSLog(@"Received event with id %@", event.eventId);
     
+    // Let's not pass on events without any data
+    if ([event.data isEqualToString:@""])
+        return;
+    
     // Let's check if this event has already been dispatched
     if (![event.eventId isEqualToString:@""]) {
         if ([events objectForKey:event.eventId])

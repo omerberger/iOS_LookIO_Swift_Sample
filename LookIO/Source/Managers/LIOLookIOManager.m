@@ -1453,10 +1453,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSLog(@"Success! Response is %@", responseObject);
         
         LIOLog(@"<LINE> Success! Response: %@", responseObject);
+        
+        LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
+        newMessage.date = [NSDate date];
+        newMessage.kind = LIOChatMessageKindLocal;
+        newMessage.text = text;
+        [chatHistory addObject:newMessage];
+        
+        [altChatViewController reloadMessages];
+        [altChatViewController scrollToBottomDelayed:YES];
+        
+        firstChatMessageSent = YES;
 
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failure! Error is %@", error);
-    
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"LIOLookIOManager.FailedMessageSendButton"
+                                                  otherButtonTitles:nil];
+        [alertView show];
+        [alertView autorelease];
     }];
 }
 
@@ -3891,16 +3909,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
      */
     [self sendLinePacketWithText:aString];
     
-    LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
-    newMessage.date = [NSDate date];
-    newMessage.kind = LIOChatMessageKindLocal;
-    newMessage.text = aString;
-    [chatHistory addObject:newMessage];
-    
-    [altChatViewController reloadMessages];
-    [altChatViewController scrollToBottomDelayed:YES];
-    
-    firstChatMessageSent = YES;
+
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithAttachmentId:(NSString *)aString

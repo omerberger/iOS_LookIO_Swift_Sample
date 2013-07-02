@@ -123,3 +123,6 @@
 "LIOLookIOManager.BadInitAlertTitle" = "Live Chat Disabled";
 "LIOLookIOManager.BadInitAlertBody" = "Live chat configuration error. UIWindow was not made key & visible before LPMobile library intitialization.";
 "LIOLookIOManager.BadInitButton" = "Close";
+"LIOLookIOManager.FailedMessageSendTitle" = "Live Chat Error"
+"LIOLookIOManager.FailedMessageSendBody" = "Could not send your message. Please try again.""
+"LIOLookIOManager.FailedMessageSendButton" = "Dismiss"
