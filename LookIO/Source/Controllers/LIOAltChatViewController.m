@@ -683,7 +683,7 @@
     });
     
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
-        [self didRotateFromInterfaceOrientation:0];
+        [self willAnimateRotationToInterfaceOrientation:0 duration:0];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -736,19 +736,18 @@
 {
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{    
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
+    
     if (padUI && popover) {
-         if (currentPopoverType == LIOIpadPopoverTypeImagePicker)
+        if (currentPopoverType == LIOIpadPopoverTypeImagePicker)
             [popover presentPopoverFromRect:inputBar.attachButton.bounds
                                      inView:inputBar.attachButton
                    permittedArrowDirections:UIPopoverArrowDirectionDown
                                    animated:YES];
     }
     
-
+    
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
@@ -758,6 +757,11 @@
     
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{    
+
     
 }
 
@@ -1863,7 +1867,7 @@
         double delayInSeconds = 0.1;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self didRotateFromInterfaceOrientation:0];
+            [self willAnimateRotationToInterfaceOrientation:0 duration:0];
         });
         
         [self dismissModalViewControllerAnimated:YES];
