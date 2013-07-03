@@ -1634,17 +1634,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [sseManager disconnect];
 }
 
--(void)sseManagerDidDisconnect:(LPSSEManager *)aManager withError:(NSError *)err {
+-(void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError *)err
+{
     LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
     
     // If the socket disconnected without an outro and without the user asking to disconnect, let's try to reconnect it immediately
     if (NO == userWantsSessionTermination && NO == outroReceived && NO == sseSocketAttemptingReconnect) {
         sseSocketAttemptingReconnect = YES;
-        [self connectSSESocket];        
+        [self connectSSESocket];
         return;
     }
     
-    sseSocketAttemptingReconnect = NO;    
+    sseSocketAttemptingReconnect = NO;
     
     // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
     if (/*NO == firstChatMessageSent && */NO == unprovisioned)
@@ -1716,8 +1717,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     clickView.hidden = YES;
     cursorView.hidden = YES;
     
-    // 
-    
+    //
+}
+
+- (void)sseManagerDidDisconnect:(LPSSEManager *)aManager {
+
     LIOLog(@"Socket did disconnect.");
     
     socketConnected = NO;

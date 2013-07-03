@@ -7,18 +7,18 @@
 //
 
 #import "LPSSEManager.h"
-#import "GCDAsyncSocket.h"
+#import "AsyncSocket.h"
 #import <CommonCrypto/CommonCrypto.h>
 #import "NSData+Base64.h"
 #import "LPSSEvent.h"
 
-@interface LPSSEManager () <GCDAsyncSocketDelegate_LIO>
+@interface LPSSEManager () <AsyncSocketDelegate_LIO>
 {
     dispatch_queue_t delegateQueue;
     NSMutableString *partialPacket;
     NSData *sepData;
     
-    GCDAsyncSocket_LIO *socket;
+    AsyncSocket_LIO *socket;
 
     NSMutableDictionary *events;
     NSString *lastEventId;
@@ -26,7 +26,7 @@
     int readyState;
 }
 
-@property (nonatomic, retain) GCDAsyncSocket_LIO *socket;
+@property (nonatomic, retain) AsyncSocket_LIO *socket;
 @property (nonatomic, retain) NSMutableDictionary *events;
 @property (nonatomic, retain) NSString *lastEventId;
 @property (nonatomic, assign) int readyState;
@@ -45,8 +45,7 @@
     {
         sepData = [@"\n\n" dataUsingEncoding:NSUTF8StringEncoding];
         
-        delegateQueue = dispatch_queue_create("com.liveperson.LPSSEManager", 0);
-        socket = [[GCDAsyncSocket_LIO alloc] initWithDelegate:self delegateQueue:delegateQueue];
+        socket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
         
         self.host = aHost;
         self.port = aPort;
@@ -95,7 +94,11 @@
         [delegate sseManagerDidDisconnect:self withError:anError];
         return;
     }
-    [socket startTLS:nil];
+}
+
+- (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port {
+    [socket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
+
 }
 
 - (void)disconnect
@@ -105,14 +108,7 @@
 
 #pragma mark - GCDAsyncSocketDelegate methods -
 
-- (void)socket:(GCDAsyncSocket_LIO *)sock didConnectToHost:(NSString *)aHost port:(uint16_t)aPort
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[LPSSEManager] Connected to %@:%u", aHost, aPort);
-    });
-}
-
-- (void)socketDidSecure:(GCDAsyncSocket_LIO *)sock
+- (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"[LPSSEManager] SSL/TLS established");
@@ -210,7 +206,7 @@
         [delegate sseManager:self didDispatchEvent:event];
 }
 
-- (void)socket:(GCDAsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
+- (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
     NSLog(@"<DID READ DATA>: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 
@@ -243,13 +239,19 @@
     });
 }
 
-- (void)socketDidDisconnect:(GCDAsyncSocket_LIO *)sock withError:(NSError *)err
-{
+- (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[LPSSEManager] Connection closed. Error: %@", err);
+        NSLog(@"[LPSSEManager] onSocketDidDisconnect");
         readyState = LPSSEManagerReadyStateClosed;
         [self reset];
-        [delegate sseManagerDidDisconnect:self withError:err];
+        [delegate sseManagerDidDisconnect:self];
+    });
+}
+
+-(void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"[LPSSEManager] willDisconnectWithError: %@", err);
+        [delegate sseManagerWillDisconnect:self withError:err];
     });
 }
 

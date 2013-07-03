@@ -126,3 +126,6 @@
 "LIOLookIOManager.ResendMessageQuestionTitle" = "Your message could not be sent.";
 "LIOLookIOManager.ResendMessageQuestionSend" = "Try Again";
 "LIOLookIOManager.ResendMessageQuestionCancel" = "Not Now";
+"LIOLookIOManager.FailedMessageSendTitle" = "Live Chat Error";
+"LIOLookIOManager.FailedMessageSendBody" = "Your message could not be sent. Please try again.";
+"LIOLookIOManager.FailedMessageSendButton" = "Dismiss";

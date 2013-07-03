@@ -14,13 +14,14 @@
 #import <UIKit/UIKit.h>
 
 @class LPSSEManager;
-@class GCDAsyncSocket_LIO;
+@class AsyncSocket_LIO;
 @class LPSSEvent;
-@protocol GCDAsyncSocketDelegate_LIO;
+@protocol AsyncSocketDelegate_LIO;
 
 @protocol LPSSEManagerDelegate <NSObject>
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
-- (void)sseManagerDidDisconnect:(LPSSEManager *)aManager withError:(NSError*)err;
+- (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError*)err;
+- (void)sseManagerDidDisconnect:(LPSSEManager *)aManager;
 - (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent;
 @end
@@ -31,7 +32,7 @@ typedef enum {
     LPSSEManagerReadyStateClosed          = 2
 } LPSSEManagerReadyState;
 
-@interface LPSSEManager : NSObject <GCDAsyncSocketDelegate_LIO> {
+@interface LPSSEManager : NSObject <AsyncSocketDelegate_LIO> {
     NSString* host;
     NSString* urlEndpoint;
     int port;
