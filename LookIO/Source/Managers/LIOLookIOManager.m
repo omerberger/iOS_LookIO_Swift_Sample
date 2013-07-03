@@ -192,6 +192,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSString* chatLastEventId;
     
     LPSSEManager* sseManager;
+    BOOL sseSocketAttemptingReconnect;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1434,6 +1435,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failure! Error is %@", error);
         
+        if (altChatViewController) {
+            [altChatViewController bailOnSecondaryViews];
+            [altChatViewController.view removeFromSuperview];
+            [altChatViewController release];
+            altChatViewController = nil;
+            
+            [self rejiggerWindows];
+        }
+        
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
                                                            delegate:self
@@ -1616,10 +1626,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sseManagerDidConnect:(LPSSEManager *)aManager {
     socketConnected = YES;
+    sseSocketAttemptingReconnect = NO;
+}
+
+-(void)forceSSEManagerDisconnect {
+    if (sseManager)
+        [sseManager disconnect];
 }
 
 -(void)sseManagerDidDisconnect:(LPSSEManager *)aManager withError:(NSError *)err {
     LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
+    
+    // If the socket disconnected without an outro and without the user asking to disconnect, let's try to reconnect it immediately
+    if (NO == userWantsSessionTermination && NO == outroReceived && NO == sseSocketAttemptingReconnect) {
+        sseSocketAttemptingReconnect = YES;
+        [self connectSSESocket];        
+        return;
+    }
+    
+    sseSocketAttemptingReconnect = NO;    
     
     // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
     if (/*NO == firstChatMessageSent && */NO == unprovisioned)

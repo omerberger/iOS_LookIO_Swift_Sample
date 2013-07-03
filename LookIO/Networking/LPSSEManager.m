@@ -92,7 +92,7 @@
     if (anError)
     {
         NSLog(@"[LPSSEManager] Couldn't connect: %@", anError);
-        [delegate sseManagerDidDisconnect:self];
+        [delegate sseManagerDidDisconnect:self withError:anError];
         return;
     }
     [socket startTLS:nil];
