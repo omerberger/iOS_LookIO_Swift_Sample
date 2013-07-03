@@ -15,6 +15,8 @@ typedef enum {
     LPOperationFinishedState    = 3,
 } LPOperationState;
 
+#define LIOHTTPRequestOperationRetries   0
+
 @interface LPHTTPRequestOperation : NSOperation <NSURLConnectionDelegate>
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest;

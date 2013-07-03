@@ -38,7 +38,7 @@
     
     self.request = urlRequest;
     self.state = LPOperationReadyState;
-    self.retriesLeft = 3;
+    self.retriesLeft = LIOHTTPRequestOperationRetries;
     
     return self;
 }
@@ -68,8 +68,6 @@
 }
 
 - (void)operationDidStart {
-    NSLog(@"Connecting to %@", self.request.URL.absoluteString);
-
     if (! [self isCancelled]) {
             dispatch_async(dispatch_get_main_queue(), ^{
             self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self];
@@ -126,7 +124,6 @@
             if (success) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     SBJsonParser_LIO* jsonParser = [[SBJsonParser_LIO alloc] init];
-                    NSLog(@"Response string is %@", responseString);
                     NSDictionary *responseDict = [jsonParser objectWithString:responseString];
 
                     success(self, responseDict);
@@ -149,7 +146,6 @@
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
     [self.responseData appendData:data];
-    NSLog(@"Data is %@", self.responseData);
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
@@ -195,7 +191,7 @@
     
     if (retriesLeft > 0) {
         retriesLeft -= 1;
-        NSLog(@"<LPHTTPRequestOperation> Retry %d or 3", 3-retriesLeft);
+        LIOLog(@"<LPHTTPRequestOperation> Retry %d or 3", 3-retriesLeft);
         
         [self.connection release];
         self.connection = nil;

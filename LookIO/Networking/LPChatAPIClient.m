@@ -8,6 +8,7 @@
 
 #import "LPChatAPIClient.h"
 #import "LPHTTPRequestOperation.h"
+#import "LIOLogManager.h"
 
 #import "SBJSON.h"
 
@@ -67,6 +68,7 @@ static LPChatAPIClient *sharedClient = nil;
     }
     
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
 	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
                                                                 cachePolicy:NSURLCacheStorageNotAllowed
                                                             timeoutInterval:10.0] retain];
@@ -80,7 +82,7 @@ static LPChatAPIClient *sharedClient = nil;
         } else {
             NSString *parametersJSONEncoded = [jsonWriter stringWithObject:parameters];
             [request setHTTPBody:[parametersJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
-            NSLog(@"Request body is %@", parametersJSONEncoded);
+            LIOLog(@"Request:\n%@", parametersJSONEncoded);
         }
     }
     

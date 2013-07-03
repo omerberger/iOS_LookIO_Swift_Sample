@@ -11,6 +11,7 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import "NSData+Base64.h"
 #import "LPSSEvent.h"
+#import "LIOLogManager.h"
 
 @interface LPSSEManager () <AsyncSocketDelegate_LIO>
 {
@@ -80,7 +81,6 @@
     
     self.socket.delegate = nil;
     
-    NSLog(@"[LPSSEManager] Manager reset");
     readyState = LPSSEManagerReadyStateConnecting;
 }
 
@@ -90,8 +90,8 @@
     [socket connectToHost:self.host onPort:self.port error:&anError];
     if (anError)
     {
-        NSLog(@"[LPSSEManager] Couldn't connect: %@", anError);
-        [delegate sseManagerDidDisconnect:self withError:anError];
+        LIOLog(@"<LPSSEManager> Couldn't connect: %@", anError);
+        [delegate sseManagerWillDisconnect:self withError:anError];
         return;
     }
 }
@@ -111,13 +111,11 @@
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[LPSSEManager] SSL/TLS established");
+        LIOLog(@"<LPSSEManager> SSL/TLS established");
         
         NSString* httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n",
                                    urlEndpoint,
                                    host];
-        
-        NSLog(@"Socket did secure, last-event-id is %@", self.lastEventId);
         
         if (lastEventId)
             if (![lastEventId isEqualToString:@""])
@@ -126,8 +124,6 @@
         httpRequest = [httpRequest stringByAppendingString:@"\n"];        
         
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
-        
-        NSLog(@"%@", httpRequest);
         
         [socket readDataWithTimeout:-1 tag:0];
         
@@ -144,8 +140,6 @@
         
     NSArray *lines = [streamString componentsSeparatedByString:@"\n"];
     for (NSString* line in lines) {
-        NSLog(@"Parsing line with content: %@", line);
-        
         // Check if the line contains a colon character
         NSRange colonRange = [line rangeOfString:@":"];
         if (colonRange.location != NSNotFound) {
@@ -161,9 +155,7 @@
                 if (whiteSpaceRange.location != NSNotFound)
                     if (whiteSpaceRange.location == 0)
                         value = [value stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:@""];
-                
-                NSLog(@"Read field: %@ value: %@", field, value);
-                
+                                
                 if ([field isEqualToString:@"id"])
                     event.eventId = value;
                 if ([field isEqualToString:@"event"])
@@ -183,8 +175,6 @@
                 event.data = [event.data stringByAppendingString:@""];
         }
     }
-    
-    NSLog(@"Received event with id %@", event.eventId);
     
     // Let's not pass on events without any data
     if ([event.data isEqualToString:@""])
@@ -208,7 +198,7 @@
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    NSLog(@"<DID READ DATA>: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+    LIOLog(@"<LPSSEManager>: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *readString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -219,13 +209,12 @@
             partialPacket = nil;
         }
         
-        NSLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", readString);
+        LIOLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", readString);
         
         NSRange sepRange = [readString rangeOfString:@"\n\n"];
         if (sepRange.location != NSNotFound)
         {
             NSArray *eventStreamStrings = [readString componentsSeparatedByString:@"\n\n"];
-            NSLog(@"Received %d events", eventStreamStrings.count);
 
             for (NSString* eventStreamString in eventStreamStrings)
                 [self createEventFromStreamString:eventStreamString];
@@ -241,7 +230,7 @@
 
 - (void)onSocketDidDisconnect:(AsyncSocket_LIO *)sock {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[LPSSEManager] onSocketDidDisconnect");
+        LIOLog(@"<LPSSEManager> onSocketDidDisconnect");
         readyState = LPSSEManagerReadyStateClosed;
         [self reset];
         [delegate sseManagerDidDisconnect:self];
@@ -250,7 +239,7 @@
 
 -(void)onSocket:(AsyncSocket_LIO *)sock willDisconnectWithError:(NSError *)err {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[LPSSEManager] willDisconnectWithError: %@", err);
+        LIOLog(@"<LPSSEManager> onSocketWillDisconnectWithError: %@", err);
         [delegate sseManagerWillDisconnect:self withError:err];
     });
 }
