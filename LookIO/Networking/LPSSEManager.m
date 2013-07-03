@@ -198,8 +198,6 @@
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
-    LIOLog(@"<LPSSEManager>: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *readString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         
@@ -209,7 +207,7 @@
             partialPacket = nil;
         }
         
-        LIOLog(@"\n----------<READ>----------\n%@\n----------</READ>----------\n\n", readString);
+        LIOLog(@"\n\n<LPSSEManager> Read Event Stream:\n%@\n----------<END>----------\n\n", readString);
         
         NSRange sepRange = [readString rangeOfString:@"\n\n"];
         if (sepRange.location != NSNotFound)

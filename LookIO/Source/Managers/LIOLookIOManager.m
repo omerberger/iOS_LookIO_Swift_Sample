@@ -877,6 +877,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [super dealloc];
 }
 
+- (void)disconnectAndReset {
+    sessionEnding = YES;
+    userWantsSessionTermination = YES;
+    
+    if (NO == socketConnected)
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self reset];
+        });
+    }
+    else
+    {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            resetAfterDisconnect = YES;
+            [self killConnection];
+        });
+    }
+}
+
 - (void)reset
 {
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
@@ -1043,6 +1066,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     CGSize textSize = [controlButton.label.text sizeWithFont:controlButton.label.font];
     textSize.width += 20.0; // 10px padding on each side
+    
     CGFloat extraHeight = 0.0;
     if (textSize.width > LIOLookIOManagerControlButtonMinHeight)
         extraHeight = textSize.width - LIOLookIOManagerControlButtonMinHeight;
@@ -1424,7 +1448,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 -(void)sendIntroPacket {    
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<INTRO> response: %@", responseObject);
+        
+        
+        if (responseObject)
+            LIOLog(@"<INTRO> response: %@", responseObject);
+        else
+            LIOLog(@"<INTRO> success");        
         
         introduced = YES;
         enqueued = YES;
@@ -1460,7 +1489,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/line/", chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:lineRequestUrl parameters:lineDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<LINE> response: %@", responseObject);
+        if (responseObject)
+            LIOLog(@"<LINE> response: %@", responseObject);
+        else
+            LIOLog(@"<LINE> success");
 
         // If this is a resending of a failed message, let's update it and refresh the tableview
         if (aMessage.sendingFailed) {
@@ -1494,7 +1526,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString* outroRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/outro/", chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:outroRequestUrl parameters:outroDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<OUTRO> response: %@", responseObject);
+        if (responseObject)
+            LIOLog(@"<OUTRO> response: %@", responseObject);
+        else
+            LIOLog(@"<OUTRO> success");
+        
         [sseManager disconnect];
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<OUTRO> failure: %@", error);
@@ -1510,7 +1546,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* capsRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/capabilities/", chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:capsRequestUrl parameters:capsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<CAPABILITIES> response: %@", responseObject);
+        if (responseObject)
+            LIOLog(@"<CAPABILITIES> response: %@", responseObject);
+        else
+            LIOLog(@"<CAPABILITIES> success");
+        
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<CAPABILITIES> failure: %@", error);
     }];
@@ -1520,7 +1560,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* feedbackRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/feedback/", chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:feedbackRequestUrl parameters:feedbackDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<FEEDBACK> response: %@", responseObject);
+        if (responseObject)
+            LIOLog(@"<FEEDBACK> response: %@", responseObject);
+        else
+            LIOLog(@"<FEEDBACK> success");
+        
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<FEEDBACK> failure: %@", error);
     }];
@@ -1531,7 +1575,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/chat_history/", chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
+        if (responseObject)
+            LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
+        else
+            LIOLog(@"<CHAT_HISTORY> success");
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<CHAT_HISTORY> failure: %@", error);
     }];
@@ -1541,7 +1588,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/advisory/", chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
+        if (responseObject)
+            LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
+        else
+            LIOLog(@"<ADVISORY> with data %@ success", advisoryDict);
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<ADVISORY> with data %@ failure: %@", advisoryDict, error);
     }];    
@@ -1761,7 +1811,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults setObject:chatLastEventId forKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     [userDefaults synchronize];
         
-    LIOLog(@"<<<FROM BACKEND (objc)<<< %@", aPacket);
+    LIOLog(@"<LPSSEManager> Dispatch event with data:\n%@\n", aPacket);
     
     NSString *type = [aPacket objectForKey:@"type"];
     if ([type isEqualToString:@"engagement_info"]) {
@@ -3627,6 +3677,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex)
                 [self showChatAnimated:YES];
             
+            controlButton.currentMode = LIOControlButtonViewModeDefault;
+            [controlButton setNeedsLayout];
+            [self rejiggerControlButtonFrame];
+            
             break;
         }
             
@@ -3646,6 +3700,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 controlButton.currentMode = LIOControlButtonViewModePending;
                 [controlButton layoutSubviews];
+                [self rejiggerControlButtonFrame];
                 [self applicationDidChangeStatusBarOrientation:nil]; // update tab to show "Reconnecting", etc
                 resumeMode = YES;
                 
