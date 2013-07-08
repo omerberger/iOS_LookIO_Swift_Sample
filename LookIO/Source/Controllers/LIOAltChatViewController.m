@@ -473,6 +473,11 @@
     [super dealloc];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -503,10 +508,6 @@
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-        if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
     [self reloadMessages];
     
@@ -1129,6 +1130,7 @@
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
     alertView.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
+    alertView.alertViewStyle = UIAlertViewStyleDefault;
     
     CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
     
