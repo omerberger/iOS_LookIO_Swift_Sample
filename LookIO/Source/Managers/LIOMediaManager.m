@@ -84,7 +84,7 @@ static LIOMediaManager *sharedInstance = nil;
     
     NSString *bundleId = [[LIOLookIOManager sharedLookIOManager] bundleId];
     
-    NSString *endpoint = [NSString stringWithFormat:@"https://%@/api/v1/media/upload", [[LIOLookIOManager sharedLookIOManager] chosenEndpoint]];
+    NSString *endpoint = [NSString stringWithFormat:@"https://%@/api/v2/media/upload", [[LIOLookIOManager sharedLookIOManager] chosenEndpoint]];
     
     NSMutableURLRequest *uploadRequest = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:endpoint]
                                                                        cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
