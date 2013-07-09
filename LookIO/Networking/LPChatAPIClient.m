@@ -89,6 +89,25 @@ static LPChatAPIClient *sharedClient = nil;
 	return request;
 }
 
+- (NSMutableURLRequest *)requestWithMethod:(NSString *)method
+                                      path:(NSString *)path
+                                      data:(NSData *)data
+{
+    if (!path) {
+        path = @"";
+    }
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
+	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
+                                                                 cachePolicy:NSURLCacheStorageNotAllowed
+                                                             timeoutInterval:10.0] retain];
+    [request setHTTPMethod:method];
+    [request setHTTPBody:data];
+    
+	return request;
+}
+
 - (LPHTTPRequestOperation *)HTTPRequestOperationWithRequest:(NSURLRequest *)urlRequest
                                                     success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
                                                     failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
@@ -116,6 +135,16 @@ static LPChatAPIClient *sharedClient = nil;
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
 {
 	NSURLRequest *request = [self requestWithMethod:@"POST" path:path parameters:parameters];
+	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    [self enqueueHTTPRequestOperation:operation];
+}
+
+- (void)postPath:(NSString *)path
+            data:(NSData *)data
+         success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+         failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
+{
+	NSURLRequest *request = [self requestWithMethod:@"POST" path:path data:data];
 	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
 }

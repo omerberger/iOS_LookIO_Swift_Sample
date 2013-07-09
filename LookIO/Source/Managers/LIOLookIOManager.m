@@ -1366,10 +1366,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             dispatch_async(dispatch_get_main_queue(), ^{
                 
                 waitingForScreenshotAck = YES;
-                
-                [controlSocket writeData:dataToSend
-                             withTimeout:-1
-                                     tag:0];
+
+                [self sendScreenshotPacketWithData:dataToSend];
                 
                 LIOLog(@"\n\n[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes).\nHeader: %@\n\n", (int)screenshotSize.width, (int)screenshotSize.height, orientationString, [dataToSend length], header);
             });
@@ -1597,6 +1595,41 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }];    
 }
 
+-(void)sendPermissionPacketWithAsset:(NSString*)asset granted:(BOOL)granted {
+    NSString* grantedString = granted ? @"granted" : @"revoked";
+    NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    grantedString, @"permission",
+                                    asset, @"asset",
+                                    nil];
+
+    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
+    NSString* permissionRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/permission/", chatEngagementId];
+    [[LPChatAPIClient sharedClient] postPath:permissionRequestUrl parameters:permissionDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<PERMISSION> with data %@ response: %@", permissionDict, responseObject);
+        else
+            LIOLog(@"<PERMISSION> with data %@ success", permissionDict);
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<PERMISSION> with data %@ failure: %@", permissionDict, error);
+    }];
+}
+
+-(void)sendScreenshotPacketWithData:(NSData*)screenshotData {
+    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
+    NSString* screenshotRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/screenshot/", chatEngagementId];
+    [[LPChatAPIClient sharedClient] postPath:screenshotRequestUrl data:screenshotData success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        waitingForScreenshotAck = NO;
+        if (responseObject)
+            LIOLog(@"<SCREENSHOT> with data %@ response: %@", screenshotData, responseObject);
+        else
+            LIOLog(@"<SCREENSHOT> with data %@ success", screenshotData);
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        waitingForScreenshotAck = NO;
+        
+        LIOLog(@"<SCREENSHOT> with data %@ failure: %@", screenshotData, error);
+    }];
+}
+
 - (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params
 {
     NSMutableDictionary *resolvedPayload = [NSMutableDictionary dictionary];
@@ -1795,6 +1828,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+-(void)sendFakeScreenshotEvent {
+    LPSSEvent* event = [[LPSSEvent alloc] init];
+    event.data = @"{\"type\":\"permission\", \"asset\":\"screenshare\"}";
+    event.eventId = @"1";
+    event.eventType = @"permission";
+    [self sseManager:sseManager didDispatchEvent:event];
+}
+
 -(void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent {
     NSDictionary *aPacket = [jsonParser objectWithString:anEvent.data];
     if (nil == aPacket)
@@ -1885,6 +1926,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             
             chatReceivedWhileAppBackgrounded = YES;
+        }
+    }
+    else if ([type isEqualToString:@"permission"])
+    {
+        NSString *asset = [aPacket objectForKey:@"asset"];
+        if ([asset isEqualToString:@"screenshare"] && NO == screenshotsAllowed)
+        {
+            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+            {
+                UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
+            
+            [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertBody")
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonDisallow"), LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonAllow"), nil];
+            alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
         }
     }
     else if ([type isEqualToString:@"cursor"])
@@ -1983,33 +2050,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
                 
                 [self showChatAnimated:NO];
-            }
-        }
-        else if ([action isEqualToString:@"permission"])
-        {
-            NSDictionary *data = [aPacket objectForKey:@"data"];
-            NSString *permission = [data objectForKey:@"permission"];
-            if ([permission isEqualToString:@"screenshot"] && NO == screenshotsAllowed)
-            {
-                if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
-                {
-                    UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
-                    localNotification.soundName = @"LookIODing.caf";
-                    localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
-                    localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
-                    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
-                }
-                
-                [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
-                
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertTitle")
-                                                                    message:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertBody")
-                                                                   delegate:self
-                                                          cancelButtonTitle:nil
-                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonDisallow"), LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonAllow"), nil];
-                alertView.tag = LIOLookIOManagerScreenshotPermissionAlertViewTag;
-                [alertView show];
-                [alertView autorelease];
             }
         }
         else if ([action isEqualToString:@"unprovisioned"])
@@ -3432,19 +3472,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlayBlackout.hidden = YES;
     [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"screenshot", @"permission", nil];
-    NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    @"advisory", @"type",
-                                    @"permission_revoked", @"action",
-                                    dataDict, @"data",
-                                    nil];
-    
-    NSString *permissionRevoked = [jsonWriter stringWithObject:permissionDict];
-    permissionRevoked = [permissionRevoked stringByAppendingString:LIOLookIOManagerMessageSeparator];
-    
-    [controlSocket writeData:[permissionRevoked dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
+    [self sendPermissionPacketWithAsset:@"screenshare" granted:NO];
     
     [screenSharingStartedDate release];
     screenSharingStartedDate = nil;
@@ -3757,6 +3785,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 statusBarUnderlay.hidden = NO;
                 [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
                 
+                [self sendPermissionPacketWithAsset:@"screenshare" granted:YES];
+                
                 screenSharingStartedDate = [[NSDate date] retain];
                 
                 if (altChatViewController)
@@ -3770,6 +3800,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     [self rejiggerWindows];
                 }
             }
+            if (0 == buttonIndex)
+                [self sendPermissionPacketWithAsset:@"screenshare" granted:NO];
             
             break;
         }
