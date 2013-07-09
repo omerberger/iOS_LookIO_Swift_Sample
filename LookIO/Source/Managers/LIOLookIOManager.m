@@ -1828,13 +1828,41 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+-(void)sendFakeCursorEvents {
+    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(generateFakeCursorEvent) userInfo:nil repeats:YES];
+}
+
 -(void)sendFakeScreenshotEvent {
     LPSSEvent* event = [[LPSSEvent alloc] init];
     event.data = @"{\"type\":\"permission\", \"asset\":\"screenshare\"}";
     event.eventId = @"1";
     event.eventType = @"permission";
     [self sseManager:sseManager didDispatchEvent:event];
+    
+    [self sendFakeCursorEvents];
 }
+
+-(void)generateFakeCursorEvent {
+    LPSSEvent* event = [[LPSSEvent alloc] init];
+    
+    int random = arc4random()%4;
+    int x = arc4random()%320;
+    int y = arc4random()%480;
+    
+    if (random == 0)
+        event.data = [NSString stringWithFormat:@"{\"type\":\"screen_cursor\", \"x\":\"%d.0\", \"y\":\"%d.0\"}", x, y];
+    if (random == 1)
+        event.data = [NSString stringWithFormat:@"{\"type\":\"screen_click\", \"x\":\"%d.0\", \"y\":\"%d.0\"}", x, y];
+    if (random == 2)
+        event.data = @"{\"type\":\"screen_cursor_start\"}";
+    if (random == 3)
+        event.data = @"{\"type\":\"screen_cursor_stop\"}";
+    
+    event.eventId = @"1";
+    event.eventType = @"permission";
+    [self sseManager:sseManager didDispatchEvent:event];
+}
+
 
 -(void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent {
     NSDictionary *aPacket = [jsonParser objectWithString:anEvent.data];
@@ -1954,25 +1982,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView autorelease];
         }
     }
-    else if ([type isEqualToString:@"cursor"])
-    {
-        if (altChatViewController)
-            return;
-        
-        cursorView.hidden = NO == screenshotsAllowed || cursorEnded;
-        
-        NSNumber *x = [aPacket objectForKey:@"x"];
-        NSNumber *y = [aPacket objectForKey:@"y"];
-        CGRect aFrame = cursorView.frame;
-        aFrame.origin.x = [x floatValue];
-        aFrame.origin.y = [y floatValue];
-        
-        [UIView animateWithDuration:0.25
-                              delay:0.0
-                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState)
-                         animations:^{ cursorView.frame = aFrame; }
-                         completion:nil];
-    }
     else if ([type isEqualToString:@"advisory"])
     {
         NSString *action = [aPacket objectForKey:@"action"];
@@ -1995,46 +2004,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else if ([action isEqualToString:@"typing_stop"])
         {
             altChatViewController.agentTyping = NO;
-        }
-        else if ([action isEqualToString:@"cursor_start"])
-        {
-            cursorEnded = NO;
-            
-            if (altChatViewController)
-            {
-                cursorView.hidden = YES;
-                return;
-            }
-            
-            UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-            
-            CGRect aFrame = CGRectZero;
-            aFrame.size.width = cursorView.image.size.width * 8.0;
-            aFrame.size.height = cursorView.image.size.height * 8.0;
-            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            cursorView.frame = aFrame;
-            cursorView.alpha = 0.0;
-            
-            aFrame.size.width = cursorView.image.size.width;
-            aFrame.size.height = cursorView.image.size.height;
-            aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-            aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
-            
-            [UIView animateWithDuration:0.25
-                                  delay:0.0
-                                options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
-                             animations:^{
-                                 cursorView.frame = aFrame;
-                                 cursorView.alpha = 1.0;
-                             }
-                             completion:nil];
-            
-        }
-        else if ([action isEqualToString:@"cursor_end"])
-        {
-            cursorEnded = YES;
-            cursorView.hidden = YES;
         }
         else if ([action isEqualToString:@"connected"])
         {
@@ -2076,7 +2045,66 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [altChatViewController forceLeaveMessageScreen];
         }
     }
-    else if ([type isEqualToString:@"click"])
+    else if ([type isEqualToString:@"screen_cursor"])
+    {
+        if (altChatViewController)
+            return;
+        
+        cursorView.hidden = NO == screenshotsAllowed || cursorEnded;
+        
+        NSNumber *x = [aPacket objectForKey:@"x"];
+        NSNumber *y = [aPacket objectForKey:@"y"];
+        CGRect aFrame = cursorView.frame;
+        aFrame.origin.x = [x floatValue];
+        aFrame.origin.y = [y floatValue];
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionBeginFromCurrentState)
+                         animations:^{ cursorView.frame = aFrame; }
+                         completion:nil];
+    }
+    else if ([type isEqualToString:@"screen_cursor_start"])
+    {
+        cursorEnded = NO;
+        
+        if (altChatViewController)
+        {
+            cursorView.hidden = YES;
+            return;
+        }
+        
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
+        CGRect aFrame = CGRectZero;
+        aFrame.size.width = cursorView.image.size.width * 8.0;
+        aFrame.size.height = cursorView.image.size.height * 8.0;
+        aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+        cursorView.frame = aFrame;
+        cursorView.alpha = 0.0;
+        
+        aFrame.size.width = cursorView.image.size.width;
+        aFrame.size.height = cursorView.image.size.height;
+        aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                         animations:^{
+                             cursorView.frame = aFrame;
+                             cursorView.alpha = 1.0;
+                         }
+                         completion:nil];
+        
+    }
+    else if ([type isEqualToString:@"screen_cursor_stop"])
+    {
+        cursorEnded = YES;
+        cursorView.hidden = YES;
+    }
+    else if ([type isEqualToString:@"screen_click"])
     {
         if (altChatViewController)
             return;
