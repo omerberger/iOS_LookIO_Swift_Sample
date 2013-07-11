@@ -63,8 +63,6 @@ static LIOMediaManager *sharedInstance = nil;
 }
 
 - (UIImage*)scaleImage:(UIImage*)sourceImage toSize:(CGSize)newSize {
-    return sourceImage;
-    
     UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
     [sourceImage drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
