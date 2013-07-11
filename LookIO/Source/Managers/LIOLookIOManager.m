@@ -120,8 +120,6 @@ NSString *const kLPEventSignUp      = @"LPEventSignUp";
 NSString *const kLPEventSignIn      = @"LPEventSignIn";
 NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 
-@class CTCall, CTCallCenter;
-
 @interface LIOLookIOManager ()
     <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate>
 {
@@ -158,7 +156,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
-    CTCallCenter *callCenter;
     NSMutableArray *queuedLaunchReportDates;
     NSDateFormatter *dateFormatter;
     NSDate *backgroundedTime;
@@ -195,6 +192,8 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     
     LPSSEManager* sseManager;
     BOOL sseSocketAttemptingReconnect;
+    
+    BOOL chatClosingAsPartOfReset;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -206,7 +205,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 - (void)refreshControlButtonVisibility;
 - (NSDictionary *)buildIntroDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType includingSurveyResponses:(BOOL)includesSurveyResponses includingEvents:(BOOL)includeEvents;
 - (NSString *)wwwFormEncodedDictionary:(NSDictionary *)aDictionary withName:(NSString *)aName;
-- (void)handleCallEvent:(CTCall *)aCall;
 - (void)configureReconnectionTimer;
 - (BOOL)beginConnectingWithError:(NSError **)anError;
 - (void)killReconnectionTimer;
@@ -575,8 +573,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     lookioWindow.hidden = YES;
     lookioWindow.windowLevel = 0.1;
     
-    controlSocket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
-    
     screenCaptureTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOManagerScreenCaptureInterval
                                                           target:self
                                                         selector:@selector(screenCaptureTimerDidFire:)
@@ -593,15 +589,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [keyWindow addSubview:controlButton];
     [self rejiggerControlButtonFrame];
     controlButton.frame = controlButtonHiddenFrame;
-    
-    Class $CTCallCenter = NSClassFromString(@"CTCallCenter");
-    if ($CTCallCenter)
-    {
-        callCenter = [[$CTCallCenter alloc] init];
-        [callCenter setCallEventHandler:^(CTCall *aCall) {
-            [self handleCallEvent:aCall];
-        }];
-    }
     
     // Restore control button settings.
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -799,13 +786,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [touchImage release];
     touchImage = nil;
     
-    [callCenter release];
-    callCenter = nil;
-    
-    [controlSocket disconnect];
-    [controlSocket release];
-    controlSocket = nil;
-    
     [cursorView release];
     cursorView = nil;
     
@@ -904,16 +884,27 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)reset
 {
-    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
-    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
-    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
-    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+    if (altChatViewController && !chatClosingAsPartOfReset) {
+        // altChatviewController will be reset when the altChatViewControllerDidFinishDismissalAnimation method is called, to ensure clean animation
+        chatClosingAsPartOfReset = YES;
+        
+        [altChatViewController performDismissalAnimation];
+        return;
+    }
+    
+    chatClosingAsPartOfReset = NO;
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
-        
+    
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
+    [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
+    [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
+    
+    
     [interstitialViewController.view removeFromSuperview];
     [interstitialViewController release];
     interstitialViewController = nil;
@@ -3097,46 +3088,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return introDict;
 }
 
-- (void)handleCallEvent:(CTCall *)aCall
-{
-    if ([[aCall callState] isEqualToString:@"CTCallStateConnected"])
-    {
-        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"connected", @"state", nil];
-        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  @"advisory", @"type",
-                                  @"call", @"action",
-                                  dataDict, @"data",
-                                  nil];
-        
-        NSString *call = [jsonWriter stringWithObject:callDict];
-        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
-                         withTimeout:LIOLookIOManagerWriteTimeout
-                                 tag:0];
-        });
-    }
-    else
-    {
-        NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:@"disconnected", @"state", nil];
-        NSDictionary *callDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  @"advisory", @"type",
-                                  @"call", @"action",
-                                  dataDict, @"data",
-                                  nil];
-        
-        NSString *call = [jsonWriter stringWithObject:callDict];
-        call = [call stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [controlSocket writeData:[call dataUsingEncoding:NSUTF8StringEncoding]
-                         withTimeout:LIOLookIOManagerWriteTimeout
-                                 tag:0];
-        });
-    }
-}
-
 - (void)configureReconnectionTimer
 {
     // Are we done?
@@ -3551,13 +3502,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
 {
+    if (chatClosingAsPartOfReset) {
+        [self reset];
+        return;
+    }
+    
     [pendingChatText release];
     pendingChatText = [[altChatViewController currentChatText] retain];
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
     altChatViewController = nil;
-
+    
     int64_t delayInSeconds = 0.25;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
