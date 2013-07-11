@@ -1281,7 +1281,15 @@
                     foregroundImage.frame = ibFrame;
                     
                     [aCell.contentView addSubview:foregroundImage];
-
+                    
+                    if (LIOChatMessageKindLocal == aMessage.kind && aMessage.sendingFailed) {
+                        UIButton* failedMessageButton = [[UIButton alloc] initWithFrame:CGRectMake(foregroundImage.frame.origin.x - 32.0, foregroundImage.frame.size.height/2 - 11.0 , 22, 22)];
+                        UIImage* failedMessageButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFailedMessageAlertIcon"];
+                        [failedMessageButton setImage:failedMessageButtonImage forState:UIControlStateNormal];
+                        [failedMessageButton addTarget:self action:@selector(failedMessageButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+                        failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
+                        [aCell.contentView addSubview:failedMessageButton];
+                    }
                 }
             }
         }

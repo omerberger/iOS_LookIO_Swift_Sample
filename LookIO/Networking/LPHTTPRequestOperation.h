@@ -17,9 +17,14 @@ typedef enum {
 
 #define LIOHTTPRequestOperationRetries   0
 
-@interface LPHTTPRequestOperation : NSOperation <NSURLConnectionDelegate>
+@interface LPHTTPRequestOperation : NSOperation <NSURLConnectionDelegate> {
+    NSHTTPURLResponse *response;
+}
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest;
 - (void)setCompletionBlockWithSuccess:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
                               failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
+
+@property (nonatomic, retain) NSHTTPURLResponse *response;
+
 @end

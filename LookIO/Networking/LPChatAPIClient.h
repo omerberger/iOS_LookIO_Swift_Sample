@@ -27,6 +27,9 @@
             data:(NSData *)data
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
-
+- (void)postMultipartDataToPath:(NSString *)path
+                           data:(NSData *)data
+                        success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+                        failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
 
 @end

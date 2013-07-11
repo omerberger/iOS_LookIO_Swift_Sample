@@ -30,7 +30,6 @@
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 - (BOOL)altChatViewControllerShouldAutorotate:(LIOAltChatViewController *)aController;
 - (NSInteger)altChatViewControllerSupportedInterfaceOrientations:(LIOAltChatViewController *)aController;
-- (void)altChatViewController:(LIOAltChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;

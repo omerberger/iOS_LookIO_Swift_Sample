@@ -108,6 +108,30 @@ static LPChatAPIClient *sharedClient = nil;
 	return request;
 }
 
+- (NSMutableURLRequest *)multipartRequestWithMethod:(NSString *)method
+                                               path:(NSString *)path
+                                               data:(NSData *)data
+{
+    if (!path) {
+        path = @"";
+    }
+    
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
+	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
+                                                                 cachePolicy:NSURLCacheStorageNotAllowed
+                                                             timeoutInterval:10.0] retain];
+    
+    NSString *boundary = @"0xKhTmLbOuNdArY";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
+    [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+
+    [request setHTTPMethod:method];
+    [request setHTTPBody:data];
+    
+	return request;
+}
+
 - (LPHTTPRequestOperation *)HTTPRequestOperationWithRequest:(NSURLRequest *)urlRequest
                                                     success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
                                                     failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
@@ -148,6 +172,18 @@ static LPChatAPIClient *sharedClient = nil;
 	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
 }
+
+- (void)postMultipartDataToPath:(NSString *)path
+                           data:(NSData *)data
+                        success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+                        failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
+{
+	NSURLRequest *request = [self multipartRequestWithMethod:@"POST" path:path data:data];
+	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    [self enqueueHTTPRequestOperation:operation];
+}
+
+
 
 - (void)enqueueHTTPRequestOperation:(LPHTTPRequestOperation *)operation {
     [self.operationQueue addOperation:operation];

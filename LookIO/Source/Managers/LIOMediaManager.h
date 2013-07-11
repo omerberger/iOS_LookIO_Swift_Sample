@@ -9,12 +9,12 @@
 #import <UIKit/UIKit.h>
 
 @class LIOMediaManager;
+@class LIOChatMessage;
 
 @interface LIOMediaManager : NSObject
 
 + (LIOMediaManager *)sharedInstance;
 - (UIImage*)scaleImage:(UIImage*)sourceImage toSize:(CGSize)newSize;
-- (void)uploadMediaData:(NSData *)someData withType:(NSString *)aType;
 - (void)purgeAllMedia;
 - (NSString *)commitImageMedia:(UIImage *)anImage;
 - (NSData *)mediaDataWithId:(NSString *)anId;

@@ -129,3 +129,6 @@
 "LIOLookIOManager.FailedMessageSendTitle" = "Live Chat Error";
 "LIOLookIOManager.FailedMessageSendBody" = "Your message could not be sent. Please try again.";
 "LIOLookIOManager.FailedMessageSendButton" = "Dismiss";
+"LIOLookIOManager.FailedAttachmentSendTitle" = "Live Chat Error";
+"LIOLookIOManager.FailedAttachmentSendBody" = "Your photo could not be sent. Please try again.";
+"LIOLookIOManager.FailedAttachmentSendButton" = "Dismiss";

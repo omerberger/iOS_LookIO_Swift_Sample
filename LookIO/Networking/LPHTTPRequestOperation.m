@@ -14,21 +14,20 @@
 
 @property (nonatomic, retain) NSURLConnection *connection;
 @property (nonatomic, retain) NSURLRequest *request;
-@property (nonatomic, retain) NSHTTPURLResponse *response;
 @property (nonatomic, retain) NSError *HTTPError;
 @property (nonatomic, retain) NSError *error;
 @property (nonatomic, retain) NSMutableData *responseData;
 @property (nonatomic, copy)   NSString *responseString;
-@property (nonatomic, assign) NSInteger requestResponseCode;
 @property (nonatomic, assign) LPOperationState state;
 
+@property (nonatomic, assign) BOOL requestFailed;
 @property (nonatomic, assign) int retriesLeft;
 
 @end
 
 @implementation LPHTTPRequestOperation
 
-@synthesize connection, request, response, HTTPError, responseData, responseString, requestResponseCode, retriesLeft;
+@synthesize connection, request, response, HTTPError, responseData, responseString, retriesLeft, requestFailed;
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest {
     self = [super init];
@@ -39,6 +38,7 @@
     self.request = urlRequest;
     self.state = LPOperationReadyState;
     self.retriesLeft = LIOHTTPRequestOperationRetries;
+    self.requestFailed = NO;
     
     return self;
 }
@@ -114,7 +114,7 @@
                               failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
 {
     [self setCompletionBlock:^{
-        if (self.error) {
+        if (self.error || self.requestFailed) {
             if (failure) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     failure(self, self.error);
@@ -138,7 +138,7 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    self.response = response;
+    self.response = (NSHTTPURLResponse*)response;
     self.responseData = [[NSMutableData alloc] init];
     
 }
@@ -149,16 +149,16 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    BOOL failure = NO;
     NSInteger statusCode = self.response.statusCode;
     
     if (404 == statusCode)
     {
-        failure = YES;
+        self.requestFailed = YES;
         LIOLog(@"<LPHTTPRequestOperation> Failure. HTTP code: 404.");
     }
     else if (statusCode >= 400)
     {
+        self.requestFailed = YES;
         LIOLog(@"<LPHTTPRequestOperation> Failure. HTTP code: %d.", statusCode);
     }
     else if (statusCode < 300 && statusCode >= 200)
@@ -171,8 +171,8 @@
     }
     else
     {
+        self.requestFailed = YES;
         // Wat.
-        
         LIOLog(@"<LPHTTPRequestOperation> Unhandled HTTP code: %d", statusCode);
     }
     

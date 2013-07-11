@@ -37,6 +37,7 @@
 #import "LPSSEManager.h"
 #import "LPChatAPIClient.h"
 #import "LPSSEvent.h"
+#import "LPHTTPRequestOperation.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -76,6 +77,7 @@
 #define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
 #define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
 #define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
+#define LIOLookIOManagerMediaUploadRequestURL       @"/api/v2/media/upload"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -1630,6 +1632,77 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }];
 }
 
+- (void)sendMediaPacketWithMessage:(LIOChatMessage*)aMessage
+{
+    NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:aMessage.attachmentId];
+    if (attachmentData) {
+        NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:aMessage.attachmentId];
+        
+        NSString *sessionId = [self currentChatEngagementId];
+        if (0 == [sessionId length])
+            return;
+        
+        NSString *bundleId = [self bundleId];
+        NSString *boundary = @"0xKhTmLbOuNdArY";
+        NSString *dataBase64 = base64EncodedStringFromData(attachmentData);
+        
+        NSMutableData *body = [NSMutableData data];
+        [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"file\"; filename=\"lpmobile_ios_upload\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[dataBase64 dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"engagement_key\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[sessionId dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"bundle\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[bundleId dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        
+        [[LPChatAPIClient sharedClient] postMultipartDataToPath:LIOLookIOManagerMediaUploadRequestURL data:body success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (aMessage.sendingFailed) {
+                aMessage.sendingFailed = NO;
+                if (altChatViewController)
+                    [altChatViewController reloadMessages];
+            }
+            if (responseObject)
+                LIOLog(@"<PHOTO UPLOAD> with response: %@", responseObject);
+            else
+                LIOLog(@"<PHOTO UPLOAD> success");
+            
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            aMessage.sendingFailed = YES;
+            
+            if (altChatViewController) {
+                [altChatViewController reloadMessages];
+                
+                if (operation.response) {
+                    if (operation.response.statusCode == 413) {
+                        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
+                                                                            message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
+                                                                  cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
+                                                                  otherButtonTitles:nil];
+                        
+                        [alertView show];
+                        [alertView release];
+                    }
+                }
+            }
+            else {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendBody")
+                                                                   delegate:nil
+                                                          cancelButtonTitle:@"LIOLookIOManager.FailedAttachmentSendButton"
+                                                          otherButtonTitles:nil];
+                [alertView show];
+                [alertView autorelease];
+            }
+            
+            LIOLog(@"<PHOTO UPLOAD> with failure: %@", error);
+        }];
+    }    
+}
+
 - (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params
 {
     NSMutableDictionary *resolvedPayload = [NSMutableDictionary dictionary];
@@ -1827,42 +1900,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self showReconnectionQuery];
     }
 }
-
--(void)sendFakeCursorEvents {
-    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(generateFakeCursorEvent) userInfo:nil repeats:YES];
-}
-
--(void)sendFakeScreenshotEvent {
-    LPSSEvent* event = [[LPSSEvent alloc] init];
-    event.data = @"{\"type\":\"permission\", \"asset\":\"screenshare\"}";
-    event.eventId = @"1";
-    event.eventType = @"permission";
-    [self sseManager:sseManager didDispatchEvent:event];
-    
-    [self sendFakeCursorEvents];
-}
-
--(void)generateFakeCursorEvent {
-    LPSSEvent* event = [[LPSSEvent alloc] init];
-    
-    int random = arc4random()%4;
-    int x = arc4random()%320;
-    int y = arc4random()%480;
-    
-    if (random == 0)
-        event.data = [NSString stringWithFormat:@"{\"type\":\"screen_cursor\", \"x\":\"%d.0\", \"y\":\"%d.0\"}", x, y];
-    if (random == 1)
-        event.data = [NSString stringWithFormat:@"{\"type\":\"screen_click\", \"x\":\"%d.0\", \"y\":\"%d.0\"}", x, y];
-    if (random == 2)
-        event.data = @"{\"type\":\"screen_cursor_start\"}";
-    if (random == 3)
-        event.data = @"{\"type\":\"screen_cursor_stop\"}";
-    
-    event.eventId = @"1";
-    event.eventType = @"permission";
-    [self sseManager:sseManager didDispatchEvent:event];
-}
-
 
 -(void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent {
     NSDictionary *aPacket = [jsonParser objectWithString:anEvent.data];
@@ -3447,9 +3484,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
     [userDefaults synchronize];
     
-    [self sendLinePacketWithMessage:aMessage];
+    if ([aMessage.attachmentId length])
+        [self sendMediaPacketWithMessage:aMessage];
+    else
+        [self sendLinePacketWithMessage:aMessage];
 }
-
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithAttachmentId:(NSString *)aString
 {
@@ -3460,10 +3499,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:aString];
     if (attachmentData)
     {
-        // Upload the attachment.
-        NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:aString];
-        [[LIOMediaManager sharedInstance] uploadMediaData:attachmentData withType:mimeType];
-        
         LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
         newMessage.text = aString;
         newMessage.date = [NSDate date];
@@ -3475,6 +3510,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [altChatViewController scrollToBottomDelayed:YES];
         
         firstChatMessageSent = YES;
+        
+        // Upload the attachment.
+        [self sendMediaPacketWithMessage:newMessage];
     }
 }
 
@@ -3596,26 +3634,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
 {
     return [self shouldRotateToInterfaceOrientation:anOrientation];
-}
-
-- (void)altChatViewController:(LIOAltChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail
-{
-    if ([anEmail length])
-    {
-        NSDictionary *aDict = [NSDictionary dictionaryWithObjectsAndKeys:anEmail, @"email", nil];
-        NSMutableDictionary *emailDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                          @"advisory", @"type",
-                                          @"beta_email", @"action",
-                                          aDict, @"data",
-                                          nil];
-        
-        NSString *email = [jsonWriter stringWithObject:emailDict];
-        email = [email stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        [controlSocket writeData:[email dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
-    }
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail
