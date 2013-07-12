@@ -178,6 +178,9 @@
     [animatedEllipsisTimer stopTimer];
     [animatedEllipsisTimer release];
     
+    [animatedLongTextTimer stopTimer];
+    [animatedLongTextTimer release];
+    
     [defaultNotification release];
     [activeNotification release];
     [keyboardIcon release];
@@ -199,8 +202,8 @@
     aLabel.font = [UIFont boldSystemFontOfSize:12.0];
     aLabel.textColor = [UIColor whiteColor];
     aLabel.text = aString;
-    [newNotification addSubview:aLabel];
-    
+    [newNotification addSubview:aLabel];        
+
     if (padUI)
     {
         aLabel.numberOfLines = 0;
@@ -216,10 +219,23 @@
         aLabel.numberOfLines = 1;
         [aLabel sizeToFit];
 
+        CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
+
         CGRect aFrame = aLabel.frame;
         aFrame.origin.y = 8.0;
         aFrame.origin.x = (newNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
         aLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        
+        if (expectedSize.width > self.frame.size.width) {
+            aFrame.origin.x = 8.0;
+            
+            animatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
+                                                                     target:self
+                                                                   selector:@selector(startAnimatedLongText)];
+            
+            animatingLongText = YES;
+        }
+
         aLabel.frame = aFrame;
     }
     
@@ -344,11 +360,16 @@
                                               activeNotification.frame = targetFrameTwo;
                                           }
                                           completion:^(BOOL finished) {
+                                              // Let's check to see if the message's width is longer than frame width; If so, we should align it to the left and animate it
+                                              // We also need to refresh this for rotation
+
+
                                               
+
                                           }];
                      }];
     
-    if (NO == permanent)
+    if (NO == permanent && NO == animatingLongText)
     {
         notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaDefaultNotificationDuration
                                                                  target:self
@@ -424,8 +445,10 @@
     [notificationTimer release];
     notificationTimer = nil;
     
-    [self dismissActiveNotification];
-    [self revealDefaultNotification];
+    if (!animatingLongText) {
+        [self dismissActiveNotification];
+        [self revealDefaultNotification];
+    }
 }
 
 - (void)animatedEllipsisTimerDidFire
@@ -444,6 +467,39 @@
     [aLabel setNeedsDisplay];
 }
 
+-(void)startAnimatedLongText {
+    [animatedLongTextTimer stopTimer];
+    [animatedLongTextTimer release];
+    animatedLongTextTimer = nil;
+
+    animatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.05
+                                                                 target:self
+                                                               selector:@selector(animatedLongTextTimerDidFire)];
+
+}
+
+- (void)animatedLongTextTimerDidFire {
+    UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+
+    CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
+    if (aLabel.frame.origin.x < (self.frame.size.width - expectedSize.width - 8.0)) {
+        [animatedLongTextTimer stopTimer];
+        [animatedLongTextTimer release];
+        animatedLongTextTimer = nil;
+        
+        animatingLongText = NO;
+        
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+
+    } else {
+        CGRect aFrame = aLabel.frame;
+        aFrame.origin.x -= 1;
+        aLabel.frame = aFrame;
+    }
+}
+
 #pragma mark -
 #pragma mark Notification handlers
 
@@ -456,10 +512,25 @@
         {
             UILabel *notificationLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
             
-            CGRect aFrame = keyboardIcon.frame;
+            // Let's check if this label is too wide. If so, and it is still animating, reset it to position 0.
+            // If not, we should just center it
+            
+            CGRect aFrame = notificationLabel.frame;
+            
+            if (animatingLongText) {
+                aFrame.origin.x = 8.0;
+            } else {
+                aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+            }
+            notificationLabel.frame = aFrame;
+            
+            aFrame = keyboardIcon.frame;
             aFrame.origin.x = notificationLabel.frame.origin.x - aFrame.size.width - 10.0;
             aFrame.origin.y = 9.0;
+            
             keyboardIcon.frame = aFrame;
+        } else {
+            defaultNotification.frame = self.bounds;
         }
     });
 }
