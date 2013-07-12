@@ -23,7 +23,7 @@ static LPChatAPIClient *sharedClient = nil;
 
 @implementation LPChatAPIClient
 
-@synthesize usesTLS, baseURL, jsonWriter;
+@synthesize baseURL, jsonWriter;
 
 + (LPChatAPIClient *) sharedClient
 {
@@ -67,7 +67,7 @@ static LPChatAPIClient *sharedClient = nil;
         path = @"";
     }
     
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
 	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
                                                                 cachePolicy:NSURLCacheStorageNotAllowed
@@ -97,7 +97,7 @@ static LPChatAPIClient *sharedClient = nil;
         path = @"";
     }
     
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
 	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
                                                                  cachePolicy:NSURLCacheStorageNotAllowed
@@ -116,7 +116,7 @@ static LPChatAPIClient *sharedClient = nil;
         path = @"";
     }
     
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@%@", usesTLS ? @"s" : @"", baseURL, path]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
 	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
                                                                  cachePolicy:NSURLCacheStorageNotAllowed

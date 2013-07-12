@@ -77,6 +77,8 @@
 #define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
 #define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
 #define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
+#define LIOLookIOManagerChatPermissionRequestURL    @"/api/v2/chat/permission"
+#define LIOLookIOManagerChatScreenshotRequestURL    @"/api/v2/chat/screenshot"
 #define LIOLookIOManagerMediaUploadRequestURL       @"/api/v2/media/upload"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
@@ -125,7 +127,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
-    AsyncSocket_LIO *controlSocket;
     BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded, appForegrounded;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
@@ -376,8 +377,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-        chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint];
-        chatClient.usesTLS = usesTLS;
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
     }
     
     return self;
@@ -389,7 +389,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_Dev;
 
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint_Dev];
+    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
 
 }
 
@@ -399,21 +399,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
     
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    chatClient.baseURL = [NSURL URLWithString:LIOLookIOManagerDefaultControlEndpoint];
+    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
 }
-
--(void)enableDemoSurvey {
-    demoSurveyEnabled = YES;
-}
-
--(void)disableDemoSurvey {
-    demoSurveyEnabled = NO;
-}
-
-- (BOOL)demoSurveyEnabled {
-    return demoSurveyEnabled;
-}
-
 
 - (void)uploadLog:(NSString *)logBody
 {
@@ -704,6 +691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             chatPostUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
             chatSSEUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             chatLastEventId = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+            [self setupAPIClientBaseURL];
             
             double delayInSeconds = 2.0;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -918,9 +906,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [lastKnownPageViewValue release];
     lastKnownPageViewValue = nil;
     
-    [callCenter release];
-    callCenter = nil;
-    
     [chatHistory release];
     chatHistory = [[NSMutableArray alloc] init];
     
@@ -1014,6 +999,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [sseManager release];
     sseManager = nil;
+
+    LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
+    if (developmentMode)
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    else
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+
     
     [userDefaults synchronize];
     
@@ -1476,8 +1468,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendLinePacketWithMessage:(LIOChatMessage*)aMessage {
     NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", nil];
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* lineRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/line/", chatEngagementId];
+    NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:lineRequestUrl parameters:lineDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
@@ -1513,8 +1504,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sendOutroPacket {
     NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* outroRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/outro/", chatEngagementId];
+    NSString* outroRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatOutroRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:outroRequestUrl parameters:outroDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
@@ -1534,8 +1524,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                               capsArray, @"capabilities",
                               nil];
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* capsRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/capabilities/", chatEngagementId];
+    NSString* capsRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatCapabilitiesRequestURL, chatEngagementId];
+
     [[LPChatAPIClient sharedClient] postPath:capsRequestUrl parameters:capsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<CAPABILITIES> response: %@", responseObject);
@@ -1549,7 +1539,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sendFeedbackPacketWithDict:(NSDictionary*)feedbackDict {
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* feedbackRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/feedback/", chatEngagementId];
+    NSString* feedbackRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatFeedbackRequestURL, chatEngagementId];
+
     [[LPChatAPIClient sharedClient] postPath:feedbackRequestUrl parameters:feedbackDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<FEEDBACK> response: %@", responseObject);
@@ -1564,7 +1555,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sendChatHistoryPacketWithDict:(NSDictionary*)emailDict {
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/chat_history/", chatEngagementId];
+    NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, chatEngagementId];
+
     [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
@@ -1577,7 +1569,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict {
     NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/advisory/", chatEngagementId];
+    NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, chatEngagementId];
+
     [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
@@ -1595,8 +1588,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                     asset, @"asset",
                                     nil];
 
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* permissionRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/permission/", chatEngagementId];
+    NSString* permissionRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatPermissionRequestURL, chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:permissionRequestUrl parameters:permissionDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<PERMISSION> with data %@ response: %@", permissionDict, responseObject);
@@ -1608,14 +1600,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendScreenshotPacketWithData:(NSData*)screenshotData {
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
-    NSString* screenshotRequestUrl = [NSString stringWithFormat:@"%@%@%@", chatPostUrl.path, @"/screenshot/", chatEngagementId];
+    NSString* screenshotRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatScreenshotRequestURL, chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:screenshotRequestUrl data:screenshotData success:^(LPHTTPRequestOperation *operation, id responseObject) {
         waitingForScreenshotAck = NO;
         if (responseObject)
-            LIOLog(@"<SCREENSHOT> with data %@ response: %@", screenshotData, responseObject);
+            LIOLog(@"<SCREENSHOT> with response: %@", responseObject);
         else
-            LIOLog(@"<SCREENSHOT> with data %@ success", screenshotData);
+            LIOLog(@"<SCREENSHOT> success");
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         waitingForScreenshotAck = NO;
         
@@ -1734,6 +1725,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
         chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
         
+        [self setupAPIClientBaseURL];
+        
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults setObject:chatEngagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
         [userDefaults setObject:chatSSEUrlString forKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
@@ -1743,6 +1736,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self connectSSESocket];
     }
+}
+
+-(void)setupAPIClientBaseURL {
+    LPChatAPIClient* chatAPIClient = [LPChatAPIClient sharedClient];
+    NSURL *chatPostURL = [NSURL URLWithString:chatPostUrlString];
+    chatAPIClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", chatPostURL.scheme, chatPostURL.host]];    
 }
 
 -(void)connectSSESocket {
@@ -1755,8 +1754,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSURL* url = [NSURL URLWithString:chatSSEUrlString];
     if (url.port != 0)
         portToUse = url.port;
+    
+    BOOL sseSocketUsesTLS = YES;
+    if ([url.scheme isEqualToString:@"http"])
+        sseSocketUsesTLS = NO;
         
-    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] lastEventId:chatLastEventId];
+    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] usesTLS:sseSocketUsesTLS lastEventId:chatLastEventId];
     sseManager.delegate = self;
     [sseManager connect];
 }
@@ -2315,34 +2318,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)beginConnectingWithError:(NSError **)anError
 {
-    NSUInteger chosenPort = LIOLookIOManagerControlEndpointPortTLS;
-    if (NO == usesTLS)
-        chosenPort = LIOLookIOManagerControlEndpointPort;
-    
-    NSString *chosenEndpoint = [self chosenEndpoint];
-    
-    // Get rid of any port specifier at the end.
-    NSRange aRange = [chosenEndpoint rangeOfString:@":"];
-    if (aRange.location != NSNotFound)
-        chosenEndpoint = [chosenEndpoint substringToIndex:aRange.location];
-    
-    BOOL exceptionNotRaised = NO;
-    BOOL connectResult = NO;
-    @try
-    {
-        connectResult = [controlSocket connectToHost:chosenEndpoint
-                                              onPort:chosenPort
-                                               error:anError];
-        exceptionNotRaised = YES;
-        
-        LIOLog(@"Trying \"%@:%u\"...", chosenEndpoint, chosenPort);
-    }
-    @catch (NSException *anException)
-    {
-        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection attempt failed. Exception: %@", anException];
-    }
-    
-    return connectResult && exceptionNotRaised;
+    return NO;
 }
 
 - (void)killConnection
@@ -3238,6 +3214,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *analyticsUpdate = [jsonWriter stringWithObject:avisoryDict];
         analyticsUpdate = [analyticsUpdate stringByAppendingString:LIOLookIOManagerMessageSeparator];
         
+        /*
         [controlSocket writeData:[analyticsUpdate dataUsingEncoding:NSUTF8StringEncoding]
                      withTimeout:LIOLookIOManagerWriteTimeout
                              tag:0];
@@ -3245,6 +3222,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [controlSocket readDataToData:messageSeparatorData
                           withTimeout:-1
                                   tag:0];
+         */
     }
 }
 

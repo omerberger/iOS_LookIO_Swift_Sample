@@ -12,11 +12,9 @@
 
 @interface LPChatAPIClient : NSObject {
     NSURL *baseURL;
-    BOOL usesTLS;
 }
 
 @property (nonatomic, retain) NSURL *baseURL;
-@property (nonatomic, assign) BOOL usesTLS;
 
 + (LPChatAPIClient *)sharedClient;
 - (void)postPath:(NSString *)path

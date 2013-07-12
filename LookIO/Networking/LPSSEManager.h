@@ -37,9 +37,10 @@ typedef enum {
     NSString* urlEndpoint;
     int port;
     id <LPSSEManagerDelegate> delegate;
+    BOOL usesTLS;
 }
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint lastEventId:(NSString*)anEventId;
+- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS  lastEventId:(NSString*)anEventId;
 - (void)connect;
 - (void)disconnect;
 - (void)reset;
@@ -48,6 +49,7 @@ typedef enum {
 @property(nonatomic, retain) NSString *urlEndpoint;
 @property(nonatomic, assign) int port;
 @property(nonatomic, assign) id <LPSSEManagerDelegate> delegate;
+@property(nonatomic, assign) BOOL usesTLS;
 
 - (NSString *)sha1:(NSString *)input;
 

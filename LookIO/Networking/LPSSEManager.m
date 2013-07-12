@@ -37,9 +37,9 @@
 
 @implementation LPSSEManager
 
-@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState;
+@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS;
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint lastEventId:(NSString *)anEventId
+- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId
 {
     self = [super init];
     if (self)
@@ -51,6 +51,7 @@
         self.host = aHost;
         self.port = aPort;
         self.urlEndpoint = anEndpoint;
+        self.usesTLS = usesTLS;
         lastEventId = @"";
         if (lastEventId)
             self.lastEventId = anEventId;
@@ -87,7 +88,21 @@
 - (void)connect
 {
     NSError *anError = nil;
-    [socket connectToHost:self.host onPort:self.port error:&anError];
+    
+    BOOL exceptionNotRaised = NO;
+    BOOL connectResult = NO;
+    @try
+    {
+        connectResult = [socket connectToHost:self.host onPort:self.port error:&anError];
+        exceptionNotRaised = YES;
+        
+        LIOLog(@"Trying \"%@:%u\"...", self.host, self.port);
+    }
+    @catch (NSException *anException)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection attempt failed. Exception: %@", anException];
+    }
+    
     if (anError)
     {
         LIOLog(@"<LPSSEManager> Couldn't connect: %@", anError);
@@ -97,8 +112,10 @@
 }
 
 - (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port {
-    [socket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
-
+    if (self.usesTLS)
+        [socket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
+    else
+        [self sendEventStreamRequest];
 }
 
 - (void)disconnect
@@ -110,18 +127,22 @@
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
+    [self sendEventStreamRequest];
+}
+
+- (void)sendEventStreamRequest {
     dispatch_async(dispatch_get_main_queue(), ^{
         LIOLog(@"<LPSSEManager> SSL/TLS established");
         
         NSString* httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n",
-                                   urlEndpoint,
-                                   host];
+                                 urlEndpoint,
+                                 host];
         
         if (lastEventId)
             if (![lastEventId isEqualToString:@""])
                 httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@\n", lastEventId]];
         
-        httpRequest = [httpRequest stringByAppendingString:@"\n"];        
+        httpRequest = [httpRequest stringByAppendingString:@"\n"];
         
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
         
