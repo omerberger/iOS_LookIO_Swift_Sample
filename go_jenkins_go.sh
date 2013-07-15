@@ -26,6 +26,11 @@ then
     COMMIT_DESCRIPTION="Unstable Enterprise version $1"
 fi
 
+if [ $2 == "pre_surveys_v2" ]
+then
+    COMMIT_DESCRIPTION="Pre surveys version $1"
+fi
+
 cd /Users/marc/Development/ios_lib
 ./build_lio.sh $1
 
@@ -41,6 +46,7 @@ echo Publishing build #$1 into LookIO-Libraries branch: $2...
 pushd ../LookIO-Libraries
 git checkout .
 rm -rf iOS/*
+git fetch
 git checkout $2
 rm -rf iOS/*
 cp -v -f -R  ../ios_lib/_LOOKIO_$1_/libLookIO.a ../ios_lib/_LOOKIO_$1_/LookIO.bundle ../ios_lib/_LOOKIO_$1_/LIOLookIOManager.h iOS

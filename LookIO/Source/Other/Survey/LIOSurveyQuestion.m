@@ -11,12 +11,12 @@
 @implementation LIOSurveyQuestion
 
 @synthesize questionId, mandatory, order, label, logicId, displayType;
-@synthesize validationType, pickerEntries, validationRegexp;
+@synthesize validationType, pickerEntries;
+@synthesize lastKnownValue;
 
 - (void)dealloc
 {
     [label release];
-    [validationRegexp release];
     [pickerEntries release];
     
     [super dealloc];

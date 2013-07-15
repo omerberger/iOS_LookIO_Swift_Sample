@@ -13,10 +13,12 @@
     NSNumber *surveyId;
     NSString *headerString;
     NSArray *questions;
+    NSDictionary *logicDictionary;
 }
 
 @property(nonatomic, retain) NSNumber *surveyId;
 @property(nonatomic, retain) NSString *headerString;
 @property(nonatomic, retain) NSArray *questions;
+@property(nonatomic, retain) NSDictionary *logicDictionary;
 
 @end

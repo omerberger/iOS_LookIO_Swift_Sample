@@ -256,7 +256,7 @@
         navBar.rightButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonRight");
     [navBar layoutSubviews];
     
-    if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
+    if (LIOSurveyQuestionDisplayTypeTextField == nextQuestion.displayType)
     {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
         UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
@@ -777,15 +777,6 @@
                     validated = YES;
                 else
                     [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.NumericValidationAlertBody")];
-            }
-            else if ([currentQuestion.validationRegexp length])
-            {
-                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
-                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.RegexpValidationAlertBody")];
             }
             
             if (validated)

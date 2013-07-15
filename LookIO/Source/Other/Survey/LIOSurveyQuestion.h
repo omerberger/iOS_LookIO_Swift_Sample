@@ -10,10 +10,11 @@
 
 typedef enum
 {
-    LIOSurveyQuestionDisplayTypeText,
+    LIOSurveyQuestionDisplayTypeTextField,
     LIOSurveyQuestionDisplayTypePicker,
     LIOSurveyQuestionDisplayTypeMultiselect,
-    LIOSurveyQuestionDisplayTypeSwitch
+    LIOSurveyQuestionDisplayTypeSwitch,
+    LIOSurveyQuestionDisplayTypeTextArea
 } LIOSurveyQuestionDisplayType;
 
 typedef enum
@@ -31,10 +32,11 @@ typedef enum
     int order;
     NSString *label;
     int logicId;
-    NSString *validationRegexp;
     LIOSurveyQuestionDisplayType displayType;
     LIOSurveyQuestionValidationType validationType;
     NSArray *pickerEntries;
+    
+    NSString* lastKnownValue;
 }
 
 @property(nonatomic, assign) int questionId;
@@ -45,6 +47,7 @@ typedef enum
 @property(nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
 @property(nonatomic, assign) LIOSurveyQuestionValidationType validationType;
 @property(nonatomic, retain) NSArray *pickerEntries;
-@property(nonatomic, retain) NSString *validationRegexp;
+
+@property (nonatomic, retain) NSString* lastKnownValue;
 
 @end

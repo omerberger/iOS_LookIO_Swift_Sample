@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyViewPre;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
 @class LIOTimerProxy, LIOChatMessage;
 
 @protocol LIOInputBarViewDelegate;
@@ -36,6 +36,9 @@
 - (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didResendChatMessage:(LIOChatMessage*)aMessage;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPreSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishOfflineSurveyWithResponses:(NSDictionary*)aResponseDict;
+
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
@@ -89,7 +92,9 @@
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
     
-    BOOL surveyPreCompleted;
+    LIOSurveyView* surveyView;
+    BOOL surveyInProgress;
+
     int currentPopoverType;
 
     LIOChatMessage *clickedFailedMessage;
@@ -104,7 +109,7 @@
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;
-- (void)performRevealAnimation;
+- (void)performRevealAnimationWithFadeIn:(BOOL)fadeIn;
 - (void)performDismissalAnimation;
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;
@@ -112,5 +117,5 @@
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
-
+- (void)showPostSurveyView;
 @end

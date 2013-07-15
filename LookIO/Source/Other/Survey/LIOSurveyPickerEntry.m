@@ -10,12 +10,12 @@
 
 @implementation LIOSurveyPickerEntry
 
-@synthesize initiallyChecked, label, logicProps;
+@synthesize initiallyChecked, label, logicItems;
 
 - (void)dealloc
 {
     [label release];
-    [logicProps release];
+    [logicItems release];
     
     [super dealloc];
 }

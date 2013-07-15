@@ -62,10 +62,31 @@
 "LIOLeaveMessageViewController.SuccessAlertBody" = "Your message has been sent.";
 "LIOLeaveMessageViewController.SuccessAlertButton" = "Dismiss";
 
+"LIOSurveyView.DefaultOfflineSurveyHeader" = "No agents are available - please enter your email and a message for further help.";
+"LIOSurveyView.DefaultOfflineSurveyLeaveEmailTitle" = "What is your e-mail address?";
+"LIOSurveyView.DefaultOfflineSurveyLeaveMessageTitle" = "Please enter a message:";
+
 "LIONotificationArea.PoweredBy" = "Powered by";
 
 "LIOSurveyPickerView.DoneButton" = "Next";
 "LIOSurveyPickerView.HeaderText" = "Choose an option below:";
+
+"LIOSurveyView.NextButtonTitle" = "Next";
+"LIOSurveyView.DoneButtonTitle" = "Done";
+"LIOSurveyView.CancelButtonTitle" = "Cancel";
+
+"LIOSurveyView.DefaultPostSurveyTitle" = "Your support session has ended.";
+"LIOSurveyView.DefaultPostSurveyRateTitle" = "Please rate your satisfaction with company name overall:";
+"LIOSurveyView.DefaultPostSurveyCancelButton" = "No thanks";
+"LIOSurveyView.DefaultPostSurveySubmitButton" = "Submit";
+"LIOSurveyView.DefaultPostNeedHelpTitle" = "Still need help?";
+"LIOSurveyView.DefaultPostSurveyLiveChatButton" = "Live Chat";
+
+"LIOStarRatingView.ExcellentRatingTitle" = "Excellent";
+"LIOStarRatingView.GoodRatingTitle" = "Good";
+"LIOStarRatingView.OkRatingTitle" = "Ok";
+"LIOStarRatingView.NotGoodRatingTitle" = "Not Good";
+"LIOStarRatingView.BadRatingTitle" = "Poor";
 
 "LIOSurveyViewController.NavButtonLeft" = "Cancel";
 "LIOSurveyViewController.NavButtonLeftAlt" = "Back";
@@ -77,6 +98,7 @@
 "LIOSurveyViewController.EmailValidationAlertBody" = "Please enter a valid e-mail address.";
 "LIOSurveyViewController.NumericValidationAlertBody" = "Please enter a valid number.";
 "LIOSurveyViewController.RegexpValidationAlertBody" = "Please check your response and try again.";
+"LIOSurveyViewController.MandatoryQuestionsTitle" = "Required items indicated with *";
 
 "LIOLookIOManager.ConnectionFailedAlertTitle" = "Chat Connection Failed";
 "LIOLookIOManager.ConnectionFailedAlertBody" = "Sorry, we can't connect with the live chat support right now. Please try again later.";
