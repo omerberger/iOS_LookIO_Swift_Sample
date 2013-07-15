@@ -2344,35 +2344,28 @@
         
         alertView = [[UIAlertView alloc] initWithTitle:titleString
                                                message:bodyString
-                                              delegate:nil
+                                              delegate:self
                                      cancelButtonTitle:nil
                                      otherButtonTitles:buttonString, nil];
         alertView.tag = LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag;
         [alertView show];
         
-        [self.view endEditing:YES];
-        
-        if (padUI) {
-            currentPopoverType = LIOIpadPopoverTypeNone;
-            [popover dismissPopoverAnimated:YES];
-            [UIView animateWithDuration:0.5 animations:^{
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
-            } completion:^(BOOL finished) {
-                [aView removeFromSuperview];
-                [delegate altChatViewControllerWantsSessionTermination:self];
-            }];
-        }
-        else {
-            [UIView animateWithDuration:0.5 animations:^{
-                aView.alpha = 0.0;
-                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-                
-            } completion:^(BOOL finished) {
-                [aView removeFromSuperview];
-                [delegate altChatViewControllerWantsSessionTermination:self];
-            }];
+        if (surveyView) {
+            [surveyView endEditing:YES];
+            
+            if (padUI) {
+                if (popover) {
+                    currentPopoverType = LIOIpadPopoverTypeNone;
+                    [popover dismissPopoverAnimated:YES];
+                }
+            } else {
+                [UIView animateWithDuration:0.3 animations:^{
+                    surveyView.alpha = 0.0;
+                    surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
+                    
+                } completion:^(BOOL finished) {
+                }];
+            }
         }
     }
     
@@ -2385,7 +2378,7 @@
         
         alertView = [[UIAlertView alloc] initWithTitle:titleString
                                                message:bodyString
-                                              delegate:nil
+                                              delegate:self
                                      cancelButtonTitle:nil
                                      otherButtonTitles:buttonString, nil];
         alertView.tag = LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag;
