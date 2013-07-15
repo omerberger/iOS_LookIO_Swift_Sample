@@ -66,6 +66,10 @@
 "LIOSurveyView.DefaultOfflineSurveyLeaveEmailTitle" = "What is your e-mail address?";
 "LIOSurveyView.DefaultOfflineSurveyLeaveMessageTitle" = "Please enter a message:";
 
+"LIOSurveyView.SubmitOfflineSurveyAlertTitle" = "Thank you!";
+"LIOSurveyView.SubmitOfflineSurveyAlertBody" = "Your survey has been submitted.";
+"LIOSurveyView.SubmitOfflineSurveyAlertButton" = "Dismiss";
+
 "LIONotificationArea.PoweredBy" = "Powered by";
 
 "LIOSurveyPickerView.DoneButton" = "Next";

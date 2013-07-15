@@ -100,9 +100,9 @@
     [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
-        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-            currentScrollView = [self scrollViewForRatingView];
-        else
+//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+//            currentScrollView = [self scrollViewForRatingView];
+//        else
             currentScrollView = [self scrollViewForIntroView];
     }
     else
@@ -790,7 +790,7 @@
 
         CGFloat tableViewContentHeight = [self heightForTableView:tableView];
         
-        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 50.0;
+        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 50.0 - (landscape ? 0 : 60.0);
         if (tableViewContentHeight > maxHeight) {
             tableView.scrollEnabled = YES;
             tableViewContentHeight = maxHeight;
@@ -970,9 +970,9 @@
     UIScrollView* previousQuestionScrollView;
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
-        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-            previousQuestionScrollView = [self scrollViewForRatingView];
-        else
+//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+///            previousQuestionScrollView = [self scrollViewForRatingView];
+//        else
             previousQuestionScrollView = [self scrollViewForIntroView];
     }
     else

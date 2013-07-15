@@ -2337,6 +2337,19 @@
     NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
     
     if (LIOSurveyManagerSurveyTypePost == aView.currentSurveyType) {
+        [delegate altChatViewController:self didFinishPostSurveyWithResponses:surveyDict];
+        NSString *titleString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertTitle"];
+        NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertBody"];
+        NSString *buttonString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertButton"];
+        
+        alertView = [[UIAlertView alloc] initWithTitle:titleString
+                                               message:bodyString
+                                              delegate:nil
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:buttonString, nil];
+        alertView.tag = LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag;
+        [alertView show];
+        
         [self.view endEditing:YES];
         
         if (padUI) {
@@ -2365,14 +2378,14 @@
     
     if (LIOSurveyManagerSurveyTypeOffline == aView.currentSurveyType) {
         [delegate altChatViewController:self didFinishOfflineSurveyWithResponses:surveyDict];
-        
-        NSString *titleString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertTitle"];
-        NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertBody"];
-        NSString *buttonString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOLeaveMessageViewController.SuccessAlertButton"];
+
+        NSString *titleString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertTitle"];
+        NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertBody"];
+        NSString *buttonString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOSurveyView.SubmitOfflineSurveyAlertButton"];
         
         alertView = [[UIAlertView alloc] initWithTitle:titleString
                                                message:bodyString
-                                              delegate:self
+                                              delegate:nil
                                      cancelButtonTitle:nil
                                      otherButtonTitles:buttonString, nil];
         alertView.tag = LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag;

@@ -74,6 +74,7 @@
 #define LIOLookIOManagerChatOutroRequestURL         @"/api/v2/chat/outro"
 #define LIOLookIOManagerChatLineRequestURL          @"/api/v2/chat/line"
 #define LIOLookIOManagerChatFeedbackRequestURL      @"/api/v2/chat/feedback"
+#define LIOLookIOManagerChatSurveyRequestURL        @"/api/v2/chat/survey"
 #define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
 #define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
 #define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
@@ -1454,7 +1455,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma mark Chat API v2 Methods
 
 -(void)sendIntroPacket {    
-    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:NO includingEvents:YES];
+    NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:YES includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         
         
@@ -1563,23 +1564,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendFeedbackPacketWithDict:(NSDictionary*)feedbackDict {
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* feedbackRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatFeedbackRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:feedbackRequestUrl parameters:feedbackDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
-            LIOLog(@"<FEEDBACK> response: %@", responseObject);
+            LIOLog(@"<FEEDBACK> with data:%@ response: %@", feedbackDict, responseObject);
         else
             LIOLog(@"<FEEDBACK> success");
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<FEEDBACK> failure: %@", error);
     }];
+}
+
+-(void)sendSurveyPacketWithDict:(NSDictionary*)surveyDict {
+    NSString* surveyRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatSurveyRequestURL, chatEngagementId];
     
+    [[LPChatAPIClient sharedClient] postPath:surveyRequestUrl parameters:surveyDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<SURVEY> with data:%@ response: %@", surveyDict, responseObject);
+        else
+            LIOLog(@"<SURVEY> success");
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<SURVEY> failure: %@", error);
+    }];
 }
 
 -(void)sendChatHistoryPacketWithDict:(NSDictionary*)emailDict {
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1593,7 +1605,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict {
-    NSURL* chatPostUrl = [NSURL URLWithString:chatPostUrlString];
     NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -2092,30 +2103,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
         }
-        else if ([action isEqualToString:@"feedback_message"])
-        {
-            [altChatViewController forceLeaveMessageScreen];
-        }
         else if ([action isEqualToString:@"leave_message"])
         {
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
             surveyManager.offlineSurveyIsDefault = YES;
-            
-            NSDictionary *surveyDict = [aPacket objectForKey:@"surveys"];
-            if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
-            {
-                NSDictionary *offlineSurvey = [surveyDict objectForKey:@"offline"];
-                if (offlineSurvey)
-                {
-                    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:offlineSurvey type:LIOSurveyManagerSurveyTypeOffline];
-                    surveyManager.offlineSurveyIsDefault = NO;
-                }
-            }
-            
-            if (surveyManager.offlineSurveyIsDefault)
-                [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];            
-            
+
+            [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
             [altChatViewController forceLeaveMessageScreen];
+        }
+    }
+    else if ([type isEqualToString:@"survey"]) {
+        // Check if this is an offline survey
+        if ([aPacket objectForKey:@"offline"]) {
+        
+            NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
+            if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+
+                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:offlineSurveyDict type:LIOSurveyManagerSurveyTypeOffline];
+                surveyManager.offlineSurveyIsDefault = NO;
+            }
+
+            [altChatViewController forceLeaveMessageScreen];
+        }
+        
+        // Check if this is a postchat survey
+        if ([aPacket objectForKey:@"postchat"]) {
+            NSDictionary *postSurveyDict = [aPacket objectForKey:@"postchat"];
+            if (postSurveyDict && [postSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurveyDict type:LIOSurveyManagerSurveyTypePost];
+            }
         }
     }
     else if ([type isEqualToString:@"screen_cursor"])
@@ -2278,133 +2297,62 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
-/* Code from pre_surveys_v2 
- 
- 
- -(void)beginSessionAfterSurveyImmediatelyShowingChat:(BOOL)showChat {
- // Waiting for the "do you want to reconnect?" alert view.
- if (willAskUserToReconnect)
- return;
- 
- // Prevent a new session from being established if the current one
- // is ending.
- if (sessionEnding)
- {
- LIOLog(@"beginSession ignored: current session is still ending...");
- return;
- }
- 
- if (controlSocketConnecting)
- {
- LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
- return;
- }
- 
- if (socketConnected)
- {
- if (introduced)
- {
- [self showChatAnimated:YES];
- return;
- }
- else
- {
- LIOLog(@"beginSession ignored: already connected! (But not introduced)");
- return;
- }
- }
- 
- NSError *connectError = nil;
- BOOL connectResult = [self beginConnectingWithError:&connectError];
- if (NO == connectResult)
- {
- [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
- 
- [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Connection failed. Reason: %@", [connectError localizedDescription]];
- 
- if (NO == firstChatMessageSent)
- {
- UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertTitle")
- message:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertBody")
- delegate:nil
- cancelButtonTitle:nil
- otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ConnectionFailedAlertButton"), nil];
- [alertView show];
- [alertView autorelease];
- }
- 
- controlSocketConnecting = NO;
- 
- [self killReconnectionTimer];
- [self configureReconnectionTimer];
- 
- return;
- }
- 
- controlSocketConnecting = YES;
- 
- [self populateChatWithFirstMessage];
- }
- 
- - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
- {
- // Survey needed? We need to wait until it's done before we try to connect.
- 
- LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
- if (surveyManager.preChatTemplate && surveyEnabled)
- {
- LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
- if (!surveyManager.preSurveyCompleted)
- {
- [self showChatAnimated:YES];
- return;
- }
- }
- 
- // Waiting for the "do you want to reconnect?" alert view.
- if (willAskUserToReconnect)
- return;
- 
- // Prevent a new session from being established if the current one
- // is ending.
- if (sessionEnding)
- {
- LIOLog(@"beginSession ignored: current session is still ending...");
- return;
- }
- 
- if (controlSocketConnecting)
- {
- LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
- return;
- }
- 
- if (socketConnected)
- {
- if (introduced)
- {
- [self showChatAnimated:YES];
- return;
-
- */
-
+-(void)beginSessionAfterSurveyImmediatelyShowingChat:(BOOL)showChat
+{    
+    // Waiting for the "do you want to reconnect?" alert view.
+    if (willAskUserToReconnect)
+        return;
+    
+    // Prevent a new session from being established if the current one
+    // is ending.
+    if (sessionEnding)
+    {
+        LIOLog(@"beginSession ignored: current session is still ending...");
+        return;
+    }
+    
+    if (controlSocketConnecting)
+    {
+        LIOLog(@"beginSession ignored: still waiting for previous connection attempt to finish...");
+        return;
+    }
+    
+    if (socketConnected)
+    {
+        if (introduced)
+        {
+            [self showChatAnimated:YES];
+            return;
+        }
+        else
+        {
+            LIOLog(@"beginSession ignored: already connected! (But not introduced)");
+            return;
+        }
+    }
+    
+    [self sendIntroPacket];
+    
+    [self populateChatWithFirstMessage];
+    
+    if (showChat)
+        [self showChatAnimated:YES];
+}
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
     // Survey needed? We need to wait until it's done before we try to connect.
+    
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    /*
-    if (surveyManager.preChatTemplate)
+    if (surveyManager.preChatTemplate && surveyEnabled)
     {
-        int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
-        int finalIndex = [surveyManager.preChatTemplate.questions count] - 1;
-        if (lastIndexCompleted < finalIndex)
+        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+        if (!surveyManager.preSurveyCompleted)
         {
             [self showChatAnimated:YES];
             return;
         }
     }
-     */
 
     // Waiting for the "do you want to reconnect?" alert view.
     if (willAskUserToReconnect)
@@ -2756,24 +2704,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
 
-//    if (surveyEnabled) {
-        NSDictionary *surveyDict = [params objectForKey:@"surveys"];
-        if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
+    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
+    if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
+    {
+        NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
+        if (preSurvey)
         {
-            NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
-            if (preSurvey)
-            {
-                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
+            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
 
-            }
-            
+        }
+    }
+
+    /*
             NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
             if (postSurvey)
             {
                 [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
             }
-        }
-//    }
     
      // Fake survey for testing purposes.
 //    NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name and more text to make this question longer.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with? Please only select one option\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
@@ -2787,6 +2734,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
+     
+     */
 
     return resolvedSettings;
 }
@@ -3762,32 +3711,43 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     surveyResponsesToBeSent = [aResponseDict retain];
     
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-    NSMutableDictionary *feedbackDict;
     
     if (!surveyManager.offlineSurveyIsDefault) {
-         feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                             @"feedback", @"type",
-                                             aResponseDict, @"offline_survey",
+
+        NSMutableDictionary* surveyDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                             aResponseDict, @"offline",
                                              nil];
+        
+        [self sendSurveyPacketWithDict:surveyDict];
     
     } else {
         NSString* anEmail = [surveyManager answerObjectForSurveyType:LIOSurveyManagerSurveyTypeOffline withQuestionIndex:0];
         NSString* aMessage = [surveyManager answerObjectForSurveyType:LIOSurveyManagerSurveyTypeOffline withQuestionIndex:1];
-        feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                             @"feedback", @"type",
-                                             anEmail, @"email_address",
-                                             aMessage, @"message",
-                                             nil];
+        if ([anEmail length] && [aMessage length])
+        {
+            userWantsSessionTermination = YES;
+            
+            NSMutableDictionary *feedbackDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                 anEmail, @"email_address",
+                                                 aMessage, @"message",
+                                                 nil];
+            
+            [self sendFeedbackPacketWithDict:feedbackDict];
+        }
     }
+}
+
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPostSurveyWithResponses:(NSDictionary*)aResponseDict {
+    userWantsSessionTermination = YES;
     
-    NSString *feedback = [jsonWriter stringWithObject:feedbackDict];
-    feedback = [feedback stringByAppendingString:LIOLookIOManagerMessageSeparator];
+    [surveyResponsesToBeSent release];
+    surveyResponsesToBeSent = [aResponseDict retain];
     
-    /*
-    [controlSocket writeData:[feedback dataUsingEncoding:NSUTF8StringEncoding]
-                 withTimeout:LIOLookIOManagerWriteTimeout
-                         tag:0];
-     */
+    NSMutableDictionary* surveyDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                           aResponseDict, @"postchat",
+                                           nil];
+        
+    [self sendSurveyPacketWithDict:surveyDict];
 }
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
