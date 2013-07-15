@@ -4359,10 +4359,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else if (appContinueRequestResponseCode < 300 && appContinueRequestResponseCode >= 200)
         {
             // Success.
-            
             NSString *responseString = [[[NSString alloc] initWithData:appContinueRequestData encoding:NSUTF8StringEncoding] autorelease];
             NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-            LIOLog(@"<CONTINUE> Success! Response: %@", responseString);
+            LIOLog(@"<CONTINUE> Success. HTTP code: %d. Response: %@", appContinueRequestResponseCode, responseString);
             
             failedContinueCount = 0;
             

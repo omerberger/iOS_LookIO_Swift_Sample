@@ -816,6 +816,10 @@
     if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
         if (!surveyManager.preSurveyCompleted) {
             [self showPreSurveyView];
+            
+            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
+                [self willAnimateRotationToInterfaceOrientation:0 duration:0];
+
             return;
         }
     
