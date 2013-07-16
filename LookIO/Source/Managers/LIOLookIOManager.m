@@ -184,7 +184,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSString *lastKnownPageViewValue;
     id<LIOLookIOManagerDelegate> delegate;
     
-    BOOL demoSurveyEnabled;
     BOOL surveyEnabled;
 
     BOOL shouldLockOrientation;
@@ -198,6 +197,9 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     BOOL sseSocketAttemptingReconnect;
     
     BOOL chatClosingAsPartOfReset;
+    
+    BOOL developerDisabledChat;
+    BOOL customButtonVisible;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -299,6 +301,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        
+        developerDisabledChat = NO;
+        customButtonVisible = NO;
+        
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -386,6 +392,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return self;
 }
 
+-(void)setChatEnabled {
+    BOOL previousEnabledState = [self enabled];
+    
+    developerDisabledChat = NO;
+    [self refreshControlButtonVisibility];
+    
+    // If enabled status has changed, report it
+    if ([self enabled] != previousEnabledState)
+        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
+}
+
+-(void)setChatDisabled {
+    BOOL previousEnabledState = [self enabled];
+
+    developerDisabledChat = YES;
+    [self refreshControlButtonVisibility];
+    
+    // If enabled status has changed, report it
+    if ([self enabled] != previousEnabledState)
+        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
+}
+
+-(void)setCustomButtonHidden {
+    customButtonVisible = NO;
+}
+
+-(void)setCustomButtonVisible {
+    customButtonVisible = YES;
+}
+
 - (void)enableDevelopmentMode
 {
     developmentMode = YES;
@@ -415,10 +453,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)surveyEnabled {
     return surveyEnabled;
-}
-
-- (BOOL)demoSurveyEnabled {
-    return demoSurveyEnabled;
 }
 
 - (void)uploadLog:(NSString *)logBody
@@ -4486,6 +4520,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
+    if (developerDisabledChat)
+        return NO;
+    
     // nil or empty
     if (0 == [multiskillMapping count])
         return NO;

@@ -56,6 +56,8 @@ extern NSString *const kLPEventAddedToCart;
 + (LIOLookIOManager *)sharedLookIOManager;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
 - (void)beginChat;
+- (void)setChatDisabled;
+- (void)setChatEnabled;
 - (void)setSkill:(NSString *)aRequiredSkill;
 - (void)reportEvent:(NSString *)anEvent;
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData;
@@ -64,14 +66,10 @@ extern NSString *const kLPEventAddedToCart;
 - (void)addCustomVariables:(NSDictionary *)aDictionary;
 - (void)clearCustomVariables;
 - (BOOL)shouldLockInterfaceOrientation;
+- (void)setCustomButtonVisible;
+- (void)setCustomButtonHidden;
 
-- (void)enableSurveys;
-- (void)disableSurveys;
-- (void)useRealSurvey;
-- (void)useDemoSurvey;
-- (BOOL)demoSurveyEnabled;
 - (BOOL)surveyEnabled;
-
 
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;
