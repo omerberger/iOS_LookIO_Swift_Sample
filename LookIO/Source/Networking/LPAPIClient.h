@@ -1,5 +1,5 @@
 //
-//  LPChatAPIClient.h
+//  LPAPIClient.h
 //  LookIO
 //
 //  Created by Yaron Karasik on 6/26/13.
@@ -10,13 +10,13 @@
 
 @class LPHTTPRequestOperation;
 
-@interface LPChatAPIClient : NSObject {
+@interface LPAPIClient : NSObject {
     NSURL *baseURL;
 }
 
 @property (nonatomic, retain) NSURL *baseURL;
 
-+ (LPChatAPIClient *)sharedClient;
++ (LPAPIClient *)sharedClient;
 - (void)postPath:(NSString *)path
       parameters:(NSDictionary *)parameters
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success

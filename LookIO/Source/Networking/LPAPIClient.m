@@ -1,34 +1,34 @@
 //
-//  LPChatAPIClient.m
+//  LPAPIClient.m
 //  LookIO
 //
 //  Created by Yaron Karasik on 6/26/13.
 //
 //
 
-#import "LPChatAPIClient.h"
+#import "LPAPIClient.h"
 #import "LPHTTPRequestOperation.h"
 #import "LIOLogManager.h"
 
 #import "SBJSON.h"
 
-static LPChatAPIClient *sharedClient = nil;
+static LPAPIClient *sharedClient = nil;
 
-@interface LPChatAPIClient ()
+@interface LPAPIClient ()
 
 @property (nonatomic, retain) NSOperationQueue *operationQueue;
 @property (nonatomic, retain) SBJsonWriter_LIO* jsonWriter;
 
 @end
 
-@implementation LPChatAPIClient
+@implementation LPAPIClient
 
 @synthesize baseURL, jsonWriter;
 
-+ (LPChatAPIClient *) sharedClient
++ (LPAPIClient *) sharedClient
 {
     if (nil == sharedClient)
-        sharedClient = [[LPChatAPIClient alloc] init];
+        sharedClient = [[LPAPIClient alloc] init];
     
     return sharedClient;
 }
