@@ -36,6 +36,7 @@
 
 #import "LPSSEManager.h"
 #import "LPChatAPIClient.h"
+#import "LPVisitAPIClient.h"
 #import "LPSSEvent.h"
 #import "LPHTTPRequestOperation.h"
 
@@ -66,8 +67,9 @@
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
-#define LIOLookIOManagerAppLaunchRequestURL         @"api/v1/app/launch"
-#define LIOLookIOManagerAppContinueRequestURL       @"api/v1/app/continue"
+#define LIOLookIOManagerAppLaunchRequestURL         @"api/v1/visit/launch"
+#define LIOLookIOManagerAppContinueRequestURL       @"/continue"
+#define LIOLookIOManagerVisitFunnelRequestURL       @"/funnel"
 #define LIOLookIOManagerLogUploadRequestURL         @"api/v1/app/log"
 
 #define LIOLookIOManagerChatIntroRequestURL         @"/api/v2/chat/intro"
@@ -123,6 +125,15 @@ NSString *const kLPEventSignUp      = @"LPEventSignUp";
 NSString *const kLPEventSignIn      = @"LPEventSignIn";
 NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 
+typedef enum
+{
+    LIOFunnelStateInitialized = 0,
+    LIOFunnelStateVisit,
+    LIOFunnelStateHotlead,
+    LIOFunnelStateInvitation,
+    LIOFunnelStateClicked,
+} LIOFunnelState;
+
 @interface LIOLookIOManager ()
     <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate>
 {
@@ -172,7 +183,6 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     NSURL *pendingIntraAppLinkURL;
     NSString *currentVisitId;
     NSString *currentRequiredSkill;
-    NSString *lastKnownContinueURL;
     NSTimeInterval nextTimeInterval;
     NSDictionary *surveyResponsesToBeSent;
     NSString *partialPacketString;
@@ -200,6 +210,9 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
     
     BOOL developerDisabledChat;
     BOOL customButtonVisible;
+    LIOFunnelState currentFunnelState;
+    BOOL currentFunnelStateReported;
+    NSString *lastKnownVisitURL;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -304,7 +317,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         developerDisabledChat = NO;
         customButtonVisible = NO;
-        
+        NSLog(@"<FUNNEL STATE> Initialized");
+        currentFunnelState = LIOFunnelStateInitialized;
+        currentFunnelStateReported = NO;
+
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -387,6 +403,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+        
+        LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
+        visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
     }
     
     return self;
@@ -402,6 +421,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([self enabled] != previousEnabledState)
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
+    
+    [self funnelCheckForInvitation];
 }
 
 -(void)setChatDisabled {
@@ -414,6 +435,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([self enabled] != previousEnabledState)
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
+    
+    [self funnelCheckForHotlead];
 }
 
 -(void)setCustomButtonHidden {
@@ -432,6 +455,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
 
+    LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
+    visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+
 }
 
 - (void)disableDevelopmentMode
@@ -441,6 +467,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+    
+    LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
+    visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
 }
 
 - (void)enableSurveys {
@@ -533,7 +562,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (appContinueRequestConnection)
         return;
     
-    if (0 == [lastKnownContinueURL length])
+    if (0 == [lastKnownVisitURL length])
         return;
     
     // First time setup.
@@ -555,11 +584,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:YES];
         NSString *introDictJSONEncoded = [jsonWriter stringWithObject:introDict];
-        [appContinueRequest setURL:[NSURL URLWithString:lastKnownContinueURL]];
+        [appContinueRequest setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", lastKnownVisitURL, LIOLookIOManagerAppContinueRequestURL]]];
         [appContinueRequest setHTTPBody:[introDictJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
         LIOLog(@"<CONTINUE> Endpoint: \"%@\"\n    Request: %@", [appContinueRequest.URL absoluteString], introDictJSONEncoded);
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
     }
+    
+    [self funnelCheckForHotlead];
 }
 
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
@@ -862,7 +893,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [proactiveChatRules release];
     [pendingIntraAppLinkURL release];
     [currentRequiredSkill release];
-    [lastKnownContinueURL release];
+    [lastKnownVisitURL release];
     [currentVisitId release];
     [surveyResponsesToBeSent release];
     [lastKnownLocation release];
@@ -1068,6 +1099,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     
     [userDefaults synchronize];
+    
+    [self funnelCheckForInvitation];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
@@ -1485,13 +1518,171 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [overriddenEndpoint length] ? overriddenEndpoint : controlEndpoint;
 }
 
+# pragma 
+# pragma mark Funnel Methods
+
+-(void)funnelCheckForHotlead {
+    // If developer has disabled chat, set state to visit and return
+    if (developerDisabledChat) {
+        if (currentFunnelState != LIOFunnelStateVisit) {
+            currentFunnelState = LIOFunnelStateVisit;
+            NSLog(@"<FUNNEL STATE> Visit");
+            
+            currentFunnelStateReported = NO;
+            [self sendFunnelPacket];
+        }
+        return;
+    }
+
+    // If we're at the visit state, and not disabled as check above, upgrade to hotlead
+    if (currentFunnelState == LIOFunnelStateVisit) {
+        currentFunnelState = LIOFunnelStateHotlead;
+        NSLog(@"<FUNNEL STATE> Hotlead");
+
+        currentFunnelStateReported = NO;
+        [self sendFunnelPacket];
+        return;
+    }
+}
+
+-(void)funnelCheckForInvitation {
+    // If we're at the hot lead state, let's check if we can upgrade to invitation
+    if (currentFunnelState == LIOFunnelStateHotlead) {
+        // If current skill is not enabled, stay at hotlead
+        if (![self enabled])
+            return;
+        
+        currentFunnelState = LIOFunnelStateInvitation;
+        NSLog(@"<FUNNEL STATE> Invitation");
+        
+        currentFunnelStateReported = NO;
+        [self sendFunnelPacket];
+        return;
+    }
+    
+    // If we're at the invitation lead state, let's make sure we can maintain it
+    if (currentFunnelState == LIOFunnelStateInvitation) {
+        if (![self enabled]) {
+            currentFunnelState = LIOFunnelStateHotlead;
+            NSLog(@"<FUNNEL STATE> Hotlead");
+
+            currentFunnelStateReported = NO;
+            [self sendFunnelPacket];
+            return;
+        }            
+    }
+    
+    // If we're at the clicked lead state, and the chat has ended, let's downgrade it
+    if (currentFunnelState == LIOFunnelStateClicked) {
+        if (![self chatInProgress]) {
+            // Case one - Developer has disabled chat
+            if (developerDisabledChat) {
+                currentFunnelState = LIOFunnelStateVisit;
+                NSLog(@"<FUNNEL STATE> Visit");
+
+                currentFunnelStateReported = NO;
+                [self sendFunnelPacket];
+                return;
+            }
+
+            // Case two - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
+            if (![self enabled]) {
+                currentFunnelState = LIOFunnelStateHotlead;
+                NSLog(@"<FUNNEL STATE> Hotlead");
+            } else {
+                currentFunnelState = LIOFunnelStateInvitation;
+                NSLog(@"<FUNNEL STATE> Invitation");
+            }
+            
+            currentFunnelStateReported = NO;
+            [self sendFunnelPacket];
+        }
+    }
+    
+    if (currentFunnelState == LIOFunnelStateVisit) {
+        if (developerDisabledChat)
+            return;
+
+        // Case two - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
+        if (![self enabled]) {
+            currentFunnelState = LIOFunnelStateHotlead;
+            NSLog(@"<FUNNEL STATE> Hotlead");
+        } else {
+            currentFunnelState = LIOFunnelStateInvitation;
+            NSLog(@"<FUNNEL STATE> Invitation");
+        }
+        
+        currentFunnelStateReported = NO;
+        [self sendFunnelPacket];        
+    }
+    
+    // If we're at the visit state, we would arrive here only after enable/disable
+}
+
+-(void)funnelCheckForClicked {
+    if (currentFunnelState == LIOFunnelStateInvitation) {
+        currentFunnelState = LIOFunnelStateClicked;
+        NSLog(@"<FUNNEL STATE> Clicked");
+
+        currentFunnelStateReported = NO;
+        [self sendFunnelPacket];
+    }
+}
+
+# pragma
+# pragma mark Visit API Methods
+
+-(void)sendFunnelPacket {
+    NSString *currentStateString = @"";
+    
+    switch (currentFunnelState) {
+        case LIOFunnelStateVisit:
+            currentStateString = @"visit";
+            break;
+            
+        case LIOFunnelStateHotlead:
+            currentStateString = @"hotlead";
+            break;
+            
+        case LIOFunnelStateInvitation:
+            currentStateString = @"invitation";
+            break;
+
+        case LIOFunnelStateClicked:
+            currentStateString = @"clicked";
+            break;
+            
+        default:
+            break;
+    }
+    
+    // If not one these three value, nothing to report
+    if ([currentStateString isEqualToString:@""])
+        return;
+    
+    NSDictionary* buttonFunnelDict = [NSDictionary dictionaryWithObject:currentStateString forKey:@"current_state"];
+    NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
+    
+    [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerVisitFunnelRequestURL parameters:funnelDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        currentFunnelStateReported = YES;
+        if (responseObject)
+            LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
+        else
+            LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        currentFunnelStateReported = NO;
+        LIOLog(@"<FUNNEL> with data:%@ failure: %@", funnelDict, error);
+    }];
+}
+
 # pragma
 # pragma mark Chat API v2 Methods
 
--(void)sendIntroPacket {    
+-(void)sendIntroPacket {
+    [self funnelCheckForClicked];
+    
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:YES includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        
         
         if (responseObject)
             LIOLog(@"<INTRO> response: %@", responseObject);
@@ -1500,7 +1691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         introduced = YES;
         enqueued = YES;
-
+        
         NSDictionary* responseDict = (NSDictionary*)responseObject;
         [self parseAndSaveEngagementInfoPayload:responseDict];
         
@@ -1927,8 +2118,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Just in case...
     clickView.hidden = YES;
     cursorView.hidden = YES;
-    
-    //
 }
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager {
@@ -2480,6 +2669,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)refreshControlButtonVisibility
 {
     [controlButton.layer removeAllAnimations];
+    
+    // Trump card #-2: If the developer has disabled chat,  button is hidden
+    if (developerDisabledChat) {
+        controlButtonHidden = YES;
+        controlButton.frame = controlButtonHiddenFrame;
+        [self rejiggerControlButtonLabel];
+        LIOLog(@"<<CONTROL>> Hiding. Reason: developer has disabled chat.");
+        return;        
+    }
 
     // Trump card #-1: If the session is ending, button is hidden.
     if (sessionEnding)
@@ -2730,9 +2928,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([localizedStrings count])
         [resolvedSettings setObject:localizedStrings forKey:@"localized_strings"];
     
-    NSString *continueURLString = [params objectForKey:@"continue_url"];
-    if ([continueURLString length])
-        [resolvedSettings setObject:continueURLString forKey:@"continue_url"];
+    NSString *visitURLString = [params objectForKey:@"visit_url"];
+    if ([visitURLString length])
+        [resolvedSettings setObject:visitURLString forKey:@"visit_url"];
     
     NSNumber *nextIntervalNumber = [params objectForKey:@"next_interval"];
     if (nextIntervalNumber)
@@ -2893,11 +3091,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"Got a localized string table for locale \"%@\", hash: \"%@\"", [localizedStrings objectForKey:@"langauge"], newHash);
         }
         
-        NSString *continueURLString = [resolvedSettings objectForKey:@"continue_url"];
-        if ([continueURLString length])
+        NSString* visitURLString = [resolvedSettings objectForKey:@"visit_url"];
+        if ([visitURLString length])
         {
-            [lastKnownContinueURL release];
-            lastKnownContinueURL = [continueURLString retain];
+            [lastKnownVisitURL release];
+            lastKnownVisitURL = [visitURLString retain];
+
+            LPVisitAPIClient* visitAPIClient = [LPVisitAPIClient sharedClient];
+            visitAPIClient.baseURL = [NSURL URLWithString:lastKnownVisitURL];
+            
+            NSLog(@"last known visit url is now %@", lastKnownVisitURL);
         }
         
         NSNumber *nextIntervalNumber = [resolvedSettings objectForKey:@"next_interval"];
@@ -4058,8 +4261,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             overriddenEndpoint = nil;
             [currentVisitId release];
             currentVisitId = nil;
-            [lastKnownContinueURL release];
-            lastKnownContinueURL = nil;
+            [lastKnownVisitURL release];
+            lastKnownVisitURL = nil;
             [continuationTimer stopTimer];
             [continuationTimer release];
             continuationTimer = nil;
@@ -4329,6 +4532,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
             LIOLog(@"<LAUNCH> Success. HTTP code: %d. Response: %@", appLaunchRequestResponseCode, responseString);
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
+            
+            NSLog(@"<FUNNEL STATE> Visit");
+            currentFunnelState = LIOFunnelStateVisit;
+            currentFunnelStateReported = NO;
         }
         
         else
@@ -4354,8 +4561,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
             [currentVisitId release];
             currentVisitId = nil;
-            [lastKnownContinueURL release];
-            lastKnownContinueURL = nil;
+            [lastKnownVisitURL release];
+            lastKnownVisitURL = nil;
             [continuationTimer stopTimer];
             [continuationTimer release];
             continuationTimer = nil;
@@ -4382,8 +4589,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 continuationTimer = nil;
                 
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
-                [lastKnownContinueURL release];
-                lastKnownContinueURL = nil;
+                [lastKnownVisitURL release];
+                lastKnownVisitURL = nil;
                 
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
                 [multiskillMapping release];
@@ -4404,6 +4611,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // Continue call succeeded! Purge the event queue.
             [pendingEvents removeAllObjects];
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
+            
+            [self funnelCheckForInvitation];
         }
         else
         {
@@ -4474,8 +4683,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             continuationTimer = nil;
             
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
-            [lastKnownContinueURL release];
-            lastKnownContinueURL = nil;
+            [lastKnownVisitURL release];
+            lastKnownVisitURL = nil;
         }
     }
     
