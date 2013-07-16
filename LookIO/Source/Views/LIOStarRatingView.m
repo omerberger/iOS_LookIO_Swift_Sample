@@ -12,7 +12,7 @@
 
 @implementation LIOStarRatingView
 
-@synthesize currentRating;
+@synthesize currentRating, valueLabelArray, delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -68,7 +68,7 @@
             starButton.selected = (i < currentRating);
             
             CGRect aFrame = starButton.frame;
-            aFrame.origin.x = i * 30.0;
+            aFrame.origin.x = (self.frame.size.width/2 - 75.0) + i * 30.0;
             aFrame.origin.y = 0;
             aFrame.size.width = 25;
             aFrame.size.height = 25;
@@ -85,41 +85,67 @@
     aFrame.size.height = 15.0;
     ratingLabel.frame = aFrame;
     
-    switch (currentRating) {
-        case 5:
-            ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
-            break;
-
-        case 4:
-            ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
-            break;
-            
-        case 3:
-            ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
-            break;
-            
-        case 2:
-            ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
-            break;
-            
-        case 1:
-            ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
-            break;
-            
-        default:
-            break;
-    }        
+    if (valueLabelArray && valueLabelArray.count == 5) {
+        ratingLabel.text = (NSString*)[valueLabelArray objectAtIndex:(5 - currentRating)];
+    } else {        
+        switch (currentRating) {
+            case 5:
+                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
+                break;
+                
+            case 4:
+                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
+                break;
+                
+            case 3:
+                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
+                break;
+                
+            case 2:
+                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
+                break;
+                
+            case 1:
+                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
+                break;
+                
+            default:
+                break;
+        }
+    }
 }
 
 -(void)starWasTapped:(id)sender {
     UIButton* button = (UIButton*)sender;
     currentRating = [starButtonArray indexOfObject:button] + 1;
     [self setNeedsLayout];
+    
+    if ([(NSObject *)delegate respondsToSelector:@selector(starRatingView:didUpdateRating:)])
+        [delegate starRatingView:self didUpdateRating:currentRating];
 }
 
 - (void)setRating:(int)newRating {
     currentRating = newRating;
     [self setNeedsLayout];
+    
+    if ([(NSObject *)delegate respondsToSelector:@selector(starRatingView:didUpdateRating:)])
+        [delegate starRatingView:self didUpdateRating:currentRating];
+}
+
+-(void)setValueLabels:(NSArray*)newValueLabelsArray {
+    if (newValueLabelsArray.count != 5)
+        return;
+    
+    [valueLabelArray removeAllObjects];
+    [valueLabelArray release];
+    valueLabelArray = nil;
+    
+    valueLabelArray = [[NSMutableArray alloc] init];
+    
+    for (int i=0; i<newValueLabelsArray.count; i++) {
+        NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
+        [valueLabelArray addObject:valueLabel];
+    }
 }
                                     
 

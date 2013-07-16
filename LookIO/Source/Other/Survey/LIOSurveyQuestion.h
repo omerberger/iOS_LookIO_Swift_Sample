@@ -50,4 +50,6 @@ typedef enum
 
 @property (nonatomic, retain) NSString* lastKnownValue;
 
+- (BOOL)shouldUseStarRatingView;
+- (NSArray*)pickerEntryTitles;
 @end

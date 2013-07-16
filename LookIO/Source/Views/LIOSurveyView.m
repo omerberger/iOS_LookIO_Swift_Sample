@@ -214,6 +214,7 @@
     
     LIOStarRatingView* starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
     starRatingView.tag = LIOSurveyViewStarRatingViewTag;
+    starRatingView.delegate = self;
     [scrollView addSubview:starRatingView];
     [starRatingView release];
     
@@ -637,44 +638,71 @@
     }
     
     if (LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) {
-        UITableView* tableView = [[UITableView alloc]
-                                  initWithFrame:CGRectZero style:UITableViewStylePlain];
-        CGFloat tableViewContentHeight = [self heightForTableView:tableView];
-        tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
-        
-        tableView.tag = LIOSurveyViewTableViewTag;
-        tableView.delegate = self;
-        tableView.dataSource = self;
-        tableView.backgroundColor = [UIColor clearColor];
-        tableView.backgroundView = nil;
-        tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-        tableView.showsVerticalScrollIndicator = NO;
-        [scrollView addSubview:tableView];
-        [tableView release];
-        
-        UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        nextButton.tag = LIOSurveyViewButtonTag;
-        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
-        nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
-        [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
-        [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
-        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        if (currentQuestionIndex == numberOfQuestions - 1)
-            [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
-        else
-            [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
-        [scrollView addSubview:nextButton];
-        [nextButton release];
+        if (question.shouldUseStarRatingView) {
+            LIOStarRatingView* starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
+            starRatingView.tag = LIOSurveyViewStarRatingViewTag;
+            starRatingView.delegate = self;
+            [starRatingView setValueLabels:question.pickerEntryTitles];
+            [scrollView addSubview:starRatingView];
+            [starRatingView release];
+            
+            UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            nextButton.tag = LIOSurveyViewButtonTag;
+            UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+            UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+            nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+            nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+            [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+            [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
+            nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            if (currentQuestionIndex == numberOfQuestions - 1)
+                [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
+            else
+                [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
+            [scrollView addSubview:nextButton];
+            [nextButton release];
+        } else {
+            UITableView* tableView = [[UITableView alloc]
+                                      initWithFrame:CGRectZero style:UITableViewStylePlain];
+            CGFloat tableViewContentHeight = [self heightForTableView:tableView];
+            tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
+            
+            tableView.tag = LIOSurveyViewTableViewTag;
+            tableView.delegate = self;
+            tableView.dataSource = self;
+            tableView.backgroundColor = [UIColor clearColor];
+            tableView.backgroundView = nil;
+            tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+            tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+            tableView.showsVerticalScrollIndicator = NO;
+            [scrollView addSubview:tableView];
+            [tableView release];
+            
+            UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            nextButton.tag = LIOSurveyViewButtonTag;
+            UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+            UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+            nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+            nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+            [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+            [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
+            nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            if (currentQuestionIndex == numberOfQuestions - 1)
+                [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
+            else
+                [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
+            [scrollView addSubview:nextButton];
+            [nextButton release];
+        }
         
         selectedIndices = [[NSMutableArray alloc] init];
         
         // If the user has answered this survey, we should display their answer
-
+        
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
         if (aResponse) {
             NSMutableArray* answersArray;
@@ -699,7 +727,10 @@
             for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries) {
                 if (pickerEntry.initiallyChecked) {
                     int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
-                    [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                    if (question.shouldUseStarRatingView)
+                        [selectedIndices addObject:[NSIndexPath indexPathForRow:(5-questionRow) inSection:0]];
+                    else
+                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];                    
                 }
             }
         }
@@ -782,6 +813,23 @@
         aSize.width = scrollView.frame.size.width;
         aSize.height = fieldBackground.frame.origin.y + fieldBackground.frame.size.height + 30.0;
         scrollView.contentSize = aSize;
+    }
+    
+    LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
+    if (starRatingView) {
+        aFrame.size.width = scrollView.frame.size.width;
+        aFrame.size.height = 40.0;
+        aFrame.origin.x = scrollView.bounds.size.width/2.0 - aFrame.size.width/2.0;
+        aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 20;
+        starRatingView.frame = aFrame;
+        
+        UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
+        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewSideMargin*2 - 92.0;
+        aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 30;
+        aFrame.size.width = 92.0;
+        aFrame.size.height = 44.0;
+        nextButton.frame = aFrame;
+
     }
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewTableViewTag];
@@ -1160,13 +1208,17 @@
         else
         {
             if (LIOSurveyQuestionDisplayTypeMultiselect) {
-                NSMutableArray* selectedAnswers = [NSMutableArray array];
-                for (NSIndexPath* indexPath in selectedIndices) {
-                    LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
-                    [selectedAnswers addObject:selectedPickerEntry.label];
-                }
-                [surveyManager registerAnswerObject:selectedAnswers forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
-
+                // If this is a checkbox (=multiselect), and the user hasn't checked anything, we should report an empty string
+                if (selectedIndices.count == 0)
+                    [surveyManager registerAnswerObject:@"" forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
+                else {
+                    NSMutableArray* selectedAnswers = [NSMutableArray array];
+                    for (NSIndexPath* indexPath in selectedIndices) {
+                        LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
+                        [selectedAnswers addObject:selectedPickerEntry.label];
+                    }
+                    [surveyManager registerAnswerObject:selectedAnswers forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
+                }                
             }
             
             if (LIOSurveyQuestionDisplayTypePicker) {
@@ -1295,6 +1347,13 @@
     textLabel.frame = aFrame;
     
     return cell;
+}
+
+-(void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(int)aRating {
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    
+    [selectedIndices removeAllObjects];
+    [selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

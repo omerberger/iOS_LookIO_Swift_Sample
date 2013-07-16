@@ -14,7 +14,8 @@
 @class LIOSurveyValidationView;
 @class LIOTimerProxy;
 @class LIOHeaderBarView;
-@protocol LIOSurveyValidationViewDelegate;
+@class LIOStarRatingView;
+@protocol LIOSurveyValidationViewDelegate, LIOStarRatingViewDelegate;
 
 @protocol LIOSurveyViewDelegate
 - (BOOL)surveyView:(LIOSurveyView*)aView shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
@@ -22,7 +23,7 @@
 - (void)surveyViewDidFinish:(LIOSurveyView *)aView;
 @end
 
-@interface LIOSurveyView : UIView <UITextFieldDelegate, UITextViewDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate> {
+@interface LIOSurveyView : UIView <UITextFieldDelegate, UITextViewDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate, LIOStarRatingViewDelegate> {
 
     id<LIOSurveyViewDelegate> delegate;
 
