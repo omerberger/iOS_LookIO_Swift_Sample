@@ -211,8 +211,8 @@ typedef enum
     BOOL developerDisabledChat;
     BOOL customButtonVisible;
     LIOFunnelState currentFunnelState;
-    BOOL currentFunnelStateReported;
     NSString *lastKnownVisitURL;
+    BOOL introPacketWasSent;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -317,9 +317,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         developerDisabledChat = NO;
         customButtonVisible = NO;
-        NSLog(@"<FUNNEL STATE> Initialized");
+        LIOLog(@"<FUNNEL STATE> Initialized");
         currentFunnelState = LIOFunnelStateInitialized;
-        currentFunnelStateReported = NO;
+        introPacketWasSent = NO;
 
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
@@ -422,7 +422,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
     
-    [self funnelCheckForInvitation];
+    [self updateAndReportFunnelState];
 }
 
 -(void)setChatDisabled {
@@ -436,15 +436,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
             [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
     
-    [self funnelCheckForHotlead];
+    [self updateAndReportFunnelState];
 }
 
 -(void)setCustomButtonHidden {
     customButtonVisible = NO;
+    
+    [self updateAndReportFunnelState];
 }
 
 -(void)setCustomButtonVisible {
     customButtonVisible = YES;
+    
+    [self updateAndReportFunnelState];
 }
 
 - (void)enableDevelopmentMode
@@ -590,7 +594,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         appContinueRequestConnection = [[NSURLConnection alloc] initWithRequest:appContinueRequest delegate:self];
     }
     
-    [self funnelCheckForHotlead];
+    [self updateAndReportFunnelState];
 }
 
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
@@ -1090,17 +1094,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [sseManager release];
     sseManager = nil;
+    
+    introPacketWasSent = NO;
 
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     if (developmentMode)
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
     else
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
-
     
     [userDefaults synchronize];
     
-    [self funnelCheckForInvitation];
+    [self updateAndReportFunnelState];
     
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
@@ -1521,111 +1526,99 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma 
 # pragma mark Funnel Methods
 
--(void)funnelCheckForHotlead {
+-(void)updateAndReportFunnelState {
     // If developer has disabled chat, set state to visit and return
     if (developerDisabledChat) {
         if (currentFunnelState != LIOFunnelStateVisit) {
             currentFunnelState = LIOFunnelStateVisit;
-            NSLog(@"<FUNNEL STATE> Visit");
-            
-            currentFunnelStateReported = NO;
+            LIOLog(@"<FUNNEL STATE> Visit");
             [self sendFunnelPacket];
         }
         return;
     }
-
+    
     // If we're at the visit state, and not disabled as check above, upgrade to hotlead
     if (currentFunnelState == LIOFunnelStateVisit) {
         currentFunnelState = LIOFunnelStateHotlead;
-        NSLog(@"<FUNNEL STATE> Hotlead");
-
-        currentFunnelStateReported = NO;
+        LIOLog(@"<FUNNEL STATE> Hotlead");
         [self sendFunnelPacket];
         return;
     }
-}
-
--(void)funnelCheckForInvitation {
+    
     // If we're at the hot lead state, let's check if we can upgrade to invitation
-    if (currentFunnelState == LIOFunnelStateHotlead) {
+    if (currentFunnelState == LIOFunnelStateHotlead) {        
+        // If the tab visibility is not always, let's first check that the devloper has set the custom button to visible.
+        // If not, it should stay a hotlead
+        if (1 != [lastKnownButtonVisibility intValue])
+            if (!customButtonVisible)
+                return;
+        
         // If current skill is not enabled, stay at hotlead
         if (![self enabled])
             return;
         
         currentFunnelState = LIOFunnelStateInvitation;
-        NSLog(@"<FUNNEL STATE> Invitation");
-        
-        currentFunnelStateReported = NO;
+        LIOLog(@"<FUNNEL STATE> Invitation");
         [self sendFunnelPacket];
         return;
     }
     
     // If we're at the invitation lead state, let's make sure we can maintain it
     if (currentFunnelState == LIOFunnelStateInvitation) {
-        if (![self enabled]) {
-            currentFunnelState = LIOFunnelStateHotlead;
-            NSLog(@"<FUNNEL STATE> Hotlead");
-
-            currentFunnelStateReported = NO;
+        // If a chat started before invitation state was reached, it will be reported here
+        if (introPacketWasSent) {
+            currentFunnelState = LIOFunnelStateClicked;
+            LIOLog(@"<FUNNEL STATE> Clicked");
             [self sendFunnelPacket];
             return;
-        }            
+        }
+        
+        // If the tab visibility is not always, let's first check that the devloper has set the custom button to visible.
+        // If not, it should be downgraded to a hotlead
+        if (1 != [lastKnownButtonVisibility intValue]) {
+            if (!customButtonVisible) {
+                currentFunnelState = LIOFunnelStateHotlead;
+                LIOLog(@"<FUNNEL STATE> Hotlead");
+                [self sendFunnelPacket];
+                
+                return;
+            }
+        }
+        
+        // If the skill is not enabled, should downgrade to a hotlead
+        if (![self enabled]) {
+            currentFunnelState = LIOFunnelStateHotlead;
+            LIOLog(@"<FUNNEL STATE> Hotlead");
+            [self sendFunnelPacket];
+            return;
+        }
     }
     
     // If we're at the clicked lead state, and the chat has ended, let's downgrade it
     if (currentFunnelState == LIOFunnelStateClicked) {
-        if (![self chatInProgress]) {
-            // Case one - Developer has disabled chat
-            if (developerDisabledChat) {
-                currentFunnelState = LIOFunnelStateVisit;
-                NSLog(@"<FUNNEL STATE> Visit");
-
-                currentFunnelStateReported = NO;
-                [self sendFunnelPacket];
-                return;
+        if (!introPacketWasSent) {
+            // Case one - Tab is not visible, and the button is not being displayed, downgrade to a visit
+            if (1 != [lastKnownButtonVisibility intValue]) {
+                if (!customButtonVisible) {
+                    currentFunnelState = LIOFunnelStateVisit;
+                    LIOLog(@"<FUNNEL STATE> Visit");
+                    [self sendFunnelPacket];
+                    
+                    return;
+                }
             }
 
-            // Case two - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
+            // Case three - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
             if (![self enabled]) {
                 currentFunnelState = LIOFunnelStateHotlead;
-                NSLog(@"<FUNNEL STATE> Hotlead");
+                LIOLog(@"<FUNNEL STATE> Hotlead");
             } else {
                 currentFunnelState = LIOFunnelStateInvitation;
-                NSLog(@"<FUNNEL STATE> Invitation");
+                LIOLog(@"<FUNNEL STATE> Invitation");
             }
             
-            currentFunnelStateReported = NO;
             [self sendFunnelPacket];
         }
-    }
-    
-    if (currentFunnelState == LIOFunnelStateVisit) {
-        if (developerDisabledChat)
-            return;
-
-        // Case two - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
-        if (![self enabled]) {
-            currentFunnelState = LIOFunnelStateHotlead;
-            NSLog(@"<FUNNEL STATE> Hotlead");
-        } else {
-            currentFunnelState = LIOFunnelStateInvitation;
-            NSLog(@"<FUNNEL STATE> Invitation");
-        }
-        
-        currentFunnelStateReported = NO;
-        [self sendFunnelPacket];        
-    }
-    
-    // If we're at the visit state, we would arrive here only after enable/disable
-}
-
--(void)funnelCheckForClicked {
-    if (currentFunnelState == LIOFunnelStateInvitation) {
-        currentFunnelState = LIOFunnelStateClicked;
-        NSLog(@"<FUNNEL STATE> Clicked");
-
-        currentFunnelStateReported = NO;
-        [self sendFunnelPacket];
     }
 }
 
@@ -1664,13 +1657,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
     
     [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerVisitFunnelRequestURL parameters:funnelDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        currentFunnelStateReported = YES;
         if (responseObject)
             LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
         else
             LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        currentFunnelStateReported = NO;
         LIOLog(@"<FUNNEL> with data:%@ failure: %@", funnelDict, error);
     }];
 }
@@ -1679,7 +1670,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma mark Chat API v2 Methods
 
 -(void)sendIntroPacket {
-    [self funnelCheckForClicked];
+    introPacketWasSent = YES;
+    [self updateAndReportFunnelState];
     
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:YES includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1696,6 +1688,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self parseAndSaveEngagementInfoPayload:responseDict];
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        introPacketWasSent = NO;
+        
         LIOLog(@"<INTRO> failure: %@", error);
         
         if (altChatViewController) {
@@ -2478,6 +2472,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             sessionEnding = NO;
             resetAfterDisconnect = NO;
             introduced = YES;
+            introPacketWasSent = YES;
             killConnectionAfterChatViewDismissal = NO;
             
             [self populateChatWithFirstMessage];
@@ -3099,8 +3094,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
             LPVisitAPIClient* visitAPIClient = [LPVisitAPIClient sharedClient];
             visitAPIClient.baseURL = [NSURL URLWithString:lastKnownVisitURL];
-            
-            NSLog(@"last known visit url is now %@", lastKnownVisitURL);
         }
         
         NSNumber *nextIntervalNumber = [resolvedSettings objectForKey:@"next_interval"];
@@ -4533,9 +4526,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"<LAUNCH> Success. HTTP code: %d. Response: %@", appLaunchRequestResponseCode, responseString);
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
             
-            NSLog(@"<FUNNEL STATE> Visit");
+            LIOLog(@"<FUNNEL STATE> Visit");
             currentFunnelState = LIOFunnelStateVisit;
-            currentFunnelStateReported = NO;
         }
         
         else
@@ -4612,7 +4604,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [pendingEvents removeAllObjects];
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
             
-            [self funnelCheckForInvitation];
+            [self updateAndReportFunnelState];
         }
         else
         {
