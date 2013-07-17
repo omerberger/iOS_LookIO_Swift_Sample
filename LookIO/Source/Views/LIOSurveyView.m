@@ -532,8 +532,11 @@
             inputField.returnKeyType = UIReturnKeyNext;
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         
-        if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
+        if (LIOSurveyQuestionValidationTypeEmail == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
+            inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+            
+        }
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
             
@@ -597,8 +600,10 @@
             inputField.returnKeyType = UIReturnKeyNext;
         inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         
-        if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
+        if (LIOSurveyQuestionValidationTypeEmail == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
+            inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        }
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
             
