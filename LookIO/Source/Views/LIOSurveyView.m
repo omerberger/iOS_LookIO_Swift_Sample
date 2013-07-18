@@ -765,8 +765,11 @@
         }
         // If not, we should see if any of the answers are set to be checked by default
         else {
+            BOOL questionHasInitiallyCheckedAnswer = NO;
             for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries) {
                 if (pickerEntry.initiallyChecked) {
+                    questionHasInitiallyCheckedAnswer = YES;
+                    
                     int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                     if (question.shouldUseStarRatingView)
                         [selectedIndices addObject:[NSIndexPath indexPathForRow:(5-questionRow) inSection:0]];
@@ -774,6 +777,11 @@
                         [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];                    
                 }
             }
+            
+            // Finally, if no answers are set for a rating view, we should set the 5 star answer as the correct answer
+            if (question.shouldUseStarRatingView && !questionHasInitiallyCheckedAnswer)
+                [selectedIndices addObject:[NSIndexPath indexPathForRow:0 inSection:0]];
+
         }
     }
     
