@@ -105,7 +105,7 @@ static NSDataDetector *dataDetector = nil;
     }
 
     CGSize maxSize = CGSizeMake(LIOChatBubbleViewMaxTextWidth, FLT_MAX);
-    CGFloat bottom;
+    CGFloat bottom = 0.0;
     
     if (LIOChatBubbleViewLinkModeDisabled == linkMode)
     {

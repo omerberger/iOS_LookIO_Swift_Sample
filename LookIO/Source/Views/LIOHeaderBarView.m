@@ -35,16 +35,19 @@
         separator.frame = aFrame;
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:separator];
+        [separator release];
                 
         notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
         notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:notificationArea];
+        [notificationArea release];
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
         tappableBackground.backgroundColor = [UIColor clearColor];
         [tappableBackground addGestureRecognizer:tapper];
         [self addSubview:tappableBackground];
+        [tappableBackground release];
     }
     
     return self;
@@ -53,11 +56,6 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [notificationArea release];
-    [separator release];
-    [tappableBackground release];
-    
     [super dealloc];
 }
 

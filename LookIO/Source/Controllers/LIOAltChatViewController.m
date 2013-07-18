@@ -231,6 +231,7 @@
         dismissalBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         dismissalBar.delegate = self;
         [self.view insertSubview:dismissalBar belowSubview:inputBar];
+        [dismissalBar release];
 
         aFrame = CGRectZero;
         aFrame.size.width = self.view.bounds.size.width;
@@ -646,7 +647,7 @@
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    surveyView = [[LIOSurveyView alloc] initWithFrame:self.view.bounds];
+    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
     surveyView.currentSurvey = surveyManager.postChatTemplate;
     surveyView.currentSurveyType = LIOSurveyManagerSurveyTypePost;
     surveyView.headerString = surveyManager.postChatHeader;
@@ -699,7 +700,7 @@
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    surveyView = [[LIOSurveyView alloc] initWithFrame:self.view.bounds];
+    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
     surveyView.currentSurvey = surveyManager.offlineTemplate;
     surveyView.currentSurveyType = LIOSurveyManagerSurveyTypeOffline;
     surveyView.headerString = surveyManager.offlineHeader;
@@ -750,7 +751,7 @@
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    surveyView = [[LIOSurveyView alloc] initWithFrame:self.view.bounds];
+    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
     surveyView.currentSurvey = surveyManager.preChatTemplate;
     surveyView.currentSurveyType = LIOSurveyManagerSurveyTypePre;
     surveyView.headerString = surveyManager.preChatHeader;
@@ -1276,7 +1277,7 @@
         [self.modalViewController.view endEditing:YES];
         [self dismissModalViewControllerAnimated:NO];
         [delegate altChatViewControllerWillPresentImagePicker:self];
-    }
+    }        
 }
 
 - (void)showPhotoSourceActionSheet
@@ -2361,6 +2362,8 @@
                 if (popover) {
                     currentPopoverType = LIOIpadPopoverTypeNone;
                     [popover dismissPopoverAnimated:YES];
+                    [surveyView removeFromSuperview];
+                    surveyView = nil;
                 }
             } else {
                 [UIView animateWithDuration:0.3 animations:^{
@@ -2368,6 +2371,8 @@
                     surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
                     
                 } completion:^(BOOL finished) {
+                    [surveyView removeFromSuperview];
+                    surveyView = nil;
                 }];
             }
         }
@@ -2395,6 +2400,8 @@
                 if (popover) {
                     currentPopoverType = LIOIpadPopoverTypeNone;
                     [popover dismissPopoverAnimated:YES];
+                    [surveyView removeFromSuperview];
+                    surveyView = nil;
                 }
             } else {
                 [UIView animateWithDuration:0.3 animations:^{
@@ -2402,6 +2409,8 @@
                     surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
                 
                 } completion:^(BOOL finished) {
+                    [surveyView removeFromSuperview];
+                    surveyView = nil;
                 }];
             }
         }
@@ -2430,6 +2439,7 @@
             
             [self performRevealAnimationWithFadeIn:NO];
             [aView removeFromSuperview];
+            aView = nil;
             
             double delayInSeconds = 0.1;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -2449,11 +2459,6 @@
                 [self performRevealAnimationWithFadeIn:NO];
                 [aView removeFromSuperview];
                 
-                double delayInSeconds = 0.1;
-                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                    [self viewDidAppear:NO];
-                });
             }];
         }
     }

@@ -10,7 +10,7 @@
 
 @implementation LIOSurveyPickerEntry
 
-@synthesize initiallyChecked, label, logicItems;
+@synthesize initiallyChecked, label, logicItems, order;
 
 - (void)dealloc
 {

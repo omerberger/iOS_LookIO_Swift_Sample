@@ -39,20 +39,14 @@ static LPAPIClient *sharedClient = nil;
     {
         jsonWriter = [[SBJsonWriter_LIO alloc] init];
         
-        self.operationQueue = [[NSOperationQueue alloc] init];
+        self.operationQueue = [[[NSOperationQueue alloc] init] autorelease];
         [self.operationQueue setMaxConcurrentOperationCount:NSOperationQueueDefaultMaxConcurrentOperationCount];
     }
     
     return self;
 }
 
--(void)dealloc {
-    [self.operationQueue release];
-    self.operationQueue = nil;
-    
-    [self.baseURL release];
-    self.baseURL = nil;
-    
+-(void)dealloc {    
     [jsonWriter release];
     jsonWriter = nil;
     
@@ -69,9 +63,9 @@ static LPAPIClient *sharedClient = nil;
     
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
-	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
-                                                                cachePolicy:NSURLCacheStorageNotAllowed
-                                                            timeoutInterval:10.0] retain];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url
+                                                           cachePolicy:NSURLCacheStorageNotAllowed
+                                                       timeoutInterval:10.0];
     [request setHTTPMethod:method];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     
@@ -85,7 +79,7 @@ static LPAPIClient *sharedClient = nil;
             LIOLog(@"Request:\n%@", parametersJSONEncoded);
         }
     }
-    
+        
 	return request;
 }
 
@@ -99,13 +93,13 @@ static LPAPIClient *sharedClient = nil;
     
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
-	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
-                                                                 cachePolicy:NSURLCacheStorageNotAllowed
-                                                             timeoutInterval:10.0] retain];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url
+                                                           cachePolicy:NSURLCacheStorageNotAllowed
+                                                       timeoutInterval:10.0];
     [request setHTTPMethod:method];
     [request setHTTPBody:data];
-    
-	return request;
+          
+    return request;
 }
 
 - (NSMutableURLRequest *)multipartRequestWithMethod:(NSString *)method
@@ -118,9 +112,9 @@ static LPAPIClient *sharedClient = nil;
     
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", baseURL, path]];
     LIOLog(@"<%@> Endpoint: %@", [path uppercaseString], url.absoluteString);
-	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] initWithURL:url
-                                                                 cachePolicy:NSURLCacheStorageNotAllowed
-                                                             timeoutInterval:10.0] retain];
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url
+                                                           cachePolicy:NSURLCacheStorageNotAllowed
+                                                       timeoutInterval:10.0];
     
     NSString *boundary = @"0xKhTmLbOuNdArY";
     NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
@@ -128,7 +122,7 @@ static LPAPIClient *sharedClient = nil;
 
     [request setHTTPMethod:method];
     [request setHTTPBody:data];
-    
+        
 	return request;
 }
 
@@ -137,9 +131,7 @@ static LPAPIClient *sharedClient = nil;
                                                     failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
 {
     LPHTTPRequestOperation *operation = [[LPHTTPRequestOperation alloc] initWithRequest:urlRequest];
-
-    [operation setCompletionBlockWithSuccess:success failure:failure];
-        
+    [operation setCompletionBlockWithSuccess:success failure:failure];        
     return operation;
 }
 
@@ -187,6 +179,7 @@ static LPAPIClient *sharedClient = nil;
 
 - (void)enqueueHTTPRequestOperation:(LPHTTPRequestOperation *)operation {
     [self.operationQueue addOperation:operation];
+    [operation release];
 }
 
 @end

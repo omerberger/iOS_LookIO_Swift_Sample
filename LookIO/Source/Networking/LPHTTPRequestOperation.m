@@ -10,14 +10,15 @@
 #import "LIOLogManager.h"
 #import "SBJsonParser.h"
 
-@interface LPHTTPRequestOperation ()
+@interface LPHTTPRequestOperation () {
+    NSMutableData *responseData;
+    NSString *responseString;
+}
 
 @property (nonatomic, retain) NSURLConnection *connection;
 @property (nonatomic, retain) NSURLRequest *request;
 @property (nonatomic, retain) NSError *HTTPError;
 @property (nonatomic, retain) NSError *error;
-@property (nonatomic, retain) NSMutableData *responseData;
-@property (nonatomic, copy)   NSString *responseString;
 @property (nonatomic, assign) LPOperationState state;
 
 @property (nonatomic, assign) BOOL requestFailed;
@@ -27,7 +28,7 @@
 
 @implementation LPHTTPRequestOperation
 
-@synthesize connection, request, response, HTTPError, responseData, responseString, retriesLeft, requestFailed;
+@synthesize connection, request, HTTPError, retriesLeft, requestFailed, responseCode;
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest {
     self = [super init];
@@ -40,10 +41,19 @@
     self.retriesLeft = LIOHTTPRequestOperationRetries;
     self.requestFailed = NO;
     
+    responseData = [[[NSMutableData alloc] init] retain];
+
+    
     return self;
 }
 
 -(void)dealloc {
+    [request release];
+    if (responseData)
+        [responseData release];
+    if (responseString)
+        [responseString release];
+    
     [super dealloc];
 }
 
@@ -69,8 +79,8 @@
 
 - (void)operationDidStart {
     if (! [self isCancelled]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-            self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.connection = [NSURLConnection connectionWithRequest:self.request delegate:self];
             [self.connection start];
         });
     }
@@ -110,6 +120,18 @@
     }
 }
 
+- (void)setCompletionBlock:(void (^)(void))block {
+    if (!block) {
+        [super setCompletionBlock:nil];
+    }
+ 
+    __block id _blockSelf = self;
+    [super setCompletionBlock:^ {
+        block();
+        [_blockSelf setCompletionBlock:nil];
+    }];
+}
+
 - (void)setCompletionBlockWithSuccess:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
                               failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
 {
@@ -123,8 +145,9 @@
         } else {
             if (success) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    SBJsonParser_LIO* jsonParser = [[SBJsonParser_LIO alloc] init];
+                    SBJsonParser_LIO* jsonParser = [[[SBJsonParser_LIO alloc] init] autorelease];
                     NSDictionary *responseDict = [jsonParser objectWithString:responseString];
+                    [responseString release];
 
                     success(self, responseDict);
                 });
@@ -138,50 +161,47 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    self.response = (NSHTTPURLResponse*)response;
-    self.responseData = [[NSMutableData alloc] init];
-    
+    NSHTTPURLResponse* myResponse = (NSHTTPURLResponse*)response;
+    self.responseCode = myResponse.statusCode;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    [self.responseData appendData:data];
+    [responseData appendData:data];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSInteger statusCode = self.response.statusCode;
-    
-    if (404 == statusCode)
+    if (404 == self.responseCode)
     {
         self.requestFailed = YES;
         LIOLog(@"<LPHTTPRequestOperation> Failure. HTTP code: 404.");
     }
-    else if (statusCode >= 400)
+    else if (self.responseCode >= 400)
     {
         self.requestFailed = YES;
-        LIOLog(@"<LPHTTPRequestOperation> Failure. HTTP code: %d.", statusCode);
+        LIOLog(@"<LPHTTPRequestOperation> Failure. HTTP code: %d.", self.responseCode);
     }
-    else if (statusCode < 300 && statusCode >= 200)
+    else if (self.responseCode < 300 && self.responseCode >= 200)
     {
         // Success.
-        responseString = [[NSString alloc] initWithData:self.responseData encoding:NSUTF8StringEncoding];
-        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);
-        
-        
+        responseString = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] retain];
+        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);        
     }
     else
     {
         self.requestFailed = YES;
         // Wat.
-        LIOLog(@"<LPHTTPRequestOperation> Unhandled HTTP code: %d", statusCode);
+        LIOLog(@"<LPHTTPRequestOperation> Unhandled HTTP code: %d", self.responseCode);
     }
     
     [self willChangeValueForKey:@"isFinished"];
     [self finish];
     [self didChangeValueForKey:@"isFinished"];
 
-    [self.connection release];
-    self.connection = nil;    
+    [[NSURLCache sharedURLCache] removeAllCachedResponses];
+
+    self.connection = nil;
+    [responseData release];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
@@ -193,8 +213,10 @@
         retriesLeft -= 1;
         LIOLog(@"<LPHTTPRequestOperation> Retry %d or 3", 3-retriesLeft);
         
-        [self.connection release];
+        [[NSURLCache sharedURLCache] removeAllCachedResponses];
+
         self.connection = nil;
+        [responseData release];
         
         self.state = LPOperationReadyState;
         [self start];
@@ -203,8 +225,10 @@
         [self finish];
         [self didChangeValueForKey:@"isFinished"];
 
-        [self.connection release];
+        [[NSURLCache sharedURLCache] removeAllCachedResponses];
+
         self.connection = nil;
+        [responseData release];
     }
 }
 

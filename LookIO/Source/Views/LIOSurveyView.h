@@ -45,9 +45,6 @@
     
     LIOSurveyValidationView *validationView;
     LIOTimerProxy *validationTimer;
-    
-    LIOHeaderBarView* headerBar;
-
 }
 
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;

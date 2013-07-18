@@ -24,7 +24,7 @@
 
 #define kTTTLineBreakWordWrapTextWidthScalingFactor (M_PI / M_E)
 
-NSString * const kTTTStrikeOutAttributeName = @"TTTStrikeOutAttribute";
+NSString * const kTTTStrikeOutAttributeName_LIO = @"TTTStrikeOutAttribute";
 
 static inline CTTextAlignment CTTextAlignmentFromUITextAlignment(UITextAlignment alignment) {
 	switch (alignment) {
@@ -466,7 +466,7 @@ static inline NSAttributedString * NSAttributedStringByScalingFontSize(NSAttribu
         
         for (id glyphRun in (NSArray *)CTLineGetGlyphRuns((CTLineRef)line)) {
             NSDictionary *attributes = (NSDictionary *)CTRunGetAttributes((CTRunRef) glyphRun);
-            BOOL strikeOut = [[attributes objectForKey:kTTTStrikeOutAttributeName] boolValue];
+            BOOL strikeOut = [[attributes objectForKey:kTTTStrikeOutAttributeName_LIO] boolValue];
             NSInteger superscriptStyle = [[attributes objectForKey:(id)kCTSuperscriptAttributeName] integerValue];
             
             if (strikeOut) {

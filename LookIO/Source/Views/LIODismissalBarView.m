@@ -30,6 +30,7 @@
         separator.frame = aFrame;
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
         [self addSubview:separator];
+        [separator release];
         
         dismissLabel = [[UILabel alloc] init];
         dismissLabel.backgroundColor = [UIColor clearColor];
@@ -40,6 +41,7 @@
         [dismissLabel sizeToFit];
         dismissLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self addSubview:dismissLabel];
+        [dismissLabel release];
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
@@ -49,10 +51,7 @@
 }
 
 - (void)dealloc
-{
-    [separator release];
-    [dismissLabel release];
-    
+{    
     [super dealloc];
 }
 

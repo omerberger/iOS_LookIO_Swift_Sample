@@ -69,6 +69,8 @@
     [events release];
     events = nil;
     
+    [socket release];
+    
     [super dealloc];
 }
 
@@ -154,7 +156,7 @@
 }
 
 - (void)createEventFromStreamString:(NSString*)streamString {
-    LPSSEvent* event = [[LPSSEvent alloc] init];
+    LPSSEvent* event = [[[LPSSEvent alloc] init] autorelease];
     event.eventId = @"";
     event.eventType = @"";
     event.data = @"";
@@ -220,7 +222,7 @@
 - (void)onSocket:(AsyncSocket_LIO *)sock didReadData:(NSData *)data withTag:(long)tag
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *readString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSString *readString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
         
         if ([partialPacket length])
         {

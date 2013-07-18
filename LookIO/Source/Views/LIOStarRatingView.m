@@ -25,7 +25,7 @@
             UIImage* fullStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarFull"];
             UIImage* emptyStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarEmpty"];
 
-            UIButton* starButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            UIButton* starButton = [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
             [starButton setImage:emptyStarImage forState:UIControlStateNormal];
             [starButton setImage:emptyStarImage forState:UIControlStateNormal | UIControlStateHighlighted];
             [starButton setImage:fullStarImage forState:UIControlStateSelected];
@@ -49,13 +49,18 @@
         ratingLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self addSubview:ratingLabel];
         [ratingLabel release];
+        
+        self.valueLabelArray = [[NSMutableArray alloc] init];
+
     }
     return self;
 }
 
 -(void)dealloc {
     [super dealloc];
-
+    
+    [valueLabelArray release];
+    
     [starButtonArray removeAllObjects];
     [starButtonArray release];
     starButtonArray = nil;
@@ -85,8 +90,8 @@
     aFrame.size.height = 15.0;
     ratingLabel.frame = aFrame;
     
-    if (valueLabelArray && valueLabelArray.count == 5) {
-        ratingLabel.text = (NSString*)[valueLabelArray objectAtIndex:(5 - currentRating)];
+    if (self.valueLabelArray && self.valueLabelArray.count == 5) {
+        ratingLabel.text = (NSString*)[self.valueLabelArray objectAtIndex:(5 - currentRating)];
     } else {        
         switch (currentRating) {
             case 5:
@@ -136,15 +141,11 @@
     if (newValueLabelsArray.count != 5)
         return;
     
-    [valueLabelArray removeAllObjects];
-    [valueLabelArray release];
-    valueLabelArray = nil;
-    
-    valueLabelArray = [[NSMutableArray alloc] init];
+    [self.valueLabelArray removeAllObjects];
     
     for (int i=0; i<newValueLabelsArray.count; i++) {
         NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
-        [valueLabelArray addObject:valueLabel];
+        [self.valueLabelArray addObject:valueLabel];
     }
 }
                                     

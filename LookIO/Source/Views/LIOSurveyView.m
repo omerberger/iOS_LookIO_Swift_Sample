@@ -14,7 +14,6 @@
 #import "LIOSurveyPickerEntry.h"
 #import "LIOSurveyValidationView.h"
 #import "LIOTimerProxy.h"
-#import "LIOHeaderBarView.h"
 #import "LIOStarRatingView.h"
 
 #import <QuartzCore/QuartzCore.h>
@@ -81,6 +80,38 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    [currentScrollView removeFromSuperview];
+    currentScrollView = nil;
+    
+    [pageControl removeFromSuperview];
+    pageControl = nil;
+    
+    [backgroundDismissableArea removeFromSuperview];
+    backgroundDismissableArea = nil;
+
+    delegate = nil;
+    
+    currentSurvey = nil;
+    
+    [headerString release];
+    headerString = nil;
+    
+    [selectedIndices removeAllObjects];
+    [selectedIndices release];
+    selectedIndices = nil;
+
+    leftSwipeGestureRecognizer = nil;
+    rightSwipeGestureRecognizer = nil;
+    tapGestureRecognizer = nil;
+
+    [validationView removeFromSuperview];
+    [validationView release];
+    validationView = nil;
+    
+    [validationTimer stopTimer];
+    [validationTimer release];
+    validationTimer = nil;
     
     [super dealloc];
 }
@@ -171,7 +202,7 @@
 }
 
 -(UIScrollView*)scrollViewForRatingView {
-    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
     UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
@@ -279,7 +310,7 @@
     [scrollView setNeedsLayout];
     [self rejiggerRatingScrollView:scrollView];
     
-    return [scrollView autorelease];
+    return scrollView;
 }
 
 
@@ -351,7 +382,7 @@
 }
 
 -(UIScrollView*)scrollViewForIntroView {
-    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
     UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
@@ -422,7 +453,7 @@
     
     [self rejiggerIntroScrollView:scrollView];
     
-    return [scrollView autorelease];
+    return scrollView;
 }
 
 
@@ -480,7 +511,7 @@
     
     CGRect aFrame = self.bounds;
     aFrame.size.height = aFrame.size.height - keyboardHeight;
-    UIScrollView* scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     scrollView.showsVerticalScrollIndicator = NO;
     
@@ -548,8 +579,8 @@
                 UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
                 numberToolbar.barStyle = UIBarStyleBlackTranslucent;
                 numberToolbar.items = [NSArray arrayWithObjects:
-                                       [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                                       [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)],
+                                       [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
+                                       [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
                                        nil];
                 [numberToolbar sizeToFit];
                 inputField.inputAccessoryView = numberToolbar;
@@ -615,8 +646,8 @@
                 UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
                 numberToolbar.barStyle = UIBarStyleBlackTranslucent;
                 numberToolbar.items = [NSArray arrayWithObjects:
-                                       [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                                       [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)],
+                                       [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
+                                       [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
                                        nil];
                 [numberToolbar sizeToFit];
                 inputField.inputAccessoryView = numberToolbar;
@@ -704,6 +735,11 @@
             [nextButton release];
         }
         
+        if (selectedIndices) {
+            [selectedIndices removeAllObjects];
+            [selectedIndices release];
+            selectedIndices = nil;
+        }
         selectedIndices = [[NSMutableArray alloc] init];
         
         // If the user has answered this survey, we should display their answer
@@ -714,7 +750,7 @@
             
             if (aResponse && [aResponse isKindOfClass:[NSString class]]) {
                 NSString* answerString = (NSString*)aResponse;
-                answersArray = [[NSMutableArray alloc] initWithObjects:answerString, nil];
+                answersArray = [[[NSMutableArray alloc] initWithObjects:answerString, nil] autorelease];
             }
             
             if (aResponse && [aResponse isKindOfClass:[NSArray class]])
@@ -742,7 +778,7 @@
     }
     
     [self rejiggerSurveyScrollView:scrollView];
-    return [scrollView autorelease];
+    return scrollView;
 }
 
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
@@ -993,6 +1029,7 @@
             pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
         } completion:^(BOOL finished) {
             [currentScrollView removeFromSuperview];
+            currentScrollView = nil;
             currentScrollView = nextQuestionScrollView;
                 
             isAnimating = NO;
@@ -1056,6 +1093,7 @@
         
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
+        currentScrollView = nil;
         currentScrollView = previousQuestionScrollView;
         
         isAnimating = NO;
@@ -1355,8 +1393,6 @@
 }
 
 -(void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(int)aRating {
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
-    
     [selectedIndices removeAllObjects];
     [selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
 }

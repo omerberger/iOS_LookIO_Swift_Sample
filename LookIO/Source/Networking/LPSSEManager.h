@@ -22,7 +22,6 @@
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager;
 - (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError*)err;
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager;
-- (void)sseManager:(LPSSEManager *)aManager didReceivePacket:(NSString *)aPacket;
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent;
 @end
 

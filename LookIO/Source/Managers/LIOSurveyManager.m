@@ -89,47 +89,48 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 }
 
 - (void)rebuildLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
-    LIOSurveyTemplate *aSurvey;
-
+    LIOSurveyTemplate *aSurvey = nil;
+    
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
         aSurvey = postChatTemplate;
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         aSurvey = offlineTemplate;
-
     
-    for (int i=0; i<aSurvey.questions.count; i++) {
-        LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
-        
-        if (question.displayType == LIOSurveyQuestionDisplayTypeMultiselect || question.displayType == LIOSurveyQuestionDisplayTypePicker ) {
-    
-            id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:surveyType withQuestionIndex:i];
-    
-            if (aResponse) {
-                NSMutableArray* answersArray;
+    if (aSurvey != nil) {
+        for (int i=0; i<aSurvey.questions.count; i++) {
+            LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
+            
+            if (question.displayType == LIOSurveyQuestionDisplayTypeMultiselect || question.displayType == LIOSurveyQuestionDisplayTypePicker ) {
                 
-                if ([aResponse isKindOfClass:[NSString class]]) {
-                    NSString* answerString = (NSString*)aResponse;
-                    answersArray = [[[NSMutableArray alloc] initWithObjects:answerString, nil] autorelease];
-                }
-    
-                if ([aResponse isKindOfClass:[NSArray class]])
-                    answersArray = (NSMutableArray*)aResponse;
-    
-                // First let's disable all the logic items for the current question's picker entries, and also for questions
-                // that are visible through these
-                for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
-                    for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
-                        logicItem.enabled = NO;
-    
-                // Now let's enable the ones that match the current answers
-    
-                for (NSString* answer in answersArray)
+                id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:surveyType withQuestionIndex:i];
+                
+                if (aResponse) {
+                    NSMutableArray* answersArray;
+                    
+                    if ([aResponse isKindOfClass:[NSString class]]) {
+                        NSString* answerString = (NSString*)aResponse;
+                        answersArray = [[[NSMutableArray alloc] initWithObjects:answerString, nil] autorelease];
+                    }
+                    
+                    if ([aResponse isKindOfClass:[NSArray class]])
+                        answersArray = (NSMutableArray*)aResponse;
+                    
+                    // First let's disable all the logic items for the current question's picker entries, and also for questions
+                    // that are visible through these
                     for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
-                        if ([pickerEntry.label isEqualToString:answer])
-                            for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
-                                logicItem.enabled = YES;
+                        for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
+                            logicItem.enabled = NO;
+                    
+                    // Now let's enable the ones that match the current answers
+                    
+                    for (NSString* answer in answersArray)
+                        for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
+                            if ([pickerEntry.label isEqualToString:answer])
+                                for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
+                                    logicItem.enabled = YES;
+                }
             }
         }
     }
@@ -143,11 +144,13 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         return [postChatResponses objectForKey:[NSNumber numberWithInt:anIndex]];
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         return [offlineResponses objectForKey:[NSNumber numberWithInt:anIndex]];
+    
+    return nil;
 }
 
 - (BOOL)responsesRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType
 {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
@@ -156,12 +159,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         aSurvey = offlineTemplate;
     
     int unansweredMandatoryQuestions = 0;
-    for (int i=0; i<[aSurvey.questions count]; i++)
-    {
-        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
-        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
-        if (aQuestion.mandatory && nil == anAnswer)
-            unansweredMandatoryQuestions++;
+    if (aSurvey != nil) {
+        for (int i=0; i<[aSurvey.questions count]; i++)
+        {
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+            id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+            if (aQuestion.mandatory && nil == anAnswer)
+                unansweredMandatoryQuestions++;
+        }
     }
     
     return unansweredMandatoryQuestions;
@@ -169,7 +174,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 
 - (int)nextQuestionWithResponseRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType
 {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
@@ -177,12 +182,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         aSurvey = offlineTemplate;
     
-    for (int i=0; i<[aSurvey.questions count]; i++)
-    {
-        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
-        id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
-        if (aQuestion.mandatory && nil == anAnswer)
-            return i;
+    if (aSurvey) {
+        for (int i=0; i<[aSurvey.questions count]; i++)
+        {
+            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+            id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+            if (aQuestion.mandatory && nil == anAnswer)
+                return i;
+        }
     }
     
     return -1;
@@ -190,8 +197,8 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 
 - (void)clearAllResponsesForSurveyType:(LIOSurveyManagerSurveyType)surveyType
 {
-    LIOSurveyTemplate *aSurvey;
-    NSMutableDictionary *responseDict;
+    LIOSurveyTemplate *aSurvey = nil;
+    NSMutableDictionary *responseDict = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType) {
         aSurvey = preChatTemplate;
         responseDict = preChatResponses;
@@ -205,18 +212,21 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         responseDict = offlineResponses;
     }
 
-    [responseDict removeAllObjects];
+    if (responseDict != nil)
+        [responseDict removeAllObjects];
 
-    NSArray* allLogicKeys = [aSurvey.logicDictionary allKeys];
-    for (int i=0; i<allLogicKeys.count; i++) {
-        NSNumber* key = [allLogicKeys objectAtIndex:i];
-        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:key];
-        logicItem.enabled = NO;
+    if (aSurvey != nil) {
+        NSArray* allLogicKeys = [aSurvey.logicDictionary allKeys];
+        for (int i=0; i<allLogicKeys.count; i++) {
+            NSNumber* key = [allLogicKeys objectAtIndex:i];
+            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:key];
+            logicItem.enabled = NO;
+        }
     }
 }
 
 - (int)realIndexWithLogicOfQuestionAtIndex:(int)anIndex forSurveyType:(LIOSurveyManagerSurveyType)surveyType {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
@@ -230,29 +240,31 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     // If it isn't, we should display it/count it
     // If it is, we need to make sure that the correct answer was selected, otherwise we hide it
     
-    for (int i=0; i<aSurvey.questions.count; i++) {
-        if (i == anIndex)
-            return realIndex;
-
-        BOOL shouldCountQuestion = YES;
-        LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
-        
-        // If the question is a target of any logic, it will be in the survey's logic dictionary
-        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
-        if (logicItem)
-            if (!logicItem.enabled)
-                shouldCountQuestion = NO;
-        
-        if (shouldCountQuestion)
-            realIndex += 1;
-        
+    if (aSurvey != nil) {
+        for (int i=0; i<aSurvey.questions.count; i++) {
+            if (i == anIndex)
+                return realIndex;
+            
+            BOOL shouldCountQuestion = YES;
+            LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
+            
+            // If the question is a target of any logic, it will be in the survey's logic dictionary
+            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+            if (logicItem)
+                if (!logicItem.enabled)
+                    shouldCountQuestion = NO;
+            
+            if (shouldCountQuestion)
+                realIndex += 1;
+            
+        }
     }
     
     return realIndex;
 }
 
 - (int)numberOfQuestionsWithLogicForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
@@ -266,45 +278,51 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     // If it isn't, we should display it/count it
     // If it is, we need to make sure that the correct answer was selected, otherwise we hide it
     
-    for (LIOSurveyQuestion* question in aSurvey.questions) {
-        BOOL shouldShowQuestion = YES;
-
-        // If the question is a target of any logic, it will be in the survey's logic dictionary
-        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
-        if (logicItem)
-            if (!logicItem.enabled)
-                shouldShowQuestion = NO;
-
-        if (shouldShowQuestion)
-            numberOfQuestions += 1;
+    if (aSurvey != nil) {
+        for (LIOSurveyQuestion* question in aSurvey.questions) {
+            BOOL shouldShowQuestion = YES;
+            
+            // If the question is a target of any logic, it will be in the survey's logic dictionary
+            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+            if (logicItem)
+                if (!logicItem.enabled)
+                    shouldShowQuestion = NO;
+            
+            if (shouldShowQuestion)
+                numberOfQuestions += 1;
+        }
     }
 
     return numberOfQuestions;
 }
 
 - (BOOL)shouldShowQuestion:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
     if (LIOSurveyManagerSurveyTypePost == surveyType)
         aSurvey = postChatTemplate;
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         aSurvey = offlineTemplate;
-    
-    LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:index];
+
     BOOL shouldShowQuestion = YES;
+    
+    if (aSurvey != nil) {
         
-    // If the question is a target of any logic, it will be in the survey's logic dictionary
-    LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
-    if (logicItem)
-        if (!logicItem.enabled)
-            shouldShowQuestion = NO;
+        LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:index];
         
+        // If the question is a target of any logic, it will be in the survey's logic dictionary
+        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+        if (logicItem)
+            if (!logicItem.enabled)
+                shouldShowQuestion = NO;
+    }
+    
     return shouldShowQuestion;
 }
 
 -(NSDictionary*)responseDictForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
-    LIOSurveyTemplate *aSurvey;
+    LIOSurveyTemplate *aSurvey = nil;
     
     if (LIOSurveyManagerSurveyTypePre == surveyType)
         aSurvey = preChatTemplate;
@@ -312,38 +330,42 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         aSurvey = postChatTemplate;
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         aSurvey = offlineTemplate;
-
+    
     NSMutableArray* questionsArray = [NSMutableArray array];
-
-    for (int i=0; i<[aSurvey.questions count]; i++)
-    {
-        // Only send answers for questions that should be visible according to the current logic
-        if ([self shouldShowQuestion:i surveyType:surveyType]) {
-            NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
-            
-            LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
-            [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
-            
-            id aResponse = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
-            if (aResponse != nil)
-                [questionDict setObject:aResponse forKey:@"answer"];
-            
-            [questionsArray addObject:questionDict];
+    
+    if (aSurvey != nil) {
+        for (int i=0; i<[aSurvey.questions count]; i++)
+        {
+            // Only send answers for questions that should be visible according to the current logic
+            if ([self shouldShowQuestion:i surveyType:surveyType]) {
+                NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
+                
+                LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
+                [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
+                
+                id aResponse = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+                if (aResponse != nil)
+                    [questionDict setObject:aResponse forKey:@"answer"];
+                
+                [questionsArray addObject:questionDict];
+            }
         }
+        
+        NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
+        [surveyDict setObject:aSurvey.surveyId forKey:@"id"];
+        [surveyDict setObject:questionsArray forKey:@"questions"];
+        
+        return surveyDict;
     }
     
-    NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
-    [surveyDict setObject:aSurvey.surveyId forKey:@"id"];
-    [surveyDict setObject:questionsArray forKey:@"questions"];
-
-    return surveyDict;
+    return nil;
 }
 
-- (void)populateDefaultOfflineSurvey {    
+- (void)populateDefaultOfflineSurvey {
     NSString *headerString = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyHeader");
     
     LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
-    NSMutableDictionary *logicDictionary = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *logicDictionary = [[[NSMutableDictionary alloc] init] autorelease];
 
     LIOSurveyQuestion *emailQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
     emailQuestion.questionId = 0;
@@ -453,6 +475,9 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] intValue];
         newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
         
+        
+        NSLog(@"<Question> ID: %d // Label :%@", newQuestion.questionId, newQuestion.label);
+        
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
         newQuestion.displayType = LIOSurveyQuestionDisplayTypeTextField;
 
@@ -511,7 +536,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 [entries addObject:newPickerEntry];
             }
             
-            NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE];
+            NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE] autorelease];
             [entries sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
             
             newQuestion.pickerEntries = entries;
@@ -524,7 +549,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             [questions addObject:newQuestion];
         }
         
-        NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE];
+        NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"order" ascending:TRUE] autorelease];
         [questions sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
 
     }

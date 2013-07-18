@@ -25,7 +25,7 @@
 }
 
 - (NSArray*)pickerEntryTitles {
-    NSMutableArray* pickerEntryTitles = [[NSMutableArray alloc] init];
+    NSMutableArray* pickerEntryTitles = [[[NSMutableArray alloc] init] autorelease];
     
     for (int i=0; i < self.pickerEntries.count; i++) {
         LIOSurveyPickerEntry* pickerEntry = [self.pickerEntries objectAtIndex:i];

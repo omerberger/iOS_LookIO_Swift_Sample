@@ -103,7 +103,7 @@
         label.textColor = [UIColor whiteColor];
     
     spinner.hidden = currentMode != LIOControlButtonViewModePending;
-    CGRect spinnerFrame;
+    CGRect spinnerFrame = CGRectZero;
     spinnerFrame.size.height = 16.0;
     spinnerFrame.size.width = 16.0;
     

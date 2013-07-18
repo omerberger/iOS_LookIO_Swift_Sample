@@ -1712,6 +1712,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (void)sendLinePacketWithMessage:(LIOChatMessage*)aMessage {
+    if (!chatEngagementId) {
+        LIOLog(@"<LINE> failure - no engagement ID %@");
+        
+        aMessage.sendingFailed = YES;
+        if (altChatViewController)
+            [altChatViewController reloadMessages];
+        else {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
+                                                               delegate:nil
+                                                      cancelButtonTitle:@"LIOLookIOManager.FailedMessageSendButton"
+                                                      otherButtonTitles:nil];
+            [alertView show];
+            [alertView autorelease];
+        }
+    }
+    
+    
     NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", nil];
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, chatEngagementId];
 
@@ -1913,16 +1931,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (altChatViewController) {
                 [altChatViewController reloadMessages];
                 
-                if (operation.response) {
-                    if (operation.response.statusCode == 413) {
-                        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
-                                                                            message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
-                                                                  cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
-                                                                  otherButtonTitles:nil];
-                        
-                        [alertView show];
-                        [alertView release];
-                    }
+                if (operation.responseCode == 413) {
+                    UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
+                                                                        message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
+                                                              cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
+                                                              otherButtonTitles:nil];
+                    
+                    [alertView show];
+                    [alertView release];
                 }
             }
             else {
@@ -3649,8 +3665,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setUsesTLS:(NSNumber *)aNumber
 {
     usesTLS = [aNumber boolValue];
-    
-    [[LPChatAPIClient sharedClient] setUsesTLS:usesTLS];
 }
 
 - (BOOL)registerPlugin:(id<LIOPlugin>)aPlugin
