@@ -157,6 +157,11 @@
         tableViewFrame.origin.y = 32.0;
         tableViewFrame.size.height -= 112.0;
         tableViewAutoresizing = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                tableViewFrame.origin.y += 20.0;
+;
     }
     
     tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];
@@ -170,6 +175,8 @@
     tableView.autoresizingMask = tableViewAutoresizing;
     tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
+    
+    
     
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
     {
@@ -236,6 +243,9 @@
         aFrame = CGRectZero;
         aFrame.size.width = self.view.bounds.size.width;
         aFrame.size.height = LIOHeaderBarViewDefaultHeight;
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.size.height += 20.0;
         
         headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
         headerBar.accessibilityLabel = @"LIOAltChatViewController.headerBar";
@@ -367,6 +377,7 @@
         [functionHeaderChat.contentView addSubview:poweredByLabel];
         [functionHeaderChat.contentView addSubview:logoView];
     }
+    functionHeaderChat.backgroundColor = [UIColor clearColor];
     [functionHeaderChat.contentView addSubview:emailConvoButton];
     [functionHeaderChat.contentView addSubview:endSessionButton];
     
@@ -530,6 +541,11 @@
     [super dealloc];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
+
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
@@ -554,7 +570,7 @@
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
-    
+
     [self reloadMessages];
     
     if ([chatMessages count])
@@ -970,7 +986,7 @@
         
         tableFrame.origin.y = origin;
         tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
-    }
+        }
     else
     {
         CGFloat origin = 32.0;
@@ -979,7 +995,18 @@
         
         tableFrame.origin.y = origin;
         tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
+     
     }
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+            if (UIInterfaceOrientationIsLandscape(actualOrientation && keyboardHeight > 0.0))
+                tableFrame.origin.y = 0;
+            else
+                tableFrame.origin.y += 20.0;
+        }        
+    }
+    
     tableView.frame = tableFrame;
 }
 
@@ -1369,6 +1396,7 @@
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
     alertView.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
+    alertView.alertViewStyle = UIAlertViewStyleDefault;
     
     CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
     
@@ -1415,6 +1443,7 @@
     {
         UITableViewCell *expandingFooter = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
         expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
+        expandingFooter.backgroundColor = [UIColor clearColor];
         return expandingFooter;
     }
      
@@ -1423,6 +1452,7 @@
     {
         aCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOAltChatViewControllerTableViewCellReuseId];
         aCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        aCell.backgroundColor = [UIColor clearColor];
         [aCell autorelease];
         
     }
@@ -1800,12 +1830,18 @@
         {
             tableFrame.origin.y = 0.0;
             tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height;
+
         }
         else
         {
             tableFrame.origin.y = 32.0;
             tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
+            
+            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                if (![[UIApplication sharedApplication] isStatusBarHidden])
+                    tableFrame.origin.y += 20.0;            
         }
+        
     }
     else
     {
@@ -1877,6 +1913,10 @@
             headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                tableFrame.origin.y += 20.0;
+        
         CGFloat newTableHeight = 0.0;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {

@@ -1169,7 +1169,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerControlButtonFrame
 {
-    if (NO == [controlButton.superview isMemberOfClass:[UIWindow class]])
+    if (NO == [controlButton.superview isKindOfClass:[UIWindow class]])
         return;
     
     UIWindow *buttonWindow = (UIWindow *)controlButton.superview;
@@ -1279,7 +1279,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 LIOLog(@"Got host app's key window from delegate: 0x%08X", (unsigned int)previousKeyWindow);
             }
-            else if ([[[UIApplication sharedApplication] keyWindow] isMemberOfClass:[UIWindow class]])
+            else if ([[[UIApplication sharedApplication] keyWindow] isKindOfClass:[UIWindow class]])
             {
                 previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
                 mainWindow = [previousKeyWindow retain];

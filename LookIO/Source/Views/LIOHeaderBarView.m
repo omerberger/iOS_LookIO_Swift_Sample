@@ -32,12 +32,21 @@
         aFrame.size.height = 15.0;
         aFrame.size.width = self.bounds.size.width;
         aFrame.origin.y = self.bounds.size.height - 14.0;
+        
         separator.frame = aFrame;
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:separator];
         [separator release];
                 
         notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+                aFrame = notificationArea.frame;
+                aFrame.origin.y += 20.0;
+                notificationArea.frame = aFrame;
+            }
+        
+        
         notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:notificationArea];
         [notificationArea release];
