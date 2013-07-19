@@ -161,7 +161,6 @@
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
             if (![[UIApplication sharedApplication] isStatusBarHidden])
                 tableViewFrame.origin.y += 20.0;
-;
     }
     
     tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];

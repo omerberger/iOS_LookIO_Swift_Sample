@@ -197,6 +197,12 @@
     if (validationView != nil) {
         CGRect aFrame = validationView.frame;
         aFrame.origin.y = (landscape || padUI) ? 0 : 32;
+        
+        // iOS 7.0: Add another 20px on top for the status bar
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.origin.y += 20.0;
+        
         validationView.frame = aFrame;
     }
 }
@@ -810,6 +816,12 @@
         aFrame.size.width = self.bounds.size.width - LIOSurveyViewSideMargin*2;
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
+        
+        // iOS 7.0: Add another 20px on top for the status bar
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                    aFrame.origin.y += 20.0;
+
         questionLabel.frame = aFrame;
     }
     
@@ -829,6 +841,12 @@
         aFrame.origin.y = landscape ? 10.0 : 10.0;
         aFrame.size.width = fieldBackground.frame.size.width - 20.0;
         aFrame.size.height = 28.0;
+        
+        // iOS 7.0: Remove 3px for the textfield in iOS 7.0
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.origin.y -= 3.0;
+        
         inputField.frame = aFrame;
         
         // Set up the scroll view to allow scrolling down to the text field if needed
@@ -1126,6 +1144,12 @@
     aFrame.origin.y = (landscape || padUI) ? 0 : 32;
     validationView.verticallyMirrored = YES;
     aFrame.size.width = self.frame.size.width;
+    
+    // iOS 7.0: Add another 20px on top for the status bar
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            aFrame.origin.y += 20.0;
+    
     validationView.frame = aFrame;
     validationView.label.text = aMessage;
     validationView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -1333,7 +1357,8 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-
+        cell.backgroundColor = [UIColor clearColor];
+        
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
         textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
         textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
