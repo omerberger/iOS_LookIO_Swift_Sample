@@ -1743,8 +1743,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (void)sendLinePacketWithMessage:(LIOChatMessage*)aMessage {
-    if (!chatEngagementId) {
-        LIOLog(@"<LINE> failure - no engagement ID %@");
+    if (chatEngagementId == nil) {
+        LIOLog(@"<LINE> failure - no engagement ID");
         
         aMessage.sendingFailed = YES;
         if (altChatViewController)
@@ -1758,8 +1758,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
         }
+        
+        return;
     }
-    
     
     NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", nil];
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, chatEngagementId];
@@ -1797,6 +1798,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendOutroPacket {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<OUTRO> failure - no engagement ID");
+        [sseManager disconnect];        
+        return;
+    }
+    
     NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
     NSString* outroRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatOutroRequestURL, chatEngagementId];
 
@@ -1814,6 +1821,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendCapabilitiesPacket {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<CAPABILITIES> failure - no engagement ID");
+        return;
+    }
+    
     NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
     NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                               capsArray, @"capabilities",
@@ -1832,6 +1844,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendFeedbackPacketWithDict:(NSDictionary*)feedbackDict {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<FEEDBACK> failure - no engagement ID");
+        return;
+    }
+    
     NSString* feedbackRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatFeedbackRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:feedbackRequestUrl parameters:feedbackDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1846,6 +1863,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendSurveyPacketWithDict:(NSDictionary*)surveyDict {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<SURVEY> failure - no engagement ID");
+        return;
+    }
+    
     NSString* surveyRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatSurveyRequestURL, chatEngagementId];
     
     [[LPChatAPIClient sharedClient] postPath:surveyRequestUrl parameters:surveyDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1860,6 +1882,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendChatHistoryPacketWithDict:(NSDictionary*)emailDict {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<CHAT_HISTORY> failure - no engagement ID");
+        return;
+    }
+    
     NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1873,6 +1900,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<ADVISORY> failure - no engagement ID");
+        return;
+    }
+    
     NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1886,6 +1918,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendPermissionPacketWithAsset:(NSString*)asset granted:(BOOL)granted {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<PERMISSION> failure - no engagement ID");
+        return;
+    }
+    
     NSString* grantedString = granted ? @"granted" : @"revoked";
     NSDictionary *permissionDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                     grantedString, @"permission",
@@ -1904,6 +1941,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)sendScreenshotPacketWithData:(NSData*)screenshotData {
+    if (chatEngagementId == nil) {
+        waitingForScreenshotAck = NO;
+        LIOLog(@"<SCREENSHOT> failure - no engagement ID");
+        return;
+    }
+    
     NSString* screenshotRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatScreenshotRequestURL, chatEngagementId];
     [[LPChatAPIClient sharedClient] postPath:screenshotRequestUrl data:screenshotData success:^(LPHTTPRequestOperation *operation, id responseObject) {
         waitingForScreenshotAck = NO;
@@ -1920,11 +1963,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)sendMediaPacketWithMessage:(LIOChatMessage*)aMessage
 {
+    if (chatEngagementId == nil) {
+        aMessage.sendingFailed = YES;
+        
+        if (altChatViewController) {
+            [altChatViewController reloadMessages];
+        }
+        else {
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendBody")
+                                                               delegate:nil
+                                                      cancelButtonTitle:@"LIOLookIOManager.FailedAttachmentSendButton"
+                                                      otherButtonTitles:nil];
+            [alertView show];
+            [alertView autorelease];
+        }
+        
+        LIOLog(@"<PHOTO UPLOAD> failure - no engagement ID");
+        return;
+    }
+    
     NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:aMessage.attachmentId];
     if (attachmentData) {
         NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:aMessage.attachmentId];
         
-        NSString *sessionId = [self currentChatEngagementId];
+        NSString *sessionId = chatEngagementId;
         if (0 == [sessionId length])
             return;
         
@@ -2074,7 +2137,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sseManagerDidConnect:(LPSSEManager *)aManager {
     socketConnected = YES;
-    sseSocketAttemptingReconnect = NO;
 }
 
 -(void)forceSSEManagerDisconnect {
@@ -2175,6 +2237,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     
     socketConnected = NO;
+    sseSocketAttemptingReconnect = NO;
     controlSocketConnecting = NO;
     
     if (resetAfterDisconnect)
