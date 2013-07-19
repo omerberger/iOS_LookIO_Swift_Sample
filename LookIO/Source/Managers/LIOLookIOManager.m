@@ -2221,39 +2221,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *type = [aPacket objectForKey:@"type"];
     if ([type isEqualToString:@"engagement_info"]) {
         [self sendCapabilitiesPacket];
-    }
-    else if ([type isEqualToString:@"ack"])
-    {
-        if (waitingForIntroAck)
-        {
-            LIOLog(@"Introduction complete.");
-            introduced = YES;
-            waitingForIntroAck = NO;
-            enqueued = YES;
-            
-            [self sendCapabilitiesPacket];
-        }
-        else if (waitingForScreenshotAck)
-        {
-            LIOLog(@"Screenshot received by remote host.");
-            waitingForScreenshotAck = NO;
-        }
-    }
-    else if ([type isEqualToString:@"session_info"])
-    {
-        NSDictionary *dataDict = [aPacket objectForKey:@"data"];
-        NSString *sessionIdString = [dataDict objectForKey:@"session_id"];
-        if ([sessionIdString length])
-        {
-            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-            [userDefaults setObject:sessionIdString forKey:LIOLookIOManagerLastKnownSessionIdKey];
-            [userDefaults synchronize];
-            
-            // Well, we've got a session. Start the realtime extras timer.
-            [realtimeExtrasTimer stopTimer];
-            [realtimeExtrasTimer release];
-            realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
-        }
+        
+        // Well, we've got a session. Start the realtime extras timer.
+        [realtimeExtrasTimer stopTimer];
+        [realtimeExtrasTimer release];
+        realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
     }
     else if ([type isEqualToString:@"line"])
     {
