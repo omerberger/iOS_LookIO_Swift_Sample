@@ -2448,11 +2448,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         cursorView.hidden = NO == screenshotsAllowed || cursorEnded;
         
+        
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
-        CGRect aFrame = cursorView.frame;
-        aFrame.origin.x = [x floatValue];
-        aFrame.origin.y = [y floatValue];
+        
+        CGRect aFrame = [self cursorViewFrameForX:x y:y];        
         
         [UIView animateWithDuration:0.25
                               delay:0.0
@@ -2510,6 +2510,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSNumber *x = [aPacket objectForKey:@"x"];
         NSNumber *y = [aPacket objectForKey:@"y"];
         
+        
         CGRect aFrame = CGRectZero;
         aFrame.size.width = clickView.image.size.width;
         aFrame.size.height = clickView.image.size.height;
@@ -2522,11 +2523,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.size.width = clickView.image.size.width * 3.0;
         aFrame.size.height = clickView.image.size.height * 3.0;
         
+        
+        CGRect correctFrame = [self clickViewFrameForX:x y:y];
+        aFrame.origin.x = correctFrame.origin.x;
+        aFrame.origin.y = correctFrame.origin.y;
+        
         [UIView animateWithDuration:0.1
                               delay:0.0
                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
                          animations:^{
-                             clickView.bounds = aFrame;
+                             clickView.frame = aFrame;
                              clickView.alpha = 1.0;
                          }
                          completion:^(BOOL finished) {
@@ -2602,8 +2608,50 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+-(CGRect)cursorViewFrameForX:(NSNumber*)x y:(NSNumber*)y {
+    CGRect aFrame = cursorView.frame;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = [y floatValue];
+        aFrame.origin.y = applicationFrame.size.height - [x floatValue] - aFrame.size.height;
+    } else if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = applicationFrame.size.width - [y floatValue] - aFrame.size.width/2;
+        aFrame.origin.y = [x floatValue];
+    } else
+    {
+        aFrame.origin.x = [x floatValue];
+        aFrame.origin.y = [y floatValue];
+    }
+    return aFrame;
+}
+
+-(CGRect)clickViewFrameForX:(NSNumber*)x y:(NSNumber*)y {
+    CGRect aFrame = clickView.frame;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = [y floatValue] - aFrame.size.width*1.5;
+        aFrame.origin.y = applicationFrame.size.height - [x floatValue] - aFrame.size.height*1.5;
+    } else if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        aFrame.origin.x = applicationFrame.size.width - [y floatValue] - aFrame.size.width*1;
+        aFrame.origin.y = [x floatValue] - aFrame.size.height*1.5;
+    } else
+    {
+        aFrame.origin.x = [x floatValue] - aFrame.size.width*1.5;
+        aFrame.origin.y = [y floatValue] - aFrame.size.height*1.5;
+    }
+    return aFrame;
+}
+
+
 -(void)beginSessionAfterSurveyImmediatelyShowingChat:(BOOL)showChat
-{    
+{
     // Waiting for the "do you want to reconnect?" alert view.
     if (willAskUserToReconnect)
         return;
