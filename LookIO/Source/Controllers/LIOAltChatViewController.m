@@ -29,6 +29,7 @@
 #import "LIOSurveyViewController.h"
 #import "LIOMediaManager.h"
 #import "LIOSurveyView.h"
+#import "LIOImageBubbleView.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -543,9 +544,10 @@
     [super dealloc];
 }
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
-}
+// TODO: When compiling with xCode 5, use this
+//- (UIStatusBarStyle)preferredStatusBarStyle {
+//    return UIStatusBarStyleLightContent;
+//}
 
 
 - (void)viewWillAppear:(BOOL)animated
@@ -1486,7 +1488,7 @@
                 UIImage *attachmentImage = [[[UIImage alloc] initWithData:imageData] autorelease];
                 if (attachmentImage)
                 {
-                    UIImageView *imageBubble = [[[UIImageView alloc] init] autorelease];
+                    LIOImageBubbleView *imageBubble = [[[LIOImageBubbleView alloc] init] autorelease];
                     imageBubble.contentMode = UIViewContentModeScaleAspectFill;
                     imageBubble.layer.masksToBounds = YES;
                     imageBubble.layer.cornerRadius = 3.0;
@@ -1512,13 +1514,13 @@
                     UIImage *stretchableShadow = stretchableShadow = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchablePhotoShadow"] stretchableImageWithLeftCapWidth:42 topCapHeight:62];
                     UIImageView* foregroundImage = [[[UIImageView alloc] initWithImage:stretchableShadow] autorelease];
 
-                    ibFrame.origin.x = ibFrame.origin.x - 3;
-                    ibFrame.origin.y = ibFrame.origin.y - 3;
+                    ibFrame.origin.x =  - 3;
+                    ibFrame.origin.y =  - 3;
                     ibFrame.size.width = ibFrame.size.width + 6.0;
                     ibFrame.size.height = ibFrame.size.height + 8.0;
                     foregroundImage.frame = ibFrame;
                     
-                    [aCell.contentView addSubview:foregroundImage];
+                    [imageBubble addSubview:foregroundImage];
                     
                     if (LIOChatMessageKindLocal == aMessage.kind && aMessage.sendingFailed) {
                         UIButton* failedMessageButton = [[UIButton alloc] initWithFrame:CGRectMake(foregroundImage.frame.origin.x - 32.0, foregroundImage.frame.size.height/2 - 11.0 , 22, 22)];

@@ -11,6 +11,8 @@
 		A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0451795C23C00914649 /* LPChatAPIClient.m */; };
 		A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0481795C24A00914649 /* LPVisitAPIClient.h */; };
 		A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0491795C24A00914649 /* LPVisitAPIClient.m */; };
+		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
+		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
@@ -143,6 +145,8 @@
 		A703A0451795C23C00914649 /* LPChatAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPChatAPIClient.m; path = Source/Networking/LPChatAPIClient.m; sourceTree = "<group>"; };
 		A703A0481795C24A00914649 /* LPVisitAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPVisitAPIClient.h; path = Source/Networking/LPVisitAPIClient.h; sourceTree = "<group>"; };
 		A703A0491795C24A00914649 /* LPVisitAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPVisitAPIClient.m; path = Source/Networking/LPVisitAPIClient.m; sourceTree = "<group>"; };
+		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
+		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
 		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Source/Networking/LPSSEManager.h; sourceTree = "<group>"; };
@@ -419,6 +423,8 @@
 				A7C96CB01757D40B0028F39C /* LIOSurveyView.m */,
 				A7D4E843177498AB0037E47B /* LIOStarRatingView.h */,
 				A7D4E844177498AB0037E47B /* LIOStarRatingView.m */,
+				A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */,
+				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -633,6 +639,7 @@
 				A703A0461795C23C00914649 /* LPChatAPIClient.h in Headers */,
 				A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */,
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
+				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -767,6 +774,7 @@
 				A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */,
 				A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */,
 				A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */,
+				A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
