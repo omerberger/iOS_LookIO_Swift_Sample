@@ -37,6 +37,7 @@
 #import "LPSSEManager.h"
 #import "LPChatAPIClient.h"
 #import "LPVisitAPIClient.h"
+#import "LPMediaAPIClient.h"
 #import "LPSSEvent.h"
 #import "LPHTTPRequestOperation.h"
 
@@ -72,17 +73,17 @@
 #define LIOLookIOManagerVisitFunnelRequestURL       @"/funnel"
 #define LIOLookIOManagerLogUploadRequestURL         @"api/v1/app/log"
 
-#define LIOLookIOManagerChatIntroRequestURL         @"/api/v2/chat/intro"
-#define LIOLookIOManagerChatOutroRequestURL         @"/api/v2/chat/outro"
-#define LIOLookIOManagerChatLineRequestURL          @"/api/v2/chat/line"
-#define LIOLookIOManagerChatFeedbackRequestURL      @"/api/v2/chat/feedback"
-#define LIOLookIOManagerChatSurveyRequestURL        @"/api/v2/chat/survey"
-#define LIOLookIOManagerChatCapabilitiesRequestURL  @"/api/v2/chat/capabilities"
-#define LIOLookIOManagerChatHistoryRequestURL       @"/api/v2/chat/chat_history"
-#define LIOLookIOManagerChatAdvisoryRequestURL      @"/api/v2/chat/advisory"
-#define LIOLookIOManagerChatPermissionRequestURL    @"/api/v2/chat/permission"
-#define LIOLookIOManagerChatScreenshotRequestURL    @"/api/v2/chat/screenshot"
-#define LIOLookIOManagerMediaUploadRequestURL       @"/api/v2/media/upload"
+#define LIOLookIOManagerChatIntroRequestURL         @"intro"
+#define LIOLookIOManagerChatOutroRequestURL         @"outro"
+#define LIOLookIOManagerChatLineRequestURL          @"line"
+#define LIOLookIOManagerChatFeedbackRequestURL      @"feedback"
+#define LIOLookIOManagerChatSurveyRequestURL        @"survey"
+#define LIOLookIOManagerChatCapabilitiesRequestURL  @"capabilities"
+#define LIOLookIOManagerChatHistoryRequestURL       @"chat_history"
+#define LIOLookIOManagerChatAdvisoryRequestURL      @"advisory"
+#define LIOLookIOManagerChatPermissionRequestURL    @"permission"
+#define LIOLookIOManagerChatScreenshotRequestURL    @"screenshot"
+#define LIOLookIOManagerMediaUploadRequestURL       @"upload"
 
 #define LIOLookIOManagerMessageSeparator        @"!look.io!"
 
@@ -402,10 +403,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+        
+        LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+        mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
         
         LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
         visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+        
+        NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
+        NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
+        NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
+        
     }
     
     return self;
@@ -456,11 +465,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     developmentMode = YES;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_Dev;
 
+    // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-
+    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    
+    LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+    mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    
+    NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
+    NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
+    NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
 
 }
 
@@ -469,11 +486,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     developmentMode = NO;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
     
+    // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+    
+    LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+    mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+    
+    NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
+    NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
+    NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
 }
 
 - (void)enableSurveys {
@@ -1098,10 +1123,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     introPacketWasSent = NO;
 
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    if (developmentMode)
-        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-    else
-        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+    LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+
+    if (developmentMode) {
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+        mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    }
+    else {
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+        mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
+    }
     
     [userDefaults synchronize];
     
@@ -1914,7 +1945,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [body appendData:[bundleId dataUsingEncoding:NSUTF8StringEncoding]];
         [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
         
-        [[LPChatAPIClient sharedClient] postMultipartDataToPath:LIOLookIOManagerMediaUploadRequestURL data:body success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        [[LPMediaAPIClient sharedClient] postMultipartDataToPath:LIOLookIOManagerMediaUploadRequestURL data:body success:^(LPHTTPRequestOperation *operation, id responseObject) {
             if (aMessage.sendingFailed) {
                 aMessage.sendingFailed = NO;
                 if (altChatViewController)
@@ -2010,9 +2041,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 -(void)setupAPIClientBaseURL {
-    LPChatAPIClient* chatAPIClient = [LPChatAPIClient sharedClient];
-    NSURL *chatPostURL = [NSURL URLWithString:chatPostUrlString];
-    chatAPIClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", chatPostURL.scheme, chatPostURL.host]];    
+    LPChatAPIClient *chatAPIClient = [LPChatAPIClient sharedClient];
+    chatAPIClient.baseURL = [NSURL URLWithString:chatPostUrlString];
+    
+    LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
+    mediaAPIClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@/api/v2/media/", chatAPIClient.baseURL.scheme, chatAPIClient.baseURL.host]];
+    
+    NSLog(@"Set chat baseURL as %@", chatAPIClient.baseURL.absoluteString);
+    NSLog(@"Set media baseURL as %@", mediaAPIClient.baseURL.absoluteString);
 }
 
 -(void)connectSSESocket {
