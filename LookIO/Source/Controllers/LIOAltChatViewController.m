@@ -159,8 +159,11 @@
         tableViewAutoresizing = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-            if (![[UIApplication sharedApplication] isStatusBarHidden])
+            if (![[UIApplication sharedApplication] isStatusBarHidden]) {
                 tableViewFrame.origin.y += 20.0;
+                tableViewFrame.size.height -= 20.0;
+            }
+        
     }
     
     tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];
@@ -1001,9 +1004,11 @@
         if (![[UIApplication sharedApplication] isStatusBarHidden]) {
             if (UIInterfaceOrientationIsLandscape(actualOrientation && keyboardHeight > 0.0))
                 tableFrame.origin.y = 0;
-            else
+            else {
                 tableFrame.origin.y += 20.0;
-        }        
+                tableFrame.size.height -= 20.0;
+            }
+        }
     }
     
     tableView.frame = tableFrame;
@@ -1837,8 +1842,10 @@
             tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
             
             if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-                if (![[UIApplication sharedApplication] isStatusBarHidden])
-                    tableFrame.origin.y += 20.0;            
+                if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+                    tableFrame.origin.y += 20.0;
+                    tableFrame.size.height -= 20.0;
+                }
         }
         
     }
@@ -1913,7 +1920,7 @@
         
         tableFrame.origin.y = 32.0;
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-            if (![[UIApplication sharedApplication] isStatusBarHidden])
+            if (![[UIApplication sharedApplication] isStatusBarHidden]) 
                 tableFrame.origin.y += 20.0;
         
         CGFloat newTableHeight = 0.0;

@@ -15,7 +15,6 @@
 
 @interface LPSSEManager () <AsyncSocketDelegate_LIO>
 {
-    dispatch_queue_t delegateQueue;
     NSMutableString *partialPacket;
     NSData *sepData;
     
