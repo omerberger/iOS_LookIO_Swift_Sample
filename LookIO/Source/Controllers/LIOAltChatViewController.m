@@ -565,7 +565,7 @@
     {
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         if (!surveyManager.preSurveyCompleted)
-            [self hideChatUIForSurvey:NO];
+            [self showPreSurveyView];
     }
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -659,7 +659,7 @@
     }
 }
 
--(void)showPostSurveyView {
+- (void)showPostSurveyView {
     [self hideChatUIForSurvey:YES];
 
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
@@ -766,6 +766,9 @@
 }
 
 -(void)showPreSurveyView {
+    [self.view endEditing:YES];
+    [self hideChatUIForSurvey:YES];
+
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
@@ -828,19 +831,6 @@
         [self performDismissalAnimation];
         return;
     }
-    
-    // We might need to show the survey modal.
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
-        if (!surveyManager.preSurveyCompleted) {
-            [self showPreSurveyView];
-            
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
-                [self willAnimateRotationToInterfaceOrientation:0 duration:0];
-
-            return;
-        }
     
     if (leavingMessage)
         return;
@@ -1107,6 +1097,8 @@
                              inputBar.transform = CGAffineTransformIdentity;
                              headerBar.transform = CGAffineTransformIdentity;
                              dismissalBar.transform = CGAffineTransformIdentity;
+                             
+                             [inputBar.inputField becomeFirstResponder];
                          }];
     }
 }

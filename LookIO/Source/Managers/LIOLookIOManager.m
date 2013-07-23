@@ -993,6 +993,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypeOffline];
     [LIOSurveyManager sharedSurveyManager].preSurveyCompleted = NO;
     
+    LIOSurveyTemplate* preChatTemplate = [[LIOSurveyManager sharedSurveyManager] preChatTemplate];
+    if (preChatTemplate) {
+        [preChatTemplate release];
+        preChatTemplate = nil;
+    }
+    
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
     [altChatViewController release];
@@ -1002,7 +1008,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
-    
     
     [interstitialViewController.view removeFromSuperview];
     [interstitialViewController release];
@@ -2453,6 +2458,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurveyDict type:LIOSurveyManagerSurveyTypePost];
             }
         }
+
+        if ([aPacket objectForKey:@"prechat"]) {
+            NSDictionary *preSurveyDict = [aPacket objectForKey:@"prechat"];
+            if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurveyDict type:LIOSurveyManagerSurveyTypePre];
+                
+                [self presentPreChatSurvey];
+            }
+        }
     }
     else if ([type isEqualToString:@"screen_cursor"])
     {
@@ -2706,21 +2721,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self showChatAnimated:YES];
 }
 
+- (void)presentPreChatSurvey {
+    if (altChatViewController) {
+        [altChatViewController showPreSurveyView];
+    }
+    else {
+        [self showChatAnimated:YES];
+    }
+    
+}
+
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat
 {
-    // Survey needed? We need to wait until it's done before we try to connect.
-    
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && surveyEnabled)
-    {
-        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-        if (!surveyManager.preSurveyCompleted)
-        {
-            [self showChatAnimated:YES];
-            return;
-        }
-    }
-
     // Waiting for the "do you want to reconnect?" alert view.
     if (willAskUserToReconnect)
         return;
@@ -3083,12 +3095,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSDictionary *surveyDict = [params objectForKey:@"surveys"];
     if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
     {
-        NSDictionary *preSurvey = [surveyDict objectForKey:@"prechat"];
-        if (preSurvey)
-        {
-            [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:preSurvey type:LIOSurveyManagerSurveyTypePre];
-
-        }
     }
 
     /*
@@ -4142,7 +4148,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [surveyResponsesToBeSent release];
     surveyResponsesToBeSent = [aResponseDict retain];
 
-    [self beginSessionAfterSurveyImmediatelyShowingChat:YES];
+//    NSDictionary* surveyDict = [NSDictionary dictionaryWithObject:surveyResponsesToBeSent forKey:@"prechat_survey"];
+//    [self sendCustomVarsPacketWithDict:surveyDict];
+    
+    NSMutableDictionary* surveyDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                       surveyResponsesToBeSent, @"prechat",
+                                       nil];
+    
+    [self sendSurveyPacketWithDict:surveyDict];
+
 }
 
 - (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController {

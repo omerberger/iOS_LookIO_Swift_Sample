@@ -118,4 +118,5 @@
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
 - (void)showPostSurveyView;
+- (void)showPreSurveyView;
 @end
