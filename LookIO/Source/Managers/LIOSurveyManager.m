@@ -475,9 +475,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] intValue];
         newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
         
-        
-        NSLog(@"<Question> ID: %d // Label :%@", newQuestion.questionId, newQuestion.label);
-        
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
         newQuestion.displayType = LIOSurveyQuestionDisplayTypeTextField;
 

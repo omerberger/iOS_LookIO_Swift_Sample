@@ -81,6 +81,7 @@
 #define LIOLookIOManagerChatCapabilitiesRequestURL  @"capabilities"
 #define LIOLookIOManagerChatHistoryRequestURL       @"chat_history"
 #define LIOLookIOManagerChatAdvisoryRequestURL      @"advisory"
+#define LIOLookIOManagerCustomVarsRequestURL        @"custom_vars"
 #define LIOLookIOManagerChatPermissionRequestURL    @"permission"
 #define LIOLookIOManagerChatScreenshotRequestURL    @"screenshot"
 #define LIOLookIOManagerMediaUploadRequestURL       @"upload"
@@ -114,6 +115,7 @@
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
 #define LIOLookIOManagerLastKnownChatPostUrlString      @"LIOLookIOManagerLastKnownChatPostUrlString"
+#define LIOLookIOManagerLastKnownChatMediaUrlString     @"LIOLookIOManagerLastKnownChatMediaUrlString"
 #define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
@@ -202,6 +204,7 @@ typedef enum
     NSString* chatEngagementId;
     NSString* chatSSEUrlString;
     NSString* chatPostUrlString;
+    NSString* chatMediaUrlString;
     NSString* chatLastEventId;
     
     LPSSEManager* sseManager;
@@ -410,11 +413,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
         visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
-        
-        NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
-        NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
-        NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
-        
     }
     
     return self;
@@ -474,11 +472,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-    
-    NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
-    NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
-    NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
-
 }
 
 - (void)disableDevelopmentMode
@@ -495,10 +488,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
-    
-    NSLog(@"Default chat URL is %@", chatClient.baseURL.absoluteString);
-    NSLog(@"Default media URL is %@", mediaClient.baseURL.absoluteString);
-    NSLog(@"Default visit URL is %@", visitClient.baseURL.absoluteString);
 }
 
 - (void)enableSurveys {
@@ -802,6 +791,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             chatEngagementId = engagementId;
             chatPostUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            chatMediaUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             chatSSEUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             chatLastEventId = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             [self setupAPIClientBaseURL];
@@ -822,6 +812,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             
             [userDefaults synchronize];
@@ -1110,11 +1101,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     
     chatEngagementId = nil;
     chatSSEUrlString = nil;
     chatPostUrlString = nil;
+    chatMediaUrlString = nil;
     chatLastEventId = nil;
     
     [sseManager release];
@@ -1917,6 +1910,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }];    
 }
 
+-(void)sendCustomVarsPacketWithDict:(NSDictionary*)customVarsDict {
+    if (chatEngagementId == nil) {
+        LIOLog(@"<CUSTOM_VARS> failure - no engagement ID");
+        return;
+    }
+    
+    NSString* customVarsRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerCustomVarsRequestURL, chatEngagementId];
+    [[LPChatAPIClient sharedClient] postPath:customVarsRequestUrl parameters:customVarsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<CUSTOM_VARS> with data %@ response: %@", customVarsDict, responseObject);
+        else
+            LIOLog(@"<CUSTOM_VARS> with data %@ success", customVarsDict);        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<CUSTOM_VARS> with data %@ failure: %@", customVarsDict, error);
+    }];
+}
+
 -(void)sendPermissionPacketWithAsset:(NSString*)asset granted:(BOOL)granted {
     if (chatEngagementId == nil) {
         LIOLog(@"<PERMISSION> failure - no engagement ID");
@@ -2066,6 +2076,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([engagementId length])
         [resolvedPayload setObject:postUrl forKey:@"post_url"];
     
+    NSString* mediaUrl = [params objectForKey:@"media_url"];
+    if ([engagementId length])
+        [resolvedPayload setObject:mediaUrl forKey:@"media_url"];
+    
     return resolvedPayload;
 }
 
@@ -2089,6 +2103,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatEngagementId = [[resolvedPayload objectForKey:@"engagement_id"] retain];
         chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
         chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
+        chatMediaUrlString = [[resolvedPayload objectForKey:@"media_url"] retain];
         
         [self setupAPIClientBaseURL];
         
@@ -2096,6 +2111,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [userDefaults setObject:chatEngagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
         [userDefaults setObject:chatSSEUrlString forKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
         [userDefaults setObject:chatPostUrlString forKey:LIOLookIOManagerLastKnownChatPostUrlString];
+        [userDefaults setObject:chatMediaUrlString forKey:LIOLookIOManagerLastKnownChatMediaUrlString];
 
         [userDefaults synchronize];
         
@@ -2108,10 +2124,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatAPIClient.baseURL = [NSURL URLWithString:chatPostUrlString];
     
     LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
-    mediaAPIClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@/api/v2/media/", chatAPIClient.baseURL.scheme, chatAPIClient.baseURL.host]];
-    
-    NSLog(@"Set chat baseURL as %@", chatAPIClient.baseURL.absoluteString);
-    NSLog(@"Set media baseURL as %@", mediaAPIClient.baseURL.absoluteString);
+    mediaAPIClient.baseURL = [NSURL URLWithString:chatMediaUrlString];
 }
 
 -(void)connectSSESocket {
@@ -2588,6 +2601,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             
             [userDefaults synchronize];
@@ -3685,20 +3699,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Send an update.
         NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:NO includingSurveyResponses:NO includingEvents:NO];
         NSDictionary *extrasDict = [introDict objectForKey:@"extras"];
-        NSDictionary *avisoryDict = [NSDictionary dictionaryWithObjectsAndKeys:@"extras", @"type", extrasDict, @"extras", nil];
-        
-        NSString *analyticsUpdate = [jsonWriter stringWithObject:avisoryDict];
-        analyticsUpdate = [analyticsUpdate stringByAppendingString:LIOLookIOManagerMessageSeparator];
-        
-        /*
-        [controlSocket writeData:[analyticsUpdate dataUsingEncoding:NSUTF8StringEncoding]
-                     withTimeout:LIOLookIOManagerWriteTimeout
-                             tag:0];
-        
-        [controlSocket readDataToData:messageSeparatorData
-                          withTimeout:-1
-                                  tag:0];
-         */
+
+        [self sendCustomVarsPacketWithDict:extrasDict];
     }
 }
 

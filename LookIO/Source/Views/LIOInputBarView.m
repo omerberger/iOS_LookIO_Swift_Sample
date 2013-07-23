@@ -297,7 +297,6 @@
     aFrame.size.height = singleLineHeight * calculatedNumLines + backgroundHeightMod;
     if (aFrame.size.height < minHeight) aFrame.size.height = minHeight;
     inputFieldBackground.frame = aFrame;
-    NSLog(@"new height is %f", aFrame.size.height);
     if (padUI)
     {
         aFrame = inputField.frame;

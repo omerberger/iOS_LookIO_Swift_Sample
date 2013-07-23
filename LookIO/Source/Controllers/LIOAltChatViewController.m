@@ -324,9 +324,7 @@
     endSessionButton.frame = aFrame;
     if (NO == padUI)
         endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    
-    NSLog(@"Table view width one quarter is %f, so locating at %f", tableView.frame.size.width * 0.75, aFrame.origin.x);
-    
+        
     UIImage *stretchableHeaderGradient = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFuncHeaderGradient"] stretchableImageWithLeftCapWidth:0 topCapHeight:127];
     UIImageView *functionHeaderGradient = [[[UIImageView alloc] initWithImage:stretchableHeaderGradient] autorelease];
     aFrame = functionHeaderGradient.frame;
