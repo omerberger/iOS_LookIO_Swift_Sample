@@ -64,7 +64,6 @@ extern NSString *const kLPEventAddedToCart;
 - (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey;
 - (id)customVariableForKey:(NSString *)aKey;
 - (void)addCustomVariables:(NSDictionary *)aDictionary;
-- (void)clearCustomVariables;
 - (BOOL)shouldLockInterfaceOrientation;
 - (void)setCustomButtonVisible;
 - (void)setCustomButtonHidden;
@@ -77,5 +76,6 @@ extern NSString *const kLPEventAddedToCart;
 - (id)sessionExtraForKey:(NSString *)aKey DEPRECATED_ATTRIBUTE;
 - (void)addSessionExtras:(NSDictionary *)aDictionary DEPRECATED_ATTRIBUTE;
 - (void)clearSessionExtras DEPRECATED_ATTRIBUTE;
+- (void)clearCustomVariables DEPRECATED_ATTRIBUTE;
 
 @end
