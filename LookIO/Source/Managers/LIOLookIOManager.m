@@ -2138,7 +2138,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sseManager = nil;
     }
     
-    int portToUse = 443;
+    NSNumber *portToUse = [NSNumber numberWithInt:443];
     NSURL* url = [NSURL URLWithString:chatSSEUrlString];
     if (url.port != 0)
         portToUse = url.port;
@@ -2728,7 +2728,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else {
         [self showChatAnimated:YES];
     }
-    
 }
 
 - (void)beginSessionImmediatelyShowingChat:(BOOL)showChat

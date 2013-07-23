@@ -38,7 +38,7 @@
 
 @synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS;
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId
 {
     self = [super init];
     if (self)
@@ -48,7 +48,7 @@
         socket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
         
         self.host = aHost;
-        self.port = aPort;
+        self.port = [aPort intValue];
         self.urlEndpoint = anEndpoint;
         self.usesTLS = usesTLS;
         lastEventId = @"";
@@ -115,8 +115,10 @@
 - (void)onSocket:(AsyncSocket_LIO *)sock didConnectToHost:(NSString *)host port:(UInt16)port {
     if (self.usesTLS)
         [socket startTLS:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], (NSString *)kCFStreamSSLAllowsAnyRoot, nil]];
-    else
+    else {
+        LIOLog(@"<LPSSEManager> Socket connected");
         [self sendEventStreamRequest];
+    }
 }
 
 - (void)disconnect
@@ -128,13 +130,13 @@
 
 - (void)onSocketDidSecure:(AsyncSocket_LIO *)sock
 {
+    LIOLog(@"<LPSSEManager> SSL/TLS established");
+    
     [self sendEventStreamRequest];
 }
 
 - (void)sendEventStreamRequest {
     dispatch_async(dispatch_get_main_queue(), ^{
-        LIOLog(@"<LPSSEManager> SSL/TLS established");
-        
         NSString* httpRequest = [NSString stringWithFormat:@"POST %@ HTTP/1.1\nHost: %@\nAccept: text/event-stream\nCache-Control: no-cache\n",
                                  urlEndpoint,
                                  host];

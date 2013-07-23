@@ -39,7 +39,7 @@ typedef enum {
     BOOL usesTLS;
 }
 
-- (id)initWithHost:(NSString *)aHost port:(int)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS  lastEventId:(NSString*)anEventId;
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS  lastEventId:(NSString*)anEventId;
 - (void)connect;
 - (void)disconnect;
 - (void)reset;
