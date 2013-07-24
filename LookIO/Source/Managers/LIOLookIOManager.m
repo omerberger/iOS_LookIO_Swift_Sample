@@ -988,16 +988,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPre = -1;
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexPost = -1;
     [LIOSurveyManager sharedSurveyManager].lastCompletedQuestionIndexOffline = -1;
+    
+    [[LIOSurveyManager sharedSurveyManager] clearTemplateForSurveyType:LIOSurveyManagerSurveyTypePre];
+    [[LIOSurveyManager sharedSurveyManager] clearTemplateForSurveyType:LIOSurveyManagerSurveyTypePost];
+    [[LIOSurveyManager sharedSurveyManager] clearTemplateForSurveyType:LIOSurveyManagerSurveyTypeOffline];
+
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePre];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypePost];
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypeOffline];
-    [LIOSurveyManager sharedSurveyManager].preSurveyCompleted = NO;
     
-    LIOSurveyTemplate* preChatTemplate = [[LIOSurveyManager sharedSurveyManager] preChatTemplate];
-    if (preChatTemplate) {
-        [preChatTemplate release];
-        preChatTemplate = nil;
-    }
+    [LIOSurveyManager sharedSurveyManager].preSurveyCompleted = NO;
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];

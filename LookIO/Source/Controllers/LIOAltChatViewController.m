@@ -846,21 +846,22 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         
-        BOOL result = [inputBar.inputField becomeFirstResponder];
-        if (result != 1)
-        {
-            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The LPMobile UI is unable to bring up the keyboard. Please check to make sure that you aren't using any categories on the UITextView class which drastically modify its behavior."];
+        if (!surveyInProgress) {
+            BOOL result = [inputBar.inputField becomeFirstResponder];
+            if (result != 1)
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The LPMobile UI is unable to bring up the keyboard. Please check to make sure that you aren't using any categories on the UITextView class which drastically modify its behavior."];
+            }
+        
+            if ([initialChatText length])
+            {
+                inputBar.inputField.text = initialChatText;
+                pendingChatText = initialChatText;
+                initialChatText = nil;
+            }
+        
+            [inputBar setNeedsLayout];
         }
-        
-        
-        if ([initialChatText length])
-        {
-            inputBar.inputField.text = initialChatText;
-            pendingChatText = initialChatText;
-            initialChatText = nil;
-        }
-        
-        [inputBar setNeedsLayout];
     });
     
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
@@ -1103,7 +1104,8 @@
                              headerBar.transform = CGAffineTransformIdentity;
                              dismissalBar.transform = CGAffineTransformIdentity;
                              
-                             [inputBar.inputField becomeFirstResponder];
+                             if (!surveyInProgress)
+                                 [inputBar.inputField becomeFirstResponder];
                          }];
     }
 }

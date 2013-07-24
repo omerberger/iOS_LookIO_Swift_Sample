@@ -400,6 +400,45 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     offlineTemplate = newTemplate;
 }
 
+- (void)clearTemplateForSurveyType:(LIOSurveyManagerSurveyType)surveyType {
+    if (LIOSurveyManagerSurveyTypePre == surveyType) {
+        if (preChatHeader) {
+            [preChatHeader release];
+            preChatHeader = nil;
+        }
+        
+        if (preChatTemplate) {
+            [preChatTemplate release];
+            preChatTemplate = nil;
+        }
+    }
+    
+    if (LIOSurveyManagerSurveyTypePost == surveyType) {
+        if (postChatHeader) {
+            [postChatHeader release];
+            postChatHeader = nil;
+        }
+        
+        if (postChatTemplate) {
+            [postChatTemplate release];
+            postChatTemplate = nil;
+        }
+    }
+    
+    if (LIOSurveyManagerSurveyTypeOffline == surveyType) {
+        if (offlineHeader) {
+            [offlineHeader release];
+            offlineHeader = nil;
+        }
+        
+        if (offlineTemplate) {
+            [offlineTemplate release];
+            offlineTemplate = nil;
+        }
+    }
+}
+
+
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
