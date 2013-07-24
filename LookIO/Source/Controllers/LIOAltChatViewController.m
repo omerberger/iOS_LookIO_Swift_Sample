@@ -455,6 +455,11 @@
     
     if (padUI)
         numPreviousMessagesToShowInScrollback = 3;
+    
+    if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
+        [[UIApplication sharedApplication] setStatusBarHidden:YES];
+        statusBarHasBeenHidden = YES;
+    }
 }
 
 - (void)viewDidUnload
@@ -1105,6 +1110,17 @@
 
 - (void)performDismissalAnimation
 {
+    if (statusBarHasBeenHidden) {
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
+        statusBarHasBeenHidden = NO;
+        
+        UIWindow* mainWindow = [[LIOLookIOManager sharedLookIOManager] mainWindow];
+        if (mainWindow)
+            if (mainWindow.rootViewController)
+                if (mainWindow.rootViewController.view)
+                    mainWindow.rootViewController.view.frame = [UIScreen mainScreen].applicationFrame;
+    }
+
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     
     background.alpha = 1.0;
@@ -1300,7 +1316,19 @@
         [self.modalViewController.view endEditing:YES];
         [self dismissModalViewControllerAnimated:NO];
         [delegate altChatViewControllerWillPresentImagePicker:self];
-    }        
+    }
+    
+    if (statusBarHasBeenHidden) {
+        [[UIApplication sharedApplication] setStatusBarHidden:NO];
+        statusBarHasBeenHidden = NO;
+        
+        UIWindow* mainWindow = [[LIOLookIOManager sharedLookIOManager] mainWindow];
+        if (mainWindow)
+            if (mainWindow.rootViewController)
+                if (mainWindow.rootViewController.view)
+                    mainWindow.rootViewController.view.frame = [UIScreen mainScreen].applicationFrame;
+    }
+
 }
 
 - (void)showPhotoSourceActionSheet
