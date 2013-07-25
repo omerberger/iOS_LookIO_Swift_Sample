@@ -160,6 +160,12 @@
         tableViewAutoresizing = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     }
     
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+            tableViewFrame.origin.y += 20.0;
+            tableViewFrame.size.height -= 20.0;
+        }
+    
     tableView = [[UITableView alloc] initWithFrame:tableViewFrame style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
@@ -239,6 +245,10 @@
         aFrame = CGRectZero;
         aFrame.size.width = self.view.bounds.size.width;
         aFrame.size.height = LIOHeaderBarViewDefaultHeight;
+        
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.size.height += 20.0;
         
         headerBar = [[LIOHeaderBarView alloc] initWithFrame:aFrame];
         headerBar.accessibilityLabel = @"LIOAltChatViewController.headerBar";
@@ -537,8 +547,9 @@
 }
 
 // TODO: When compiling with xCode 5, use this
+//
 //- (UIStatusBarStyle)preferredStatusBarStyle {
-//    return UIStatusBarStyleLightContent;
+///    return UIStatusBarStyleLightContent;
 //}
 
 
@@ -983,6 +994,17 @@
         tableFrame.origin.y = origin;
         tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
      
+    }
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+            if (UIInterfaceOrientationIsLandscape(actualOrientation && keyboardHeight > 0.0))
+                tableFrame.origin.y = 0;
+            else {
+                tableFrame.origin.y += 20.0;
+                tableFrame.size.height -= 20.0;
+            }
+        }
     }
     
     tableView.frame = tableFrame;
@@ -1817,6 +1839,12 @@
         {
             tableFrame.origin.y = 32.0;
             tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
+
+            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+                    tableFrame.origin.y += 20.0;
+                    tableFrame.size.height -= 20.0;
+                }
         }
         
     }
@@ -1890,6 +1918,10 @@
             headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                tableFrame.origin.y += 20.0;
+        
         CGFloat newTableHeight = 0.0;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {

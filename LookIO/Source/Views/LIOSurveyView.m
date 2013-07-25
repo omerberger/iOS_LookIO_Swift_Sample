@@ -198,6 +198,11 @@
         CGRect aFrame = validationView.frame;
         aFrame.origin.y = (landscape || padUI) ? 0 : 32;
         
+        // iOS 7.0: Add another 20px on top for the status bar
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
+                aFrame.origin.y += 20.0;
+        
         validationView.frame = aFrame;
     }
 }
@@ -812,6 +817,11 @@
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
         
+        // iOS 7.0: Add another 20px on top for the status bar
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
+                aFrame.origin.y += 20.0;
+        
         questionLabel.frame = aFrame;
     }
     
@@ -1134,6 +1144,11 @@
     aFrame.origin.y = (landscape || padUI) ? 0 : 32;
     validationView.verticallyMirrored = YES;
     aFrame.size.width = self.frame.size.width;
+    
+    // iOS 7.0: Add another 20px on top for the status bar
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
+            aFrame.origin.y += 20.0;
         
     validationView.frame = aFrame;
     validationView.label.text = aMessage;

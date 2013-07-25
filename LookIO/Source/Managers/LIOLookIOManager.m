@@ -2838,7 +2838,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    // Trump card #1: Not in a session, and "enabled" from server-side settings.
+    // Trump card #1: Not in a session, and not "enabled" from server-side settings.
     if (NO == socketConnected && NO == [self enabled])
     {
         controlButtonHidden = YES;
