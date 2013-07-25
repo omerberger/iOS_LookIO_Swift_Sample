@@ -29,7 +29,7 @@
         
         self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
                 
-        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];
+        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton-flat"];
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
         UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAttachIcon"];
