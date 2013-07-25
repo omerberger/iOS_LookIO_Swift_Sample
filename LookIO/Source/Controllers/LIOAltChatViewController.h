@@ -99,8 +99,6 @@
 
     LIOChatMessage *clickedFailedMessage;
     int clickedFailedMessageIndex;
-    
-    BOOL statusBarHasBeenHidden;    
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
