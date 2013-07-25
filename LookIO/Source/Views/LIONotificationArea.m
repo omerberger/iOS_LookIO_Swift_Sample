@@ -15,7 +15,7 @@
 
 @implementation LIONotificationArea
 
-@synthesize keyboardIconVisible;
+@synthesize keyboardIconVisible, hasCustomBranding;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -34,6 +34,7 @@
         defaultNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:defaultNotification];
         
+        hasCustomBranding = NO;
         if (padUI)
         {
             UIView *finalBrandingView = nil;
@@ -48,9 +49,11 @@
                     finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
                     finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
                     finalBrandingView.frame = CGRectMake(0.0, 0.0, 130.0, 44.0);
+                    
+                    hasCustomBranding = YES;
                 }
                 else
-                    finalBrandingView = aBrandingView;
+                    finalBrandingView = nil;
             }
             
             if (nil == finalBrandingView)
@@ -90,16 +93,19 @@
                     finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
                     finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
                     finalBrandingView.frame = CGRectMake(0.0, 0.0, 240.0, 17.0);
+                    
+                    finalBrandingView.userInteractionEnabled = NO;
+                    aFrame = finalBrandingView.frame;
+                    aFrame.origin.y = 8.0;
+                    aFrame.origin.x = (defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+                    finalBrandingView.frame = aFrame;
+                    finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+
+                    hasCustomBranding = YES;
                 }
                 else
-                    finalBrandingView = aBrandingView;
+                    finalBrandingView = nil;
                 
-                finalBrandingView.userInteractionEnabled = NO;
-                aFrame = finalBrandingView.frame;
-                aFrame.origin.y = 8.0;
-                aFrame.origin.x = (defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-                finalBrandingView.frame = aFrame;
-                finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
             }
             
             if (nil == finalBrandingView)
@@ -111,22 +117,11 @@
                 //            aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
                 //            lolcontainer.frame = aFrame;
                 finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-                
-                UILabel *adLabel = [[[UILabel alloc] init] autorelease];
-                adLabel.backgroundColor = [UIColor clearColor];
-                adLabel.font = [UIFont boldSystemFontOfSize:12.0];
-                adLabel.textColor = [UIColor whiteColor];
-                adLabel.text = LIOLocalizedString(@"LIONotificationArea.PoweredBy");
-                [adLabel sizeToFit];
-                aFrame = adLabel.frame;
-                aFrame.origin.x = 0.0;
-                aFrame.origin.y = 8.0;
-                adLabel.frame = aFrame;
-                
+                                
                 UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
                 aFrame = tinyLogo.frame;
                 aFrame.origin.y = 8.0;
-                aFrame.origin.x = adLabel.frame.origin.x + adLabel.frame.size.width + 5.0;
+                aFrame.origin.x = 0.0;
                 tinyLogo.frame = aFrame;
                 tinyLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
                 tinyLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
@@ -144,11 +139,10 @@
                 plusButton.frame = aFrame;
                 
                 aFrame = finalBrandingView.frame;
-                aFrame.size.width = adLabel.frame.size.width + tinyLogo.frame.size.width + plusButton.frame.size.width + 10.0;
+                aFrame.size.width = tinyLogo.frame.size.width + plusButton.frame.size.width + 10.0;
                 aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
                 finalBrandingView.frame = aFrame;
                 
-                [finalBrandingView addSubview:adLabel];
                 [finalBrandingView addSubview:tinyLogo];
                 [finalBrandingView addSubview:plusButton];
             }

@@ -178,9 +178,9 @@
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
-        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-            [self rejiggerRatingScrollView:currentScrollView];
-        else
+//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
+//            [self rejiggerRatingScrollView:currentScrollView];
+//        else
             [self rejiggerIntroScrollView:currentScrollView];
     } else {
         if (!isAnimating && currentScrollView != nil)

@@ -347,8 +347,6 @@ extern NSString *const kLPEventAddedToCart;
  */
 - (BOOL)shouldLockInterfaceOrientation;
 
-- (BOOL)surveyEnabled;
-
 // Deprecated methods.
 - (void)beginSession DEPRECATED_ATTRIBUTE;
 - (void)setSessionExtra:(id)anObject forKey:(NSString *)aKey DEPRECATED_ATTRIBUTE;

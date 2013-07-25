@@ -332,28 +332,7 @@
     aFrame.size.width = functionHeaderGradient.frame.size.width;
     functionHeaderSep.frame = aFrame;
     functionHeaderSep.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    
-    UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
-    poweredByLabel.backgroundColor = [UIColor clearColor];
-    poweredByLabel.textColor = [UIColor whiteColor];
-    poweredByLabel.textAlignment = UITextAlignmentCenter;
-    poweredByLabel.text = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIONotificationArea.PoweredBy"];
-    [poweredByLabel sizeToFit];
-    aFrame = poweredByLabel.frame;
-    aFrame.origin.x = 10.0;
-    aFrame.origin.y = -54.0;
-    aFrame.size.width = 320.0 - 20.0;
-    poweredByLabel.frame = aFrame;
-    poweredByLabel.font = [UIFont systemFontOfSize:13.0];
-    poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    
-    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
-    aFrame = logoView.frame;
-    aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
-    aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
-    logoView.frame = aFrame;
-    logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    
+        
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
     
@@ -363,11 +342,35 @@
         [functionHeaderChat.contentView addSubview:functionHeaderSep];
     }
     
-    if ([[LIOLookIOManager sharedLookIOManager] customBrandingAvailable])
-    {
-        [functionHeaderChat.contentView addSubview:poweredByLabel];
-        [functionHeaderChat.contentView addSubview:logoView];
-    }
+    if (headerBar)
+        if (headerBar.notificationArea)
+            if (headerBar.notificationArea.hasCustomBranding)
+            {
+                UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
+                poweredByLabel.backgroundColor = [UIColor clearColor];
+                poweredByLabel.textColor = [UIColor whiteColor];
+                poweredByLabel.textAlignment = UITextAlignmentCenter;
+                poweredByLabel.text = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIONotificationArea.PoweredBy"];
+                [poweredByLabel sizeToFit];
+                aFrame = poweredByLabel.frame;
+                aFrame.origin.x = 10.0;
+                aFrame.origin.y = -54.0;
+                aFrame.size.width = 320.0 - 20.0;
+                poweredByLabel.frame = aFrame;
+                poweredByLabel.font = [UIFont systemFontOfSize:13.0];
+                poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+                
+                UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
+                aFrame = logoView.frame;
+                aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
+                aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
+                logoView.frame = aFrame;
+                logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+                
+                [functionHeaderChat.contentView addSubview:poweredByLabel];
+                [functionHeaderChat.contentView addSubview:logoView];
+            }
+    
     functionHeaderChat.backgroundColor = [UIColor clearColor];
     [functionHeaderChat.contentView addSubview:emailConvoButton];
     [functionHeaderChat.contentView addSubview:endSessionButton];
@@ -556,7 +559,7 @@
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    if (surveyManager.preChatTemplate && lookIOManager.surveyEnabled)
+    if (surveyManager.preChatTemplate)
     {
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         if (!surveyManager.preSurveyCompleted)
@@ -1095,11 +1098,13 @@
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
         statusBarHasBeenHidden = NO;
         
+        /*
         UIWindow* mainWindow = [[LIOLookIOManager sharedLookIOManager] mainWindow];
         if (mainWindow)
             if (mainWindow.rootViewController)
                 if (mainWindow.rootViewController.view)
                     mainWindow.rootViewController.view.frame = [UIScreen mainScreen].applicationFrame;
+         */
     }
 
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
@@ -1303,11 +1308,13 @@
         [[UIApplication sharedApplication] setStatusBarHidden:NO];
         statusBarHasBeenHidden = NO;
         
+        /*
         UIWindow* mainWindow = [[LIOLookIOManager sharedLookIOManager] mainWindow];
         if (mainWindow)
             if (mainWindow.rootViewController)
                 if (mainWindow.rootViewController.view)
                     mainWindow.rootViewController.view.frame = [UIScreen mainScreen].applicationFrame;
+         */
     }
 
 }

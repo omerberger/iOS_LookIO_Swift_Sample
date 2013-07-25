@@ -15,7 +15,7 @@
 
 @implementation LIOHeaderBarView
 
-@synthesize delegate;
+@synthesize delegate, notificationArea;
 
 - (id)initWithFrame:(CGRect)frame
 {

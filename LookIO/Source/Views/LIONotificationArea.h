@@ -22,9 +22,11 @@
     LIOAnimatedKeyboardIcon *keyboardIcon;
     BOOL keyboardIconVisible;
     BOOL animatingLongText;
+    BOOL hasCustomBranding;
 }
 
 @property(nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
+@property (nonatomic, readonly) BOOL hasCustomBranding;
 
 - (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent;
 

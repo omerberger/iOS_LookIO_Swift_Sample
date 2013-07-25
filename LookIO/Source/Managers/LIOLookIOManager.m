@@ -197,8 +197,6 @@ typedef enum
     NSString *lastKnownPageViewValue;
     id<LIOLookIOManagerDelegate> delegate;
     
-    BOOL surveyEnabled;
-
     BOOL shouldLockOrientation;
 
     NSString* chatEngagementId;
@@ -488,18 +486,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
-}
-
-- (void)enableSurveys {
-    surveyEnabled = YES;
-}
-
-- (void)disableSurveys {
-    surveyEnabled = NO;
-}
-
-- (BOOL)surveyEnabled {
-    return surveyEnabled;
 }
 
 - (void)uploadLog:(NSString *)logBody
@@ -2724,9 +2710,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)presentPreChatSurvey {
     if (altChatViewController) {
         [altChatViewController showPreSurveyView];
-    }
-    else {
-        [self showChatAnimated:YES];
     }
 }
 
