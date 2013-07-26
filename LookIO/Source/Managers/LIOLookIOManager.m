@@ -1494,15 +1494,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        if (selectedChatTheme == kLPChatThemeFlat) {
-            [UIView animateWithDuration:0.15 animations:^{
-                blurImageView.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                [blurImageView removeFromSuperview];
-                [blurImageView release];
-                blurImageView = nil;
-            }];
-        }
+        [UIView animateWithDuration:0.15 animations:^{
+            blurView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [blurView removeFromSuperview];
+        }];
         
         [self refreshControlButtonVisibility];
         
@@ -3834,16 +3830,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             surveyManager.surveysEnabled = lastKnownSurveysEnabled;
         }
         
-<<<<<<< HEAD
-        NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
-        if (hideEmailChat)
-        {
-            [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
-            lastKnownHideEmailChat = [hideEmailChat boolValue];
-        }
-            
-=======
->>>>>>> Card UI for flat survey and overrides for demo app
         if (disableSurveysOverride) {
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
 
