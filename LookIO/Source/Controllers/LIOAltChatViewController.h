@@ -10,7 +10,7 @@
 #import "LIOSurveyManager.h"
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
-@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager;
+@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager, LIOWebView;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -112,6 +112,9 @@
     BOOL viewWereUpdatedForPreferedStatusBar;
     
     NSURL *urlBeingLaunched;
+
+    LIOWebView* webView;
+    UIView* topButtonsView;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

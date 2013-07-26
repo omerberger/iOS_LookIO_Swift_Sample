@@ -29,6 +29,7 @@
 #import "LIOMediaManager.h"
 #import "LIOSurveyView.h"
 #import "LIOImageBubbleView.h"
+#import "LIOWebView.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -504,6 +505,30 @@
     [reconnectionOverlay addGestureRecognizer:tapper];
     
     //[self.view bringSubviewToFront:tableView];
+    
+    if (!padUI) {
+        topButtonsView = [[UIView alloc] initWithFrame:CGRectZero];
+        topButtonsView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        CGRect aFrame = topButtonsView.frame;
+        aFrame.origin.x = 0;
+        aFrame.origin.y = 40;
+        aFrame.size.width = self.view.bounds.size.width;
+        aFrame.size.height = 50;
+        topButtonsView.alpha = 0.0;
+        topButtonsView.frame = aFrame;
+        [self.view addSubview:topButtonsView];
+        
+        UIButton* dismissModuleButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [dismissModuleButton addTarget:self action:@selector(dismissModuleView) forControlEvents:UIControlEventTouchUpInside];
+        [dismissModuleButton setTitle:@"x" forState:UIControlStateNormal];
+        dismissModuleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        aFrame = dismissModuleButton.frame;
+        aFrame.origin.x = topButtonsView.frame.size.width - 45;
+        aFrame.origin.y = 5;
+        aFrame.size = CGSizeMake(40, 40);
+        dismissModuleButton.frame = aFrame;
+        [topButtonsView addSubview:dismissModuleButton];
+    }
 }
 
 - (void)viewDidLoad
@@ -2474,6 +2499,59 @@
     [alertView show];
 }
 
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapWebLinkWithURL:(NSURL *)aURL {
+    if (webView) {
+        [webView release];
+        webView = nil;
+    }
+    
+    webView = [[LIOWebView alloc] initWithFrame:CGRectZero];
+    webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    CGRect aFrame = webView.frame;
+    aFrame.origin.x = 0;
+    aFrame.origin.y = self.view.bounds.size.height;
+    aFrame.size.width = self.view.bounds.size.width;
+    aFrame.size.height = self.view.bounds.size.height - 100.0;
+    webView.frame = aFrame;
+    
+    [self.view addSubview:webView];
+    
+    [webView loadRequest:[NSURLRequest requestWithURL:aURL]];
+    [inputBar.inputField resignFirstResponder];
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect aFrame = webView.frame;
+        aFrame.origin.y = 100;
+        webView.frame = aFrame;
+        
+        tableView.alpha = 0.5;
+        aFrame = tableView.frame;
+        aFrame.origin.y = -tableView.frame.size.height;
+        tableView.frame = aFrame;
+        
+        topButtonsView.alpha = 1.0;
+    } completion:^(BOOL finished) {
+    }];
+}
+
+- (void)dismissModuleView {
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect aFrame = webView.frame;
+        aFrame.origin.y = self.view.bounds.size.height - 100.0;
+        webView.frame = aFrame;
+        
+        tableView.alpha = 1.0;
+        topButtonsView.alpha = 0.0;
+        
+        aFrame = tableView.frame;
+        aFrame.origin.y = 40;
+        tableView.frame = aFrame;
+
+    } completion:^(BOOL finished) {
+        [webView removeFromSuperview];
+        [webView release];
+        webView = nil;        
+    }];
+}
 
 #pragma mark -
 #pragma mark LIOToasterViewDelegate methods

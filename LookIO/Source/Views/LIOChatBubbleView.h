@@ -37,6 +37,7 @@ typedef enum
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapSupertypeLinkWithURL:(NSURL *)aURL link:(NSString*)aLink scheme:(NSString*)aScheme superType:(int)aSupertype;
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL;
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapPhoneURL:(NSURL *)aURL link:(NSString *)aLink;
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapWebLinkWithURL:(NSURL *)aURL;
 
 @end
 
