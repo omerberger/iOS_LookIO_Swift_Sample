@@ -16,6 +16,10 @@
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
+		A7BC8D9317A1E45800D31068 /* DRNRealTimeBlurView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BC8D9117A1E45800D31068 /* DRNRealTimeBlurView.h */; };
+		A7BC8D9417A1E45800D31068 /* DRNRealTimeBlurView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7BC8D9217A1E45800D31068 /* DRNRealTimeBlurView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		A7BC8D9717A1E4AB00D31068 /* UIImage+BoxBlur.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BC8D9517A1E4AB00D31068 /* UIImage+BoxBlur.h */; };
+		A7BC8D9817A1E4AB00D31068 /* UIImage+BoxBlur.m in Sources */ = {isa = PBXBuildFile; fileRef = A7BC8D9617A1E4AB00D31068 /* UIImage+BoxBlur.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C859371779E26B00493BF8 /* LPSSEManager.h */; };
 		A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C859381779E26B00493BF8 /* LPSSEManager.m */; };
 		A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */; };
@@ -149,6 +153,10 @@
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
+		A7BC8D9117A1E45800D31068 /* DRNRealTimeBlurView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DRNRealTimeBlurView.h; path = "ios-realtimeblur/RealTimeBlur/Classes/DRNRealTimeBlurView.h"; sourceTree = "<group>"; };
+		A7BC8D9217A1E45800D31068 /* DRNRealTimeBlurView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DRNRealTimeBlurView.m; path = "ios-realtimeblur/RealTimeBlur/Classes/DRNRealTimeBlurView.m"; sourceTree = "<group>"; };
+		A7BC8D9517A1E4AB00D31068 /* UIImage+BoxBlur.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+BoxBlur.h"; path = "ios-realtimeblur/RealTimeBlur/Classes/UIImage+BoxBlur.h"; sourceTree = "<group>"; };
+		A7BC8D9617A1E4AB00D31068 /* UIImage+BoxBlur.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+BoxBlur.m"; path = "ios-realtimeblur/RealTimeBlur/Classes/UIImage+BoxBlur.m"; sourceTree = "<group>"; };
 		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Source/Networking/LPSSEManager.h; sourceTree = "<group>"; };
 		A7C859381779E26B00493BF8 /* LPSSEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSSEManager.m; path = Source/Networking/LPSSEManager.m; sourceTree = "<group>"; };
 		A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
@@ -288,6 +296,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A7BC8D9017A1E42F00D31068 /* DRNRealTimeBlurView */ = {
+			isa = PBXGroup;
+			children = (
+				A7BC8D9517A1E4AB00D31068 /* UIImage+BoxBlur.h */,
+				A7BC8D9617A1E4AB00D31068 /* UIImage+BoxBlur.m */,
+				A7BC8D9117A1E45800D31068 /* DRNRealTimeBlurView.h */,
+				A7BC8D9217A1E45800D31068 /* DRNRealTimeBlurView.m */,
+			);
+			name = DRNRealTimeBlurView;
+			sourceTree = "<group>";
+		};
 		A7C859361779E23100493BF8 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
@@ -505,6 +524,7 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
+				A7BC8D9017A1E42F00D31068 /* DRNRealTimeBlurView */,
 				D440D47B1541E8450045DBFF /* TTTAttributedLabel */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
@@ -640,6 +660,8 @@
 				A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */,
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
 				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
+				A7BC8D9317A1E45800D31068 /* DRNRealTimeBlurView.h in Headers */,
+				A7BC8D9717A1E4AB00D31068 /* UIImage+BoxBlur.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -775,6 +797,8 @@
 				A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */,
 				A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */,
 				A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */,
+				A7BC8D9417A1E45800D31068 /* DRNRealTimeBlurView.m in Sources */,
+				A7BC8D9817A1E4AB00D31068 /* UIImage+BoxBlur.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
