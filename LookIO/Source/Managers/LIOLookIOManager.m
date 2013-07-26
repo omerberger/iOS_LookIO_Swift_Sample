@@ -42,7 +42,7 @@
 #import "LPHTTPRequestOperation.h"
 
 #import <AdSupport/AdSupport.h>
-#import "LIOBlurImageView.h"
+#import "DRNRealTimeBlurView.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -253,15 +253,7 @@ typedef enum
     int lastClientLineId;
     
     UIAlertView *dismissibleAlertView;
-    LIOBlurImageView *blurImageView;
-
-    UInt32 selectedChatTheme;
-    
-    BOOL disableSurveysOverride;
-    BOOL previousSurveysEnabledValue;
-    
-    BOOL disableControlButtonOverride;
-    BOOL previousControlButtonValue;
+    DRNRealTimeBlurView *blurView;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1464,6 +1456,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined."];
             }
             
+<<<<<<< HEAD
             if (selectedChatTheme == kLPChatThemeFlat) {
                 blurImageView = [[LIOBlurImageView alloc] initWithFrame:previousKeyWindow.bounds];
                 blurImageView.alpha = 0.0;
@@ -1476,6 +1469,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 }];
             }
 
+=======
+            blurView = [[DRNRealTimeBlurView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+            blurView.renderStatic = YES;
+            blurView.alpha = 0.0;
+            blurView.tint = [UIColor colorWithRed:68.0/255.0 green:68.0/255.0 blue:68.0/255.0 alpha:1.0];
+            [previousKeyWindow addSubview:blurView];
+
+            [UIView animateWithDuration:0.15 animations:^{
+                blurView.alpha = 1.0;
+            }];
+            
+>>>>>>> Added initial iOS 7.0-like blur effect
             LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
         }
@@ -1493,6 +1498,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
+        
+        [UIView animateWithDuration:0.15 animations:^{
+            blurView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [blurView removeFromSuperview];
+        }];
         
         [self refreshControlButtonVisibility];
         
