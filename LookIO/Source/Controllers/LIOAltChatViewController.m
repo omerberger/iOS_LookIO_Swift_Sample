@@ -127,7 +127,7 @@
         [self.view addSubview:background];
     }
     else
-    {
+    {/*
         CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
         CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
         
@@ -149,6 +149,7 @@
         [background.layer addSublayer:vertGradient];
         [background.layer addSublayer:horizGradient];
         [self.view addSubview:background];
+      */
     }
     
     CGRect tableViewFrame = self.view.bounds;

@@ -27,8 +27,8 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
         
-        self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
-                
+        self.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
+        
         UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton-flat"];
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
@@ -152,7 +152,7 @@
             fontSize = 20.0;
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
-        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
         inputField.accessibilityLabel = @"LIOInputBarView.inputField";
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
