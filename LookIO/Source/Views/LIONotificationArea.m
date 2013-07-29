@@ -191,7 +191,6 @@
 
 - (UIView *)createNotificationViewWithString:(NSString *)aString
 {
-    aString = @"Super super long long super super long long string is very long and very long I don't know";
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIView *newNotification = [[UIView alloc] initWithFrame:self.bounds];
