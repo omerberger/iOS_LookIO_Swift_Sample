@@ -701,10 +701,11 @@
         aRect.origin.x = self.view.bounds.size.width;
         aRect.origin.y = self.view.bounds.size.height * 0.3;
         aRect.size = CGSizeMake(10, 10);
-        
-        [popover presentPopoverFromRect:aRect
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionRight
+
+        if (self.view.window != nil)
+            [popover presentPopoverFromRect:aRect
+                                inView:self.view
+            permittedArrowDirections:UIPopoverArrowDirectionRight
                                animated:YES];
         
     }
@@ -755,6 +756,7 @@
         aRect.origin.y = self.view.bounds.size.height * 0.3;
         aRect.size = CGSizeMake(10, 10);
         
+        if (self.view.window != nil)
         [popover presentPopoverFromRect:aRect
                                  inView:self.view
                permittedArrowDirections:UIPopoverArrowDirectionRight
@@ -809,7 +811,8 @@
         aRect.origin.y = self.view.bounds.size.height * 0.3;
         aRect.size = CGSizeMake(10, 10);
         
-        [popover presentPopoverFromRect:aRect
+        if (self.view.window != nil)
+            [popover presentPopoverFromRect:aRect
                                  inView:self.view
                permittedArrowDirections:UIPopoverArrowDirectionRight
                                animated:YES];

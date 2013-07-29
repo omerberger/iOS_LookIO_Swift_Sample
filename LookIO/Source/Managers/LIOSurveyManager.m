@@ -344,10 +344,10 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
                 
                 id aResponse = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
-                if (aResponse != nil)
+                if (aResponse != nil) {
                     [questionDict setObject:aResponse forKey:@"answer"];
-                
-                [questionsArray addObject:questionDict];
+                    [questionsArray addObject:questionDict];
+                }
             }
         }
         
