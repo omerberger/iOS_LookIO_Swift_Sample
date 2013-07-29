@@ -319,24 +319,6 @@
     if (NO == padUI)
         endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         
-    UIImage *stretchableHeaderGradient = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFuncHeaderGradient"] stretchableImageWithLeftCapWidth:0 topCapHeight:127];
-    UIImageView *functionHeaderGradient = [[[UIImageView alloc] initWithImage:stretchableHeaderGradient] autorelease];
-    aFrame = functionHeaderGradient.frame;
-    aFrame.origin.y = -70.0 - 40.0;
-    aFrame.size.width = tableView.frame.size.width;
-    aFrame.size.height = 127.0;
-    functionHeaderGradient.frame = aFrame;
-    functionHeaderGradient.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-
-    UIImage *stretchableHeaderSep = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFuncHeaderSeparator"] stretchableImageWithLeftCapWidth:0 topCapHeight:4];
-    UIImageView *functionHeaderSep = [[[UIImageView alloc] initWithImage:stretchableHeaderSep] autorelease];
-    aFrame = functionHeaderSep.frame;
-    aFrame.origin.y = -64.0 + functionHeaderGradient.frame.size.height - 14.0;
-    aFrame.size.height = 4.0;
-    aFrame.size.width = functionHeaderGradient.frame.size.width;
-    functionHeaderSep.frame = aFrame;
-    functionHeaderSep.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
     
