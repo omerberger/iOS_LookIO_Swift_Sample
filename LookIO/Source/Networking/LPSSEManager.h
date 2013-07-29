@@ -50,6 +50,4 @@ typedef enum {
 @property(nonatomic, assign) id <LPSSEManagerDelegate> delegate;
 @property(nonatomic, assign) BOOL usesTLS;
 
-- (NSString *)sha1:(NSString *)input;
-
 @end
