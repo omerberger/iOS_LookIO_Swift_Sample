@@ -4156,7 +4156,6 @@ Failed:
 															 (CFDictionaryRef)tlsPacket->tlsSettings);
         
         float systemVersion = [[[UIDevice currentDevice] systemVersion] floatValue];
-        NSLog(@"Device version is %f, is that lower than 5.1: %d", systemVersion, systemVersion < 5.1f);
         if (([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0f) && ([[[UIDevice currentDevice] systemVersion] floatValue] < 5.1f)) {
             const void* keys[] = { kCFStreamSSLLevel };
             const void* values[] = { CFSTR("kCFStreamSocketSecurityLevelTLSv1_1") };

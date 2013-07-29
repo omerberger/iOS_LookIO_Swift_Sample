@@ -71,12 +71,6 @@
             aFrame.origin.x = 16.0;
             aFrame.origin.y = 16.0;
             finalBrandingView.frame = aFrame;
-//            finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-//            finalBrandingView.backgroundColor = [UIColor clearColor];
-//            finalBrandingView.layer.shadowColor = [UIColor whiteColor].CGColor;
-//            finalBrandingView.layer.shadowOffset = CGSizeMake(0.5, 0.5);
-//            finalBrandingView.layer.shadowOpacity = 0.33;
-//            finalBrandingView.layer.shadowRadius = 0.75;
             [self addSubview:finalBrandingView];
         }
         else

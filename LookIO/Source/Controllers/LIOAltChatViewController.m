@@ -292,9 +292,6 @@
     aFrame.size.width = 120.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
-//    if ([[LIOLookIOManager sharedLookIOManager] customBrandingAvailable])
-//        aFrame.origin.y = 68.0;
-//    else
         aFrame.origin.y = 10.0;
     emailConvoButton.frame = aFrame;
     if (NO == padUI)
@@ -317,9 +314,6 @@
     aFrame.size.width = 120.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (tableView.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
-//    if ([[LIOLookIOManager sharedLookIOManager] customBrandingAvailable])
-//        aFrame.origin.y = 68.0;
-//    else
         aFrame.origin.y = 10.0;
     endSessionButton.frame = aFrame;
     if (NO == padUI)
@@ -346,40 +340,67 @@
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
     
-    if (NO == padUI)
-    {
-        [functionHeaderChat.contentView addSubview:functionHeaderGradient];
-        [functionHeaderChat.contentView addSubview:functionHeaderSep];
+    if (!padUI) {
+        if (headerBar)
+            if (headerBar.notificationArea)
+                if (headerBar.notificationArea.hasCustomBranding)
+                {
+                    UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
+                    poweredByLabel.backgroundColor = [UIColor clearColor];
+                    poweredByLabel.textColor = [UIColor whiteColor];
+                    poweredByLabel.textAlignment = UITextAlignmentCenter;
+                    poweredByLabel.text = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIONotificationArea.PoweredBy"];
+                    [poweredByLabel sizeToFit];
+                    aFrame = poweredByLabel.frame;
+                    aFrame.origin.x = 10.0;
+                    aFrame.origin.y = -54.0;
+                    aFrame.size.width = 320.0 - 20.0;
+                    poweredByLabel.frame = aFrame;
+                    poweredByLabel.font = [UIFont systemFontOfSize:13.0];
+                    poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+                    
+                    UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
+                    aFrame = logoView.frame;
+                    aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
+                    aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
+                    logoView.frame = aFrame;
+                    logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+                    
+                    [functionHeaderChat.contentView addSubview:poweredByLabel];
+                    [functionHeaderChat.contentView addSubview:logoView];
+                }
+    } else {
+        if (inputBar)
+            if (inputBar.notificationArea)
+                if (inputBar.notificationArea.hasCustomBranding) {
+                    {
+                        UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
+                        poweredByLabel.backgroundColor = [UIColor clearColor];
+                        poweredByLabel.textColor = [UIColor whiteColor];
+                        poweredByLabel.textAlignment = UITextAlignmentCenter;
+                        poweredByLabel.text = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIONotificationArea.PoweredBy"];
+                        [poweredByLabel sizeToFit];
+                        aFrame = poweredByLabel.frame;
+                        aFrame.origin.x = 10.0;
+                        aFrame.origin.y = -54.0;
+                        aFrame.size.width = 320.0 - 20.0;
+                        poweredByLabel.frame = aFrame;
+                        poweredByLabel.font = [UIFont systemFontOfSize:13.0];
+                        poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+                        
+                        UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
+                        aFrame = logoView.frame;
+                        aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
+                        aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
+                        logoView.frame = aFrame;
+                        logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+                        
+                        [functionHeaderChat.contentView addSubview:poweredByLabel];
+                        [functionHeaderChat.contentView addSubview:logoView];
+                    }
+                }
+        
     }
-    
-    if (headerBar)
-        if (headerBar.notificationArea)
-            if (headerBar.notificationArea.hasCustomBranding)
-            {
-                UILabel *poweredByLabel = [[[UILabel alloc] init] autorelease];
-                poweredByLabel.backgroundColor = [UIColor clearColor];
-                poweredByLabel.textColor = [UIColor whiteColor];
-                poweredByLabel.textAlignment = UITextAlignmentCenter;
-                poweredByLabel.text = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIONotificationArea.PoweredBy"];
-                [poweredByLabel sizeToFit];
-                aFrame = poweredByLabel.frame;
-                aFrame.origin.x = 10.0;
-                aFrame.origin.y = -54.0;
-                aFrame.size.width = 320.0 - 20.0;
-                poweredByLabel.frame = aFrame;
-                poweredByLabel.font = [UIFont systemFontOfSize:13.0];
-                poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-                
-                UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
-                aFrame = logoView.frame;
-                aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
-                aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
-                logoView.frame = aFrame;
-                logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-                
-                [functionHeaderChat.contentView addSubview:poweredByLabel];
-                [functionHeaderChat.contentView addSubview:logoView];
-            }
     
     functionHeaderChat.backgroundColor = [UIColor clearColor];
     [functionHeaderChat.contentView addSubview:emailConvoButton];
@@ -1592,10 +1613,7 @@
     
     if (0 == row)
     {
-//        if ([[LIOLookIOManager sharedLookIOManager] customBrandingAvailable])
-//            return 127.0;
-//        else
-            return 64.0;
+        return 64.0;
     }
     
     if ([chatMessages count] + 1 == row)
