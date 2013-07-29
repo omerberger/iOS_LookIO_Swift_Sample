@@ -18,7 +18,7 @@
 @interface LIONotificationArea : UIView
 {
     UIView *defaultNotification, *activeNotification;
-    LIOTimerProxy *notificationTimer, *animatedEllipsisTimer, *animatedLongTextTimer;
+    LIOTimerProxy *notificationTimer, *animatedEllipsisTimer, *startAnimatedLongTextTimer, *moveAnimatedLongTextTimer;
     LIOAnimatedKeyboardIcon *keyboardIcon;
     BOOL keyboardIconVisible;
     BOOL animatingLongText;

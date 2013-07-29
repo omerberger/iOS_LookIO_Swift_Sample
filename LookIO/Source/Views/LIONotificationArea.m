@@ -176,8 +176,11 @@
     [animatedEllipsisTimer stopTimer];
     [animatedEllipsisTimer release];
     
-    [animatedLongTextTimer stopTimer];
-    [animatedLongTextTimer release];
+    [startAnimatedLongTextTimer stopTimer];
+    [startAnimatedLongTextTimer release];
+
+    [moveAnimatedLongTextTimer stopTimer];
+    [moveAnimatedLongTextTimer release];
     
     [defaultNotification release];
     [activeNotification release];
@@ -188,6 +191,7 @@
 
 - (UIView *)createNotificationViewWithString:(NSString *)aString
 {
+    aString = @"Super super long long super super long long string is very long and very long I don't know";
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     UIView *newNotification = [[UIView alloc] initWithFrame:self.bounds];
@@ -227,7 +231,7 @@
         if (expectedSize.width > self.frame.size.width) {
             aFrame.origin.x = 8.0;
             
-            animatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
+            startAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
                                                                      target:self
                                                                    selector:@selector(startAnimatedLongText)];
             
@@ -308,6 +312,16 @@
         [notificationTimer release];
         notificationTimer = nil;
         
+        if (animatingLongText) {
+            [startAnimatedLongTextTimer stopTimer];
+            [startAnimatedLongTextTimer release];
+            startAnimatedLongTextTimer = nil;
+            
+            [moveAnimatedLongTextTimer stopTimer];
+            [moveAnimatedLongTextTimer release];
+            moveAnimatedLongTextTimer = nil;
+        }
+        
         [self dismissActiveNotification];
         
         [self revealDefaultNotification];
@@ -320,6 +334,16 @@
         [notificationTimer stopTimer];
         [notificationTimer release];
         notificationTimer = nil;
+        
+        if (animatingLongText) {
+            [startAnimatedLongTextTimer stopTimer];
+            [startAnimatedLongTextTimer release];
+            startAnimatedLongTextTimer = nil;
+            
+            [moveAnimatedLongTextTimer stopTimer];
+            [moveAnimatedLongTextTimer release];
+            moveAnimatedLongTextTimer = nil;
+        }
         
         [self dismissActiveNotification];
     }
@@ -466,35 +490,39 @@
 }
 
 -(void)startAnimatedLongText {
-    [animatedLongTextTimer stopTimer];
-    [animatedLongTextTimer release];
-    animatedLongTextTimer = nil;
+    [startAnimatedLongTextTimer stopTimer];
+    [startAnimatedLongTextTimer release];
+    startAnimatedLongTextTimer = nil;
 
-    animatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.05
+    moveAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.05
                                                                  target:self
                                                                selector:@selector(animatedLongTextTimerDidFire)];
 
 }
 
 - (void)animatedLongTextTimerDidFire {
-    UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
-
-    CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
-    if (aLabel.frame.origin.x < (self.frame.size.width - expectedSize.width - 8.0)) {
-        [animatedLongTextTimer stopTimer];
-        [animatedLongTextTimer release];
-        animatedLongTextTimer = nil;
+    if (activeNotification) {
+        UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
         
-        animatingLongText = NO;
-        
-        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
-                                                                 target:self
-                                                               selector:@selector(notificationTimerDidFire)];
-
-    } else {
-        CGRect aFrame = aLabel.frame;
-        aFrame.origin.x -= 1;
-        aLabel.frame = aFrame;
+        if (aLabel) {
+            CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
+            if (aLabel.frame.origin.x < (self.frame.size.width - expectedSize.width - 8.0)) {
+                [moveAnimatedLongTextTimer stopTimer];
+                [moveAnimatedLongTextTimer release];
+                moveAnimatedLongTextTimer = nil;
+                
+                animatingLongText = NO;
+                
+                notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
+                                                                         target:self
+                                                                       selector:@selector(notificationTimerDidFire)];
+                
+            } else {
+                CGRect aFrame = aLabel.frame;
+                aFrame.origin.x -= 1;
+                aLabel.frame = aFrame;
+            }
+        }
     }
 }
 
