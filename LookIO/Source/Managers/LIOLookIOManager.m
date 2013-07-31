@@ -931,6 +931,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Unloaded."];
     
+    [sseManager reset];
     [sseManager release];
     sseManager = nil;
     
@@ -1101,6 +1102,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     chatMediaUrlString = nil;
     chatLastEventId = nil;
     
+    [sseManager reset];
     [sseManager release];
     sseManager = nil;
     
