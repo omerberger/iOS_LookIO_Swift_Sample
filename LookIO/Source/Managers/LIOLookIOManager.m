@@ -2120,6 +2120,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)connectSSESocket {
     if (sseManager) {
+        [sseManager reset];
         [sseManager release];
         sseManager = nil;
     }

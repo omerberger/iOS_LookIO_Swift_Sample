@@ -67,7 +67,11 @@
     [events release];
     events = nil;
     
+    socket.delegate = nil;
+    if (socket.isConnected)
+        [socket disconnect];
     [socket release];
+    socket = nil;
     
     [super dealloc];
 }
