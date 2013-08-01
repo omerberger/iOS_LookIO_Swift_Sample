@@ -162,19 +162,20 @@
     //show all the blurred views from the superview before taking a screenshot
     [self toggleBlurViewsInView:superview hidden:NO alpha:alpha];
     
-    __block UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         //takes a screenshot of that portion of the screen and blurs it
         //helps w/ our colors when blurring
         //feel free to adjust jpeg quality (lower = higher perf)
-        NSData *imageData = UIImageJPEGRepresentation(image, kDRNRealTimeBlurViewScreenshotCompression);
-        image = [[UIImage imageWithData:imageData] drn_boxblurImageWithBlur:kDRNRealTimeBlurViewBlurRadius];
+        
+        NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+        UIImage* newImage = [[UIImage imageWithData:imageData] drn_boxblurImageWithBlur:kDRNRealTimeBlurViewBlurRadius];
     
         dispatch_sync(dispatch_get_main_queue(), ^{
             //update the layer content
-            self.layer.contents = (id)image.CGImage;
+            self.layer.contents = (id)newImage.CGImage;
         });
     });
 }

@@ -1494,11 +1494,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        [UIView animateWithDuration:0.15 animations:^{
-            blurView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [blurView removeFromSuperview];
-        }];
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [UIView animateWithDuration:0.15 animations:^{
+                blurView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [blurView removeFromSuperview];
+                [blurView release];
+                blurView = nil;
+            }];
+        }
         
         [self refreshControlButtonVisibility];
         
@@ -5231,7 +5235,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
     if (selectedChatTheme == kLPChatThemeFlat)
-        [self takeScreenshotAndSetBlurImageView];        
+        [self takeScreenshotAndSetBlurImageView];
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -5239,7 +5243,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-
         controlButton.hidden = NO;
         if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
         {
@@ -5248,6 +5251,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             controlButtonHidden = YES;
             controlButton.frame = controlButtonHiddenFrame;
             [self rejiggerControlButtonLabel];
+            
+
         }
         
         [self refreshControlButtonVisibility];
