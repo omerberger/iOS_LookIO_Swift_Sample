@@ -1688,6 +1688,16 @@
 
 - (void)emailConvoButtonWasTapped
 {
+    if (chatMessages.count == 1) {
+        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertTitle")
+                                               message:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertBody")
+                                              delegate:nil
+                                     cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertButton")
+                                     otherButtonTitles:nil];
+        [alertView show];
+        return;
+    }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
     LIOEmailHistoryViewController *aController = [[[LIOEmailHistoryViewController alloc] initWithNibName:nil bundle:nil] autorelease];
