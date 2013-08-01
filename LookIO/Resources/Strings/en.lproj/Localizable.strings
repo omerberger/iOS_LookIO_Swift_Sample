@@ -40,6 +40,9 @@
 "LIOEmailHistoryViewController.SuccessAlertTitle" = "Thank you!";
 "LIOEmailHistoryViewController.SuccessAlertBody" = "Your full chat transcript will be sent to your email address at the end of this conversation.";
 "LIOEmailHistoryViewController.SuccessAlertButton" = "Dismiss";
+"LIOEmailHistoryViewController.InvalidAlertTitle" = "Invalid Email";
+"LIOEmailHistoryViewController.InvalidAlertBody" = "Please enter a valid e-mail address";
+"LIOEmailHistoryViewController.InvalidAlertButton" = "Dismiss";
 
 "LIOInputBarView.SendButton" = "Send";
 "LIOInputBarView.Placeholder" = "Send a message.";
