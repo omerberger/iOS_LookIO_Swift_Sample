@@ -687,6 +687,7 @@
     if (padUI)
     {
         UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+        controller.view.frame = CGRectMake(0, 0, 320, 480);
         surveyView.frame = controller.view.frame;
         surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         controller.view = surveyView;
@@ -741,6 +742,7 @@
     if (padUI)
     {
         UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+        controller.view.frame = CGRectMake(0, 0, 320, 480);
         surveyView.frame = controller.view.frame;
         surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         controller.view = surveyView;
@@ -796,6 +798,7 @@
     if (padUI)
     {
         UIViewController* controller = [[[UIViewController alloc] init] autorelease];
+        controller.view.frame = CGRectMake(0, 0, 320, 480);
         surveyView.frame = controller.view.frame;
         surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         controller.view = surveyView;
