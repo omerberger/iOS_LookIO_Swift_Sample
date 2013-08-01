@@ -1866,11 +1866,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        [UIView animateWithDuration:0.15 animations:^{
-            blurView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [blurView removeFromSuperview];
-        }];
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [UIView animateWithDuration:0.15 animations:^{
+                blurView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [blurView removeFromSuperview];
+                [blurView release];
+                blurView = nil;
+            }];
+        }
         
         [self refreshControlButtonVisibility];
         
@@ -5811,20 +5815,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 controlButtonHidden = YES;
                 controlButton.frame = controlButtonHiddenFrame;
 
-                [self rejiggerControlButtonLabel];
-            }
-        }
-        if (kLPControlButtonSquare == controlButtonType) {
-            if (NO == controlButtonHidden && rotationIsActuallyHappening)
-            {
-                [self resetSquareControlButtonPosition];                
-                [self rejiggerControlButtonFrame];
-                rotationIsActuallyHappening = NO;
-                controlButtonHidden = YES;
-                squareControlButton.frame = controlButtonHiddenFrame;
-                
-                [self rejiggerControlButtonLabel];
-            }
+        controlButton.hidden = NO;
+        if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
+        {
+            [self rejiggerControlButtonFrame];
+            rotationIsActuallyHappening = NO;
+            controlButtonHidden = YES;
+            controlButton.frame = controlButtonHiddenFrame;
+            [self rejiggerControlButtonLabel];
+            
+
         }
         
         [self refreshControlButtonVisibility];
