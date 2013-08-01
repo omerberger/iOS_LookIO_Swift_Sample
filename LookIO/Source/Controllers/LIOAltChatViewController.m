@@ -108,48 +108,49 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    if (padUI)
-    {
-        CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
-        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.5].CGColor;
-        
-        horizGradient = [[LIOGradientLayer alloc] init];
-        horizGradient.colors = [NSArray arrayWithObjects:(id)lightColor, (id)darkColor, nil];
-        //horizGradient.backgroundColor = [UIColor clearColor].CGColor;
-        horizGradient.frame = self.view.bounds;
-        horizGradient.startPoint = CGPointMake(0.0, 0.5);
-        horizGradient.endPoint = CGPointMake(1.0, 0.5);
-        
-        background = [[UIView alloc] initWithFrame:self.view.bounds];
-        background.backgroundColor = [UIColor clearColor];
-        background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        [background.layer addSublayer:horizGradient];
-        [self.view addSubview:background];
-    }
-    else
-    {/*
-        CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
-        CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
-        
-        vertGradient = [[LIOGradientLayer alloc] init];
-        vertGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
-        vertGradient.backgroundColor = [UIColor clearColor].CGColor;
-        vertGradient.frame = self.view.bounds;
-        
-        horizGradient = [[LIOGradientLayer alloc] init];
-        horizGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
-        horizGradient.backgroundColor = [UIColor clearColor].CGColor;
-        horizGradient.frame = self.view.bounds;
-        horizGradient.startPoint = CGPointMake(0.0, 0.5);
-        horizGradient.endPoint = CGPointMake(1.0, 0.5);
-        
-        background = [[UIView alloc] initWithFrame:self.view.bounds];
-        background.backgroundColor = [UIColor clearColor];
-        background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        [background.layer addSublayer:vertGradient];
-        [background.layer addSublayer:horizGradient];
-        [self.view addSubview:background];
-      */
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        if (padUI)
+        {
+            CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
+            CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.5].CGColor;
+            
+            horizGradient = [[LIOGradientLayer alloc] init];
+            horizGradient.colors = [NSArray arrayWithObjects:(id)lightColor, (id)darkColor, nil];
+            //horizGradient.backgroundColor = [UIColor clearColor].CGColor;
+            horizGradient.frame = self.view.bounds;
+            horizGradient.startPoint = CGPointMake(0.0, 0.5);
+            horizGradient.endPoint = CGPointMake(1.0, 0.5);
+            
+            background = [[UIView alloc] initWithFrame:self.view.bounds];
+            background.backgroundColor = [UIColor clearColor];
+            background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+            [background.layer addSublayer:horizGradient];
+            [self.view addSubview:background];
+        }
+        else
+        {
+            CGColorRef darkColor = [UIColor colorWithWhite:0.1 alpha:1.0].CGColor;
+            CGColorRef lightColor = [UIColor colorWithWhite:0.1 alpha:0.33].CGColor;
+            
+            vertGradient = [[LIOGradientLayer alloc] init];
+            vertGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
+            vertGradient.backgroundColor = [UIColor clearColor].CGColor;
+            vertGradient.frame = self.view.bounds;
+            
+            horizGradient = [[LIOGradientLayer alloc] init];
+            horizGradient.colors = [NSArray arrayWithObjects:(id)darkColor, (id)lightColor, (id)lightColor, (id)darkColor, nil];
+            horizGradient.backgroundColor = [UIColor clearColor].CGColor;
+            horizGradient.frame = self.view.bounds;
+            horizGradient.startPoint = CGPointMake(0.0, 0.5);
+            horizGradient.endPoint = CGPointMake(1.0, 0.5);
+            
+            background = [[UIView alloc] initWithFrame:self.view.bounds];
+            background.backgroundColor = [UIColor clearColor];
+            background.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+            [background.layer addSublayer:vertGradient];
+            [background.layer addSublayer:horizGradient];
+            [self.view addSubview:background];
+        }
     }
     
     CGRect tableViewFrame = self.view.bounds;
@@ -910,6 +911,7 @@
         [UIView animateWithDuration:0.3 animations:^{
             waitingForSurveyView.alpha = 1.0;
         }];
+
     }
 }
 

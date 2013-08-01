@@ -4164,7 +4164,7 @@ Failed:
             CFReadStreamSetProperty(theReadStream, kCFStreamPropertySSLSettings, sslSettingsDict);
             CFRelease(sslSettingsDict);
         }
-        
+
 		if(!didStartOnReadStream || !didStartOnWriteStream)
 		{
             [self closeWithError:[self getSocketError]];

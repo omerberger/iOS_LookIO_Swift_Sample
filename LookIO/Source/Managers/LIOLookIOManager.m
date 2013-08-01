@@ -245,6 +245,7 @@ typedef enum
     
     UIAlertView *dismissibleAlertView;
     DRNRealTimeBlurView *blurView;
+    UInt32 selectedChatTheme;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -327,7 +328,7 @@ NSString *uniqueIdentifier()
 @implementation LIOLookIOManager
 
 @synthesize screenshotsAllowed, mainWindow, delegate, pendingEmailAddress;
-@synthesize resetAfterNextForegrounding, registeredPlugins;
+@synthesize resetAfterNextForegrounding, registeredPlugins, selectedChatTheme;
 @dynamic enabled, chatInProgress;
 
 static LIOLookIOManager *sharedLookIOManager = nil;
@@ -871,6 +872,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
+    selectedChatTheme = kLPChatThemeClassic;
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerSelectedChatTheme:)]) {
+        UInt32 developerTheme = [delegate lookIOManagerSelectedChatTheme:self];
+        if (developerTheme == kLPChatThemeFlat)
+            selectedChatTheme = kLPChatThemeFlat;
+    }
+    
+    [LIOBundleManager sharedBundleManager].selectedChatTheme = selectedChatTheme;
+    [[LIOBundleManager sharedBundleManager] resetBundle];
+
     [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
@@ -1364,16 +1375,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined."];
             }
             
-            blurView = [[DRNRealTimeBlurView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
-            blurView.renderStatic = YES;
-            blurView.alpha = 0.0;
-            blurView.tint = [UIColor colorWithRed:68.0/255.0 green:68.0/255.0 blue:68.0/255.0 alpha:1.0];
-            [previousKeyWindow addSubview:blurView];
+            if (selectedChatTheme == kLPChatThemeFlat) {
+                blurView = [[DRNRealTimeBlurView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+                blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                blurView.renderStatic = NO;
+                blurView.alpha = 0.0;
+                blurView.tint = [UIColor colorWithRed:68.0/255.0 green:68.0/255.0 blue:68.0/255.0 alpha:1.0];
+                [previousKeyWindow addSubview:blurView];
 
-            [UIView animateWithDuration:0.15 animations:^{
-                blurView.alpha = 1.0;
-            }];
-            
+                [UIView animateWithDuration:0.15 animations:^{
+                    blurView.alpha = 1.0;
+                } completion:^(BOOL finished) {
+                    [UIView animateWithDuration:2.0 animations:^{
+                    } completion:^(BOOL finished) {
+                        blurView.renderStatic = YES;
+                    }];
+                }];
+            }
+
             LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
         }
@@ -1392,11 +1411,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        [UIView animateWithDuration:0.15 animations:^{
-            blurView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [blurView removeFromSuperview];
-        }];
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [UIView animateWithDuration:0.15 animations:^{
+                blurView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [blurView removeFromSuperview];
+                [blurView release];
+                blurView = nil;
+            }];
+        }
         
         [self refreshControlButtonVisibility];
         
@@ -5090,6 +5113,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     controlButton.hidden = YES;
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
+    if (selectedChatTheme == kLPChatThemeFlat)
+        blurView.renderStatic = NO;
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -5097,6 +5122,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (selectedChatTheme == kLPChatThemeFlat)
+            blurView.renderStatic = YES;
+
         controlButton.hidden = NO;
         if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
         {
@@ -5105,6 +5133,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             controlButtonHidden = YES;
             controlButton.frame = controlButtonHiddenFrame;
             [self rejiggerControlButtonLabel];
+            
+
         }
         
         [self refreshControlButtonVisibility];

@@ -27,7 +27,10 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
         
-        self.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            self.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
+        else
+            self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
         
         UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton-flat"];
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
@@ -51,6 +54,11 @@
             sendButtonFrame.size.width = 59.0;
             sendButtonFrame.size.height = 36.0;
             sendButtonFont = [UIFont boldSystemFontOfSize:12.0];
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                sendButtonFont = [UIFont boldSystemFontOfSize:16.0];
+            else
+                sendButtonFont = [UIFont boldSystemFontOfSize:12.0];
         }
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -152,7 +160,10 @@
             fontSize = 20.0;
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
-        inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        else
+            inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputBarView.inputField";
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;

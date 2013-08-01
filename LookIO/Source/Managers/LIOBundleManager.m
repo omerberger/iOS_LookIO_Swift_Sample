@@ -67,7 +67,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     return LIOUIKitFlatMode;
 }
 
-@synthesize lioTabInnerShadow, lioTabInnerShadow2x;
+@synthesize lioTabInnerShadow, lioTabInnerShadow2x, selectedChatTheme;
 
 + (LIOBundleManager *)sharedBundleManager
 {
@@ -147,6 +147,19 @@ BOOL LIOIsUIKitFlatMode(void) {
     return [cachesDir stringByAppendingPathComponent:[NSString stringWithFormat:@"_LOOKIO_%@/", LOOKIO_VERSION_STRING]];
 }
 
+-(NSString*)bundleName {
+    if (kLPChatThemeFlat == selectedChatTheme)
+        return @"LookIO_flat.bundle";
+    else
+        return @"LookIO.bundle";
+}
+
+-(void)resetBundle {
+    [lioBundle release];
+    lioBundle = nil;
+    [self findBundle];
+}
+
 - (NSString *)bundleZipPath
 {
     return [[self targetDirectory] stringByAppendingPathComponent:@"bundle.zip"];
@@ -154,7 +167,7 @@ BOOL LIOIsUIKitFlatMode(void) {
 
 - (NSString *)bundlePath
 {
-    return [[self targetDirectory] stringByAppendingPathComponent:@"LookIO.bundle"];
+    return [[self targetDirectory] stringByAppendingPathComponent:[self bundleName]];
 }
 
 - (void)findBundle
@@ -182,14 +195,14 @@ BOOL LIOIsUIKitFlatMode(void) {
     else
     {
         // Nope. Check the main .app bundle.
-        NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"LookIO.bundle"];
+        NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:[self bundleName]];
         NSFileManager *fileManager = [NSFileManager defaultManager];
         BOOL isDir = NO;
         BOOL bundleExists = [fileManager fileExistsAtPath:mainBundlePath isDirectory:&isDir];
         if (bundleExists && isDir)
         {
             // Yep! Copy it to the target dir and try loading it.
-            NSString *targetDir = [NSString stringWithFormat:@"%@/LookIO.bundle", [self targetDirectory]];
+            NSString *targetDir = [NSString stringWithFormat:@"%@/%@", [self targetDirectory], [self bundleName]];
             NSError *anError = nil;
             BOOL copyResult = [fileManager copyItemAtPath:mainBundlePath toPath:targetDir error:&anError];
             if (copyResult && nil == anError)

@@ -24,6 +24,11 @@ extern NSString *const kLPEventAddedToCart;
 #define kLPCollaborationComponentNone   0
 #define kLPCollaborationComponentPhoto  1
 
+// Chat UI theme constants.
+// Return these via the "lookIOManagerSelectedChatTheme:" delegate method.
+#define kLPChatThemeClassic   0
+#define kLPChatThemeFlat      1
+
 @class LIOLookIOManager;
 @protocol LIOPlugin;
 
@@ -96,7 +101,22 @@ extern NSString *const kLPEventAddedToCart;
 - (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 
 /*!
- Implement this method to specify which collaboration components you would like to enable for 
+ Implement this method to specify which UI theme you would like to use for Live Chat.
+ If this method is not implemented, the default theme will be the classic theme.
+ Please note that you must include the bundle asset used by the theme you are using
+ in your project.
+ 
+ @return Constant representing the theme you would like to use.
+ Return the constant kLPChatThemeClassic to use the classic LP Mobile theme.
+ Return the constant kLPChatThemeFlat to use the flat LP Mobile theme.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ */
+
+- (UInt32)lookIOManagerSelectedChatTheme:(LIOLookIOManager*)aManager;
+
+/*!
+ Implement this method to specify which collaboration components you would like to enable for
  Live Chat in your app, such as photo sharing. Collaboration components are disabled by default.
  
  @return Constant representing the collaboration component you would like to enable.
@@ -249,6 +269,8 @@ extern NSString *const kLPEventAddedToCart;
  @see LIOLookIOManagerDelegate
  */
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;
+
+@property(nonatomic, assign) UInt32 selectedChatTheme;
 
 ///---------------------------------------------------------------------------------------
 /// @name Lifecycle Methods
@@ -421,5 +443,9 @@ extern NSString *const kLPEventAddedToCart;
 - (void)addSessionExtras:(NSDictionary *)aDictionary DEPRECATED_ATTRIBUTE;
 - (void)clearSessionExtras DEPRECATED_ATTRIBUTE;
 - (void)clearCustomVariables DEPRECATED_ATTRIBUTE;
+
+
+
+
 
 @end

@@ -39,9 +39,11 @@ BOOL LIOIsUIKitFlatMode(void);
     NSOutputStream *bundleDownloadOutputStream;
     UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
     NSMutableDictionary *imageCache;
+    UInt32 selectedChatTheme;
 }
 
 @property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
+@property(nonatomic, assign) UInt32 selectedChatTheme;
 
 + (LIOBundleManager *)sharedBundleManager;
 - (void)findBundle;
@@ -51,5 +53,6 @@ BOOL LIOIsUIKitFlatMode(void);
 - (NSString *)localizedStringWithKey:(NSString *)aKey;
 - (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable;
 - (NSDictionary *)localizedStringTableForLanguage:(NSString *)aLangCode;
+- (void)resetBundle;
 
 @end

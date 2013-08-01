@@ -34,12 +34,17 @@ static NSDataDetector *dataDetector = nil;
         
         mainMessageView = [[TTTAttributedLabel_LIO alloc] initWithFrame:self.bounds];
         mainMessageView.dataDetectorTypes = UIDataDetectorTypeNone;
-//        mainMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
-//        mainMessageView.layer.shadowRadius = 1.0;
-//        mainMessageView.layer.shadowOpacity = 1.0;
-//        mainMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        if (kLPChatThemeClassic == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            mainMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
+            mainMessageView.layer.shadowRadius = 1.0;
+            mainMessageView.layer.shadowOpacity = 1.0;
+            mainMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        }
         mainMessageView.backgroundColor = [UIColor clearColor];
-        mainMessageView.textColor = [UIColor colorWithWhite:56.0/255.0 alpha:1.0];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            mainMessageView.textColor = [UIColor colorWithWhite:56.0/255.0 alpha:1.0];
+        else
+            mainMessageView.textColor = [UIColor whiteColor];
         mainMessageView.numberOfLines = 0;
         [self addSubview:mainMessageView];
         
@@ -327,7 +332,10 @@ static NSDataDetector *dataDetector = nil;
             if (boldRange.location != NSNotFound)
             {
                 [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)boldNameCTFont range:boldRange];
-                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor colorWithRed:129.0/255.0 green:132.0/255.0 blue:131.0/255.0 alpha:1.0].CGColor range:boldRange];
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                    [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor colorWithRed:129.0/255.0 green:132.0/255.0 blue:131.0/255.0 alpha:1.0].CGColor range:boldRange];
+                else
+                    [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
             }
             
             CFRelease(boldNameCTFont);
