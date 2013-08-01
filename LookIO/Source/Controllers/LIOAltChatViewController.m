@@ -649,8 +649,7 @@
             else
                 headerFrame.origin.y = 0;
             headerBar.frame = headerFrame;
-        }];
-        
+        }];        
     } else {
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         
@@ -1048,7 +1047,8 @@
                              }];
         }
         
-        tableView.alpha = 0.5;
+        if (!surveyInProgress)
+            tableView.alpha = 0.5;
         
         CATransform3D translate = CATransform3DMakeTranslation(tableView.frame.size.width / 2.0, -tableView.frame.size.height / 2.0, 0.0);
         CATransform3D rotate = CATransform3DMakeRotation(M_PI, 0.0, 1.0, 0.0);
@@ -1062,8 +1062,9 @@
                               delay:0.0
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
-                             tableView.alpha = 1.0;
-                             tableView.layer.transform = translate;
+                             if (!surveyInProgress)
+                                 tableView.alpha = 1.0;
+                            tableView.layer.transform = translate;
                          }
                          completion:^(BOOL finished) {
                              tableView.layer.transform = CATransform3DIdentity;
