@@ -1868,11 +1868,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (selectedChatTheme == kLPChatThemeFlat) {
             [UIView animateWithDuration:0.15 animations:^{
-                blurView.alpha = 0.0;
+                blurImageView.alpha = 0.0;
             } completion:^(BOOL finished) {
-                [blurView removeFromSuperview];
-                [blurView release];
-                blurView = nil;
+                [blurImageView removeFromSuperview];
+                [blurImageView release];
+                blurImageView = nil;
             }];
         }
         
@@ -5823,8 +5823,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             controlButtonHidden = YES;
             controlButton.frame = controlButtonHiddenFrame;
             [self rejiggerControlButtonLabel];
-            
-
         }
         
         [self refreshControlButtonVisibility];
