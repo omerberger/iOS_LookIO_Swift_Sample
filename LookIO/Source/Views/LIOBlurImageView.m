@@ -7,6 +7,16 @@
 //
 
 #import "LIOBlurImageView.h"
+#import <QuartzCore/QuartzCore.h>
+#import <Accelerate/Accelerate.h>
+#import <float.h>
+#import "LIOBundleManager.h"
+
+@interface LIOBlurImageView ()
+
+@property (nonatomic, retain) CALayer *tintLayer;
+
+@end
 
 @implementation LIOBlurImageView
 
@@ -17,12 +27,6 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        self.tintLayer = [[[CALayer alloc] init] autorelease];
-        self.tintLayer.frame = self.bounds;
-        self.tintLayer.opacity = 0.4;
-        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
-        
-        [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }
@@ -32,17 +36,9 @@
 }
 
 -(void)setImageAndBlur:(UIImage*)imageToBlur {
-<<<<<<< HEAD
-//    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
-///    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
-
-    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
-    self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:6 tintColor:tintColor saturationDeltaFactor:1.0 maskImage:nil];
-=======
     UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
     
     self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
->>>>>>> Card UI for flat survey and overrides for demo app
 }
 
 - (UIImage *)blurImage:(UIImage*)image withRadius:(CGFloat)radius iterations:(NSUInteger)iterations tintColor:(UIColor *)tintColor saturationDeltaFactor:(CGFloat)saturationDeltaFactor
@@ -131,5 +127,14 @@
     free(buffer1.data);
     return resultImage;
 }
+
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
 
 @end

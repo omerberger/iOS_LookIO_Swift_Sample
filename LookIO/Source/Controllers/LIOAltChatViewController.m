@@ -307,7 +307,6 @@
         [emailConvoButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
 
-
     emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     emailConvoButton.titleLabel.minimumFontSize = 6.0;
