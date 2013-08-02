@@ -114,7 +114,12 @@
     NSURL *urlBeingLaunched;
 
     LIOWebView* webView;
+
+    NSMutableArray* chatModules;
+    int activeChatModuleIndex;
     UIView* topButtonsView;
+    UIView* moduleView;
+    BOOL isModuleViewVisible;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

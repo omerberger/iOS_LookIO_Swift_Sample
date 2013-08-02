@@ -29,7 +29,8 @@
 #import "LIOMediaManager.h"
 #import "LIOSurveyView.h"
 #import "LIOImageBubbleView.h"
-#import "LIOWebView.h"
+#import "LIOChatModule.h"
+#import "LIOWebViewChatModule.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -506,29 +507,45 @@
     
     //[self.view bringSubviewToFront:tableView];
     
-    if (!padUI) {
-        topButtonsView = [[UIView alloc] initWithFrame:CGRectZero];
-        topButtonsView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        CGRect aFrame = topButtonsView.frame;
-        aFrame.origin.x = 0;
-        aFrame.origin.y = 40;
-        aFrame.size.width = self.view.bounds.size.width;
-        aFrame.size.height = 50;
-        topButtonsView.alpha = 0.0;
-        topButtonsView.frame = aFrame;
-        [self.view addSubview:topButtonsView];
-        
-        UIButton* dismissModuleButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [dismissModuleButton addTarget:self action:@selector(dismissModuleView) forControlEvents:UIControlEventTouchUpInside];
-        [dismissModuleButton setTitle:@"x" forState:UIControlStateNormal];
-        dismissModuleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-        aFrame = dismissModuleButton.frame;
-        aFrame.origin.x = topButtonsView.frame.size.width - 45;
-        aFrame.origin.y = 5;
-        aFrame.size = CGSizeMake(40, 40);
-        dismissModuleButton.frame = aFrame;
-        [topButtonsView addSubview:dismissModuleButton];
-    }
+    topButtonsView = [[UIView alloc] initWithFrame:CGRectZero];
+    topButtonsView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    aFrame = topButtonsView.frame;
+    aFrame.origin.x = 0;
+    aFrame.origin.y = padUI ? 10 : 40;
+    aFrame.size.width = self.view.bounds.size.width;
+    aFrame.size.height = 50;
+    topButtonsView.alpha = 0.0;
+    topButtonsView.frame = aFrame;
+    [self.view addSubview:topButtonsView];
+    
+    UIButton* dismissModuleButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [dismissModuleButton addTarget:self action:@selector(dismissModuleView) forControlEvents:UIControlEventTouchUpInside];
+    [dismissModuleButton setTitle:@"x" forState:UIControlStateNormal];
+    dismissModuleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    aFrame = dismissModuleButton.frame;
+    aFrame.origin.x = topButtonsView.frame.size.width - 45;
+    aFrame.origin.y = 5;
+    aFrame.size = CGSizeMake(40, 40);
+    dismissModuleButton.frame = aFrame;
+    [topButtonsView addSubview:dismissModuleButton];
+    
+    chatModules = [[[NSMutableArray alloc] init] retain];
+    
+    moduleView = [[UIView alloc] initWithFrame:CGRectZero];
+    moduleView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    aFrame = moduleView.frame;
+    aFrame.origin.x = 0;
+    aFrame.origin.y = self.view.bounds.size.height;
+    aFrame.size.width = self.view.bounds.size.width;
+    aFrame.size.height = self.view.bounds.size.height - (padUI ? 70.0 : 100);
+    moduleView.backgroundColor = [UIColor whiteColor];
+    moduleView.frame = aFrame;
+    
+    isModuleViewVisible = NO;
+    
+    [self.view addSubview:moduleView];
+    
+
 }
 
 - (void)viewDidLoad
@@ -625,6 +642,10 @@
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
+    
+    [chatModules removeAllObjects];
+    [chatModules release];
+    chatModules = nil;
     
     [super dealloc];
 }
@@ -1095,6 +1116,15 @@
                                      inView:inputBar.attachButton
                    permittedArrowDirections:UIPopoverArrowDirectionDown
                                    animated:YES];
+    }
+    
+    if (!isModuleViewVisible) {
+        CGRect aFrame = moduleView.frame;
+        aFrame.origin.x = 0;
+        aFrame.origin.y = self.view.bounds.size.height;
+        aFrame.size.width = self.view.bounds.size.width;
+        aFrame.size.height = self.view.bounds.size.height - (padUI ? 70.0 : 100);
+        moduleView.frame = aFrame;
     }
     
     vertGradient.frame = self.view.bounds;
@@ -2500,28 +2530,81 @@
 }
 
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapWebLinkWithURL:(NSURL *)aURL {
-    if (webView) {
-        [webView release];
-        webView = nil;
+    // Let's check if we have a web module for this link; If not, let's load it.
+    
+    LIOWebViewChatModule* chatModuleToShow = nil;
+    
+    for (LIOChatModule* chatModule in chatModules)
+        if (LIOChatModuleTypeWebView == chatModule.chatModuleType) {
+            LIOWebViewChatModule* webViewChatModule = (LIOWebViewChatModule*)chatModule;
+            if (webViewChatModule.url && aURL) {
+                if ([webViewChatModule.url isEqual:aURL])
+                chatModuleToShow = webViewChatModule;
+            }
+        }
+    
+    if (chatModuleToShow == nil) {
+        chatModuleToShow = [[LIOWebViewChatModule alloc] initWithUrl:aURL];
+        [chatModuleToShow loadContent];
+        [chatModules addObject:chatModuleToShow];
+        
+        UIButton* button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [button setTitle:[NSString stringWithFormat:@"%d", chatModules.count] forState:UIControlStateNormal];
+        button.tag = chatModules.count - 1;
+        [button addTarget:self action:@selector(switchModuleView:) forControlEvents:UIControlEventTouchUpInside];
+        button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        CGRect aFrame = button.frame;
+        aFrame.origin.x = topButtonsView.frame.size.width - 45*(chatModules.count + 1);
+        aFrame.origin.y = 5;
+        aFrame.size = CGSizeMake(40, 40);
+        button.frame = aFrame;
+        [topButtonsView addSubview:button];
     }
     
-    webView = [[LIOWebView alloc] initWithFrame:CGRectZero];
-    webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    CGRect aFrame = webView.frame;
-    aFrame.origin.x = 0;
-    aFrame.origin.y = self.view.bounds.size.height;
-    aFrame.size.width = self.view.bounds.size.width;
-    aFrame.size.height = self.view.bounds.size.height - 100.0;
-    webView.frame = aFrame;
+    activeChatModuleIndex = [chatModules indexOfObject:chatModuleToShow];    
+    [self presentModuleView];
+}
+
+- (void)switchModuleView:(id)sender {
+    UIButton* button = (UIButton*)sender;
     
-    [self.view addSubview:webView];
+    NSLog(@"Active chat module index is %d, button tag is %d", activeChatModuleIndex, button.tag);
     
-    [webView loadRequest:[NSURLRequest requestWithURL:aURL]];
+    if (button.tag == activeChatModuleIndex)
+        return;
+    
+    LIOChatModule* activeChatModule = (LIOChatModule*)[chatModules objectAtIndex:activeChatModuleIndex];
+    LIOChatModule* newChatModule = (LIOChatModule*)[chatModules objectAtIndex:button.tag];
+    newChatModule.view.alpha = 0.0;
+    [moduleView addSubview:newChatModule.view];
+    newChatModule.view.frame = moduleView.bounds;
+    
+    [UIView animateWithDuration:0.15 animations:^{
+        activeChatModule.view.alpha = 0.0;
+        newChatModule.view.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        [activeChatModule.view removeFromSuperview];
+        activeChatModule.view.alpha = 1.0;
+        activeChatModuleIndex = button.tag;
+    }];
+}
+
+- (void)presentModuleView {
+    if (activeChatModuleIndex > chatModules.count)
+        return;
+    
+    LIOChatModule* activeChatModule = (LIOChatModule*)[chatModules objectAtIndex:activeChatModuleIndex];
+    [moduleView addSubview:activeChatModule.view];
+    activeChatModule.view.frame = moduleView.bounds;
+    
     [inputBar.inputField resignFirstResponder];
     [UIView animateWithDuration:0.3 animations:^{
-        CGRect aFrame = webView.frame;
-        aFrame.origin.y = 100;
-        webView.frame = aFrame;
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+        CGRect aFrame = moduleView.frame;
+        
+        aFrame.origin.y = padUI ? 70 : 100;
+        moduleView.frame = aFrame;
         
         tableView.alpha = 0.5;
         aFrame = tableView.frame;
@@ -2530,26 +2613,30 @@
         
         topButtonsView.alpha = 1.0;
     } completion:^(BOOL finished) {
+        isModuleViewVisible = YES;
     }];
 }
 
 - (void)dismissModuleView {
+    LIOChatModule* activeChatModule = (LIOChatModule*)[chatModules objectAtIndex:activeChatModuleIndex];
+
     [UIView animateWithDuration:0.3 animations:^{
-        CGRect aFrame = webView.frame;
-        aFrame.origin.y = self.view.bounds.size.height - 100.0;
-        webView.frame = aFrame;
+        CGRect aFrame = moduleView.frame;
+        aFrame.origin.y = self.view.bounds.size.height;
+        moduleView.frame = aFrame;
         
         tableView.alpha = 1.0;
         topButtonsView.alpha = 0.0;
-        
-        aFrame = tableView.frame;
-        aFrame.origin.y = 40;
-        tableView.frame = aFrame;
 
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+        aFrame = tableView.frame;
+        aFrame.origin.y = padUI ? 10 : 40;
+        tableView.frame = aFrame;
+        
     } completion:^(BOOL finished) {
-        [webView removeFromSuperview];
-        [webView release];
-        webView = nil;        
+        [activeChatModule.view removeFromSuperview];
+        isModuleViewVisible = NO;
     }];
 }
 
