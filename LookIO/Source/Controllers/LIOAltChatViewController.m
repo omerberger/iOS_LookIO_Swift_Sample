@@ -315,9 +315,11 @@
     endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
     [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
     endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
-    endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
+        endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     endSessionButton.titleLabel.minimumFontSize = 9.0;
