@@ -10,4 +10,6 @@
 
 @interface LIOBlurImageView : UIImageView
 
+-(void)setImageAndBlur:(UIImage*)imageToBlur;
+
 @end
