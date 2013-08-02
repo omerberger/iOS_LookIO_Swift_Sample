@@ -292,35 +292,16 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-    BOOL shouldHideEmailChat = [delegate altChatViewControllerShouldHideEmailChat:self];
+    emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
+    [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+    emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
 
-    CGRect aFrame;
-    
-    if (!shouldHideEmailChat)
-    {
-        emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-        emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
-        [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-        emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
         emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
         emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-        emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
-        emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-        emailConvoButton.titleLabel.minimumFontSize = 6.0;
-        [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
-        emailConvoButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
-        [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        aFrame = emailConvoButton.frame;
-        aFrame.size.width = 120.0;
-        aFrame.size.height = 32.0;
-        aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
-    }  else {
-        emailConvoButton.layer.cornerRadius = 5.0;
-        emailConvoButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
-        [emailConvoButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
-
 
     emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -332,7 +313,6 @@
     aFrame.size.width = 120.0;
     aFrame.size.height = 32.0;
     aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
->>>>>>> Adjust flat theme buttons alpha when touched
         aFrame.origin.y = 10.0;
         emailConvoButton.frame = aFrame;
         if (NO == padUI)
@@ -343,14 +323,9 @@
     endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
     endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
-        [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
         endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
         endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    } else {
-        endSessionButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
-        endSessionButton.layer.cornerRadius = 5.0;
-        [endSessionButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;

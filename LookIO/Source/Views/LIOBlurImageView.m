@@ -7,6 +7,7 @@
 //
 
 #import "LIOBlurImageView.h"
+<<<<<<< HEAD
 #import <QuartzCore/QuartzCore.h>
 #import <Accelerate/Accelerate.h>
 #import <float.h>
@@ -22,21 +23,30 @@
 
 @synthesize tintLayer;
 
+=======
+
+@implementation LIOBlurImageView
+
+>>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
+<<<<<<< HEAD
         self.tintLayer = [[[CALayer alloc] init] autorelease];
         self.tintLayer.frame = self.bounds;
         self.tintLayer.opacity = 0.4;
         self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
         
         [self.layer addSublayer:self.tintLayer];
+=======
+>>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
     }
     return self;
 }
 
+<<<<<<< HEAD
 -(void)dealloc {
     [super dealloc];
 }
@@ -141,5 +151,15 @@
 }
 
 
+=======
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect
+{
+    // Drawing code
+}
+*/
+>>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
 
 @end

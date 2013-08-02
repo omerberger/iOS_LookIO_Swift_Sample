@@ -43,6 +43,7 @@
 
 #import <AdSupport/AdSupport.h>
 #import "DRNRealTimeBlurView.h"
+#import "LIOBlurImageView.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -253,7 +254,9 @@ typedef enum
     int lastClientLineId;
     
     UIAlertView *dismissibleAlertView;
-    DRNRealTimeBlurView *blurView;
+    LIOBlurImageView *blurImageView;
+
+    UInt32 selectedChatTheme;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1456,20 +1459,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined."];
             }
             
-<<<<<<< HEAD
-            if (selectedChatTheme == kLPChatThemeFlat) {
-                blurImageView = [[LIOBlurImageView alloc] initWithFrame:previousKeyWindow.bounds];
-                blurImageView.alpha = 0.0;
-                [previousKeyWindow addSubview:blurImageView];
-
-                [self takeScreenshotAndSetBlurImageView];
-                
-                [UIView animateWithDuration:0.3 animations:^{
-                    blurImageView.alpha = 1.0;
-                }];
-            }
-
-=======
             blurView = [[DRNRealTimeBlurView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
             blurView.renderStatic = YES;
             blurView.alpha = 0.0;
@@ -1480,7 +1469,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 blurView.alpha = 1.0;
             }];
             
->>>>>>> Added initial iOS 7.0-like blur effect
             LIOLog(@"Making LookIO window key and visible: 0x%08X", (unsigned int)lookioWindow);
             [lookioWindow makeKeyAndVisible];
         }
@@ -1499,11 +1487,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        [UIView animateWithDuration:0.15 animations:^{
-            blurView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [blurView removeFromSuperview];
-        }];
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [UIView animateWithDuration:0.15 animations:^{
+                blurImageView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [blurImageView removeFromSuperview];
+                [blurImageView release];
+                blurImageView = nil;
+            }];
+        }
         
         [self refreshControlButtonVisibility];
         
