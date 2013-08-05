@@ -1866,16 +1866,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        if (selectedChatTheme == kLPChatThemeFlat) {
-            [UIView animateWithDuration:0.15 animations:^{
-                blurImageView.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                [blurImageView removeFromSuperview];
-                [blurImageView release];
-                blurImageView = nil;
-            }];
-        }
-        
         [self refreshControlButtonVisibility];
         
         if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
