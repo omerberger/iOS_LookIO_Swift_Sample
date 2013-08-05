@@ -10,12 +10,16 @@
 
 @implementation LIOKeyboardMenu
 
+@synthesize buttonsArray;
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor darkGrayColor];
-    
+        self.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.8];
+        
+        buttonsArray = [[NSMutableArray alloc] init];
+        
     }
     return self;
 }

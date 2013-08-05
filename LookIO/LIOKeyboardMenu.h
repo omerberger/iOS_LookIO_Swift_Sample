@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface LIOKeyboardMenu : UIView
+@interface LIOKeyboardMenu : UIView {
+    NSMutableArray *buttons;
+}
 
 @end
