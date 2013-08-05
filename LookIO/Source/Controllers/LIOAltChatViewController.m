@@ -518,9 +518,16 @@
     topButtonsView.frame = aFrame;
     [self.view addSubview:topButtonsView];
     
-    UIButton* dismissModuleButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [dismissModuleButton addTarget:self action:@selector(dismissModuleView) forControlEvents:UIControlEventTouchUpInside];
-    [dismissModuleButton setTitle:@"x" forState:UIControlStateNormal];
+    UIButton* dismissModuleButton = [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
+    dismissModuleButton.layer.cornerRadius = 4.0;
+    dismissModuleButton.layer.borderWidth = 1.0;
+    dismissModuleButton.layer.borderColor = [UIColor grayColor].CGColor;
+    [dismissModuleButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOChatIcon"] forState:UIControlStateNormal];
+    dismissModuleButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+    [dismissModuleButton addTarget:self action:@selector(shrinkButton:) forControlEvents:UIControlEventTouchDown];
+    [dismissModuleButton addTarget:self action:@selector(dismissModuleView:) forControlEvents:UIControlEventTouchUpInside];
+    [dismissModuleButton addTarget:self action:@selector(unShrinkButton:) forControlEvents:UIControlEventTouchUpOutside];
+    [dismissModuleButton addTarget:self action:@selector(unShrinkButton:) forControlEvents:UIControlEventTouchCancel];
     dismissModuleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     aFrame = dismissModuleButton.frame;
     aFrame.origin.x = topButtonsView.frame.size.width - 45;
@@ -532,6 +539,8 @@
     chatModules = [[[NSMutableArray alloc] init] retain];
     
     moduleView = [[UIView alloc] initWithFrame:CGRectZero];
+    moduleView.layer.cornerRadius = 5.0;
+    moduleView.clipsToBounds = YES;
     moduleView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     aFrame = moduleView.frame;
     aFrame.origin.x = 0;
@@ -2534,6 +2543,10 @@
     
     LIOWebViewChatModule* chatModuleToShow = nil;
     
+    UIButton* previousButton = (UIButton*)[topButtonsView viewWithTag:100 + activeChatModuleIndex];
+    if (previousButton)
+        previousButton.layer.borderColor = [UIColor grayColor].CGColor;
+    
     for (LIOChatModule* chatModule in chatModules)
         if (LIOChatModuleTypeWebView == chatModule.chatModuleType) {
             LIOWebViewChatModule* webViewChatModule = (LIOWebViewChatModule*)chatModule;
@@ -2548,10 +2561,16 @@
         [chatModuleToShow loadContent];
         [chatModules addObject:chatModuleToShow];
         
-        UIButton* button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [button setTitle:[NSString stringWithFormat:@"%d", chatModules.count] forState:UIControlStateNormal];
-        button.tag = chatModules.count - 1;
+        UIButton* button = [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
+        button.layer.cornerRadius = 4.0;
+        button.layer.borderWidth = 1.0;
+        [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOGlobeIcon"] forState:UIControlStateNormal];
+        button.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+        button.tag = 100 + chatModules.count - 1;
         [button addTarget:self action:@selector(switchModuleView:) forControlEvents:UIControlEventTouchUpInside];
+        [button addTarget:self action:@selector(shrinkButton:) forControlEvents:UIControlEventTouchDown];
+        [button addTarget:self action:@selector(unShrinkButton:) forControlEvents:UIControlEventTouchUpOutside];
+        [button addTarget:self action:@selector(unShrinkButton:) forControlEvents:UIControlEventTouchCancel];        
         button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         CGRect aFrame = button.frame;
         aFrame.origin.x = topButtonsView.frame.size.width - 45*(chatModules.count + 1);
@@ -2559,33 +2578,80 @@
         aFrame.size = CGSizeMake(40, 40);
         button.frame = aFrame;
         [topButtonsView addSubview:button];
+        
     }
     
-    activeChatModuleIndex = [chatModules indexOfObject:chatModuleToShow];    
+    activeChatModuleIndex = [chatModules indexOfObject:chatModuleToShow];
+    
+    UIButton* currentButton = (UIButton*)[topButtonsView viewWithTag:100 + activeChatModuleIndex];
+    if (currentButton)
+        currentButton.layer.borderColor = [UIColor whiteColor].CGColor;
+
     [self presentModuleView];
+}
+
+- (void)shrinkButton:(id)sender {
+    UIButton* button = (UIButton*)sender;
+
+    [UIView animateWithDuration:0.15 animations:^{
+        button.transform = CGAffineTransformMakeScale(0.9, 0.9);
+    } completion:^(BOOL finished) {
+    }];
+}
+
+- (void)unShrinkButton:(id)sender {
+    UIButton* button = (UIButton*)sender;
+    
+    [UIView animateWithDuration:0.15 animations:^{
+        [UIView animateWithDuration:0.15 animations:^{
+            button.transform = CGAffineTransformMakeScale(1.1, 1.1);
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.15 animations:^{
+                button.transform = CGAffineTransformIdentity;
+            } completion:^(BOOL finished) {
+            }];
+        }];
+    }];
 }
 
 - (void)switchModuleView:(id)sender {
     UIButton* button = (UIButton*)sender;
+    UIButton* previousButton = (UIButton*)[topButtonsView viewWithTag:100 + activeChatModuleIndex];
+    if (previousButton)
+        previousButton.layer.borderColor = [UIColor grayColor].CGColor;
+    
+    NSLog(@"button tag is %d, prev button tag is %d", button.tag, previousButton.tag);
+
+    [UIView animateWithDuration:0.15 animations:^{
+        [UIView animateWithDuration:0.15 animations:^{
+            button.transform = CGAffineTransformMakeScale(1.1, 1.1);
+            button.layer.borderColor = [UIColor whiteColor].CGColor;
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.15 animations:^{
+                button.transform = CGAffineTransformIdentity;
+            } completion:^(BOOL finished) {
+            }];
+        }];
+    }];
     
     NSLog(@"Active chat module index is %d, button tag is %d", activeChatModuleIndex, button.tag);
     
-    if (button.tag == activeChatModuleIndex)
+    if (button.tag == 100 + activeChatModuleIndex)
         return;
     
     LIOChatModule* activeChatModule = (LIOChatModule*)[chatModules objectAtIndex:activeChatModuleIndex];
-    LIOChatModule* newChatModule = (LIOChatModule*)[chatModules objectAtIndex:button.tag];
+    LIOChatModule* newChatModule = (LIOChatModule*)[chatModules objectAtIndex:button.tag - 100];
     newChatModule.view.alpha = 0.0;
     [moduleView addSubview:newChatModule.view];
     newChatModule.view.frame = moduleView.bounds;
     
-    [UIView animateWithDuration:0.15 animations:^{
+    [UIView animateWithDuration:0.3 animations:^{
         activeChatModule.view.alpha = 0.0;
         newChatModule.view.alpha = 1.0;
     } completion:^(BOOL finished) {
         [activeChatModule.view removeFromSuperview];
         activeChatModule.view.alpha = 1.0;
-        activeChatModuleIndex = button.tag;
+        activeChatModuleIndex = button.tag - 100;
     }];
 }
 
@@ -2603,7 +2669,7 @@
 
         CGRect aFrame = moduleView.frame;
         
-        aFrame.origin.y = padUI ? 70 : 100;
+        aFrame.origin.y = padUI ? 70 : 95;
         moduleView.frame = aFrame;
         
         tableView.alpha = 0.5;
@@ -2617,7 +2683,19 @@
     }];
 }
 
-- (void)dismissModuleView {
+- (void)dismissModuleView:(id)sender {
+    UIButton* button = (UIButton*)sender;
+    
+    [UIView animateWithDuration:0.1 animations:^{
+        button.transform = CGAffineTransformMakeScale(1.3, 1.3);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.1 animations:^{
+            button.transform = CGAffineTransformMakeScale(0.8, 0.8);
+        } completion:^(BOOL finished) {
+            button.transform = CGAffineTransformIdentity;
+        }];
+    }];
+     
     LIOChatModule* activeChatModule = (LIOChatModule*)[chatModules objectAtIndex:activeChatModuleIndex];
 
     [UIView animateWithDuration:0.3 animations:^{

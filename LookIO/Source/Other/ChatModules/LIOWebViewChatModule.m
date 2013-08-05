@@ -9,7 +9,8 @@
 #import "LIOWebViewChatModule.h"
 
 @interface LIOWebViewChatModule () {
-    UIWebView* webView;
+    UIWebView *webView;
+    UIActivityIndicatorView *activityIndicatorView;
 }
 
 @end
@@ -27,25 +28,39 @@
         
         webView = [[UIWebView alloc] initWithFrame:CGRectZero];
         webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        webView.backgroundColor = [UIColor clearColor];
         webView.delegate = self;
+        
+        activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        activityIndicatorView.frame = webView.bounds;
+        activityIndicatorView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [webView addSubview:activityIndicatorView];
+        
     }
     return self;
 }
 
+
 -(void)loadContent {
     [webView loadRequest:[NSURLRequest requestWithURL:url]];
+    NSLog(@"Activity indicator view is %@", activityIndicatorView);
+    [activityIndicatorView startAnimating];
 }
 
 -(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
     if (delegate)
         if ((NSObject*)[delegate respondsToSelector:@selector(chatModuleContentDidFail:)])
             [delegate chatModuleContentDidFail:self];
+    
+    [activityIndicatorView stopAnimating];
 }
 
 -(void)webViewDidFinishLoad:(UIWebView *)webView {
     if (delegate)
         if ((NSObject*)[delegate respondsToSelector:@selector(chatModuleContentDidLoad:)])
             [delegate chatModuleContentDidLoad:self];
+    
+    [activityIndicatorView stopAnimating];
 }
 
 -(void)dealloc {
