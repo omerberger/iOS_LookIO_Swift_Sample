@@ -1422,16 +1422,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [previousKeyWindow makeKeyWindow];
         previousKeyWindow = nil;
         
-        if (selectedChatTheme == kLPChatThemeFlat) {
-            [UIView animateWithDuration:0.15 animations:^{
-                blurImageView.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                [blurImageView removeFromSuperview];
-                [blurImageView release];
-                blurImageView = nil;
-            }];
-        }
-        
         [self refreshControlButtonVisibility];
         
         if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
@@ -4398,9 +4388,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (!firstChatMessageSent && (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)))
         [self altChatViewControllerWantsSessionTermination:altChatViewController];
-    else
+    else {
         [altChatViewController performDismissalAnimation];
     
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [UIView animateWithDuration:0.15 animations:^{
+                blurImageView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [blurImageView removeFromSuperview];
+                [blurImageView release];
+                blurImageView = nil;
+            }];
+        }
+    }
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString
