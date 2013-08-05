@@ -31,6 +31,7 @@
 #import "LIOImageBubbleView.h"
 #import "LIOChatModule.h"
 #import "LIOWebViewChatModule.h"
+#import "LIOKeyboardMenu.h"
 
 #define LIOAltChatViewControllerMaxHistoryLength   10
 #define LIOAltChatViewControllerChatboxPadding     10.0
@@ -554,7 +555,14 @@
     
     [self.view addSubview:moduleView];
     
-
+    keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectZero];
+    keyboardMenu.autoresizingMask =  UIViewAutoresizingFlexibleWidth;
+    aFrame = keyboardMenu.frame;
+    aFrame.origin.x = 0;
+    aFrame.origin.y = self.view.bounds.size.height;
+    aFrame.size.width = self.view.bounds.size.width;
+    aFrame.size.height = 0;
+    [self.view addSubview:keyboardMenu];
 }
 
 - (void)viewDidLoad
@@ -1139,12 +1147,32 @@
     vertGradient.frame = self.view.bounds;
     horizGradient.frame = self.view.bounds;
     
+    if (keyboardMenuIsVisible) {
+        keyboardHeight = (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) ? 216 : 162;
+        
+        CGRect keyboardMenuFrame = keyboardMenu.frame;
+        keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
+        keyboardMenuFrame.size.height = keyboardHeight;
+        keyboardMenu.frame = keyboardMenuFrame;
+        
+        CGRect inputBarFrame = inputBar.frame;
+        inputBarFrame.origin.y = keyboardMenuFrame.origin.y - inputBarFrame.size.height;
+        inputBar.frame = inputBarFrame;
+        
+        CGRect dismissalBarFrame = dismissalBar.frame;
+        dismissalBarFrame.origin.y = inputBarFrame.origin.y - dismissalBarFrame.size.height;
+        dismissalBar.frame = dismissalBarFrame;
+    }
+    
+    NSLog(@"Keyboard height is %f", keyboardHeight);
+
     [self rejiggerTableViewFrame];
     
     [self reloadMessages];
     
     if (NO == padUI)
         [self scrollToBottomDelayed:NO];
+    
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -1988,14 +2016,18 @@
 
 - (void)handleTableViewPan:(UIPanGestureRecognizer *)aPanner
 {
-    if (NO == keyboardShowing)
+    if (NO == keyboardShowing && NO == keyboardMenuIsVisible)
         return;
     
     CGPoint touchLocation = [aPanner locationInView:inputBar];
     if (touchLocation.y > 0.0)
     {
         aPanner.enabled = NO;
-        [self.view endEditing:YES];
+        
+        if (keyboardShowing)
+            [self.view endEditing:YES];
+        else
+            [self hideKeyboardMenu];
         currentScrollId = 0;
         //[self reloadMessages];
         
@@ -2068,17 +2100,50 @@
     
     keyboardHeight = keyboardBounds.size.height;
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
-        keyboardHeight = keyboardBounds.size.width;
+        keyboardHeight = keyboardBounds.size.width;    
+    
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationCurve:animationCurve];
+    [UIView setAnimationDuration:animationDuration];
+
+    if (!keyboardMenuIsVisible)
+        [self rejiggerViewForKeyboardWillShow];
+    
+    [UIView commitAnimations];
+    
+    [self reloadMessages];
+    
+    if (nil == popover)
+        [self scrollToBottomDelayed:NO];
+    
+    if (keyboardMenuIsVisible) {
+        keyboardMenuIsVisible = NO;
+        
+        double delayInSeconds = animationDuration;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            CGRect keyboardMenuFrame = keyboardMenu.frame;
+            keyboardMenuFrame.origin.y = self.view.bounds.size.height;
+            keyboardMenu.frame = keyboardMenuFrame;
+        });
+    }
+}
+
+-(void)rejiggerViewForKeyboardWillShow {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
     CGRect inputBarFrame = inputBar.frame;
+    CGRect dismissalBarFrame = dismissalBar.frame;
+    CGRect headerFrame = headerBar.frame;
+    CGRect tableFrame = tableView.frame;
+    
     inputBarFrame.origin.y -= keyboardHeight;
+    NSLog(@"Keyboard height is %f", keyboardHeight);
     
     toasterView.yOrigin = inputBarFrame.origin.y - toasterView.frame.size.height - 10.0;
     [toasterView setNeedsLayout];
     
-    CGRect dismissalBarFrame = dismissalBar.frame;
-    CGRect headerFrame = headerBar.frame;
-    CGRect tableFrame = tableView.frame;
     if (NO == padUI)
     {
         dismissalBarFrame.origin.y -= keyboardHeight - 15.0; // 15.0 is the difference in dismissal bar height
@@ -2094,8 +2159,8 @@
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
             tableFrame.origin.y = 0.0;
-            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight  - inputBarFrame.size.height;
-
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height;
+            
         }
         else
         {
@@ -2115,62 +2180,63 @@
         tableFrame.size.height -= keyboardHeight;
     }
     
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationCurve:animationCurve];
-    [UIView setAnimationDuration:animationDuration];
-        inputBar.frame = inputBarFrame;
-        tableView.frame = tableFrame;
+    inputBar.frame = inputBarFrame;
+    tableView.frame = tableFrame;
     
-        if (NO == padUI)
-        {
-            dismissalBar.frame = dismissalBarFrame;
-            headerBar.frame = headerFrame;
-        }
-    [UIView commitAnimations];
-    
-    [self reloadMessages];
-    
-    if (nil == popover)
-        [self scrollToBottomDelayed:NO];
+    if (NO == padUI)
+    {
+        dismissalBar.frame = dismissalBarFrame;
+        headerBar.frame = headerFrame;
+    }
+
 }
 
-- (void)keyboardWillHide:(NSNotification *)aNotification
-{
-    if (NO == keyboardShowing)
+-(void)hideKeyboardMenu {
+    if (!keyboardMenuIsVisible)
         return;
     
-    keyboardShowing = NO;
+    keyboardMenuIsVisible = NO;
+    [UIView animateWithDuration:0.15 animations:^{
+        CGRect keyboardMenuFrame = keyboardMenu.frame;
+        keyboardMenuFrame.origin.y = self.view.bounds.size.height;
+        keyboardMenu.frame = keyboardMenuFrame;
         
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        [self rejiggerViewForKeyboardWillHide];
+    }];
+}
+
+-(void)showKeyboardMenu {
+    if (keyboardMenuIsVisible)
+        return;
     
+    keyboardMenuIsVisible = YES;
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
+
+    [UIView animateWithDuration:0.15 animations:^{
+        CGRect keyboardMenuFrame = keyboardMenu.frame;
+        keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
+        keyboardMenuFrame.size.height = keyboardHeight;
+        keyboardMenu.frame = keyboardMenuFrame;
+        
+        [self rejiggerViewForKeyboardWillShow];
+    }];    
+}
+
+-(void)rejiggerViewForKeyboardWillHide {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
-    NSDictionary *userInfo = [aNotification userInfo];
-    
-    NSTimeInterval animationDuration;
-    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
-    [animationDurationValue getValue:&animationDuration];
-    
-    UIViewAnimationCurve animationCurve;
-    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
-    [animationCurveValue getValue:&animationCurve];
-    
-    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey];
-    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
-    
-    keyboardHeight = keyboardBounds.size.height;
-    if (UIInterfaceOrientationIsLandscape(actualOrientation))
-        keyboardHeight = keyboardBounds.size.width;
-    
     CGRect inputBarFrame = inputBar.frame;
+    CGRect dismissalBarFrame = dismissalBar.frame;
+    CGRect headerFrame = headerBar.frame;
+    CGRect tableFrame = tableView.frame;
+    
     inputBarFrame.origin.y += keyboardHeight;
     
     toasterView.yOrigin = inputBarFrame.origin.y - toasterView.frame.size.height - 10.0;
     [toasterView setNeedsLayout];
     
-    CGRect dismissalBarFrame = dismissalBar.frame;
-    CGRect headerFrame = headerBar.frame;
-    CGRect tableFrame = tableView.frame;
     if (NO == padUI)
     {
         dismissalBarFrame.origin.y += keyboardHeight - 15.0;
@@ -2206,23 +2272,66 @@
         tableFrame.size.height += keyboardHeight;
     }
     
-    CGPoint previousOffset = tableView.contentOffset;
+    inputBar.frame = inputBarFrame;
+    NSLog(@"Input bar: %@", inputBar);
     
+    if (NO == padUI)
+    {
+        dismissalBar.frame = dismissalBarFrame;
+        headerBar.frame = headerFrame;
+    }
+    
+    tableView.frame = tableFrame;
+}
+
+- (void)keyboardWillHide:(NSNotification *)aNotification
+{
+    if (NO == keyboardShowing)
+        return;
+    
+    keyboardShowing = NO;
+        
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
+    
+    keyboardHeight = keyboardBounds.size.height;
+    if (UIInterfaceOrientationIsLandscape(actualOrientation))
+        keyboardHeight = keyboardBounds.size.width;
+    
+    CGPoint previousOffset = tableView.contentOffset;
+
+    if (keyboardMenuIsVisible) {
+        CGRect keyboardMenuFrame = keyboardMenu.frame;
+        keyboardMenuFrame.size.height = keyboardHeight;
+        keyboardMenuFrame.size.width = self.view.bounds.size.width;
+        keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
+        keyboardMenu.frame = keyboardMenuFrame;
+    }
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
     [UIView setAnimationDuration:animationDuration];
-        inputBar.frame = inputBarFrame;
-    
-        if (NO == padUI)
-        {
-            dismissalBar.frame = dismissalBarFrame;
-            headerBar.frame = headerFrame;
-        }
+
+    if (!keyboardMenuIsVisible)
+        [self rejiggerViewForKeyboardWillHide];
     [UIView commitAnimations];
     
     // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
-    keyboardHeight = 0.0;
-    tableView.frame = tableFrame;
+    if (!keyboardMenuIsVisible)
+        keyboardHeight = 0.0;
     //[self refreshExpandingFooter];
     tableView.contentOffset = previousOffset;
 }
@@ -2357,6 +2466,18 @@
 
 - (void)inputBarViewDidTapAttachButton:(LIOInputBarView *)aView
 {
+    if (!keyboardMenuIsVisible) {
+        if (inputBar.inputField.isFirstResponder) {
+            keyboardMenuIsVisible = YES;
+            [inputBar.inputField resignFirstResponder];
+        } else {
+            [self showKeyboardMenu];
+        }
+    } else {
+        [inputBar.inputField becomeFirstResponder];
+    }
+    return;
+    
     if (chatMessages.count <= 1) {
         alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
                                                      message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")

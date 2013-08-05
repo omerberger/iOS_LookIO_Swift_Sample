@@ -10,7 +10,7 @@
 #import "LIOSurveyManager.h"
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
-@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager, LIOWebView;
+@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager, LIOWebView, LIOKeyboardMenu;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -120,6 +120,9 @@
     UIView* topButtonsView;
     UIView* moduleView;
     BOOL isModuleViewVisible;
+
+    LIOKeyboardMenu *keyboardMenu;
+    BOOL keyboardMenuIsVisible;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
