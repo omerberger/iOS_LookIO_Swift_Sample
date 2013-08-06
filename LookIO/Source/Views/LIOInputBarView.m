@@ -39,7 +39,7 @@
             sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];        
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
-        UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAttachIcon"];
+        UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIcon"];
         
         CGRect sendButtonFrame = CGRectZero;
         UIFont *sendButtonFont = nil;

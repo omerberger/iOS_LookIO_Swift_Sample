@@ -556,6 +556,7 @@
     [self.view addSubview:moduleView];
     
     keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectZero];
+    keyboardMenu.delegate = self;
     keyboardMenu.autoresizingMask =  UIViewAutoresizingFlexibleWidth;
     aFrame = keyboardMenu.frame;
     aFrame.origin.x = 0;
@@ -1158,6 +1159,7 @@
         CGRect inputBarFrame = inputBar.frame;
         inputBarFrame.origin.y = keyboardMenuFrame.origin.y - inputBarFrame.size.height;
         inputBar.frame = inputBarFrame;
+        NSLog(@"4inputBar.frame = %@", inputBar);
         
         CGRect dismissalBarFrame = dismissalBar.frame;
         dismissalBarFrame.origin.y = inputBarFrame.origin.y - dismissalBarFrame.size.height;
@@ -2108,7 +2110,9 @@
 
     if (!keyboardMenuIsVisible)
         [self rejiggerViewForKeyboardWillShow];
-    
+    else
+        inputBar.attachButton.transform = CGAffineTransformIdentity;
+
     [UIView commitAnimations];
     
     [self reloadMessages];
@@ -2182,6 +2186,7 @@
     
     inputBar.frame = inputBarFrame;
     tableView.frame = tableFrame;
+    NSLog(@"5inputBar.frame = %@", inputBar);
     
     if (NO == padUI)
     {
@@ -2196,11 +2201,15 @@
         return;
     
     keyboardMenuIsVisible = NO;
+    
     [UIView animateWithDuration:0.15 animations:^{
+        inputBar.attachButton.transform = CGAffineTransformIdentity;
+        
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height;
         keyboardMenu.frame = keyboardMenuFrame;
         
+
         [self rejiggerViewForKeyboardWillHide];
     }];
 }
@@ -2214,13 +2223,15 @@
     keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
 
     [UIView animateWithDuration:0.15 animations:^{
+//        inputBar.attachButton.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
+
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
         keyboardMenuFrame.size.height = keyboardHeight;
         keyboardMenu.frame = keyboardMenuFrame;
         
         [self rejiggerViewForKeyboardWillShow];
-    }];    
+    }];
 }
 
 -(void)rejiggerViewForKeyboardWillHide {
@@ -2273,7 +2284,7 @@
     }
     
     inputBar.frame = inputBarFrame;
-    NSLog(@"Input bar: %@", inputBar);
+    NSLog(@"1inputBar.frame = %@", inputBar);
     
     if (NO == padUI)
     {
@@ -2320,6 +2331,7 @@
         keyboardMenuFrame.size.width = self.view.bounds.size.width;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
         keyboardMenu.frame = keyboardMenuFrame;
+        
     }
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationCurve:animationCurve];
@@ -2327,6 +2339,10 @@
 
     if (!keyboardMenuIsVisible)
         [self rejiggerViewForKeyboardWillHide];
+    else{
+//        inputBar.attachButton.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
+    }
+    
     [UIView commitAnimations];
     
     // Sweet Jesus, the order of the following things is SUPER IMPORTANT.
@@ -2364,6 +2380,8 @@
     CGRect aFrame = inputBar.frame;
     aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
     inputBar.frame = aFrame;
+
+    NSLog(@"2inputBar.frame = %@", inputBar);
 }
 
 /*
@@ -2394,7 +2412,8 @@
     aFrame.size.height = desiredHeight;
     aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
     inputBar.frame = aFrame;
-    
+    NSLog(@"3inputBar.frame = %@", inputBar);
+
     if (NO == padUI)
     {
         CGRect aFrame = dismissalBar.frame;
@@ -2477,13 +2496,16 @@
         [inputBar.inputField becomeFirstResponder];
     }
     return;
-    
+
+}
+
+-(void)keyboardMenuAttachButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {    
     if (chatMessages.count <= 1) {
         alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
-                                                     message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
-                                                    delegate:nil
-                                           cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
-                                           otherButtonTitles:nil];
+                                               message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
+                                              delegate:nil
+                                     cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
+                                     otherButtonTitles:nil];
         [alertView show];
     }
     else {

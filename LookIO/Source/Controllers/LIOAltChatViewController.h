@@ -20,6 +20,7 @@
 @protocol LIOChatBubbleViewDelegate;
 @protocol LIOToasterViewDelegate;
 @protocol LIOSurveyViewDelegate;
+@protocol LIOKeyboardMenuDelegate;
 
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
@@ -62,7 +63,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
      LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
-     UIAlertViewDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate>
+    UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate, LIOKeyboardMenuDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;

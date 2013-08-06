@@ -8,8 +8,26 @@
 
 #import <UIKit/UIKit.h>
 
+@class LIOKeyboardMenu;
+
+@protocol LIOKeyboardMenuDelegate <NSObject>
+
+@optional
+
+-(void)keyboardMenuAttachButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+-(void)keyboardMenuEmailChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+-(void)keyboardMenuEndChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+-(void)keyboardMenuShowKeyboardButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+
+@end
+
 @interface LIOKeyboardMenu : UIView {
-    NSMutableArray *buttons;
+    NSMutableArray *buttonsArray;
+    id <LIOKeyboardMenuDelegate> delegate;
+
 }
+
+@property (nonatomic, assign) id <LIOKeyboardMenuDelegate> delegate;
+@property (nonatomic, retain) NSMutableArray *buttonsArray;
 
 @end
