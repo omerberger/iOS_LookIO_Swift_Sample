@@ -801,6 +801,7 @@
 					armv7,
 					armv7s,
 				);
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -831,6 +832,7 @@
 					armv7,
 					armv7s,
 				);
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				DSTROOT = /tmp/LookIO.dst;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_THUMB_SUPPORT = NO;

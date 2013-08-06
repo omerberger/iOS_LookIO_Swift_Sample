@@ -103,6 +103,8 @@
 
     leftSwipeGestureRecognizer = nil;
     rightSwipeGestureRecognizer = nil;
+    
+    [tapGestureRecognizer release];
     tapGestureRecognizer = nil;
 
     [validationView removeFromSuperview];
@@ -127,7 +129,7 @@
     rightSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionRight;
     [self addGestureRecognizer:rightSwipeGestureRecognizer];
     
-    tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
     [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {

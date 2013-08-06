@@ -16,7 +16,7 @@
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea, attachButton;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea, attachButton, sendButton;
 
 - (id)initWithFrame:(CGRect)frame
 {

@@ -23,7 +23,7 @@ static LPAPIClient *sharedClient = nil;
 
 @implementation LPAPIClient
 
-@synthesize baseURL, jsonWriter;
+@synthesize baseURL, jsonWriter, operationQueue;
 
 + (LPAPIClient *) sharedClient
 {

@@ -28,7 +28,7 @@
 
 @implementation LPHTTPRequestOperation
 
-@synthesize connection, request, HTTPError, retriesLeft, requestFailed, responseCode;
+@synthesize connection, request, HTTPError, retriesLeft, requestFailed, responseCode, error, state;
 
 - (id)initWithRequest:(NSURLRequest *)urlRequest {
     self = [super init];
