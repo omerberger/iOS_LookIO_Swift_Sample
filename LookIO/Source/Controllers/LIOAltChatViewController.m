@@ -557,12 +557,13 @@
     
     keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectZero];
     keyboardMenu.delegate = self;
-    keyboardMenu.autoresizingMask =  UIViewAutoresizingFlexibleWidth;
+    keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     aFrame = keyboardMenu.frame;
     aFrame.origin.x = 0;
     aFrame.origin.y = self.view.bounds.size.height;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 0;
+    keyboardMenu.frame = aFrame;
     [self.view addSubview:keyboardMenu];
 }
 
@@ -820,6 +821,7 @@
             dismissalBar.alpha = 0.0;
             inputBar.alpha = 0.0;
             tableView.alpha = 0.0;
+            keyboardMenu.alpha = 0.0;
             
             CGRect headerFrame = headerBar.frame;
             if (UIInterfaceOrientationIsLandscape(actualOrientation))
@@ -834,6 +836,8 @@
         dismissalBar.hidden = YES;
         inputBar.hidden = YES;
         tableView.hidden = YES;
+        keyboardMenu.hidden = YES;
+
     
         CGRect headerFrame = headerBar.frame;
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
@@ -1042,7 +1046,7 @@
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         
-        if (!surveyInProgress && !waitingForSurvey) {
+        if (!surveyInProgress && !waitingForSurvey && !keyboardMenuIsVisible) {
             BOOL result = [inputBar.inputField becomeFirstResponder];
             if (result != 1)
             {
@@ -1149,7 +1153,8 @@
     horizGradient.frame = self.view.bounds;
     
     if (keyboardMenuIsVisible) {
-        keyboardHeight = (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) ? 216 : 162;
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+        keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
         
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
@@ -1368,6 +1373,7 @@
                          headerBar.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
                          inputBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
                          dismissalBar.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
+                         keyboardMenu.transform = CGAffineTransformMakeTranslation(0.0, self.view.bounds.size.height);
                      }
                      completion:^(BOOL finished) {
                          double delayInSeconds = 0.1;
@@ -2499,6 +2505,9 @@
 
 }
 
+#pragma mark -
+#pragma mark LIOKeyboardMenuDelegate methods
+
 -(void)keyboardMenuAttachButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {    
     if (chatMessages.count <= 1) {
         alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
@@ -2514,6 +2523,22 @@
         else
             [self showPhotoLibraryPicker];
     }
+}
+
+-(void)keyboardMenuShowKeyboardButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {
+    [inputBar.inputField becomeFirstResponder];
+}
+
+-(void)keyboardMenuEmailChatButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {
+    [self emailConvoButtonWasTapped];
+}
+
+-(void)keyboardMenuHideChatButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {
+    [self performDismissalAnimation];
+}
+
+-(void)keyboardMenuEndSessionButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {
+    [self endSessionButtonWasTapped];
 }
 
 #pragma mark -
@@ -3155,6 +3180,8 @@
         inputBar.hidden = NO;
         tableView.alpha = 0.0;
         tableView.hidden = NO;
+        keyboardMenu.alpha = 0.0;
+        keyboardMenu.hidden = NO;
         
         waitingForEngagementToStart = YES;
 

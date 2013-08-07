@@ -19,8 +19,10 @@
 		A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */; };
 		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
 		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
-		A77A1EA817B0307300FEDD26 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EA617B0307300FEDD26 /* LIOKeyboardMenu.h */; };
-		A77A1EA917B0307300FEDD26 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EA717B0307300FEDD26 /* LIOKeyboardMenu.m */; };
+		A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
+		A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */; };
+		A77A1EBB17B2F09700FEDD26 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB917B2F09600FEDD26 /* LIOKeyboardMenu.h */; };
+		A77A1EBC17B2F09700FEDD26 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EBA17B2F09600FEDD26 /* LIOKeyboardMenu.m */; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
@@ -159,8 +161,10 @@
 		A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOWebViewChatModule.m; path = Source/Other/ChatModules/LIOWebViewChatModule.m; sourceTree = "<group>"; };
 		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
-		A77A1EA617B0307300FEDD26 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOKeyboardMenu.h; sourceTree = "<group>"; };
-		A77A1EA717B0307300FEDD26 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOKeyboardMenu.m; sourceTree = "<group>"; };
+		A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenuButton.h; path = Source/Views/LIOKeyboardMenuButton.h; sourceTree = "<group>"; };
+		A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenuButton.m; path = Source/Views/LIOKeyboardMenuButton.m; sourceTree = "<group>"; };
+		A77A1EB917B2F09600FEDD26 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenu.h; path = Source/Views/LIOKeyboardMenu.h; sourceTree = "<group>"; };
+		A77A1EBA17B2F09600FEDD26 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenu.m; path = Source/Views/LIOKeyboardMenu.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
 		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Source/Networking/LPSSEManager.h; sourceTree = "<group>"; };
@@ -456,6 +460,8 @@
 				A7BC8DAC17A2D84800D31068 /* LIOWebView.m */,
 				A77A1EA617B0307300FEDD26 /* LIOKeyboardMenu.h */,
 				A77A1EA717B0307300FEDD26 /* LIOKeyboardMenu.m */,
+				A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */,
+				A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -679,6 +685,7 @@
 				A70B677017AC21420053A62E /* LIOChatModule.h in Headers */,
 				A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */,
 				A77A1EA817B0307300FEDD26 /* LIOKeyboardMenu.h in Headers */,
+				A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -820,6 +827,7 @@
 				A70B677117AC21420053A62E /* LIOChatModule.m in Sources */,
 				A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */,
 				A77A1EA917B0307300FEDD26 /* LIOKeyboardMenu.m in Sources */,
+				A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

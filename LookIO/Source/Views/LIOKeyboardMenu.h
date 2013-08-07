@@ -16,7 +16,8 @@
 
 -(void)keyboardMenuAttachButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
 -(void)keyboardMenuEmailChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
--(void)keyboardMenuEndChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+-(void)keyboardMenuHideChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+-(void)keyboardMenuEndSessionButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
 -(void)keyboardMenuShowKeyboardButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
 
 @end
