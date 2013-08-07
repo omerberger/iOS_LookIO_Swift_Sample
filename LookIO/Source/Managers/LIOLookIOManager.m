@@ -210,11 +210,13 @@ typedef enum
     
     BOOL chatClosingAsPartOfReset;
     
-    BOOL developerDisabledChat;
-    BOOL customButtonVisible;
+    BOOL customButtonChatAvailable;
+    BOOL customButtonInvitationShown;
     LIOFunnelState currentFunnelState;
     NSString *lastKnownVisitURL;
     BOOL introPacketWasSent;
+    NSMutableArray* funnelRequestQueue;
+    BOOL funnelRequestIsActive;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -317,11 +319,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (self)
     {
         
-        developerDisabledChat = NO;
-        customButtonVisible = NO;
+        customButtonChatAvailable = NO;
+        customButtonInvitationShown = NO;
         LIOLog(@"<FUNNEL STATE> Initialized");
         currentFunnelState = LIOFunnelStateInitialized;
         introPacketWasSent = NO;
+        funnelRequestQueue = [[[NSMutableArray alloc] init] retain];
+        funnelRequestIsActive = NO;
 
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
@@ -416,43 +420,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return self;
 }
 
--(void)setChatEnabled {
-    BOOL previousEnabledState = [self enabled];
-    
-    developerDisabledChat = NO;
-    [self refreshControlButtonVisibility];
-    
-    // If enabled status has changed, report it
-    if ([self enabled] != previousEnabledState)
-        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
-    
+-(void)setChatAvailable {
+    customButtonChatAvailable = YES;
     [self updateAndReportFunnelState];
 }
 
--(void)setChatDisabled {
-    BOOL previousEnabledState = [self enabled];
-
-    developerDisabledChat = YES;
-    [self refreshControlButtonVisibility];
-    
-    // If enabled status has changed, report it
-    if ([self enabled] != previousEnabledState)
-        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
-            [delegate lookIOManager:self didUpdateEnabledStatus:[self enabled]];
-    
+-(void)setChatUnavailable {
+    customButtonChatAvailable = NO;
     [self updateAndReportFunnelState];
 }
 
--(void)setCustomButtonHidden {
-    customButtonVisible = NO;
-    
+-(void)setInvitationShown {
+    customButtonInvitationShown = YES;
     [self updateAndReportFunnelState];
 }
 
--(void)setCustomButtonVisible {
-    customButtonVisible = YES;
-    
+-(void)setInvitationNotShown {
+    customButtonInvitationShown = NO;
     [self updateAndReportFunnelState];
 }
 
@@ -934,6 +918,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [sseManager reset];
     [sseManager release];
     sseManager = nil;
+    
+    [funnelRequestQueue removeAllObjects];
+    [funnelRequestQueue release];
+    funnelRequestQueue = nil;
     
     [super dealloc];
 }
@@ -1543,98 +1531,133 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma 
 # pragma mark Funnel Methods
 
--(void)updateAndReportFunnelState {
-    // If developer has disabled chat, set state to visit and return
-    if (developerDisabledChat) {
-        if (currentFunnelState != LIOFunnelStateVisit) {
-            currentFunnelState = LIOFunnelStateVisit;
-            LIOLog(@"<FUNNEL STATE> Visit");
-            [self sendFunnelPacket];
-        }
-        return;
-    }
-    
-    // If we're at the visit state, and not disabled as check above, upgrade to hotlead
+-(void)updateAndReportFunnelState {    
+    // For visit state, let's see if we can upgrade to hotlead
     if (currentFunnelState == LIOFunnelStateVisit) {
-        currentFunnelState = LIOFunnelStateHotlead;
-        LIOLog(@"<FUNNEL STATE> Hotlead");
-        [self sendFunnelPacket];
-        return;
+        // If the tab visibility is not always, let's first check that the devloper has set the chat to available.
+        // If not, it should stay a visit
+        if (1 != [lastKnownButtonVisibility intValue]) {
+            if (customButtonChatAvailable) {
+                // If the tab visibility is not always, but chat is available, this is a hotlead
+                currentFunnelState = LIOFunnelStateHotlead;
+                LIOLog(@"<FUNNEL STATE> Hotlead");
+                [self sendFunnelPacketForState:currentFunnelState];
+            }
+        } else {
+            // Or, if the tab is supposed to be shown, whether or not it is actually shown, it's a hotlead
+            currentFunnelState = LIOFunnelStateHotlead;
+            LIOLog(@"<FUNNEL STATE> Hotlead");
+            [self sendFunnelPacketForState:currentFunnelState];
+        }
     }
     
-    // If we're at the hot lead state, let's check if we can upgrade to invitation
+    // If we're at the hot lead state, let's check if we can upgrade to invitation, or downgrade to visit
     if (currentFunnelState == LIOFunnelStateHotlead) {        
-        // If the tab visibility is not always, let's first check that the devloper has set the custom button to visible.
+        // If the tab visibility is not always, let's first check that the developer has reported that the invitation has been shown
         // If not, it should stay a hotlead
-        if (1 != [lastKnownButtonVisibility intValue])
-            if (!customButtonVisible)
-                return;
-        
-        // If current skill is not enabled, stay at hotlead
-        if (![self enabled])
-            return;
-        
-        currentFunnelState = LIOFunnelStateInvitation;
-        LIOLog(@"<FUNNEL STATE> Invitation");
-        [self sendFunnelPacket];
-        return;
+        // If chat has been disabled, downgrade to a visit
+        if (1 != [lastKnownButtonVisibility intValue]) {
+            if (!customButtonChatAvailable) {
+                currentFunnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+                [self sendFunnelPacketForState:currentFunnelState];
+            } else {
+                if (customButtonInvitationShown) {
+                    currentFunnelState = LIOFunnelStateInvitation;
+                    LIOLog(@"<FUNNEL STATE> Invitation");
+                    [self sendFunnelPacketForState:currentFunnelState];
+                }
+            }
+        } else {
+            if (!controlButtonHidden) {
+                currentFunnelState = LIOFunnelStateInvitation;
+                LIOLog(@"<FUNNEL STATE> Invitation");
+                [self sendFunnelPacketForState:currentFunnelState];
+            }
+        }
     }
-    
-    // If we're at the invitation lead state, let's make sure we can maintain it
+
+    // If we're at the invitation state, let's make sure we can maintain it
     if (currentFunnelState == LIOFunnelStateInvitation) {
-        // If a chat started before invitation state was reached, it will be reported here
+        // If a chat started before invitation state was reached, it will be reported here.
+        // We can return from the call ebcause it is the topmost state
         if (introPacketWasSent) {
             currentFunnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
-            [self sendFunnelPacket];
+            [self sendFunnelPacketForState:currentFunnelState];
             return;
         }
         
-        // If the tab visibility is not always, let's first check that the devloper has set the custom button to visible.
-        // If not, it should be downgraded to a hotlead
+        // If the tab visibility is not always, let's check if the developer:
+        // Set chat to unavailable, making it a visit
+        // Set invitation to not shown, making it a hotlead
         if (1 != [lastKnownButtonVisibility intValue]) {
-            if (!customButtonVisible) {
+            // If chat unavailable, it's a visit
+            if (!customButtonChatAvailable) {
+                currentFunnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+                [self sendFunnelPacketForState:currentFunnelState];
+            } else {
+                // If chat available, but invitation not shown, it's a hotlead
+                // Otherwise, it stays an invitation
+                if (!customButtonInvitationShown) {
+                    currentFunnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                    [self sendFunnelPacketForState:currentFunnelState];
+                }
+            }
+        } else {
+            // If tab availability is always, let's check if the tab is visible, otherwise downgrade to hotlead
+            if (controlButtonHidden) {
                 currentFunnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
-                [self sendFunnelPacket];
-                
-                return;
+                [self sendFunnelPacketForState:currentFunnelState];
             }
-        }
-        
-        // If the skill is not enabled, should downgrade to a hotlead
-        if (![self enabled]) {
-            currentFunnelState = LIOFunnelStateHotlead;
-            LIOLog(@"<FUNNEL STATE> Hotlead");
-            [self sendFunnelPacket];
-            return;
         }
     }
     
     // If we're at the clicked lead state, and the chat has ended, let's downgrade it
+    // We can return from each condition because there the final state is set here
     if (currentFunnelState == LIOFunnelStateClicked) {
         if (!introPacketWasSent) {
             // Case one - Tab is not visible, and the button is not being displayed, downgrade to a visit
             if (1 != [lastKnownButtonVisibility intValue]) {
-                if (!customButtonVisible) {
+
+                // If chat unavailable, it's a visit
+                if (!customButtonChatAvailable) {
                     currentFunnelState = LIOFunnelStateVisit;
                     LIOLog(@"<FUNNEL STATE> Visit");
-                    [self sendFunnelPacket];
-                    
+                    [self sendFunnelPacketForState:currentFunnelState];
                     return;
                 }
-            }
-
-            // Case three - Chat is enabled, it's either a hotlead or an invitation depending on enabled state
-            if (![self enabled]) {
-                currentFunnelState = LIOFunnelStateHotlead;
-                LIOLog(@"<FUNNEL STATE> Hotlead");
-            } else {
+                
+                // If chat available, but invitation not shown, it's a hotlead
+                if (!customButtonInvitationShown) {
+                    currentFunnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                    [self sendFunnelPacketForState:currentFunnelState];
+                    return;
+                }
+                
+                // Otherwise it's an invitation
                 currentFunnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
-            }
+                [self sendFunnelPacketForState:currentFunnelState];
+                return;
             
-            [self sendFunnelPacket];
+            } else {
+                // If tab is visible, it's an invitation, otherwise a hotlead
+                if (!controlButtonHidden) {
+                    currentFunnelState = LIOFunnelStateInvitation;
+                    LIOLog(@"<FUNNEL STATE> Invitation");
+                } else {
+                    currentFunnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                }
+                
+                [self sendFunnelPacketForState:currentFunnelState];
+                return;
+            }
         }
     }
 }
@@ -1642,10 +1665,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma
 # pragma mark Visit API Methods
 
--(void)sendFunnelPacket {
+-(void)sendFunnelPacketForState:(LIOFunnelState)funnelState {
+    if (funnelRequestIsActive) {
+        NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
+        [funnelRequestQueue addObject:nextFunnelRequest];
+        return;
+    }
+    
+    funnelRequestIsActive = YES;
+    
     NSString *currentStateString = @"";
     
-    switch (currentFunnelState) {
+    switch (funnelState) {
         case LIOFunnelStateVisit:
             currentStateString = @"visit";
             break;
@@ -1678,8 +1709,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
         else
             LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
+        
+        funnelRequestIsActive = NO;
+        if (funnelRequestQueue.count > 0) {
+            NSNumber* nextFunnelState = [funnelRequestQueue objectAtIndex:0];
+            [self sendFunnelPacketForState:[nextFunnelState intValue]];
+            [funnelRequestQueue removeObjectAtIndex:0];
+        }
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<FUNNEL> with data:%@ failure: %@", funnelDict, error);
+        
+        funnelRequestIsActive = NO;
+        if (funnelRequestQueue.count > 0) {
+            NSNumber* nextFunnelState = [funnelRequestQueue objectAtIndex:0];
+            [self sendFunnelPacketForState:[nextFunnelState intValue]];
+            [funnelRequestQueue removeObjectAtIndex:0];
+        }
     }];
 }
 
@@ -2810,15 +2855,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)refreshControlButtonVisibility
 {
     [controlButton.layer removeAllAnimations];
-    
-    // Trump card #-2: If the developer has disabled chat,  button is hidden
-    if (developerDisabledChat) {
-        controlButtonHidden = YES;
-        controlButton.frame = controlButtonHiddenFrame;
-        [self rejiggerControlButtonLabel];
-        LIOLog(@"<<CONTROL>> Hiding. Reason: developer has disabled chat.");
-        return;        
-    }
 
     // Trump card #-1: If the session is ending, button is hidden.
     if (sessionEnding)
@@ -4855,9 +4891,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
-    if (developerDisabledChat)
-        return NO;
-    
     // nil or empty
     if (0 == [multiskillMapping count])
         return NO;
