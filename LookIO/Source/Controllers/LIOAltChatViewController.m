@@ -198,6 +198,9 @@
     tableView.clipsToBounds = NO == padUI;
     [self.view addSubview:tableView];
     
+    tableView.tableHeaderView = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 10)] autorelease];
+    tableView.tableHeaderView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    
     if (UIUserInterfaceIdiomPhone == [[UIDevice currentDevice] userInterfaceIdiom] && [tableView respondsToSelector:@selector(panGestureRecognizer)])
     {
         UIPanGestureRecognizer *panner = [tableView panGestureRecognizer];
@@ -1154,7 +1157,10 @@
     
     if (keyboardMenuIsVisible) {
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-        keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
+        if (!padUI)
+            keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
+        else
+            keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 264 : 352;
         
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
@@ -1164,15 +1170,20 @@
         CGRect inputBarFrame = inputBar.frame;
         inputBarFrame.origin.y = keyboardMenuFrame.origin.y - inputBarFrame.size.height;
         inputBar.frame = inputBarFrame;
-        NSLog(@"4inputBar.frame = %@", inputBar);
         
         CGRect dismissalBarFrame = dismissalBar.frame;
         dismissalBarFrame.origin.y = inputBarFrame.origin.y - dismissalBarFrame.size.height;
         dismissalBar.frame = dismissalBarFrame;
+        
+        CGRect headerFrame = headerBar.frame;
+        if (UIInterfaceOrientationIsLandscape(actualOrientation))
+            headerFrame.origin.y = -headerFrame.size.height;
+        else {
+            headerFrame.origin.y = 0;
+        }
+        headerBar.frame = headerFrame;
     }
     
-    NSLog(@"Keyboard height is %f", keyboardHeight);
-
     [self rejiggerTableViewFrame];
     
     [self reloadMessages];
@@ -1406,14 +1417,14 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(){
             if (myScrollId == currentScrollId)
             {
-                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] inSection:0];
+                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] - 1 inSection:0];
                 [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
             }
         });
     }
     else
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] inSection:0];
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] - 1 inSection:0];
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
@@ -1500,7 +1511,7 @@
 
 - (void)refreshExpandingFooter
 {
-    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([chatMessages count] + 1) inSection:0];
+    NSIndexPath *expandingFooterIndex = [NSIndexPath indexPathForRow:([chatMessages count] - 1) inSection:0];
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:expandingFooterIndex] withRowAnimation:UITableViewRowAnimationNone];
 }
 
@@ -1687,7 +1698,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [chatMessages count] + 2;
+    return [chatMessages count] + 1;
 }
 
 /*
@@ -1699,10 +1710,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (0 == indexPath.row)
-        return functionHeaderChat;
+//    if (0 == indexPath.row)
+//        return functionHeaderChat;
     
-    if ([chatMessages count] + 1 == indexPath.row)
+    if ([chatMessages count] == indexPath.row)
     {
         UITableViewCell *expandingFooter = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
         expandingFooter.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -1730,7 +1741,7 @@
     [tappableDummyView addGestureRecognizer:tapper];
     [aCell.contentView addSubview:tappableDummyView];
 
-    LIOChatMessage *aMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
+    LIOChatMessage *aMessage = [chatMessages objectAtIndex:(indexPath.row)];
     
     // Attachment -- show as bare UIImageview for now.
     // TODO: Fold attachment display into LIOChatBubbleView.
@@ -1857,20 +1868,17 @@
     
     NSInteger row = indexPath.row;
     
-    if (0 > row)
+    if (row < 0)
         return 0.0;
     
-    if (0 == row)
-    {
-        return 64.0;
-    }
+    NSLog(@"Number of chat messages is %d", chatMessages.count);
     
-    if ([chatMessages count] + 1 == row)
+    if ([chatMessages count] == row)
     {
         CGFloat heightAccum = 0.0;
         for (int i=0; i<numPreviousMessagesToShowInScrollback; i++)
         {
-            NSInteger aRow = [chatMessages count] - i;
+            int aRow = [chatMessages count] - i - 1;
             heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
         }
         
@@ -1900,7 +1908,7 @@
         }
     }
     
-    NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(row - 1)];
+    NSNumber *aHeight = [chatBubbleHeights objectAtIndex:(row)];
     CGFloat height = [aHeight floatValue];
     
     // Headers can be short. All else must be minimum height.
@@ -1915,7 +1923,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == [chatMessages count] + 1)
+    if (indexPath.row == [chatMessages count])
         [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
@@ -1931,7 +1939,7 @@
     NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:buttonPosition];
     
     if (indexPath) {
-        clickedFailedMessage = [chatMessages objectAtIndex:(indexPath.row - 1)];
+        clickedFailedMessage = [chatMessages objectAtIndex:(indexPath.row)];
         clickedFailedMessageIndex = indexPath.row;        
         
         BOOL padUI = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad;
@@ -2149,7 +2157,6 @@
     CGRect tableFrame = tableView.frame;
     
     inputBarFrame.origin.y -= keyboardHeight;
-    NSLog(@"Keyboard height is %f", keyboardHeight);
     
     toasterView.yOrigin = inputBarFrame.origin.y - toasterView.frame.size.height - 10.0;
     [toasterView setNeedsLayout];
@@ -2192,7 +2199,6 @@
     
     inputBar.frame = inputBarFrame;
     tableView.frame = tableFrame;
-    NSLog(@"5inputBar.frame = %@", inputBar);
     
     if (NO == padUI)
     {
@@ -2290,7 +2296,6 @@
     }
     
     inputBar.frame = inputBarFrame;
-    NSLog(@"1inputBar.frame = %@", inputBar);
     
     if (NO == padUI)
     {
@@ -2386,8 +2391,6 @@
     CGRect aFrame = inputBar.frame;
     aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
     inputBar.frame = aFrame;
-
-    NSLog(@"2inputBar.frame = %@", inputBar);
 }
 
 /*
@@ -2418,7 +2421,6 @@
     aFrame.size.height = desiredHeight;
     aFrame.origin.y = self.view.bounds.size.height - keyboardHeight - aFrame.size.height;
     inputBar.frame = aFrame;
-    NSLog(@"3inputBar.frame = %@", inputBar);
 
     if (NO == padUI)
     {
