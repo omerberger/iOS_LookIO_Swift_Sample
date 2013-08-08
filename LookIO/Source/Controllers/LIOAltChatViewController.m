@@ -1061,6 +1061,11 @@
     // Make sure the table view is perfectly sized.
     CGRect tableFrame = tableView.frame;
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
+    CGFloat dismissalBarHeight = dismissalBar.frame.size.height;
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        dismissalBarHeight = 0.0;
+    
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
     {
         CGFloat origin = 32.0;
@@ -1068,7 +1073,7 @@
             origin = 0.0;
         
         tableFrame.origin.y = origin;
-        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
+        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBar.frame.size.height - origin;
         }
     else
     {
@@ -1077,7 +1082,7 @@
             origin = 0.0;
         
         tableFrame.origin.y = origin;
-        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBar.frame.size.height - inputBar.frame.size.height - origin;
+        tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBar.frame.size.height - origin;
      
     }
     
@@ -1458,10 +1463,11 @@
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
         popover.delegate = self;
         currentPopoverType = LIOIpadPopoverTypeImagePicker;
-        [popover presentPopoverFromRect:inputBar.attachButton.bounds
-                                 inView:inputBar.attachButton
-               permittedArrowDirections:UIPopoverArrowDirectionDown
-                               animated:YES];
+        if (self.view.window != nil)
+            [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                     inView:inputBar.attachButton
+                   permittedArrowDirections:UIPopoverArrowDirectionDown
+                                   animated:YES];
     }
     else
     {
@@ -1486,10 +1492,11 @@
         popover = [[UIPopoverController alloc] initWithContentViewController:ipc];
         popover.delegate = self;
         currentPopoverType = LIOIpadPopoverTypeImagePicker;
-        [popover presentPopoverFromRect:inputBar.attachButton.bounds
-                                 inView:inputBar.attachButton
-               permittedArrowDirections:UIPopoverArrowDirectionDown
-                               animated:YES];
+        if (self.view.window != nil)
+            [popover presentPopoverFromRect:inputBar.attachButton.bounds
+                                     inView:inputBar.attachButton
+                   permittedArrowDirections:UIPopoverArrowDirectionDown
+                                   animated:YES];
     }
     else
     {
@@ -1847,7 +1854,8 @@
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
         popover.popoverContentSize = CGSizeMake(320.0, 240.0);
         popover.delegate = self;
-        [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeaderChat.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+        if (self.view.window != nil)
+            [popover presentPopoverFromRect:emailConvoButton.frame inView:functionHeaderChat.contentView permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
     {
@@ -1987,13 +1995,13 @@
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
             tableFrame.origin.y = 0.0;
-            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height;
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBarFrame.size.height;
 
         }
         else
         {
             tableFrame.origin.y = 32.0;
-            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBarFrame.size.height - 32.0;
 
             if (LIOIsUIKitFlatMode())
                 if (![[UIApplication sharedApplication] isStatusBarHidden]) {
@@ -2078,13 +2086,18 @@
                 tableFrame.origin.y += 20.0;
         
         CGFloat newTableHeight = 0.0;
+        
+        CGFloat extraBarHeight = 15.0;
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+            extraBarHeight = 0.0;
+
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
-            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0 - 32.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - extraBarHeight - 32.0;
         }
         else
         {
-            newTableHeight = tableFrame.size.height + keyboardHeight - 15.0;
+            newTableHeight = tableFrame.size.height + keyboardHeight - extraBarHeight;
         }
         
         tableFrame.size.height = newTableHeight;

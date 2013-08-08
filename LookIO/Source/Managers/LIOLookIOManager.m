@@ -1049,6 +1049,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         chatClosingAsPartOfReset = YES;
         
         [altChatViewController performDismissalAnimation];
+        [self dismissBlurImageView];
         return;
     }
     
@@ -4268,6 +4269,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     pendingIntraAppLinkURL = [aURL retain];
     
     [altChatViewController performDismissalAnimation];
+    [self dismissBlurImageView];
 }
 
 - (BOOL)customBrandingAvailable
@@ -4390,16 +4392,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self altChatViewControllerWantsSessionTermination:altChatViewController];
     else {
         [altChatViewController performDismissalAnimation];
-    
-        if (selectedChatTheme == kLPChatThemeFlat) {
-            [UIView animateWithDuration:0.15 animations:^{
-                blurImageView.alpha = 0.0;
-            } completion:^(BOOL finished) {
-                [blurImageView removeFromSuperview];
-                [blurImageView release];
-                blurImageView = nil;
-            }];
-        }
+        [self dismissBlurImageView];
+    }
+}
+
+-(void)dismissBlurImageView {
+    if (selectedChatTheme == kLPChatThemeFlat) {
+        [UIView animateWithDuration:0.15 animations:^{
+            blurImageView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [blurImageView removeFromSuperview];
+            [blurImageView release];
+            blurImageView = nil;
+        }];
+>>>>>>> Small fixes for flat UI
     }
 }
 
@@ -4703,8 +4709,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             killConnectionAfterChatViewDismissal = YES;
         
-        if (altChatViewController)
+        if (altChatViewController) {
             [altChatViewController performDismissalAnimation];
+            [self dismissBlurImageView];
+        }
         else
             [self altChatViewControllerDidFinishDismissalAnimation:nil];
     }
@@ -4718,6 +4726,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     resetAfterChatViewDismissal = YES;
     [altChatViewController performDismissalAnimation];
+    [self dismissBlurImageView];
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPreSurveyWithResponses:(NSDictionary *)aResponseDict
@@ -4963,6 +4972,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             resetAfterChatViewDismissal = YES;
             [altChatViewController performDismissalAnimation];
+            [self dismissBlurImageView];
             break;
         }
     }
@@ -5020,6 +5030,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [altChatViewController.view removeFromSuperview];
         [altChatViewController release];
         altChatViewController = nil;
+<<<<<<< HEAD
 
         // In case the user hasn't typed in any messages, and either surveys are turned off, or he recived and empty survey, we can reset the session
         LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
@@ -5032,7 +5043,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         
     }
+=======
+>>>>>>> Small fixes for flat UI
         
+        if (selectedChatTheme == kLPChatThemeFlat) {
+            [blurImageView removeFromSuperview];
+            [blurImageView release];
+            blurImageView = nil;
+        }        
+    }
+    
     [pendingIntraAppLinkURL release];
     pendingIntraAppLinkURL = nil;
 
