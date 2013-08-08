@@ -31,7 +31,7 @@
         LIOKeyboardMenuButton* attachButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [attachButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCameraIconLarge"] forState:UIControlStateNormal];
         [self addSubview:attachButton];
-        [attachButton setBottomLabelText:@"SEND PHOTO"];
+        [attachButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto") uppercaseString]];
         [attachButton addTarget:self action:@selector(attachButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:attachButton];
         [attachButton release];
@@ -39,7 +39,7 @@
         LIOKeyboardMenuButton* faqsButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [faqsButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIONewspaperIcon"] forState:UIControlStateNormal];
         [self addSubview:faqsButton];
-        [faqsButton setBottomLabelText:@"FAQS"];
+        [faqsButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs") uppercaseString]];
         [faqsButton addTarget:self action:@selector(faqsButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:faqsButton];
         [faqsButton release];
@@ -47,7 +47,7 @@
         LIOKeyboardMenuButton* emailChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [emailChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOEnvelopeIconLarge"] forState:UIControlStateNormal];
         [self addSubview:emailChatButton];
-        [emailChatButton setBottomLabelText:@"EMAIL CHAT"];
+        [emailChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat") uppercaseString]];
         [emailChatButton addTarget:self action:@selector(emailChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:emailChatButton];
         [emailChatButton release];
@@ -55,7 +55,7 @@
         LIOKeyboardMenuButton* hideChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [hideChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORoadSignIcon"] forState:UIControlStateNormal];
         [self addSubview:hideChatButton];
-        [hideChatButton setBottomLabelText:@"HIDE CHAT"];
+        [hideChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonHideChat") uppercaseString]];
         [hideChatButton addTarget:self action:@selector(hideChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:hideChatButton];
         [hideChatButton release];
@@ -63,7 +63,7 @@
         LIOKeyboardMenuButton* endSessionButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [endSessionButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSkullIcon"] forState:UIControlStateNormal];
         [self addSubview:endSessionButton];
-        [endSessionButton setBottomLabelText:@"END SESSION"];
+        [endSessionButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEndSession") uppercaseString]];
         [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:endSessionButton];
         [endSessionButton release];
@@ -71,7 +71,7 @@
         LIOKeyboardMenuButton* keyboardButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [keyboardButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOArrowUpIconLarge"] forState:UIControlStateNormal];
         [self addSubview:keyboardButton];
-        [keyboardButton setBottomLabelText:@"KEYBOARD"];
+        [keyboardButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard") uppercaseString]];
         [keyboardButton addTarget:self action:@selector(showKeyboardButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:keyboardButton];
         [keyboardButton release];

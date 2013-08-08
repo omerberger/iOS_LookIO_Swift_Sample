@@ -171,3 +171,10 @@
 "LIOLookIOManager.FailedAttachmentSendTitle" = "Live Chat Error";
 "LIOLookIOManager.FailedAttachmentSendBody" = "Your photo could not be sent. Please try again.";
 "LIOLookIOManager.FailedAttachmentSendButton" = "Dismiss";
+
+"LIOLookIOManager.KeyboardMenuButtonSendPhoto" = "Send Photo";
+"LIOLookIOManager.KeyboardMenuButtonFaqs" = "FAQs";
+"LIOLookIOManager.KeyboardMenuButtonEmailChat" = "Email Chat";
+"LIOLookIOManager.KeyboardMenuButtonHideChat" = "Hide Chat";
+"LIOLookIOManager.KeyboardMenuButtonEndSession" = "End Session";
+"LIOLookIOManager.KeyboardMenuButtonKeyboard" = "Keyboard";
