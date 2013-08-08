@@ -7,14 +7,32 @@
 //
 
 #import "LIOBlurImageView.h"
+#import <QuartzCore/QuartzCore.h>
+#import <Accelerate/Accelerate.h>
+#import <float.h>
+#import "LIOBundleManager.h"
+
+@interface LIOBlurImageView ()
+
+@property (nonatomic, retain) CALayer *tintLayer;
+
+@end
 
 @implementation LIOBlurImageView
+
+@synthesize tintLayer;
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
+        self.tintLayer = [[[CALayer alloc] init] autorelease];
+        self.tintLayer.frame = self.bounds;
+        self.tintLayer.opacity = 0.4;
+        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+        
+        [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }
