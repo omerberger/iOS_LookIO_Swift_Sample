@@ -2125,7 +2125,7 @@
     if (!keyboardMenuIsVisible)
         [self rejiggerViewForKeyboardWillShow];
     else
-        inputBar.attachButton.transform = CGAffineTransformIdentity;
+        inputBar.attachButton.imageView.transform = CGAffineTransformIdentity;
 
     [UIView commitAnimations];
     
@@ -2214,15 +2214,16 @@
     
     keyboardMenuIsVisible = NO;
     
-    [UIView animateWithDuration:0.15 animations:^{
-        inputBar.attachButton.transform = CGAffineTransformIdentity;
-        
+    [UIView animateWithDuration:0.25 animations:^{
+        inputBar.attachButton.imageView.transform = CGAffineTransformIdentity;
+
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height;
         keyboardMenu.frame = keyboardMenuFrame;
         
-
         [self rejiggerViewForKeyboardWillHide];
+    } completion:^(BOOL finished) {
+        keyboardHeight = 0.0;
     }];
 }
 
@@ -2232,11 +2233,15 @@
     
     keyboardMenuIsVisible = YES;
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
-
-    [UIView animateWithDuration:0.15 animations:^{
-//        inputBar.attachButton.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
-
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (!padUI)
+        keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 216 : 162;
+    else
+        keyboardHeight = (UIInterfaceOrientationIsPortrait(actualOrientation)) ? 264 : 352;
+    [UIView animateWithDuration:0.25 animations:^{
+        inputBar.attachButton.imageView.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
+        
         CGRect keyboardMenuFrame = keyboardMenu.frame;
         keyboardMenuFrame.origin.y = self.view.bounds.size.height - keyboardHeight;
         keyboardMenuFrame.size.height = keyboardHeight;
@@ -2351,7 +2356,7 @@
     if (!keyboardMenuIsVisible)
         [self rejiggerViewForKeyboardWillHide];
     else{
-//        inputBar.attachButton.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
+        inputBar.attachButton.imageView.transform = CGAffineTransformMakeRotation(M_PI * 45 / 180.0);
     }
     
     [UIView commitAnimations];
@@ -2536,7 +2541,7 @@
 }
 
 -(void)keyboardMenuHideChatButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {
-    [self performDismissalAnimation];
+    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 
 -(void)keyboardMenuEndSessionButtonWasTapped:(LIOKeyboardMenu *)keyboardMenu {

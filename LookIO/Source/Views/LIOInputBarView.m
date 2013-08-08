@@ -26,6 +26,7 @@
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
+        attachNeeded = YES;
         
         if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
             self.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
@@ -87,6 +88,9 @@
         attachButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         attachButton.frame = attachButtonFrame;
         attachButton.hidden = NO == attachNeeded;
+        attachButton.adjustsImageWhenHighlighted = NO;
+        attachButton.imageView.clipsToBounds = NO;
+        attachButton.imageView.contentMode = UIViewContentModeCenter;
         [attachButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [attachButton setImage:attachImage forState:UIControlStateNormal];
         [attachButton addTarget:self action:@selector(attachButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];

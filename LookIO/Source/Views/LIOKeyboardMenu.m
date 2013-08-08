@@ -18,7 +18,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.8];
+        self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.55];
         
         buttonsArray = [[NSMutableArray alloc] init];
         
