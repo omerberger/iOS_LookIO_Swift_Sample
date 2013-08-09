@@ -98,6 +98,7 @@
     
     CGRect aFrame = ratingLabel.frame;
     aFrame.origin.x = 0.0;
+
     aFrame.origin.y = 60.0;
     aFrame.size.width = self.bounds.size.width;
     aFrame.size.height = 15.0;

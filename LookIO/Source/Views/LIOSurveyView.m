@@ -456,7 +456,7 @@
     
     LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
     aFrame.size.width = 150.0;
-    aFrame.size.height = 40.0;
+    aFrame.size.height = 60.0;
     aFrame.origin.x = scrollView.bounds.size.width/2.0 - aFrame.size.width/2.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 20;
     starRatingView.frame = aFrame;    
@@ -1134,7 +1134,7 @@
     LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
     if (starRatingView) {
         aFrame.size.width = scrollView.frame.size.width;
-        aFrame.size.height = 40.0;
+        aFrame.size.height = 60.0;
         aFrame.origin.x = scrollView.bounds.size.width/2.0 - aFrame.size.width/2.0;
         aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 20;
         starRatingView.frame = aFrame;
