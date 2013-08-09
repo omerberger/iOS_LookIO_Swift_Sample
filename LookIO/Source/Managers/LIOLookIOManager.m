@@ -4295,9 +4295,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     break;
                 }
                 
+                [self altChatViewControllerWantsSessionTermination:altChatViewController];
+                return;
+                
                 sessionEnding = YES;
                 userWantsSessionTermination = YES;
-                
+                                
                 if (NO == socketConnected)
                 {
                     double delayInSeconds = 0.1;
