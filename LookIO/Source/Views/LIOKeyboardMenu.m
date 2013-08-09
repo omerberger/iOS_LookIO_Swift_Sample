@@ -9,6 +9,7 @@
 #import "LIOKeyboardMenu.h"
 #import "LIOBundleManager.h"
 #import "LIOKeyboardMenuButton.h"
+#import "LIOLookIOManager.h"
 
 @implementation LIOKeyboardMenu
 
@@ -22,13 +23,17 @@
         
         buttonsArray = [[NSMutableArray alloc] init];
         
-        LIOKeyboardMenuButton* attachButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [attachButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCameraIconLarge"] forState:UIControlStateNormal];
-        [self addSubview:attachButton];
-        [attachButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto") uppercaseString]];
-        [attachButton addTarget:self action:@selector(attachButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:attachButton];
-        [attachButton release];
+        BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
+
+        if (attachNeeded) {
+            LIOKeyboardMenuButton* attachButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
+            [attachButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCameraIconLarge"] forState:UIControlStateNormal];
+            [self addSubview:attachButton];
+            [attachButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto") uppercaseString]];
+            [attachButton addTarget:self action:@selector(attachButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [buttonsArray addObject:attachButton];
+            [attachButton release];
+        }
         
         LIOKeyboardMenuButton* faqsButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [faqsButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIONewspaperIcon"] forState:UIControlStateNormal];
