@@ -22,12 +22,6 @@
         
         buttonsArray = [[NSMutableArray alloc] init];
         
-        UIImageView* backgroundImageView = [[UIImageView alloc] initWithFrame:self.bounds];
-        backgroundImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOKeyboardMenuSeparators"];
-        backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        [self addSubview:backgroundImageView];
-        [backgroundImageView release];
-        
         LIOKeyboardMenuButton* attachButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [attachButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCameraIconLarge"] forState:UIControlStateNormal];
         [self addSubview:attachButton];
@@ -94,6 +88,32 @@
         aFrame.origin.y = buttonRow*aFrame.size.height;
         button.frame = aFrame;
     }    
+}
+
+-(void)drawRect:(CGRect)rect {
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    UIColor *lineColor = [UIColor colorWithRed:81.0/255.0 green:81.0/255 blue:81.0/255.0 alpha:1.0];
+    UIColor *shadowColor = [UIColor colorWithRed:103.0/255.0 green:103.0/255 blue:103.0/255.0 alpha:1.0];
+
+    CGContextSaveGState(context);
+    CGContextSetStrokeColorWithColor(context, lineColor.CGColor);
+    CGContextSetShadowWithColor(context, CGSizeMake(1.0, 1.0), 0.0, shadowColor.CGColor);
+    CGContextSetLineWidth(context, 1.0);
+    CGContextMoveToPoint(context, 0, self.bounds.size.height/2);
+    CGContextAddLineToPoint(context, self.bounds.size.width, self.bounds.size.height/2);
+    
+    CGContextMoveToPoint(context, self.bounds.size.width/3, 0);
+    CGContextAddLineToPoint(context, self.bounds.size.width/3, self.bounds.size.height);
+    CGContextMoveToPoint(context, self.bounds.size.width*2/3, 0);
+    CGContextAddLineToPoint(context, self.bounds.size.width*2/3, self.bounds.size.height);
+    CGContextStrokePath(context);
+    
+    
+    CGContextRestoreGState(context);
+    
+    
+
 }
 
 -(void)hideChatButtonWasTapped:(id)sender {

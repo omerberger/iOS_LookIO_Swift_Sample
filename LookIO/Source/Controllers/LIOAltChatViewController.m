@@ -561,6 +561,7 @@
     keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectZero];
     keyboardMenu.delegate = self;
     keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    keyboardMenu.contentMode = UIViewContentModeRedraw;
     aFrame = keyboardMenu.frame;
     aFrame.origin.x = 0;
     aFrame.origin.y = self.view.bounds.size.height;
@@ -1870,8 +1871,6 @@
     
     if (row < 0)
         return 0.0;
-    
-    NSLog(@"Number of chat messages is %d", chatMessages.count);
     
     if ([chatMessages count] == row)
     {
