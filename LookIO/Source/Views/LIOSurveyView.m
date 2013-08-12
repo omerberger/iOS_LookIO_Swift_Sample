@@ -768,8 +768,15 @@
                 for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
                     if ([pickerEntry.label isEqualToString:answer]) {
                         int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
-                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                        [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];                        
+                        
+                        if (question.shouldUseStarRatingView) {
+                            LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
+                            if (starRatingView)
+                                [starRatingView setRating:(5-questionRow)];
+                        }
                     }
+            
         }
         // If not, we should see if any of the answers are set to be checked by default
         else {
