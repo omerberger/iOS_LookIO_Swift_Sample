@@ -33,7 +33,8 @@
     int currentQuestionIndex, nextQuestionIndex;
     NSMutableArray* selectedIndices;
 
-    UIScrollView* currentScrollView;
+    UIScrollView* currentScrollView, *nextScrollView, *previousScrollView;
+    UIImageView* previousQuestionImageView;
     UIPageControl* pageControl;
     UIView* backgroundDismissableArea;
     
@@ -45,9 +46,6 @@
     
     LIOSurveyValidationView *validationView;
     LIOTimerProxy *validationTimer;
-    
-    UIView* contentView;
-    UIImageView* imageView;
 }
 
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
