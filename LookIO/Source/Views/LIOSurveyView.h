@@ -38,13 +38,16 @@
     UIView* backgroundDismissableArea;
     
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
-    UITapGestureRecognizer* tapGestureRecognizer;
+    UITapGestureRecognizer* tapGestureRecognizer, *iPadBackgroundGestureRecognizer;
     
     BOOL isAnimating;
     CGFloat keyboardHeight;
     
     LIOSurveyValidationView *validationView;
     LIOTimerProxy *validationTimer;
+    
+    UIView* contentView;
+    UIImageView* imageView;
 }
 
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;
@@ -52,6 +55,8 @@
 @property (nonatomic, copy) NSString* headerString;
 @property (nonatomic, assign) int currentQuestionIndex;
 @property (nonatomic, assign) LIOSurveyManagerSurveyType currentSurveyType;
+@property (nonatomic, retain) UIImageView* imageView;
+@property (nonatomic, retain) UIView* contentView;
 
 - (void)setupViews;
 - (id)initWithFrame:(CGRect)frame;

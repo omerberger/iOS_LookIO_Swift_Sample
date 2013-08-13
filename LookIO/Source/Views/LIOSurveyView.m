@@ -22,6 +22,7 @@
 #define LIOSurveyViewTopMarginPortrait          70.0
 #define LIOSurveyViewTopMarginLandscape         10.0
 #define LIOSurveyViewSideMargin                 10.0
+#define LIOSurveyViewSideMarginiPad             25.0
 #define LIOSurveyViewPageControlOriginY         265.0
 
 #define LIOSurveyViewIntroButtonMargin          15.0
@@ -51,7 +52,7 @@
 
 @implementation LIOSurveyView
 
-@synthesize delegate, currentSurvey, headerString, currentQuestionIndex,currentSurveyType;
+@synthesize delegate, currentSurvey, headerString, currentQuestionIndex,currentSurveyType, imageView, contentView;
 
 #pragma mark
 #pragma mark Initial setup methods
@@ -106,6 +107,9 @@
     
     [tapGestureRecognizer release];
     tapGestureRecognizer = nil;
+    
+    [iPadBackgroundGestureRecognizer release];
+    iPadBackgroundGestureRecognizer = nil;
 
     [validationView removeFromSuperview];
     [validationView release];
@@ -119,6 +123,42 @@
 }
 
 -(void)setupViews {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
+
+    if (padUI) {
+        backgroundDismissableArea = [[UIView alloc] initWithFrame:self.bounds];
+        backgroundDismissableArea.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self addSubview:backgroundDismissableArea];
+        [backgroundDismissableArea release];
+        
+        imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+        imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        imageView.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
+        [self addSubview:imageView];
+        [imageView release];
+        
+        CGRect aRect = imageView.frame;
+        aRect.origin.y = landscape ? 20 : 135;
+        aRect.size.width = landscape ? 400 : 450;
+        aRect.size.height = landscape ? 360 : 460;
+        aRect.origin.x = (self.bounds.size.width-aRect.size.width)/2;
+        imageView.frame = aRect;
+    }
+    
+    contentView = [[UIView alloc] initWithFrame:CGRectZero];
+    if (padUI)
+        contentView.frame = CGRectMake(8, 8, self.bounds.size.width - 16, self.bounds.size.height - 16);
+    else
+        contentView.frame = self.bounds;
+    
+    contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    contentView.clipsToBounds = YES;
+    [self addSubview:contentView];
+    [contentView release];
+    
     leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
                                    initWithTarget:self action:@selector(handleLeftSwipeGesture:)] autorelease];
     leftSwipeGestureRecognizer.direction =  UISwipeGestureRecognizerDirectionLeft;
@@ -130,26 +170,37 @@
     [self addGestureRecognizer:rightSwipeGestureRecognizer];
     
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
-    [backgroundDismissableArea addGestureRecognizer:tapGestureRecognizer];
+    if (padUI) {
+        iPadBackgroundGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
+        iPadBackgroundGestureRecognizer.delegate = self;
+        iPadBackgroundGestureRecognizer.cancelsTouchesInView = NO;
+        [self addGestureRecognizer:iPadBackgroundGestureRecognizer];
+    }
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
-//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-//            currentScrollView = [self scrollViewForRatingView];
-//        else
             currentScrollView = [self scrollViewForIntroView];
     }
     else
         currentScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
     
-    currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height);
-    currentScrollView.alpha = 0.0;
-    [self addSubview:currentScrollView];
+    if (!padUI) {
+        currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.contentView.bounds.size.height);
+        currentScrollView.alpha = 0.0;
+    }
+    [self.contentView addSubview:currentScrollView];
 
     CGRect pageControlFrame;
-    pageControlFrame.origin.x = 0;
-    pageControlFrame.origin.y = self.bounds.size.height - 20.0;
-    pageControlFrame.size.width = self.bounds.size.width;
-    pageControlFrame.size.height = 20.0;
+    if (padUI) {
+        pageControlFrame.origin.x = 0;
+        pageControlFrame.origin.y = self.bounds.size.height - 20.0;
+        pageControlFrame.size.width = self.bounds.size.width;
+        pageControlFrame.size.height = 20.0;        
+    } else {
+        pageControlFrame.origin.x = 0;
+        pageControlFrame.origin.y = self.contentView.bounds.size.height - 20.0;
+        pageControlFrame.size.width = self.contentView.bounds.size.width;
+        pageControlFrame.size.height = 20.0;
+    }
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
@@ -157,16 +208,21 @@
         pageControl.currentPage = 0;
     else
         pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-    [self addSubview:pageControl];
+    if (padUI)
+        [self addSubview:pageControl];
+    else
+        [self.contentView addSubview:pageControl];
     [pageControl release];
     
-    isAnimating = YES;
-    [UIView animateWithDuration:0.5 animations:^{
-        currentScrollView.alpha = 1.0;
-        currentScrollView.transform = CGAffineTransformIdentity;
-    } completion:^(BOOL finished) {
-        isAnimating = NO;
-    }];
+    if (!padUI) {
+        isAnimating = YES;
+        [UIView animateWithDuration:0.5 animations:^{
+            currentScrollView.alpha = 1.0;
+            currentScrollView.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            isAnimating = NO;
+        }];
+    }
 
 }
 
@@ -179,26 +235,42 @@
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
+    if (padUI) {
+        CGRect aRect = imageView.frame;
+        aRect.origin.y = landscape ? 20 : 135;
+        aRect.size.width = landscape ? 400 : 450;
+        aRect.size.height = landscape ? 360 : 460;
+        aRect.origin.x = (self.bounds.size.width-aRect.size.width)/2;
+        imageView.frame = aRect;
+    
+        aRect = contentView.frame;
+        aRect.origin.x = imageView.frame.origin.x + 8;
+        aRect.origin.y = imageView.frame.origin.y + 8;
+        aRect.size.width = imageView.frame.size.width - 16;
+        aRect.size.height = imageView.frame.size.height - 16;
+        contentView.frame = aRect;
+    }
+
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
-//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-//            [self rejiggerRatingScrollView:currentScrollView];
-//        else
             [self rejiggerIntroScrollView:currentScrollView];
     } else {
         if (!isAnimating && currentScrollView != nil)
             [self rejiggerSurveyScrollView:currentScrollView];
     }
     
-    CGRect pageControlFrame = pageControl.frame;
-    if (padUI)
-        pageControlFrame.origin.y = self.bounds.size.height - 20.0;
-    else
-        pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0;
-    pageControl.frame = pageControlFrame;
+    [self rejiggerPageControlFrame];
     
     if (validationView != nil) {
         CGRect aFrame = validationView.frame;
         aFrame.origin.y = (landscape || padUI) ? 0 : 32;
+        
+        if (padUI) {
+            aFrame = validationView.frame;
+            aFrame.size.width = imageView.frame.size.width - 15;
+            aFrame.origin.x = imageView.frame.origin.x + 8.0;
+            aFrame.origin.y = imageView.frame.origin.y + 4.0;
+            validationView.frame = aFrame;
+        }
         
         // iOS 7.0: Add another 20px on top for the status bar
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
@@ -210,7 +282,7 @@
 }
 
 -(UIScrollView*)scrollViewForRatingView {
-    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.contentView.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
     UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
@@ -325,23 +397,24 @@
 -(void)rejiggerRatingScrollView:(UIScrollView*)scrollView {
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
-    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     CGRect aFrame;
     
     UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
     
-    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.x = (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);
     aFrame.origin.y = landscape ? LIOSurveyViewIntroTopMarginLandscape : LIOSurveyViewIntroTopMarginPortrait;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.width = self.contentView.bounds.size.width - 2*(padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     headerLabel.frame = aFrame;
     
     UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroRequiredLabel];
     
-    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.x = (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);;
     aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.width = self.contentView.bounds.size.width - 2*(padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);;
     expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     requiredLabel.frame = aFrame;
@@ -355,7 +428,7 @@
     
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
     
-    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
+    aFrame.origin.x = self.contentView.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 100;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -363,7 +436,7 @@
     
     UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
     
-    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
+    aFrame.origin.x = self.contentView.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 100;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -371,9 +444,9 @@
     
     UILabel* needhelpLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroNeedHelpLabel];
     
-    aFrame.origin.x = LIOSurveyViewSideMargin;
+    aFrame.origin.x = (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 250;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.width = self.contentView.bounds.size.width - 2*(padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin);
     aFrame.size.height = 16.0;
     needhelpLabel.frame = aFrame;
     
@@ -390,7 +463,7 @@
 }
 
 -(UIScrollView*)scrollViewForIntroView {
-    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.contentView.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
     UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
@@ -464,6 +537,19 @@
     return scrollView;
 }
 
+- (void)rejiggerPageControlFrame {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
+
+    CGRect pageControlFrame = pageControl.frame;
+    if (padUI)
+        pageControlFrame.origin.y = self.bounds.size.height - keyboardHeight - 20.0 - ((keyboardHeight == 0 && !landscape) ? 20 : 0);
+    else
+        pageControlFrame.origin.y = self.contentView.bounds.size.height - keyboardHeight - 20.0;
+    pageControl.frame = pageControlFrame;
+}
 
 -(void)rejiggerIntroScrollView:(UIScrollView*)scrollView {
     UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
@@ -475,7 +561,7 @@
 
     aFrame.origin.x = LIOSurveyViewSideMargin;
     aFrame.origin.y = landscape ? LIOSurveyViewIntroTopMarginLandscape : LIOSurveyViewIntroTopMarginPortrait;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.width = self.contentView.bounds.size.width - 2*LIOSurveyViewSideMargin;
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     headerLabel.frame = aFrame;
@@ -484,13 +570,13 @@
     
     aFrame.origin.x = LIOSurveyViewSideMargin;
     aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
-    aFrame.size.width = self.bounds.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.size.width = self.contentView.bounds.size.width - 2*LIOSurveyViewSideMargin;
     expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     requiredLabel.frame = aFrame;
     
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
-    aFrame.origin.x = self.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
+    aFrame.origin.x = self.contentView.bounds.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -498,7 +584,7 @@
     
     UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
     
-    aFrame.origin.x = self.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
+    aFrame.origin.x = self.contentView.bounds.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
@@ -517,9 +603,9 @@
     
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:index];
     
-    CGRect aFrame = self.bounds;
+    CGRect aFrame = self.contentView.bounds;
     aFrame.size.height = aFrame.size.height - keyboardHeight;
-    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.contentView.bounds] autorelease];
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     scrollView.showsVerticalScrollIndicator = NO;
     
@@ -711,7 +797,7 @@
             UITableView* tableView = [[UITableView alloc]
                                       initWithFrame:CGRectZero style:UITableViewStylePlain];
             CGFloat tableViewContentHeight = [self heightForTableView:tableView];
-            tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
+            tableView.frame = CGRectMake(0, 0, self.contentView.bounds.size.width - 34.0, tableViewContentHeight);
             
             tableView.tag = LIOSurveyViewTableViewTag;
             tableView.delegate = self;
@@ -820,9 +906,9 @@
 
     UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewTitleLabelTag];
     if (questionLabel) {
-        aFrame.origin.x = LIOSurveyViewSideMargin;
+        aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
         aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
-        aFrame.size.width = self.bounds.size.width - LIOSurveyViewSideMargin*2;
+        aFrame.size.width = self.contentView.bounds.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
         
@@ -839,8 +925,8 @@
         UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
         if (fieldBackground) {
             aFrame = fieldBackground.frame;
-            aFrame.origin.x = 10.0;
-            aFrame.size.width = self.bounds.size.width - 20.0;
+            aFrame.origin.x = padUI ? 25.0 : 10.0;
+            aFrame.size.width = self.contentView.bounds.size.width - 20.0 - (padUI ? 30.0 : 0);
             aFrame.size.height = landscape ? 43.0 : 43.0;
             aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
             fieldBackground.frame = aFrame;
@@ -871,8 +957,8 @@
         UIImageView* fieldBackground = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewInputBackgroundTag];
         if (fieldBackground) {
             aFrame = fieldBackground.frame;
-            aFrame.origin.x = 10.0;
-            aFrame.size.width = self.bounds.size.width - 20.0;
+            aFrame.origin.x = padUI ? 25.0 : 10.0;
+            aFrame.size.width = self.contentView.bounds.size.width - 20.0 - (padUI ? 30.0 : 0);
             aFrame.size.height = landscape ? 75.0 : 105.0;
             aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
             fieldBackground.frame = aFrame;
@@ -900,7 +986,7 @@
         starRatingView.frame = aFrame;
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
-        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewSideMargin*2 - 92.0;
+        aFrame.origin.x = self.contentView.bounds.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2 - 92.0;
         aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 30;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
@@ -914,7 +1000,7 @@
 
         CGFloat tableViewContentHeight = [self heightForTableView:tableView];
         
-        CGFloat maxHeight = self.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 50.0 - (landscape && !padUI ? 0 : 60.0);
+        CGFloat maxHeight = self.contentView.bounds.size.height - 53.0 - questionLabel.bounds.size.height - 50.0 - (landscape && !padUI ? 0 : 60.0);
         if (tableViewContentHeight > maxHeight) {
             tableView.scrollEnabled = YES;
             tableViewContentHeight = maxHeight;
@@ -922,10 +1008,10 @@
             tableView.scrollEnabled = NO;
         }
     
-        tableView.frame = CGRectMake(15.0, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.bounds.size.width - 34.0, tableViewContentHeight);
+        tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, self.contentView.bounds.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2, tableViewContentHeight);
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
-        aFrame.origin.x = self.bounds.size.width - LIOSurveyViewSideMargin*2 - 92.0;
+        aFrame.origin.x = self.contentView.bounds.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2 - 92.0;
         aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
@@ -1049,8 +1135,8 @@
         }
             
         UIScrollView* nextQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
-        nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
-        [self addSubview:nextQuestionScrollView];
+        nextQuestionScrollView.transform = CGAffineTransformMakeTranslation(self.contentView.bounds.size.width, 0.0);
+        [self.contentView addSubview:nextQuestionScrollView];
         [self setNeedsLayout];
             
         isAnimating = YES;
@@ -1058,10 +1144,13 @@
             [currentScrollView endEditing:YES];
                 
             nextQuestionScrollView.transform = CGAffineTransformIdentity;
-            currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
+            currentScrollView.transform = CGAffineTransformMakeTranslation(-self.contentView.bounds.size.width, 0.0);
 
             pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
             pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
+            
+            [self rejiggerPageControlFrame];
+
         } completion:^(BOOL finished) {
             [currentScrollView removeFromSuperview];
             currentScrollView = nil;
@@ -1103,15 +1192,15 @@
     else
         previousQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
     
-    previousQuestionScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
-    [self addSubview:previousQuestionScrollView];
+    previousQuestionScrollView.transform = CGAffineTransformMakeTranslation(-self.contentView.bounds.size.width, 0.0);
+    [self.contentView addSubview:previousQuestionScrollView];
     
     isAnimating = YES;
     [UIView animateWithDuration:0.3 animations:^{
         [currentScrollView endEditing:YES];
         
         previousQuestionScrollView.transform = CGAffineTransformIdentity;
-        currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
+        currentScrollView.transform = CGAffineTransformMakeTranslation(self.contentView.bounds.size.width, 0.0);
         
         pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
 
@@ -1119,13 +1208,15 @@
             pageControl.currentPage = 0;
         else
             pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-        
+
+        [self rejiggerPageControlFrame];
+
         if (validationView) {
             [validationTimer stopTimer];
             [self validationTimerDidFire];
         }
         
-        
+     
     } completion:^(BOOL finished) {
         [currentScrollView removeFromSuperview];
         currentScrollView = nil;
@@ -1162,7 +1253,13 @@
     validationView.frame = aFrame;
     validationView.label.text = aMessage;
     validationView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self addSubview:validationView];
+    if (padUI) {
+        [self addSubview:validationView];
+        validationView.layer.cornerRadius = 5.0;
+        validationView.clipsToBounds = YES;
+    }
+    else
+        [self.contentView addSubview:validationView];
     
     [validationView layoutSubviews];
     [validationView showAnimated];
@@ -1525,5 +1622,12 @@
     
 }
 
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if ([touch.view isDescendantOfView:currentScrollView]) {
+        return NO; // ignore the touch
+    }
+
+    return YES; // handle the touch
+}
 
 @end

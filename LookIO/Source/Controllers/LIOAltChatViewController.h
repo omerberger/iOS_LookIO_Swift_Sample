@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOSurveyManager.h"
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
-@class LIOTimerProxy, LIOChatMessage;
+@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -116,6 +117,5 @@
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
-- (void)showPostSurveyView;
-- (void)showPreSurveyView;
+- (void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType;
 @end

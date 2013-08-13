@@ -75,6 +75,39 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     [super dealloc];
 }
 
+- (LIOSurveyTemplate*)surveyTemplateForType:(LIOSurveyManagerSurveyType)surveyType {
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        return self.preChatTemplate;
+    if (LIOSurveyManagerSurveyTypePost == surveyType)
+        return self.postChatTemplate;
+    if (LIOSurveyManagerSurveyTypeOffline == surveyType)
+        return self.offlineTemplate;
+    
+    return nil;
+}
+
+- (NSString*)surveyHeaderForType:(LIOSurveyManagerSurveyType)surveyType {
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        return self.preChatHeader;
+    if (LIOSurveyManagerSurveyTypePost == surveyType)
+        return self.postChatHeader;
+    if (LIOSurveyManagerSurveyTypeOffline == surveyType)
+        return self.offlineHeader;
+    
+    return nil;
+}
+
+- (int)lastCompletedQuestionIndexForType:(LIOSurveyManagerSurveyType)surveyType {
+    if (LIOSurveyManagerSurveyTypePre == surveyType)
+        return self.lastCompletedQuestionIndexPre;
+    if (LIOSurveyManagerSurveyTypePost == surveyType)
+        return self.lastCompletedQuestionIndexPost;
+    if (LIOSurveyManagerSurveyTypeOffline == surveyType)
+        return self.lastCompletedQuestionIndexOffline;
+    
+    return 0;    
+}
+
 - (void)registerAnswerObject:(id)anAnswerObj forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex
 {
     if (LIOSurveyManagerSurveyTypePre == surveyType)

@@ -566,17 +566,25 @@
     // If a survey is going to be shown, we want to hide the chat elements that are animating in.
     // They will be revealed after the survey is complete.
 
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
-    
     if (surveyManager.preChatTemplate)
     {
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-        if (!surveyManager.preSurveyCompleted)
-            [self showPreSurveyView];
+        if (!surveyManager.preSurveyCompleted) {
+            if (padUI) {
+                [self hideChatUIForSurvey:NO];
+                double delayInSeconds = 0.5;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [self showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
+                });
+            } else {
+                [self showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
+            }            
+        }
     }
-    
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
@@ -666,163 +674,43 @@
     }
 }
 
-- (void)showPostSurveyView {
-    [self hideChatUIForSurvey:YES];
-
-    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
-    surveyView.currentSurvey = surveyManager.postChatTemplate;
-    surveyView.currentSurveyType = LIOSurveyManagerSurveyTypePost;
-    surveyView.headerString = surveyManager.postChatHeader;
-    int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPost;
-    if (lastIndexCompleted == -1)
-        surveyView.currentQuestionIndex = lastIndexCompleted;
-    else
-        surveyView.currentQuestionIndex = lastIndexCompleted + 1;
-    surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    surveyView.delegate = self;
-    
-    if (padUI)
-    {
-        UIViewController* controller = [[[UIViewController alloc] init] autorelease];
-        controller.view.frame = CGRectMake(0, 0, 320, 480);
-        surveyView.frame = controller.view.frame;
-        surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
-        controller.view = surveyView;
-        
-        popover = [[UIPopoverController alloc] initWithContentViewController:controller];
-        popover.delegate = self;
-        currentPopoverType = LIOIpadPopoverTypeSurvey;
-        popover.popoverContentSize = CGSizeMake(320.0, 480.0);
-        
-        CGRect aRect;
-        aRect.origin.x = self.view.bounds.size.width;
-        aRect.origin.y = self.view.bounds.size.height * 0.3;
-        aRect.size = CGSizeMake(10, 10);
-
-        if (self.view.window != nil)
-            [popover presentPopoverFromRect:aRect
-                                inView:self.view
-            permittedArrowDirections:UIPopoverArrowDirectionRight
-                               animated:YES];
-        
-    }
-    else
-    {
-        [self.view insertSubview:surveyView belowSubview:headerBar];
-    }
-    
-    [surveyView setupViews];
-    surveyInProgress = YES;
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
-        [self didRotateFromInterfaceOrientation:0];
-}
-
--(void)showOfflineSurveyView {
-    [self hideChatUIForSurvey:YES];
-    
-    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
-    surveyView.currentSurvey = surveyManager.offlineTemplate;
-    surveyView.currentSurveyType = LIOSurveyManagerSurveyTypeOffline;
-    surveyView.headerString = surveyManager.offlineHeader;
-    int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexOffline;
-    if (lastIndexCompleted == -1)
-        surveyView.currentQuestionIndex = lastIndexCompleted;
-    else
-        surveyView.currentQuestionIndex = lastIndexCompleted + 1;
-    surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    surveyView.delegate = self;
-    
-    if (padUI)
-    {
-        UIViewController* controller = [[[UIViewController alloc] init] autorelease];
-        controller.view.frame = CGRectMake(0, 0, 320, 480);
-        surveyView.frame = controller.view.frame;
-        surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
-        controller.view = surveyView;
-        
-        popover = [[UIPopoverController alloc] initWithContentViewController:controller];
-        popover.delegate = self;
-        currentPopoverType = LIOIpadPopoverTypeSurvey;
-        popover.popoverContentSize = CGSizeMake(320.0, 480.0);
-        
-        CGRect aRect;
-        aRect.origin.x = self.view.bounds.size.width;
-        aRect.origin.y = self.view.bounds.size.height * 0.3;
-        aRect.size = CGSizeMake(10, 10);
-        
-        if (self.view.window != nil)
-        [popover presentPopoverFromRect:aRect
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionRight
-                               animated:YES];
-        
-    }
-    else
-    {
-        [self.view insertSubview:surveyView belowSubview:headerBar];
-    }
-    
-    [surveyView setupViews];
-    surveyInProgress = YES;
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 6.0)
-        [self didRotateFromInterfaceOrientation:0];
-}
-
--(void)showPreSurveyView {
+-(void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType {
     [self.view endEditing:YES];
     [self hideChatUIForSurvey:YES];
 
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    surveyView = [[[LIOSurveyView alloc] initWithFrame:self.view.bounds] autorelease];
-    surveyView.currentSurvey = surveyManager.preChatTemplate;
-    surveyView.currentSurveyType = LIOSurveyManagerSurveyTypePre;
-    surveyView.headerString = surveyManager.preChatHeader;
-    int lastIndexCompleted = surveyManager.lastCompletedQuestionIndexPre;
+    surveyView = [[[LIOSurveyView alloc] initWithFrame:CGRectZero] autorelease];
+    surveyView.currentSurveyType = surveyType;
+    surveyView.currentSurvey = [surveyManager surveyTemplateForType:surveyType];
+    surveyView.headerString = [surveyManager surveyHeaderForType:surveyType];
+    int lastIndexCompleted = [surveyManager lastCompletedQuestionIndexForType:surveyType];
     if (lastIndexCompleted == -1)
         surveyView.currentQuestionIndex = lastIndexCompleted;
     else
         surveyView.currentQuestionIndex = lastIndexCompleted + 1;
-    surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     surveyView.delegate = self;
     
-    if (padUI)
-    {
-        UIViewController* controller = [[[UIViewController alloc] init] autorelease];
-        controller.view.frame = CGRectMake(0, 0, 320, 480);
-        surveyView.frame = controller.view.frame;
-        surveyView.backgroundColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
-        controller.view = surveyView;
-        
-        popover = [[UIPopoverController alloc] initWithContentViewController:controller];
-        popover.delegate = self;
-        currentPopoverType = LIOIpadPopoverTypeSurvey;
-        popover.popoverContentSize = CGSizeMake(320.0, 480.0);
-        
-        CGRect aRect;
-        aRect.origin.x = self.view.bounds.size.width;
-        aRect.origin.y = self.view.bounds.size.height * 0.3;
-        aRect.size = CGSizeMake(10, 10);
-        
-        if (self.view.window != nil)
-            [popover presentPopoverFromRect:aRect
-                                 inView:self.view
-               permittedArrowDirections:UIPopoverArrowDirectionRight
-                               animated:YES];
-        
-    }
-    else
-    {
+    if (!padUI) {
+        surveyView.frame = self.view.bounds;
         [self.view insertSubview:surveyView belowSubview:headerBar];
+        surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    } else {
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+
+        CGRect aRect = self.view.bounds;
+        aRect.origin.y = UIInterfaceOrientationIsPortrait(actualOrientation) ? -460 : -360;
+        surveyView.frame = aRect;
+        
+        surveyView.clipsToBounds = YES;
+        surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [self.view addSubview:surveyView];
+        [UIView animateWithDuration:0.3 animations:^{
+            CGRect aRect = surveyView.frame;
+            aRect.origin.y = 0;
+            surveyView.frame = aRect;
+        }];
     }
     
     [surveyView setupViews];
@@ -946,18 +834,6 @@
                                      inView:inputBar.attachButton
                    permittedArrowDirections:UIPopoverArrowDirectionDown
                                    animated:YES];
-        
-        if (currentPopoverType == LIOIpadPopoverTypeSurvey) {
-            CGRect aRect;
-            aRect.origin.x = self.view.bounds.size.width;
-            aRect.origin.y = self.view.bounds.size.height * 0.3;
-            aRect.size = CGSizeMake(10, 10);
-            
-            [popover presentPopoverFromRect:aRect
-                                     inView:self.view
-                   permittedArrowDirections:UIPopoverArrowDirectionRight
-                                   animated:YES];
-        }
     }
     
     vertGradient.frame = self.view.bounds;
@@ -1280,7 +1156,7 @@
     // Check to see if there is an offline survey template that could be used here
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (surveyManager.offlineTemplate) {
-        [self showOfflineSurveyView];
+        [self showSurveyViewForType:LIOSurveyManagerSurveyTypeOffline];
     } else {
         NSString *pendingEmailAddress = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
         
@@ -1708,7 +1584,6 @@
     
     if (padUI)
     {
-        //aController.modalInPopover = YES;
         aController.contentSizeForViewInPopover = CGSizeMake(320.0, 240.0);
         
         popover = [[UIPopoverController alloc] initWithContentViewController:aController];
@@ -2274,10 +2149,6 @@
     [popover release];
     currentPopoverType = LIOIpadPopoverTypeNone;
     popover = nil;
-    
-    if (surveyInProgress && surveyView) {
-        [self surveyViewDidCancel:surveyView];
-    }
 }
 
 #pragma mark -
@@ -2314,12 +2185,10 @@
         [self.view endEditing:YES];
         
         if (padUI) {
-            currentPopoverType = LIOIpadPopoverTypeNone;
-            [popover dismissPopoverAnimated:YES];
-            [UIView animateWithDuration:0.5 animations:^{
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect aFrame = surveyView.frame;
+                aFrame.origin.y = -aFrame.size.height;
+                surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
                 [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
@@ -2342,12 +2211,10 @@
         [self.view endEditing:YES];
         
         if (padUI) {
-            currentPopoverType = LIOIpadPopoverTypeNone;
-            [popover dismissPopoverAnimated:YES];
-            [UIView animateWithDuration:0.5 animations:^{
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect aFrame = surveyView.frame;
+                aFrame.origin.y = -aFrame.size.height;
+                surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
                 [delegate altChatViewControllerWantsSessionTermination:self];
@@ -2370,12 +2237,10 @@
         [self.view endEditing:YES];
         
         if (padUI) {
-            currentPopoverType = LIOIpadPopoverTypeNone;
-            [popover dismissPopoverAnimated:YES];
-            [UIView animateWithDuration:0.5 animations:^{
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect aFrame = surveyView.frame;
+                aFrame.origin.y = -aFrame.size.height;
+                surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
                 [delegate altChatViewControllerWantsSessionTermination:self];
@@ -2421,12 +2286,14 @@
             [surveyView endEditing:YES];
             
             if (padUI) {
-                if (popover) {
-                    currentPopoverType = LIOIpadPopoverTypeNone;
-                    [popover dismissPopoverAnimated:YES];
+                [UIView animateWithDuration:0.3 animations:^{
+                    CGRect aFrame = surveyView.frame;
+                    aFrame.origin.y = -aFrame.size.height;
+                    surveyView.frame = aFrame;
+                } completion:^(BOOL finished) {
                     [surveyView removeFromSuperview];
                     surveyView = nil;
-                }
+                }];
             } else {
                 [UIView animateWithDuration:0.3 animations:^{
                     surveyView.alpha = 0.0;
@@ -2459,12 +2326,14 @@
             [surveyView endEditing:YES];
 
             if (padUI) {
-                if (popover) {
-                    currentPopoverType = LIOIpadPopoverTypeNone;
-                    [popover dismissPopoverAnimated:YES];
+                [UIView animateWithDuration:0.3 animations:^{
+                    CGRect aFrame = surveyView.frame;
+                    aFrame.origin.y = -aFrame.size.height;
+                    surveyView.frame = aFrame;
+                } completion:^(BOOL finished) {
                     [surveyView removeFromSuperview];
                     surveyView = nil;
-                }
+                }];
             } else {
                 [UIView animateWithDuration:0.3 animations:^{
                     surveyView.alpha = 0.0;
@@ -2492,16 +2361,22 @@
         [self reloadMessages];
         
         if (padUI) {
-            currentPopoverType = LIOIpadPopoverTypeNone;
-            [popover dismissPopoverAnimated:YES];
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect aFrame = surveyView.frame;
+                aFrame.origin.y = -aFrame.size.height;
+                surveyView.frame = aFrame;
+            } completion:^(BOOL finished) {
+                if (!surveyInProgress) {
+                    [surveyView removeFromSuperview];
+                    surveyView = nil;
+                }
+            }];
             
             dismissalBar.alpha = 1.0;
             inputBar.alpha = 1.0;
             tableView.alpha = 1.0;
             
             [self performRevealAnimationWithFadeIn:NO];
-            [aView removeFromSuperview];
-            aView = nil;
             
             double delayInSeconds = 0.1;
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -2524,44 +2399,6 @@
                 [aView removeFromSuperview];
             }];
         }
-    }
-}
-
-
-- (void)surveyViewControllerDidFinishSurvey:(LIOSurveyViewController *)aController
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    // Collect responses for submission.
-    NSMutableDictionary *finalDict = [NSMutableDictionary dictionary];
-    for (int i=0; i<[aController.currentSurvey.questions count]; i++)
-    {
-        LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aController.currentSurvey.questions objectAtIndex:i];
-        id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:LIOSurveyManagerSurveyTypePre withQuestionIndex:i];
-        if (aResponse != nil)
-            [finalDict setObject:aResponse forKey:[NSString stringWithFormat:@"%d", aQuestion.questionId]];
-    }
-    NSMutableDictionary *surveyDict = [NSMutableDictionary dictionary];
-    [surveyDict setObject:aController.currentSurvey.surveyId forKey:@"id"];
-    [surveyDict setObject:finalDict forKey:@"responses"];
-    [delegate altChatViewController:self didFinishPreSurveyWithResponses:surveyDict];
-    
-    dismissalBar.hidden = NO;
-    inputBar.hidden = NO;
-    tableView.hidden = NO;
-    headerBar.hidden = NO;
-    
-    [self dismissModalViewControllerAnimated:YES];
-    
-    // As above, viewDidAppear doesn't trigger on iPad after the survey is dismissed.
-    // We manually invoke it here.
-    if (padUI)
-    {
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self viewDidAppear:NO];
-        });
     }
 }
 

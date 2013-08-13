@@ -2788,7 +2788,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)presentPreChatSurvey {
     if (altChatViewController) {
-        [altChatViewController showPreSurveyView];
+        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
     }
 }
 
@@ -4330,7 +4330,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
                 if (surveryManager.postChatTemplate) {
-                    [altChatViewController showPostSurveyView];
+                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
                     break;
                 }
                 

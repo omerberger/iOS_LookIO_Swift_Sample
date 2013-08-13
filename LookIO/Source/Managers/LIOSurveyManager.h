@@ -32,6 +32,9 @@ typedef enum
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
+- (LIOSurveyTemplate*)surveyTemplateForType:(LIOSurveyManagerSurveyType)surveyType;
+- (int)lastCompletedQuestionIndexForType:(LIOSurveyManagerSurveyType)surveyType;
+- (NSString*)surveyHeaderForType:(LIOSurveyManagerSurveyType)surveyType;
 - (void)populateTemplateWithDictionary:(NSDictionary *)aDict type:(LIOSurveyManagerSurveyType)surveyType;
 - (void)clearTemplateForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (void)registerAnswerObject:(id)anAnswerObj forSurveyType:(LIOSurveyManagerSurveyType)surveyType withQuestionIndex:(int)anIndex;
