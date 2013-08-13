@@ -217,6 +217,7 @@ typedef enum
     BOOL introPacketWasSent;
     NSMutableArray* funnelRequestQueue;
     BOOL funnelRequestIsActive;
+    BOOL callChatNotAnsweredAfterDismissal;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -326,6 +327,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         introPacketWasSent = NO;
         funnelRequestQueue = [[[NSMutableArray alloc] init] retain];
         funnelRequestIsActive = NO;
+        callChatNotAnsweredAfterDismissal = NO;
 
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
@@ -2461,27 +2463,56 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else if ([action isEqualToString:@"leave_message"])
         {
-            LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-            surveyManager.offlineSurveyIsDefault = YES;
+            
+            // By default, we're not calling the custom chat not answered method.
+            // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
+            // we do want to use this method
+            
+            callChatNotAnsweredAfterDismissal = NO;
+            
+            if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerShouldUseCustomActionForChatNotAnswered:)])
+                if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
+                    callChatNotAnsweredAfterDismissal = [delegate lookIOManagerShouldUseCustomActionForChatNotAnswered:self];
+            
+            if (callChatNotAnsweredAfterDismissal) {
+                [self altChatViewControllerWantsSessionTermination:altChatViewController];
+            } else {
+                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+                surveyManager.offlineSurveyIsDefault = YES;
 
-            [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
-            [altChatViewController forceLeaveMessageScreen];
+                [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
+                [altChatViewController forceLeaveMessageScreen];
+            }
         }
     }
     else if ([type isEqualToString:@"survey"]) {
         // Check if this is an offline survey
         if ([aPacket objectForKey:@"offline"]) {
-        
-            NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
-            if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
-            {
-                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+            // By default, we're not calling the custom chat not answered method.
+            // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
+            // we do want to use this method
+            
+            callChatNotAnsweredAfterDismissal = NO;
+            
+            if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerShouldUseCustomActionForChatNotAnswered:)])
+                if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
+                    callChatNotAnsweredAfterDismissal = [delegate lookIOManagerShouldUseCustomActionForChatNotAnswered:self];
+            
+            if (callChatNotAnsweredAfterDismissal) {
+                [self altChatViewControllerWantsSessionTermination:altChatViewController];
 
-                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:offlineSurveyDict type:LIOSurveyManagerSurveyTypeOffline];
-                surveyManager.offlineSurveyIsDefault = NO;
+            } else {
+                NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
+                if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
+                {
+                    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+
+                    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:offlineSurveyDict type:LIOSurveyManagerSurveyTypeOffline];
+                    surveyManager.offlineSurveyIsDefault = NO;
+                }
+
+                [altChatViewController forceLeaveMessageScreen];
             }
-
-            [altChatViewController forceLeaveMessageScreen];
         }
         
         // Check if this is a postchat survey
@@ -2855,7 +2886,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)refreshControlButtonVisibility
 {
     [controlButton.layer removeAllAnimations];
-
+    
     // Trump card #-1: If the session is ending, button is hidden.
     if (sessionEnding)
     {
@@ -4003,8 +4034,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.frame = controlButtonHiddenFrame;
         [self rejiggerControlButtonLabel];
         [self rejiggerWindows];
+
+        if (callChatNotAnsweredAfterDismissal) {
+            if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
+                [delegate lookIOManagerCustomActionForChatNotAnswered:self];
+            callChatNotAnsweredAfterDismissal = NO;
+        }
+
     });
-    
+        
     if (socketConnected)
     {
         NSDictionary *chatDown = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -4031,6 +4069,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [pendingIntraAppLinkURL release];
         pendingIntraAppLinkURL = nil;
     }
+    
 }
 
 - (void)altChatViewControllerTypingDidStart:(LIOAltChatViewController *)aController

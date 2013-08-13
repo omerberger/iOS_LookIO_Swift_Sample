@@ -2479,7 +2479,7 @@
     }
     
     if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {
-        surveyManager.preSurveyCompleted = YES;        
+        surveyManager.preSurveyCompleted = YES;
         [delegate altChatViewController:self didFinishPreSurveyWithResponses:surveyDict];
         
         dismissalBar.alpha = 0.0;
@@ -2515,12 +2515,13 @@
                 aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
                 
             } completion:^(BOOL finished) {
-                dismissalBar.alpha = 1.0;
-                inputBar.alpha = 1.0;
-                tableView.alpha = 1.0;
-                [self performRevealAnimationWithFadeIn:NO];
+                if (!surveyInProgress) {
+                    dismissalBar.alpha = 1.0;
+                    inputBar.alpha = 1.0;
+                    tableView.alpha = 1.0;
+                    [self performRevealAnimationWithFadeIn:NO];
+                }
                 [aView removeFromSuperview];
-                
             }];
         }
     }
