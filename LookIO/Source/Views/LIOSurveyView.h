@@ -33,8 +33,8 @@
     int currentQuestionIndex, nextQuestionIndex;
     NSMutableArray* selectedIndices;
 
-    UIScrollView* currentScrollView, *nextScrollView, *previousScrollView;
-    UIImageView* previousQuestionImageView;
+    UIScrollView* currentScrollView;
+    UIImageView* previousQuestionImageView, *nextQuestionImageView, *currentQuestionImageView;
     UIPageControl* pageControl;
     UIView* backgroundDismissableArea;
     

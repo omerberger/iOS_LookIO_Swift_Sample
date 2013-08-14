@@ -1719,7 +1719,6 @@
             if (surveyInProgress)
                 headerFrame.origin.y = 0;
         }
-
         
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {

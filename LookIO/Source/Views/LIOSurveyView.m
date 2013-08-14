@@ -108,9 +108,6 @@
     [tapGestureRecognizer release];
     tapGestureRecognizer = nil;
     
-    [iPadBackgroundGestureRecognizer release];
-    iPadBackgroundGestureRecognizer = nil;
-
     [validationView removeFromSuperview];
     [validationView release];
     validationView = nil;
@@ -124,9 +121,6 @@
 
 -(void)setupViews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
-    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     if (padUI) {
         backgroundDismissableArea = [[UIView alloc] initWithFrame:self.bounds];
@@ -147,10 +141,9 @@
     
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
     if (padUI) {
-        iPadBackgroundGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
-        iPadBackgroundGestureRecognizer.delegate = self;
-        iPadBackgroundGestureRecognizer.cancelsTouchesInView = NO;
-        [self addGestureRecognizer:iPadBackgroundGestureRecognizer];
+        tapGestureRecognizer.delegate = self;
+        tapGestureRecognizer.cancelsTouchesInView = NO;
+        [self addGestureRecognizer:tapGestureRecognizer];
     }
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
@@ -164,7 +157,45 @@
         currentScrollView.alpha = 0.0;
     }
     [self addSubview:currentScrollView];
-
+    
+    int numberOfQuestions = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType];
+    
+    if (padUI && (currentQuestionIndex < numberOfQuestions - 1)) {
+        UIScrollView* futureQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex + 1];
+        
+        nextQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+        nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+        nextQuestionImageView.alpha = 0.5;
+        [self addSubview:nextQuestionImageView];
+        
+        UIGraphicsBeginImageContext(futureQuestionScrollView.frame.size);
+        [[futureQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
+        nextQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    
+    if (padUI && currentQuestionIndex > -1) {
+        UIScrollView* pastQuestionScrollView;
+        if (currentQuestionIndex == 0)
+            pastQuestionScrollView = [self scrollViewForIntroView];
+        else
+            pastQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex - 1];
+        
+        previousQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+        previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+        previousQuestionImageView.alpha = 0.8;
+        [self addSubview:previousQuestionImageView];
+        
+        UIGraphicsBeginImageContext(pastQuestionScrollView.frame.size);
+        [[pastQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
+        previousQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    
     CGRect pageControlFrame;
     if (padUI) {
         pageControlFrame.origin.x = 0;
@@ -180,14 +211,13 @@
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
+    
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
         pageControl.currentPage = 0;
     else
-        pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-    if (padUI)
-        [self addSubview:pageControl];
-    else
-        [self addSubview:pageControl];
+        pageControl.currentPage = numberOfQuestions + 1;
+    
+    [self addSubview:pageControl];
     [pageControl release];
     
     if (!padUI) {
@@ -208,7 +238,7 @@
 -(void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     if (padUI)
@@ -221,21 +251,34 @@
             [self rejiggerSurveyScrollView:currentScrollView];
     }
     
+    if (previousQuestionImageView && !isAnimating) {
+        previousQuestionImageView.transform = CGAffineTransformIdentity;
+        previousQuestionImageView.frame = currentScrollView.frame;
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+        previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+    }
+    
+    if (nextQuestionImageView && !isAnimating) {
+        nextQuestionImageView.transform = CGAffineTransformIdentity;
+        nextQuestionImageView.frame = currentScrollView.frame;
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+        nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+    }
+    
     [self rejiggerPageControlFrame];
     
     if (validationView != nil) {
         CGRect aFrame = validationView.frame;
         aFrame.origin.y = (landscape || padUI) ? 0 : 32;
-        
-        /*
+
         if (padUI) {
-            aFrame = validationView.frame;
-            aFrame.size.width = imageView.frame.size.width - 15;
-            aFrame.origin.x = imageView.frame.origin.x + 8.0;
-            aFrame.origin.y = imageView.frame.origin.y + 4.0;
-            validationView.frame = aFrame;
+            aFrame = currentScrollView.bounds;
+            aFrame.size.width = currentScrollView.bounds.size.width - 15;
+            aFrame.origin.x = currentScrollView.bounds.origin.x + 8.0;
+            aFrame.origin.y = currentScrollView.bounds.origin.y + 4.0;
         }
-         */
         
         // iOS 7.0: Add another 20px on top for the status bar
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
@@ -247,14 +290,22 @@
 }
 
 -(UIScrollView*)scrollViewForRatingView {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    scrollView.tag = -1;
+    if (padUI) {
+        scrollView.frame = [self frameForIpadScrollView];
+    }
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
-    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
-    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
-    [scrollView addSubview:dismissBackgroundView];
-    [dismissBackgroundView release];
+    if (!padUI) {
+        UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+        dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+        [scrollView addSubview:dismissBackgroundView];
+        [dismissBackgroundView release];
+    }
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -360,7 +411,7 @@
 
 
 -(void)rejiggerRatingScrollView:(UIScrollView*)scrollView {
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
@@ -417,20 +468,18 @@
     
 
     UIButton* liveChatButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroLiveChatButton];
-    
     aFrame.origin.x = self.bounds.size.width/2 - 92.0/2.0;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 275;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
     liveChatButton.frame = aFrame;
-    
-    
 }
 
 -(UIScrollView*)scrollViewForIntroView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    scrollView.tag = -1;
     if (padUI) {
         scrollView.frame = [self frameForIpadScrollView];
     }
@@ -444,11 +493,13 @@
         [imageView release];
     }
     
-    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
-    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
-    [scrollView addSubview:dismissBackgroundView];
-    [dismissBackgroundView release];
+    if (!padUI) {
+        UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+        dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+        [scrollView addSubview:dismissBackgroundView];
+        [dismissBackgroundView release];
+    }
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -518,7 +569,7 @@
 - (void)rejiggerPageControlFrame {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     CGRect pageControlFrame = pageControl.frame;
@@ -532,12 +583,14 @@
 -(void)rejiggerIntroScrollView:(UIScrollView*)scrollView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
     CGRect referenceFrame = self.bounds;
     if (padUI)
         referenceFrame = scrollView.bounds;
+    
+    NSLog(@"landscape is %d", landscape);
     
     CGRect aFrame;
     
@@ -588,22 +641,28 @@
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:index];
     
     UIScrollView* scrollView = [[[UIScrollView alloc] initWithFrame:self.bounds] autorelease];
+    scrollView.tag = index;
+    if (padUI) {
+        scrollView.frame = [self frameForIpadScrollView];
+    }
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     scrollView.showsVerticalScrollIndicator = NO;
     
     if (padUI) {
-        UIImageView* imageView = [[UIImageView alloc] initWithFrame:scrollView.frame];
+        UIImageView* imageView = [[UIImageView alloc] initWithFrame:scrollView.bounds];
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         imageView.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
         [scrollView addSubview:imageView];
         [imageView release];
     }
     
-    UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
-    dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
-    [scrollView addSubview:dismissBackgroundView];
-    [dismissBackgroundView release];
+    if (!padUI) {
+        UIView* dismissBackgroundView = [[UIView alloc] initWithFrame:scrollView.bounds];
+        dismissBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [dismissBackgroundView addGestureRecognizer:tapGestureRecognizer];
+        [scrollView addSubview:dismissBackgroundView];
+        [dismissBackgroundView release];
+    }
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     questionLabel.tag = LIOSurveyViewTitleLabelTag;
@@ -787,7 +846,10 @@
             UITableView* tableView = [[UITableView alloc]
                                       initWithFrame:CGRectZero style:UITableViewStylePlain];
             CGFloat tableViewContentHeight = [self heightForTableView:tableView];
-            tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);
+            if (padUI)
+                tableView.frame = CGRectMake(0, 0, scrollView.frame.size.width - 2*LIOSurveyViewSideMarginiPad, tableViewContentHeight);
+            else
+                tableView.frame = CGRectMake(0, 0, self.bounds.size.width - 34.0, tableViewContentHeight);            
             
             tableView.tag = LIOSurveyViewTableViewTag;
             tableView.delegate = self;
@@ -846,6 +908,8 @@
                         int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                         [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];                        
                         
+                        NSLog(@">> Stored value for question: %@ is %@", question.label, answer);
+                        
                         if (question.shouldUseStarRatingView) {
                             LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
                             if (starRatingView)
@@ -881,7 +945,7 @@
 }
 
 -(CGRect)frameForIpadScrollView {
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     CGRect aFrame = CGRectZero;
@@ -896,13 +960,9 @@
 -(void)rejiggerSurveyScrollView:(UIScrollView*)scrollView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
-    CGRect referenceFrame = self.bounds;
-    if (padUI)
-        referenceFrame = scrollView.bounds;
-    
     CGRect aFrame;
     
     if (!padUI) {
@@ -910,13 +970,12 @@
         aFrame.size.height = self.frame.size.height - keyboardHeight;
         currentScrollView.frame = aFrame;
     } else {
-        aFrame = scrollView.frame;
-        aFrame.origin.y = landscape ? 20 : 135;
-        aFrame.size.width = landscape ? 400 : 450;
-        aFrame.size.height = landscape ? 360 : 460;
-        aFrame.origin.x = (self.bounds.size.width-aFrame.size.width)/2;
-        scrollView.frame = aFrame;
+        scrollView.frame = [self frameForIpadScrollView];
     }
+    
+    CGRect referenceFrame = self.bounds;
+    if (padUI)
+        referenceFrame = scrollView.bounds;    
 
     UILabel* questionLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewTitleLabelTag];
     if (questionLabel) {
@@ -1156,32 +1215,83 @@
         [self setNeedsLayout];
         
         if (padUI) {
-            if (previousQuestionImageView) {
-                [previousQuestionImageView removeFromSuperview];
-                previousQuestionImageView = nil;
+            isAnimating = YES;
+            
+            CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+            CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+            nextQuestionScrollView.transform = CGAffineTransformConcat(scale, translate);
+            nextQuestionScrollView.alpha = 0.5;
+            
+            if (nextQuestionImageView) {
+                [nextQuestionImageView removeFromSuperview];
+                nextQuestionImageView = nil;
             }
-            previousQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+            
+            if (currentQuestionIndex < currentSurvey.questions.count) {
+                int futureQuestionIndex = currentQuestionIndex;
+                BOOL foundFutureQuestion = NO;
+                
+                while (futureQuestionIndex < currentSurvey.questions.count - 1 && !foundFutureQuestion) {
+                    futureQuestionIndex += 1;
+                    if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:futureQuestionIndex surveyType:currentSurveyType])
+                        foundFutureQuestion = YES;
+                }
+                
+                if (foundFutureQuestion) {
+                    UIScrollView* futureQuestionScrollView = [self scrollViewForQuestionAtIndex:futureQuestionIndex];
+                    
+                    nextQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+                    CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
+                    CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+                    nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                    nextQuestionImageView.alpha = 0.0;
+                    [self addSubview:nextQuestionImageView];
+                    
+                    UIGraphicsBeginImageContext(futureQuestionScrollView.frame.size);
+                    [[futureQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
+                    nextQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                }
+            }
+
+            if (currentQuestionImageView) {
+                [currentQuestionImageView removeFromSuperview];
+                currentQuestionImageView = nil;
+            }
+            currentQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
             
             UIGraphicsBeginImageContext(currentScrollView.frame.size);
             [[currentScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
-            previousQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+            currentQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
             UIGraphicsEndImageContext();
-            
-            [self addSubview:previousQuestionImageView];
-            
+                        
             [currentScrollView removeFromSuperview];
             currentScrollView = nil;
-
-            isAnimating = YES;
+            
+            [self addSubview:currentQuestionImageView];
+            
             [UIView animateWithDuration:0.3 animations:^{
                 nextQuestionScrollView.transform = CGAffineTransformIdentity;
+                nextQuestionScrollView.alpha = 1.0;
                 
                 CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
-                // Move to the left
                 CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
-                // Apply them to a view
-                previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
-                previousQuestionImageView.alpha = 0.8;
+                currentQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                currentQuestionImageView.alpha = 0.8;
+                
+                if (previousQuestionImageView) {
+                    CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
+                    CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+                    previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                    previousQuestionImageView.alpha = 0.0;
+                }
+                
+                if (nextQuestionImageView) {
+                    CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+                    CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+                    nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                    nextQuestionImageView.alpha = 0.8;
+                }
                 
                 pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
                 pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
@@ -1191,6 +1301,14 @@
             } completion:^(BOOL finished) {
                 currentScrollView = nextQuestionScrollView;                
                 isAnimating = NO;
+                
+                [previousQuestionImageView removeFromSuperview];
+                previousQuestionImageView = nil;
+                
+                previousQuestionImageView = currentQuestionImageView;
+                currentQuestionImageView = nil;
+                
+                
             }];
 
             
@@ -1219,6 +1337,7 @@
 }
 
 -(void)switchToPreviousQuestion {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     BOOL foundPreviousPage = NO;
     
     while (!foundPreviousPage) {
@@ -1237,13 +1356,15 @@
             if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:currentSurveyType])
                 foundPreviousPage = YES;
     }
-
+    
+    if (validationView) {
+        [validationTimer stopTimer];
+        [self validationTimerDidFire];
+    }
+    
     UIScrollView* previousQuestionScrollView;
     
     if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
-//        if (currentSurveyType == LIOSurveyManagerSurveyTypePost)
-///            previousQuestionScrollView = [self scrollViewForRatingView];
-//        else
             previousQuestionScrollView = [self scrollViewForIntroView];
     }
     else
@@ -1252,35 +1373,143 @@
     previousQuestionScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
     [self addSubview:previousQuestionScrollView];
     
-    isAnimating = YES;
-    [UIView animateWithDuration:0.3 animations:^{
-        [currentScrollView endEditing:YES];
+    if (padUI) {
+        isAnimating = YES;
+
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+        previousQuestionScrollView.transform = CGAffineTransformConcat(scale, translate);
+        previousQuestionScrollView.alpha = 0.5;
         
-        previousQuestionScrollView.transform = CGAffineTransformIdentity;
-        currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
-        
-        pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
-
-        if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
-            pageControl.currentPage = 0;
-        else
-            pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-
-        [self rejiggerPageControlFrame];
-
-        if (validationView) {
-            [validationTimer stopTimer];
-            [self validationTimerDidFire];
+        if (previousQuestionImageView) {
+            [previousQuestionImageView removeFromSuperview];
+            previousQuestionImageView = nil;
         }
         
-     
-    } completion:^(BOOL finished) {
+        if (currentQuestionIndex > -1) {
+            BOOL foundPastQuestion = NO;
+            int pastQuestionIndex = currentQuestionIndex;
+            while (!foundPastQuestion && pastQuestionIndex >= -1) {
+                pastQuestionIndex -= 1;
+
+                // If we're at the intro screen, just bounce the screen
+                if (pastQuestionIndex == LIOIndexForSurveyIntroPage) {
+                    foundPastQuestion = YES;
+                }
+                else {
+                    if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:pastQuestionIndex surveyType:currentSurveyType])
+                        foundPastQuestion = YES;
+                }
+            }
+            
+            if (foundPastQuestion) {
+                UIScrollView* pastQuestionScrollView;
+                if (pastQuestionIndex == -1)
+                    pastQuestionScrollView = [self scrollViewForIntroView];
+                else
+                    pastQuestionScrollView = [self scrollViewForQuestionAtIndex:pastQuestionIndex];
+            
+                previousQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+                CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
+                CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+                previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                previousQuestionImageView.alpha = 0.0;
+                [self addSubview:previousQuestionImageView];
+            
+                UIGraphicsBeginImageContext(pastQuestionScrollView.frame.size);
+                [[pastQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
+                previousQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+            }
+        }
+        
+        if (currentQuestionImageView) {
+            [currentQuestionImageView removeFromSuperview];
+            currentQuestionImageView = nil;
+        }
+        currentQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
+        
+        UIGraphicsBeginImageContext(currentScrollView.frame.size);
+        [[currentScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
+        currentQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
         [currentScrollView removeFromSuperview];
         currentScrollView = nil;
-        currentScrollView = previousQuestionScrollView;
         
-        isAnimating = NO;
-    }];
+        [self addSubview:currentQuestionImageView];
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            previousQuestionScrollView.transform = CGAffineTransformIdentity;
+            previousQuestionScrollView.alpha = 1.0;
+            
+            CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+            CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+            currentQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+            currentQuestionImageView.alpha = 0.8;
+            
+            if (previousQuestionImageView) {
+                CGAffineTransform scale = CGAffineTransformMakeScale(0.5, 0.5);
+                CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width/2, 0.0);
+                previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                previousQuestionImageView.alpha = 0.8;
+            }
+            
+            if (nextQuestionImageView) {
+                CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
+                CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width/2, 0.0);
+                nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
+                nextQuestionImageView.alpha = 0.0;
+            }
+            
+            pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
+            
+            if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+                pageControl.currentPage = 0;
+            else
+                pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
+            
+            [self rejiggerPageControlFrame];
+
+            
+        } completion:^(BOOL finished) {
+            currentScrollView = previousQuestionScrollView;
+            isAnimating = NO;
+            
+            [nextQuestionImageView removeFromSuperview];
+            nextQuestionImageView = nil;
+            
+            nextQuestionImageView = currentQuestionImageView;
+            currentQuestionImageView = nil;
+            
+            
+        }];
+    }
+    else {
+        
+        isAnimating = YES;
+        [UIView animateWithDuration:0.3 animations:^{
+            [currentScrollView endEditing:YES];
+            
+            previousQuestionScrollView.transform = CGAffineTransformIdentity;
+            currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
+            
+            pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
+            
+            if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
+                pageControl.currentPage = 0;
+            else
+                pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
+            
+            [self rejiggerPageControlFrame];                    
+        } completion:^(BOOL finished) {
+            [currentScrollView removeFromSuperview];
+            currentScrollView = nil;
+            currentScrollView = previousQuestionScrollView;
+            
+            isAnimating = NO;
+        }];
+    }
 }
 
 #pragma mark
@@ -1289,7 +1518,7 @@
 - (void)showAlertWithMessage:(NSString *)aMessage
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    UIInterfaceOrientation currentInterfaceOrientation = (UIInterfaceOrientation)[[UIDevice currentDevice] orientation];
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
 
     [validationView removeFromSuperview];
@@ -1311,7 +1540,7 @@
     validationView.label.text = aMessage;
     validationView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     if (padUI) {
-        [self addSubview:validationView];
+        [currentScrollView addSubview:validationView];
         validationView.layer.cornerRadius = 5.0;
         validationView.clipsToBounds = YES;
     }
@@ -1488,6 +1717,9 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UIView* scrollView = tableView.superview;
+    int tableViewQuestionIndex = scrollView.tag;
+    
     BOOL isRowSelected = NO;
     
     for (NSIndexPath* selectedIndexPath in selectedIndices) {
@@ -1500,21 +1732,26 @@
     if (isRowSelected)
         font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
 
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
     
     CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
-    
     return expectedSize.height + 33.0;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    UIView* scrollView = tableView.superview;
+    int tableViewQuestionIndex = scrollView.tag;
+
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
     return question.pickerEntries.count;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    UIView* scrollView = tableView.superview;
+    int tableViewQuestionIndex = scrollView.tag;
+    
     static NSString *CellIdentifier = @"TableViewCell";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
@@ -1539,7 +1776,7 @@
         [backgroundImageView release];
     }
     
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];
     
     UIImageView* backgroundImageView = (UIImageView*)cell.backgroundView;
@@ -1594,7 +1831,10 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+    UIView* scrollView = tableView.superview;
+    int tableViewQuestionIndex = scrollView.tag;
+
+    LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
 
     NSIndexPath* existingIndexPath = nil;
     
@@ -1666,17 +1906,43 @@
     if (UIInterfaceOrientationIsLandscape(actualOrientation))
         keyboardHeight = keyboardBounds.size.width;
     
-}
-
-- (void)keyboardDidShow:(NSNotification *)aNotification
-{
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationCurve:animationCurve];
+    [UIView setAnimationDuration:animationDuration];
     
+    [self rejiggerPageControlFrame];
+    
+    [UIView commitAnimations];
+
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
+    NSDictionary *userInfo = [aNotification userInfo];
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    
+    NSTimeInterval animationDuration;
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    [animationDurationValue getValue:&animationDuration];
+    
+    UIViewAnimationCurve animationCurve;
+    NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    [animationCurveValue getValue:&animationCurve];
+    
+    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
+    
     keyboardHeight = 0.0;
     
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationCurve:animationCurve];
+    [UIView setAnimationDuration:animationDuration];
+
+    [self rejiggerPageControlFrame];
+    
+    [UIView commitAnimations];
+
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {

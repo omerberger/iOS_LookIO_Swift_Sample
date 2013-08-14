@@ -282,7 +282,7 @@ NSString *uniqueIdentifier()
     sdl = (struct sockaddr_dl *)(ifm + 1);
     ptr = (unsigned char *)LLADDR(sdl);
     NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
-                           *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
+                           *ptr, *(ptr+1), *(ptr+2), *(ptr+4), *(ptr+3), *(ptr+5)];
     free(buf);
     
     const char *value = [outstring UTF8String];
@@ -2191,6 +2191,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sseManagerDidConnect:(LPSSEManager *)aManager {
     socketConnected = YES;
+
+    [self sendCapabilitiesPacket];
+    
+    // Well, we've got a session. Start the realtime extras timer.
+    [realtimeExtrasTimer stopTimer];
+    [realtimeExtrasTimer release];
+    realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
+
 }
 
 -(void)forceSSEManagerDisconnect {
@@ -2337,12 +2345,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *type = [aPacket objectForKey:@"type"];
     if ([type isEqualToString:@"engagement_info"]) {
-        [self sendCapabilitiesPacket];
-        
-        // Well, we've got a session. Start the realtime extras timer.
-        [realtimeExtrasTimer stopTimer];
-        [realtimeExtrasTimer release];
-        realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
     }
     else if ([type isEqualToString:@"line"])
     {
