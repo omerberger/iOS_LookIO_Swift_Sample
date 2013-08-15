@@ -2190,7 +2190,14 @@
                 surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
-                [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+                
+                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+                NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
+                NSDictionary* questionsArray = [surveyDict objectForKey:@"questions"];
+                if (!questionsArray || questionsArray.count == 0)
+                    [delegate altChatViewControllerWantsSessionTermination:self];
+                else
+                    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
             }];
         }
         else {

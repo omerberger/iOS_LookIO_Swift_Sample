@@ -169,6 +169,7 @@
         nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
         nextQuestionImageView.alpha = 0.5;
         [self addSubview:nextQuestionImageView];
+        [nextQuestionImageView release];
         
         UIGraphicsBeginImageContext(futureQuestionScrollView.frame.size);
         [[futureQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
@@ -189,6 +190,7 @@
         previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
         previousQuestionImageView.alpha = 0.8;
         [self addSubview:previousQuestionImageView];
+        [previousQuestionImageView release];
         
         UIGraphicsBeginImageContext(pastQuestionScrollView.frame.size);
         [[pastQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
@@ -1104,11 +1106,17 @@
 
 -(void)handleLeftSwipeGesture:(UISwipeGestureRecognizer*)sender
 {
+    if (isAnimating)
+        return;
+    
     [self switchToNextQuestion];
 }
 
 -(void)handleRightSwipeGesture:(UISwipeGestureRecognizer*)sender
 {
+    if (isAnimating)
+        return;
+    
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
         [self bounceViewLeft];
     else
@@ -1242,6 +1250,7 @@
                     nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
                     nextQuestionImageView.alpha = 0.0;
                     [self addSubview:nextQuestionImageView];
+                    [nextQuestionImageView release];
                     
                     UIGraphicsBeginImageContext(futureQuestionScrollView.frame.size);
                     [[futureQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
@@ -1265,6 +1274,7 @@
             currentScrollView = nil;
             
             [self addSubview:currentQuestionImageView];
+            [currentQuestionImageView release];
             
             [UIView animateWithDuration:0.3 animations:^{
                 nextQuestionScrollView.transform = CGAffineTransformIdentity;
@@ -1411,6 +1421,7 @@
                 previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
                 previousQuestionImageView.alpha = 0.0;
                 [self addSubview:previousQuestionImageView];
+                [previousQuestionImageView release];
             
                 UIGraphicsBeginImageContext(pastQuestionScrollView.frame.size);
                 [[pastQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
@@ -1434,6 +1445,7 @@
         currentScrollView = nil;
         
         [self addSubview:currentQuestionImageView];
+        [currentQuestionImageView release];
         
         [UIView animateWithDuration:0.3 animations:^{
             previousQuestionScrollView.transform = CGAffineTransformIdentity;
