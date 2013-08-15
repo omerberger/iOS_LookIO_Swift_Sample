@@ -2714,6 +2714,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             introPacketWasSent = YES;
             killConnectionAfterChatViewDismissal = NO;
             
+            [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
+            
             [self populateChatWithFirstMessage];
             
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")

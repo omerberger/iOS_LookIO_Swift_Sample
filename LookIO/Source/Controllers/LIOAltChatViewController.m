@@ -775,6 +775,12 @@
         [waitingForSurveyView addSubview:loadingLabel];
         [loadingLabel release];
         
+        UIButton* waitingForSurveyViewButton = [[UIButton alloc] initWithFrame:waitingForSurveyView.bounds];
+        waitingForSurveyViewButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [waitingForSurveyView addSubview:waitingForSurveyViewButton];
+        [waitingForSurveyViewButton addTarget:self action:@selector(waitingForSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        [waitingForSurveyViewButton release];
+        
         CGRect aFrame = activityIndicatorView.frame;
         aFrame.origin.y = aFrame.origin.y - 30;
         activityIndicatorView.frame = aFrame;
@@ -1057,6 +1063,10 @@
                          background.alpha = 0.0;
                          toasterView.alpha = 0.0;
                          
+                         UIView* waitingForSurveyView = [self.view viewWithTag:LIOAltChatViewControllerLoadingViewTag];
+                         if (waitingForSurveyView)
+                             waitingForSurveyView.alpha = 0.0;
+                         
                          // I don't know why, but iOS 6 broke this animation.
                          // Manually setting its frame doesn't work either. o_O
                          // Hence, we just fade it out instead of moving it.
@@ -1204,7 +1214,10 @@
     // Check to see if there is an offline survey template that could be used here
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     if (surveyManager.offlineTemplate) {
-        [self showSurveyViewForType:LIOSurveyManagerSurveyTypeOffline];
+        if (surveyInProgress)
+            return;
+        else
+            [self showSurveyViewForType:LIOSurveyManagerSurveyTypeOffline];
     } else {
         NSString *pendingEmailAddress = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
         
@@ -1573,6 +1586,10 @@
 
 #pragma mark -
 #pragma mark UIControl actions
+
+-(void)waitingForSurveyButtonWasTapped {
+    [delegate altChatViewControllerWantsSessionTermination:self];
+}
 
 - (void)failedMessageButtonWasTapped:(UIButton*)aButton {
     CGPoint buttonPosition = [aButton convertPoint:CGPointZero toView:tableView];
