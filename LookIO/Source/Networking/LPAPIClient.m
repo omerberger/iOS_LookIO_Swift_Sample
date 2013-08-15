@@ -23,7 +23,7 @@ static LPAPIClient *sharedClient = nil;
 
 @implementation LPAPIClient
 
-@synthesize baseURL, jsonWriter, operationQueue;
+@synthesize baseURL, jsonWriter, operationQueue, usesSecretToken, secretToken;
 
 + (LPAPIClient *) sharedClient
 {
@@ -41,6 +41,8 @@ static LPAPIClient *sharedClient = nil;
         
         self.operationQueue = [[[NSOperationQueue alloc] init] autorelease];
         [self.operationQueue setMaxConcurrentOperationCount:NSOperationQueueDefaultMaxConcurrentOperationCount];
+        
+        self.usesSecretToken = NO;
     }
     
     return self;
@@ -68,6 +70,9 @@ static LPAPIClient *sharedClient = nil;
                                                        timeoutInterval:10.0];
     [request setHTTPMethod:method];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    if (usesSecretToken) {
+        [request setValue:secretToken forHTTPHeaderField:@"X-LP-Secret-Token"];
+    }
     
     if (parameters) {
         if ([method isEqualToString:@"GET"] || [method isEqualToString:@"HEAD"] || [method isEqualToString:@"DELETE"]) {
@@ -97,6 +102,10 @@ static LPAPIClient *sharedClient = nil;
                                                            cachePolicy:NSURLCacheStorageNotAllowed
                                                        timeoutInterval:10.0];
     [request setHTTPMethod:method];
+    if (usesSecretToken) {
+        [request setValue:secretToken forHTTPHeaderField:@"X-LP-Secret-Token"];
+    }
+
     [request setHTTPBody:data];
           
     return request;
@@ -121,6 +130,9 @@ static LPAPIClient *sharedClient = nil;
     [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
 
     [request setHTTPMethod:method];
+    if (usesSecretToken) {
+        [request setValue:secretToken forHTTPHeaderField:@"X-LP-Secret-Token"];
+    }
     [request setHTTPBody:data];
         
 	return request;

@@ -590,8 +590,6 @@
     if (padUI)
         referenceFrame = scrollView.bounds;
     
-    NSLog(@"landscape is %d", landscape);
-    
     CGRect aFrame;
     
     UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
@@ -907,9 +905,7 @@
                     if ([pickerEntry.label isEqualToString:answer]) {
                         int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                         [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];                        
-                        
-                        NSLog(@">> Stored value for question: %@ is %@", question.label, answer);
-                        
+                                                
                         if (question.shouldUseStarRatingView) {
                             LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
                             if (starRatingView)

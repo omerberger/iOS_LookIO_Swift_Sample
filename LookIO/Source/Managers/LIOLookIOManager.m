@@ -117,6 +117,7 @@
 #define LIOLookIOManagerLastKnownChatPostUrlString      @"LIOLookIOManagerLastKnownChatPostUrlString"
 #define LIOLookIOManagerLastKnownChatMediaUrlString     @"LIOLookIOManagerLastKnownChatMediaUrlString"
 #define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
+#define LIOLookIOManagerLastKnownSecretTokenKey         @"LIOLookIOManagerLastKnownSecretTokenKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -200,6 +201,7 @@ typedef enum
     BOOL shouldLockOrientation;
 
     NSString* chatEngagementId;
+    NSString* chatSecretToken;
     NSString* chatSSEUrlString;
     NSString* chatPostUrlString;
     NSString* chatMediaUrlString;
@@ -282,7 +284,7 @@ NSString *uniqueIdentifier()
     sdl = (struct sockaddr_dl *)(ifm + 1);
     ptr = (unsigned char *)LLADDR(sdl);
     NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
-                           *ptr, *(ptr+1), *(ptr+2), *(ptr+4), *(ptr+3), *(ptr+5)];
+                           *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
     free(buf);
     
     const char *value = [outstring UTF8String];
@@ -411,9 +413,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+        chatClient.usesSecretToken = NO;
+        chatClient.secretToken = nil;
         
         LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
+        mediaClient.usesSecretToken = NO;
+        mediaClient.secretToken = nil;
         
         LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
         visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
@@ -450,9 +456,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    chatClient.usesSecretToken = NO;
+    chatClient.secretToken = nil;
     
     LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
     mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+    mediaClient.usesSecretToken = NO;
+    mediaClient.secretToken = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
@@ -466,9 +476,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+    chatClient.usesSecretToken = NO;
+    chatClient.secretToken = nil;
     
     LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
     mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
+    mediaClient.usesSecretToken = NO;
+    mediaClient.secretToken = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
@@ -762,6 +776,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             willAskUserToReconnect = YES;
             
             chatEngagementId = engagementId;
+            chatSecretToken = [userDefaults objectForKey:LIOLookIOManagerLastKnownSecretTokenKey];
             chatPostUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
             chatMediaUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             chatSSEUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
@@ -1087,6 +1102,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     
     chatEngagementId = nil;
+    chatSecretToken = nil;
     chatSSEUrlString = nil;
     chatPostUrlString = nil;
     chatMediaUrlString = nil;
@@ -1103,11 +1119,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     if (developmentMode) {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+        chatClient.usesSecretToken = NO;
+        chatClient.secretToken = nil;
+        
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+        mediaClient.usesSecretToken = NO;
+        mediaClient.secretToken = nil;
     }
     else {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
+        chatClient.usesSecretToken = NO;
+        chatClient.secretToken = nil;
+
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
+        mediaClient.usesSecretToken = NO;
+        mediaClient.secretToken = nil;
+
     }
     
     [userDefaults synchronize];
@@ -2107,6 +2134,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString* engagementId = [params objectForKey:@"engagement_id"];
     if ([engagementId length])
         [resolvedPayload setObject:engagementId forKey:@"engagement_id"];
+    
+    NSString* secretToken = [params objectForKey:@"secret_token"];
+    if ([secretToken length])
+        [resolvedPayload setObject:secretToken forKey:@"secret_token"];
 
     NSString* sseUrl = [params objectForKey:@"sse_url"];
     if ([engagementId length])
@@ -2141,6 +2172,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([resolvedPayload count])
     {
         chatEngagementId = [[resolvedPayload objectForKey:@"engagement_id"] retain];
+        chatSecretToken = [[resolvedPayload objectForKey:@"secret_token"] retain];
         chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
         chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
         chatMediaUrlString = [[resolvedPayload objectForKey:@"media_url"] retain];
@@ -2149,6 +2181,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults setObject:chatEngagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
+        [userDefaults setObject:chatSecretToken forKey:LIOLookIOManagerLastKnownSecretTokenKey];
         [userDefaults setObject:chatSSEUrlString forKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
         [userDefaults setObject:chatPostUrlString forKey:LIOLookIOManagerLastKnownChatPostUrlString];
         [userDefaults setObject:chatMediaUrlString forKey:LIOLookIOManagerLastKnownChatMediaUrlString];
@@ -2162,9 +2195,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 -(void)setupAPIClientBaseURL {
     LPChatAPIClient *chatAPIClient = [LPChatAPIClient sharedClient];
     chatAPIClient.baseURL = [NSURL URLWithString:chatPostUrlString];
+    chatAPIClient.usesSecretToken = YES;
+    chatAPIClient.secretToken = chatSecretToken;
     
     LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
     mediaAPIClient.baseURL = [NSURL URLWithString:chatMediaUrlString];
+    mediaAPIClient.usesSecretToken = YES;
+    mediaAPIClient.secretToken = chatSecretToken;
 }
 
 -(void)connectSSESocket {
