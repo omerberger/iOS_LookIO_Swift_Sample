@@ -29,7 +29,7 @@ typedef enum
     NSMutableDictionary *preChatResponses, *postChatResponses, *offlineResponses;
     int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
     BOOL preSurveyCompleted, offlineSurveyIsDefault;
-    BOOL surveysEnabled;
+    BOOL surveysEnabled, receivedEmptyPreSurvey;
 }
 
 + (LIOSurveyManager *)sharedSurveyManager;
@@ -52,6 +52,6 @@ typedef enum
 @property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader, *offlineHeader;
 @property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;
 @property (nonatomic, assign) int lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline;
-@property (nonatomic, assign) BOOL preSurveyCompleted, offlineSurveyIsDefault, surveysEnabled;
+@property (nonatomic, assign) BOOL preSurveyCompleted, offlineSurveyIsDefault, surveysEnabled, receivedEmptyPreSurvey;
 
 @end

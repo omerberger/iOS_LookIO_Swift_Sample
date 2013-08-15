@@ -94,7 +94,7 @@
     id<LIOAltChatViewControllerDataSource> dataSource;
     
     LIOSurveyView* surveyView;
-    BOOL surveyInProgress;
+    BOOL surveyInProgress, waitingForSurvey;
 
     int currentPopoverType;
 
@@ -118,4 +118,6 @@
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
 - (void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType;
+- (void)noSurveyRecieved;
+
 @end

@@ -41,17 +41,16 @@
 
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag           1001
-#define LIOAltChatViewControllerTableViewCellFailedMessageButtonTag  1004
+#define LIOAltChatViewControllerTableViewCellFailedMessageButtonTag  1002
 
-#define LIOAltChatViewControllerPhotoSourceActionSheetTag            1002
-#define LIOAltChatViewControllerAttachConfirmAlertViewTag            1003
+#define LIOAltChatViewControllerPhotoSourceActionSheetTag            1003
+#define LIOAltChatViewControllerAttachConfirmAlertViewTag            1004
 #define LIOAltChatViewControllerResendMessageActionSheetTag          1005
 #define LIOSurveyViewPrePadding 10.0
-#define LIOAltChatViewControllerTableViewCellBubbleViewTag 1001
 
-#define LIOAltChatViewControllerPhotoSourceActionSheetTag        1002
-#define LIOAltChatViewControllerAttachConfirmAlertViewTag        1003
-#define LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag 1004
+#define LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag     1006
+
+#define LIOAltChatViewControllerLoadingViewTag                       1007
 
 #define LIOSurveyViewPadding 10.0
 
@@ -568,11 +567,12 @@
 
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate && surveyManager.surveysEnabled)
-    {
-        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-        if (!surveyManager.preSurveyCompleted) {
+    // If surveys are enable, we don't show the chat UI until we either get the survey or an empty one indicating there is no
+    // survey
+    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveyManager.surveysEnabled && !surveyManager.receivedEmptyPreSurvey && !surveyManager.preSurveyCompleted) {
+        // If we have a survey, and it's not completed, show it
+        if (surveyManager.preChatTemplate) {
             if (padUI) {
                 [self hideChatUIForSurvey:NO];
                 double delayInSeconds = 0.5;
@@ -582,7 +582,11 @@
                 });
             } else {
                 [self showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
-            }            
+            }
+        } else {
+            // Otherwise just hide the UI while waiting for a survey
+            waitingForSurvey = YES;
+            [self hideChatUIForSurvey:NO];
         }
     }
     
@@ -677,6 +681,16 @@
 -(void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType {
     [self.view endEditing:YES];
     [self hideChatUIForSurvey:YES];
+    
+    if (waitingForSurvey) {
+        waitingForSurvey = NO;
+        UIView* waitingForSurveyView = [self.view viewWithTag:LIOAltChatViewControllerLoadingViewTag];
+        [UIView animateWithDuration:0.3 animations:^{
+            waitingForSurveyView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [waitingForSurveyView removeFromSuperview];
+        }];
+    }
 
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -736,13 +750,47 @@
     if (leavingMessage)
         return;
     
+    if (waitingForSurvey) {
+        UIView* waitingForSurveyView = [[UIView alloc] initWithFrame:self.view.bounds];
+        waitingForSurveyView.alpha = 0.0;
+        waitingForSurveyView.tag = LIOAltChatViewControllerLoadingViewTag;
+        waitingForSurveyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self.view addSubview:waitingForSurveyView];
+        [waitingForSurveyView release];
+        
+        UIActivityIndicatorView* activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        [activityIndicatorView startAnimating];
+        activityIndicatorView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        activityIndicatorView.frame = waitingForSurveyView.bounds;
+        [waitingForSurveyView addSubview:activityIndicatorView];
+        [activityIndicatorView release];
+        
+        UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
+        loadingLabel.backgroundColor = [UIColor clearColor];
+        loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        loadingLabel.textColor = [UIColor whiteColor];
+        loadingLabel.font = [UIFont boldSystemFontOfSize:16.0];
+        loadingLabel.textAlignment = UITextAlignmentCenter;
+        loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
+        [waitingForSurveyView addSubview:loadingLabel];
+        [loadingLabel release];
+        
+        CGRect aFrame = activityIndicatorView.frame;
+        aFrame.origin.y = aFrame.origin.y - 30;
+        activityIndicatorView.frame = aFrame;
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            waitingForSurveyView.alpha = 1.0;
+        }];
+    }
+    
     double delayInSeconds = 0.6;
     if (NO == padUI) delayInSeconds = 0.1;
     
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         
-        if (!surveyInProgress) {
+        if (!surveyInProgress && !waitingForSurvey) {
             BOOL result = [inputBar.inputField becomeFirstResponder];
             if (result != 1)
             {
@@ -990,7 +1038,7 @@
                              headerBar.transform = CGAffineTransformIdentity;
                              dismissalBar.transform = CGAffineTransformIdentity;
                              
-                             if (!surveyInProgress)
+                             if (!surveyInProgress && !waitingForSurvey)
                                  [inputBar.inputField becomeFirstResponder];
                          }];
     }
@@ -2207,7 +2255,15 @@
                 
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
-                [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+
+                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+                NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
+                NSDictionary* questionsArray = [surveyDict objectForKey:@"questions"];
+                if (!questionsArray || questionsArray.count == 0)
+                    [delegate altChatViewControllerWantsSessionTermination:self];
+                else
+                    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
+
             }];
         }
         surveyInProgress = NO;
@@ -2263,6 +2319,38 @@
             }];
         }
         surveyInProgress = NO;
+    }
+}
+
+- (void)noSurveyRecieved {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (waitingForSurvey) {
+        waitingForSurvey = NO;
+        [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
+        
+        UIView* waitingForSurveyView = [self.view viewWithTag:LIOAltChatViewControllerLoadingViewTag];
+        [UIView animateWithDuration:0.3 animations:^{
+            waitingForSurveyView.alpha = 0.0;
+        } completion:^(BOOL finished) {
+            [waitingForSurveyView removeFromSuperview];
+        }];
+        
+        dismissalBar.alpha = 1.0;
+        inputBar.alpha = 1.0;
+        tableView.alpha = 1.0;
+        dismissalBar.hidden = NO;
+        inputBar.hidden = NO;
+        tableView.hidden = NO;
+        
+        [self performRevealAnimationWithFadeIn:NO];
+        if (padUI) {
+            double delayInSeconds = 0.1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self viewDidAppear:NO];
+            });
+        }
     }
 }
 

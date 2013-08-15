@@ -19,7 +19,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
 
 @implementation LIOSurveyManager
 
-@synthesize preChatHeader, postChatHeader, offlineHeader, preChatTemplate, postChatTemplate, offlineTemplate, lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline, preSurveyCompleted, offlineSurveyIsDefault, surveysEnabled;
+@synthesize preChatHeader, postChatHeader, offlineHeader, preChatTemplate, postChatTemplate, offlineTemplate, lastCompletedQuestionIndexPre, lastCompletedQuestionIndexPost, lastCompletedQuestionIndexOffline, preSurveyCompleted, offlineSurveyIsDefault, surveysEnabled, receivedEmptyPreSurvey;
 
 + (LIOSurveyManager *)sharedSurveyManager
 {

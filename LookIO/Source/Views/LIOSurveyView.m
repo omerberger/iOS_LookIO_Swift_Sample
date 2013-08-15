@@ -217,7 +217,7 @@
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
         pageControl.currentPage = 0;
     else
-        pageControl.currentPage = numberOfQuestions + 1;
+        pageControl.currentPage = currentQuestionIndex + 1;
     
     [self addSubview:pageControl];
     [pageControl release];

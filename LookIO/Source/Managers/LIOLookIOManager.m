@@ -286,7 +286,7 @@ NSString *uniqueIdentifier()
     sdl = (struct sockaddr_dl *)(ifm + 1);
     ptr = (unsigned char *)LLADDR(sdl);
     NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
-                           *ptr, *(ptr+1), *(ptr+2), *(ptr+4), *(ptr+3), *(ptr+5)];
+                           *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
     free(buf);
     
     const char *value = [outstring UTF8String];
@@ -1000,6 +1000,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[LIOSurveyManager sharedSurveyManager] clearAllResponsesForSurveyType:LIOSurveyManagerSurveyTypeOffline];
     
     [LIOSurveyManager sharedSurveyManager].preSurveyCompleted = NO;
+    [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = NO;
     
     [altChatViewController bailOnSecondaryViews];
     [altChatViewController.view removeFromSuperview];
@@ -2842,7 +2843,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
 
     if (altChatViewController && surveyManager.surveysEnabled) {
-        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
+        if (surveyManager.preChatTemplate.questions.count == 0)
+               [altChatViewController noSurveyRecieved];
+        else
+            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
     }
 }
 
