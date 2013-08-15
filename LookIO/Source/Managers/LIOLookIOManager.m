@@ -111,6 +111,7 @@
 #define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 #define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
+#define LIOLookIOManagerLastKnownSurveysEnabled         @"LIOLookIOManagerLastKnownSurveysEnabled"
 
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
@@ -170,6 +171,7 @@ typedef enum
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
+    BOOL *lastKnownSurveysEnabled;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
@@ -284,7 +286,7 @@ NSString *uniqueIdentifier()
     sdl = (struct sockaddr_dl *)(ifm + 1);
     ptr = (unsigned char *)LLADDR(sdl);
     NSString *outstring = [NSString stringWithFormat:@"%02X:%02X:%02X:%02X:%02X:%02X", 
-                           *ptr, *(ptr+1), *(ptr+2), *(ptr+3), *(ptr+4), *(ptr+5)];
+                           *ptr, *(ptr+1), *(ptr+2), *(ptr+4), *(ptr+3), *(ptr+5)];
     free(buf);
     
     const char *value = [outstring UTF8String];
@@ -715,6 +717,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (0.0 == nextTimeInterval)
         nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
+    
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled]) {
+        NSNumber* surveysEnabled = (NSNumber*)[userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled];
+        lastKnownSurveysEnabled = [surveysEnabled boolValue];
+        LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+        surveyManager.surveysEnabled = lastKnownSurveysEnabled;
+        
+    }
     
     continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
                                                              target:self
@@ -2501,8 +2511,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView autorelease];
         }
         else if ([action isEqualToString:@"leave_message"])
-        {
-            
+        {            
             // By default, we're not calling the custom chat not answered method.
             // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
             // we do want to use this method
@@ -2537,19 +2546,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
                     callChatNotAnsweredAfterDismissal = [delegate lookIOManagerShouldUseCustomActionForChatNotAnswered:self];
             
+            LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+
             if (callChatNotAnsweredAfterDismissal) {
                 [self altChatViewControllerWantsSessionTermination:altChatViewController];
-
             } else {
                 NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
-                if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
+                if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]] && surveyManager.surveysEnabled)
                 {
-                    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-
                     [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:offlineSurveyDict type:LIOSurveyManagerSurveyTypeOffline];
                     surveyManager.offlineSurveyIsDefault = NO;
+                } else {
+                    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+                    surveyManager.offlineSurveyIsDefault = YES;
+                    
+                    [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
                 }
-
+                
                 [altChatViewController forceLeaveMessageScreen];
             }
         }
@@ -2826,7 +2839,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (void)presentPreChatSurvey {
-    if (altChatViewController) {
+    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+
+    if (altChatViewController && surveyManager.surveysEnabled) {
         [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
     }
 }
@@ -3183,32 +3198,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
 
-    NSDictionary *surveyDict = [params objectForKey:@"surveys"];
-    if (surveyDict && [surveyDict isKindOfClass:[NSDictionary class]])
-    {
-    }
-
-    /*
-            NSDictionary *postSurvey = [surveyDict objectForKey:@"postchat"];
-            if (postSurvey)
-            {
-                [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
-            }
+    NSNumber *surveysEnabledNumber = [params objectForKey:@"surveys_enabled"];
+    if (surveysEnabledNumber)
+        [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
     
-     // Fake survey for testing purposes.
-//    NSString *fakePreJSON = @"{\"id\": 2742, \"header\":\"Welcome! Please tell us a little about yourself so that we may assist you better.\",\"questions\":[{\"id\":0,\"mandatory\":1,\"order\":0,\"label\":\"What is your e-mail address?\",\"logicId\":2742,\"type\":\"text\",\"validationType\":\"email\"},{\"id\":1,\"mandatory\":1,\"order\":1,\"label\":\"Please tell us your name and more text to make this question longer.\",\"logicId\":2743,\"type\":\"text\",\"validationType\":\"alpha_numeric\"},{\"id\":2,\"mandatory\":0,\"order\":2,\"label\":\"What is your phone number? (optional)\",\"logicId\":2744,\"type\":\"text\",\"validationType\":\"numeric\"},{\"id\":3,\"mandatory\":1,\"order\":3,\"label\":\"What sort of issue do you need help with? Please only select one option\",\"logicId\":2745,\"type\":\"picker\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":1,\"value\":\"Question about an item\"},{\"checked\":0,\"value\":\"Account problem\"},{\"checked\":0,\"value\":\"Billing problem\"},{\"checked\":0,\"value\":\"Something else\"}]},{\"id\":4,\"mandatory\":1,\"order\":4,\"label\":\"Check all that apply.\",\"logicId\":2746,\"type\":\"multiselect\",\"validationType\":\"alpha_numeric\",\"entries\":[{\"checked\":0,\"value\":\"First option!\"},{\"checked\":0,\"value\":\"Second option?\"},{\"checked\":0,\"value\":\"OMG! Third option.\"},{\"checked\":0,\"value\":\"Fourth and final option.\"}]}]}";
-
-    NSString* fakePreJSON = @"{\"id\":61454,\"header\":\"To help serve you better, please provide some information before we begin your chat.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"What is your name?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"},\"1338146\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":12,\"label\":\"This is an example of the longest text field question possible, we also need to support this kind of question!\",\"order\":3,\"last_known_value\":\"\"},\"1338142\":{\"type\":\"Dropdown Box\",\"validation_type\":\"alpha_numeric\",\"mandatory\":false,\"logic_id\":6,\"label\":\"What can we help you with today?\",\"order\":4,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"2nd option\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Best option!\":{\"checked\":false,\"order\":3}}},\"1338143\":{\"type\":\"Checkbox\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":7,\"label\":\"Which of these are relevant to you?\",\"order\":5,\"entries\":{\"Option #1\":{\"checked\":false,\"order\":0},\"Option #2\":{\"checked\":false,\"order\":1},\"Option #3\":{\"checked\":false,\"order\":2},\"Option #4\":{\"checked\":false,\"order\":3}}},\"1338144\":{\"type\":\"Radio Button\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":8,\"label\":\"What do you think?\",\"order\":6,\"entries\":{\"Option 1\":{\"checked\":false,\"order\":0},\"Option 2\":{\"checked\":false,\"order\":1},\"Option 3\":{\"checked\":false,\"order\":2},\"Option 4\":{\"checked\":false,\"order\":3}}},\"1338145\":{\"type\":\"Radio Button (side by side)\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":9,\"label\":\"Side by side?\",\"order\":7,\"entries\":{\"One\":{\"checked\":false,\"order\":0},\"Two\":{\"checked\":false,\"order\":1},\"Three\":{\"checked\":false,\"order\":2}}}}}";
-    
-    
-    NSString* shortFakeOfflineJSON = @"{\"id\":61454,\"header\":\"We're sorry, there are currently no available agents. Please answer these questions and we will get back to you.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"What is your name?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"}}}";
-    
-    NSString* shortFakePostJSON = @"{\"id\":61454,\"header\":\"Your support session has ended. Please answer a few questions about the service you received.\",\"questions\":{\"1337986\":{\"type\":\"Text Field\",\"validation_type\":\"alpha_numeric\",\"mandatory\":true,\"logic_id\":1,\"label\":\"How would you describe the support session?\",\"order\":0,\"last_known_value\":\"x86_64\"},\"1337990\":{\"type\":\"Text Field\",\"validation_type\":\"email\",\"mandatory\":true,\"logic_id\":2,\"label\":\"Email Address\",\"order\":1,\"last_known_value\":\"\"},\"1337991\":{\"type\":\"Text Field\",\"validation_type\":\"numeric\",\"mandatory\":true,\"logic_id\":3,\"label\":\"Phone Number\",\"order\":2,\"last_known_value\":\"\"}}}";
-    
-    NSDictionary *postSurvey = [jsonParser objectWithString:shortFakePostJSON];
-    [[LIOSurveyManager sharedSurveyManager] populateTemplateWithDictionary:postSurvey type:LIOSurveyManagerSurveyTypePost];
-     
-     */
 
     return resolvedSettings;
 }
@@ -3354,6 +3347,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                    selector:@selector(continuationTimerDidFire)];
         }
         
+        NSNumber *surveysEnabled = [resolvedSettings objectForKey:@"surveys_enabled"];
+        if (surveysEnabled)
+        {
+            [userDefaults setObject:surveysEnabled forKey:LIOLookIOManagerLastKnownSurveysEnabled];
+            lastKnownSurveysEnabled = [surveysEnabled boolValue];
+            LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+            surveyManager.surveysEnabled = lastKnownSurveysEnabled;
+        }
+                
         [self refreshControlButtonVisibility];
         [self applicationDidChangeStatusBarOrientation:nil];
     }
@@ -4368,9 +4370,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (1 == buttonIndex) // "Yes"
             {
                 LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
-                if (surveryManager.postChatTemplate) {
+                if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
                     [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                    break;
+                    return;
                 }
                 
                 [self altChatViewControllerWantsSessionTermination:altChatViewController];
@@ -5009,6 +5011,5 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     return introduced;
 }
-
 
 @end

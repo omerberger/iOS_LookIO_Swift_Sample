@@ -569,7 +569,7 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (surveyManager.preChatTemplate)
+    if (surveyManager.preChatTemplate && surveyManager.surveysEnabled)
     {
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         if (!surveyManager.preSurveyCompleted) {
