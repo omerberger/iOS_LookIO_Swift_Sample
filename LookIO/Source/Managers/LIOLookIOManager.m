@@ -4087,12 +4087,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     });
     
     if (callChatNotAnsweredAfterDismissal) {
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        callChatNotAnsweredAfterDismissal = NO;
+
+        double delayInSeconds = 0.25;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW,(delayInSeconds * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
                 [delegate lookIOManagerCustomActionForChatNotAnswered:self];
-            callChatNotAnsweredAfterDismissal = NO;
         });
     }
     

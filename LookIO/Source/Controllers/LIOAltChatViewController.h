@@ -100,6 +100,8 @@
 
     LIOChatMessage *clickedFailedMessage;
     int clickedFailedMessageIndex;
+    
+    BOOL isAnimatingDismissal;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

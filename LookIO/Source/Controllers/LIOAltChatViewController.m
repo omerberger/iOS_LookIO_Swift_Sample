@@ -576,7 +576,7 @@
             if (padUI) {
                 [self hideChatUIForSurvey:NO];
                 double delayInSeconds = 0.5;
-                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
                 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
                     [self showSurveyViewForType:LIOSurveyManagerSurveyTypePre];
                 });
@@ -1053,6 +1053,7 @@
 - (void)performDismissalAnimation
 {
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
+    isAnimatingDismissal = YES;
     
     background.alpha = 1.0;
         
@@ -1082,6 +1083,7 @@
                          dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
                          dispatch_after(popTime, dispatch_get_main_queue(), ^{
                              [delegate altChatViewControllerDidFinishDismissalAnimation:self];
+                             isAnimatingDismissal = NO;
                          });
                      }];
     
@@ -2483,17 +2485,19 @@
                 }
             }];
             
-            dismissalBar.alpha = 1.0;
-            inputBar.alpha = 1.0;
-            tableView.alpha = 1.0;
+            if (!surveyInProgress && !isAnimatingDismissal) {
+                dismissalBar.alpha = 1.0;
+                inputBar.alpha = 1.0;
+                tableView.alpha = 1.0;
             
-            [self performRevealAnimationWithFadeIn:NO];
+                [self performRevealAnimationWithFadeIn:NO];
             
-            double delayInSeconds = 0.1;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                [self viewDidAppear:NO];
-            });
+                double delayInSeconds = 0.1;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [self viewDidAppear:NO];
+                });
+            }
         }
         else {
             [UIView animateWithDuration:0.3 animations:^{
@@ -2501,7 +2505,7 @@
                 aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
                 
             } completion:^(BOOL finished) {
-                if (!surveyInProgress) {
+                if (!surveyInProgress && !isAnimatingDismissal) {
                     dismissalBar.alpha = 1.0;
                     inputBar.alpha = 1.0;
                     tableView.alpha = 1.0;
