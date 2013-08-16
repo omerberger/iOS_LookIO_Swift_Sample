@@ -35,9 +35,9 @@
 
 @implementation LPSSEManager
 
-@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS;
+@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS, usesSecretToken, secretToken;
 
-- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId useSecretToken:(BOOL)shouldUseSecretToken secretToken:(NSString*)aSecretToken
 {
     self = [super init];
     if (self)
@@ -50,6 +50,9 @@
         self.port = [aPort intValue];
         self.urlEndpoint = anEndpoint;
         self.usesTLS = usesTLS;
+        self.usesSecretToken = shouldUseSecretToken;
+        if (shouldUseSecretToken)
+            self.secretToken = aSecretToken;
         lastEventId = @"";
         if (lastEventId)
             self.lastEventId = anEventId;
@@ -147,9 +150,11 @@
         if (lastEventId)
             if (![lastEventId isEqualToString:@""])
                 httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@\n", lastEventId]];
-        
+        if (usesSecretToken)
+            httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"X-LP-Secret-Token: %@\n", secretToken]];
+                
         httpRequest = [httpRequest stringByAppendingString:@"\n"];
-        
+                
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
         
         [socket readDataWithTimeout:-1 tag:0];

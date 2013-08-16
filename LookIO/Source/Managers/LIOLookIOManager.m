@@ -2230,8 +2230,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     BOOL sseSocketUsesTLS = YES;
     if ([url.scheme isEqualToString:@"http"])
         sseSocketUsesTLS = NO;
-        
-    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] usesTLS:sseSocketUsesTLS lastEventId:chatLastEventId];
+    
+    LPChatAPIClient* chatAPIClient = [LPChatAPIClient sharedClient];
+    
+    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] usesTLS:sseSocketUsesTLS lastEventId:chatLastEventId useSecretToken:chatAPIClient.usesSecretToken secretToken:chatAPIClient.secretToken];
+    
     sseManager.delegate = self;
     [sseManager connect];
 }
