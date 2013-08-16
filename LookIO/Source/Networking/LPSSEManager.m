@@ -83,6 +83,8 @@
     self.host = nil;
     self.port = 0;
     self.urlEndpoint = nil;
+    self.usesSecretToken = NO;
+    self.secretToken = nil;
     
     [events removeAllObjects];
     lastEventId = @"";
