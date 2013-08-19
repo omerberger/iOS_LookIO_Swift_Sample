@@ -714,15 +714,15 @@
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
 
         CGRect aRect = self.view.bounds;
-        aRect.origin.y = UIInterfaceOrientationIsPortrait(actualOrientation) ? -460 : -360;
+        aRect.origin.x = UIInterfaceOrientationIsPortrait(actualOrientation) ? 768 : 1024;
         surveyView.frame = aRect;
         
-        surveyView.clipsToBounds = YES;
+        //surveyView.clipsToBounds = YES;
         surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self.view addSubview:surveyView];
         [UIView animateWithDuration:0.3 animations:^{
             CGRect aRect = surveyView.frame;
-            aRect.origin.y = 0;
+            aRect.origin.x = 0;
             surveyView.frame = aRect;
         }];
     }
