@@ -1125,9 +1125,25 @@
         aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 20;
         starRatingView.frame = aFrame;
         
+        if (padUI) {
+            CGFloat contentHeight = questionLabel.frame.origin.y + questionLabel.frame.size.height + starRatingView.frame.size.height;
+            CGFloat startPoint = scrollView.bounds.size.height/2 - contentHeight/2;
+            
+            aFrame = questionLabel.frame;
+            aFrame.origin.y = startPoint;
+            questionLabel.frame = aFrame;
+            
+            aFrame = starRatingView.frame;
+            aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + 20;
+            starRatingView.frame = aFrame;
+        }
+        
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
-        aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2 - 92.0;
-        aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 30;
+        aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
+        if (padUI)
+            aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+        else
+            aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 30;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
@@ -1146,19 +1162,25 @@
             tableViewContentHeight = maxHeight;
         } else {
             tableView.scrollEnabled = NO;
-            CGFloat contentHeight = questionLabel.frame.origin.y + questionLabel.frame.size.height + tableViewContentHeight;
-            CGFloat startPoint = scrollView.bounds.size.height/2 - contentHeight/2 + 10;
             
-            aFrame = questionLabel.frame;
-            aFrame.origin.y = startPoint;
-            questionLabel.frame = aFrame;
+            if (padUI) {
+                CGFloat contentHeight = questionLabel.frame.origin.y + questionLabel.frame.size.height + tableViewContentHeight;
+                CGFloat startPoint = scrollView.bounds.size.height/2 - contentHeight/2 + 10;
+            
+                aFrame = questionLabel.frame;
+                aFrame.origin.y = startPoint;
+                questionLabel.frame = aFrame;
+            }
         }
     
         tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2, tableViewContentHeight);
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
-        aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+        if (padUI)
+            aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+        else
+            aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
