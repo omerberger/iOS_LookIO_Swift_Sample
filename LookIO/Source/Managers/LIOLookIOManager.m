@@ -2535,6 +2535,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
                 [altChatViewController forceLeaveMessageScreen];
             }
+        } else if ([action isEqualToString:@"engagement_started"])
+        {
+            if (altChatViewController)
+                [altChatViewController engagementDidStart];            
         }
     }
     else if ([type isEqualToString:@"survey"]) {

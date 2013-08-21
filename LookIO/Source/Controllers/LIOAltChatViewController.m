@@ -691,6 +691,18 @@
             [waitingForSurveyView removeFromSuperview];
         }];
     }
+    
+    if (waitingForEngagementToStart) {
+        waitingForEngagementToStart = NO;
+        UIView* waitingForSurveyView = [self.view viewWithTag:LIOAltChatViewControllerLoadingViewTag];
+        if (waitingForSurveyView) {
+            [UIView animateWithDuration:0.3 animations:^{
+                waitingForSurveyView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [waitingForSurveyView removeFromSuperview];
+            }];
+        }
+    }
 
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -734,6 +746,74 @@
         [self didRotateFromInterfaceOrientation:0];
 }
 
+- (void)showLoadingViewWithiPadDelay:(BOOL)shouldDelayiPad {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    UIView* waitingForSurveyView = [[UIView alloc] initWithFrame:self.view.bounds];
+    waitingForSurveyView.alpha = 0.0;
+    waitingForSurveyView.tag = LIOAltChatViewControllerLoadingViewTag;
+    waitingForSurveyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:waitingForSurveyView];
+    [waitingForSurveyView release];
+    
+    UIImageView *loadingImageView = [[UIImageView alloc] initWithFrame:waitingForSurveyView.bounds];
+    loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
+    loadingImageView.contentMode = UIViewContentModeCenter;
+    [waitingForSurveyView addSubview:loadingImageView];
+    
+    CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+    loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
+    loadingAnimation.duration = 1.0f;
+    loadingAnimation.repeatCount = HUGE_VAL;
+    [loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
+    
+    UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
+    loadingLabel.backgroundColor = [UIColor clearColor];
+    loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    loadingLabel.textColor = [UIColor whiteColor];
+    loadingLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    loadingLabel.textAlignment = UITextAlignmentCenter;
+    loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
+    [waitingForSurveyView addSubview:loadingLabel];
+    [loadingLabel release];
+    
+    UILabel* loadingSubLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
+    loadingSubLabel.backgroundColor = [UIColor clearColor];
+    loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    loadingSubLabel.textColor = [UIColor whiteColor];
+    loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
+    loadingSubLabel.textAlignment = UITextAlignmentCenter;
+    loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
+    [waitingForSurveyView addSubview:loadingSubLabel];
+    [loadingSubLabel release];
+    
+    UIButton* waitingForSurveyViewButton = [[UIButton alloc] initWithFrame:waitingForSurveyView.bounds];
+    waitingForSurveyViewButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    [waitingForSurveyView addSubview:waitingForSurveyViewButton];
+    [waitingForSurveyViewButton addTarget:self action:@selector(waitingForSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+    [waitingForSurveyViewButton release];
+    
+    CGRect aFrame = loadingImageView.frame;
+    aFrame.origin.y = aFrame.origin.y - 30;
+    loadingImageView.frame = aFrame;
+    
+    aFrame = loadingSubLabel.frame;
+    aFrame.origin.y = aFrame.origin.y + 20;
+    loadingSubLabel.frame = aFrame;
+    
+    if (padUI && shouldDelayiPad) {
+        [UIView animateWithDuration:0.3 delay:0.5 options:UIViewAnimationCurveLinear animations:^{
+            waitingForSurveyView.alpha = 1.0;
+        } completion:^(BOOL finished) {
+        }];
+    } else {
+        [UIView animateWithDuration:0.3 animations:^{
+            waitingForSurveyView.alpha = 1.0;
+        }];
+    }
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -751,69 +831,7 @@
         return;
     
     if (waitingForSurvey) {
-        UIView* waitingForSurveyView = [[UIView alloc] initWithFrame:self.view.bounds];
-        waitingForSurveyView.alpha = 0.0;
-        waitingForSurveyView.tag = LIOAltChatViewControllerLoadingViewTag;
-        waitingForSurveyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        [self.view addSubview:waitingForSurveyView];
-        [waitingForSurveyView release];
-        
-        UIImageView *loadingImageView = [[UIImageView alloc] initWithFrame:waitingForSurveyView.bounds];
-        loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
-        loadingImageView.contentMode = UIViewContentModeCenter;
-        [waitingForSurveyView addSubview:loadingImageView];
-        
-        CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-        loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
-        loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
-        loadingAnimation.duration = 1.0f;
-        loadingAnimation.repeatCount = HUGE_VAL;
-        [loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
-        
-        UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
-        loadingLabel.backgroundColor = [UIColor clearColor];
-        loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        loadingLabel.textColor = [UIColor whiteColor];
-        loadingLabel.font = [UIFont boldSystemFontOfSize:16.0];
-        loadingLabel.textAlignment = UITextAlignmentCenter;
-        loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
-        [waitingForSurveyView addSubview:loadingLabel];
-        [loadingLabel release];
-        
-        UILabel* loadingSubLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
-        loadingSubLabel.backgroundColor = [UIColor clearColor];
-        loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        loadingSubLabel.textColor = [UIColor whiteColor];
-        loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
-        loadingSubLabel.textAlignment = UITextAlignmentCenter;
-        loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
-        [waitingForSurveyView addSubview:loadingSubLabel];
-        [loadingSubLabel release];
-        
-        UIButton* waitingForSurveyViewButton = [[UIButton alloc] initWithFrame:waitingForSurveyView.bounds];
-        waitingForSurveyViewButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        [waitingForSurveyView addSubview:waitingForSurveyViewButton];
-        [waitingForSurveyViewButton addTarget:self action:@selector(waitingForSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [waitingForSurveyViewButton release];
-        
-        CGRect aFrame = loadingImageView.frame;
-        aFrame.origin.y = aFrame.origin.y - 30;
-        loadingImageView.frame = aFrame;
-        
-        aFrame = loadingSubLabel.frame;
-        aFrame.origin.y = aFrame.origin.y + 20;
-        loadingSubLabel.frame = aFrame;
-        
-        if (padUI) {
-            [UIView animateWithDuration:0.3 delay:0.5 options:UIViewAnimationCurveLinear animations:^{
-                waitingForSurveyView.alpha = 1.0;
-            } completion:^(BOOL finished) {
-            }];
-        } else {
-            [UIView animateWithDuration:0.3 animations:^{
-                waitingForSurveyView.alpha = 1.0;
-            }];
-        }
+        [self showLoadingViewWithiPadDelay:YES];
     }
     
     double delayInSeconds = 0.6;
@@ -2367,6 +2385,40 @@
     }
 }
 
+- (void)engagementDidStart {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (waitingForEngagementToStart) {
+        waitingForEngagementToStart = NO;
+        
+        UIView* waitingForSurveyView = [self.view viewWithTag:LIOAltChatViewControllerLoadingViewTag];
+        if (waitingForSurveyView) {
+            [UIView animateWithDuration:0.3 animations:^{
+                waitingForSurveyView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [waitingForSurveyView removeFromSuperview];
+            }];
+        }
+        
+        dismissalBar.alpha = 1.0;
+        inputBar.alpha = 1.0;
+        tableView.alpha = 1.0;
+        dismissalBar.hidden = NO;
+        inputBar.hidden = NO;
+        tableView.hidden = NO;
+        
+        [self performRevealAnimationWithFadeIn:NO];
+        if (padUI) {
+            double delayInSeconds = 0.1;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self viewDidAppear:NO];
+            });
+        }
+    }
+}
+
+
 - (void)noSurveyRecieved {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
@@ -2490,6 +2542,8 @@
         surveyManager.preSurveyCompleted = YES;
         [delegate altChatViewController:self didFinishPreSurveyWithResponses:surveyDict];
         
+        [self reloadMessages];
+        
         dismissalBar.alpha = 0.0;
         dismissalBar.hidden = NO;
         inputBar.alpha = 0.0;
@@ -2497,8 +2551,8 @@
         tableView.alpha = 0.0;
         tableView.hidden = NO;
         
-        [self reloadMessages];
-        
+        waitingForEngagementToStart = YES;
+
         if (padUI) {
             [UIView animateWithDuration:0.3 animations:^{
                 CGRect aFrame = surveyView.frame;
@@ -2508,9 +2562,14 @@
                 if (!surveyInProgress) {
                     [surveyView removeFromSuperview];
                     surveyView = nil;
+                    
+                    // Show loading view only if we haven't received the engagement start yet
+                    if (waitingForEngagementToStart)
+                        [self showLoadingViewWithiPadDelay:NO];
                 }
             }];
             
+            /*
             if (!surveyInProgress && !isAnimatingDismissal) {
                 dismissalBar.alpha = 1.0;
                 inputBar.alpha = 1.0;
@@ -2524,6 +2583,7 @@
                     [self viewDidAppear:NO];
                 });
             }
+             */
         }
         else {
             [UIView animateWithDuration:0.3 animations:^{
@@ -2531,15 +2591,22 @@
                 aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
                 
             } completion:^(BOOL finished) {
+                /*
                 if (!surveyInProgress && !isAnimatingDismissal) {
+                    
                     dismissalBar.alpha = 1.0;
                     inputBar.alpha = 1.0;
                     tableView.alpha = 1.0;
                     [self performRevealAnimationWithFadeIn:NO];
                 }
+                 */
+                if (waitingForEngagementToStart)
+                    [self showLoadingViewWithiPadDelay:NO];
+
                 [aView removeFromSuperview];
             }];
         }
+        
     }
 }
 
