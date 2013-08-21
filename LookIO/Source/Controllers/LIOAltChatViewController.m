@@ -758,12 +758,17 @@
         [self.view addSubview:waitingForSurveyView];
         [waitingForSurveyView release];
         
-        UIActivityIndicatorView* activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [activityIndicatorView startAnimating];
-        activityIndicatorView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        activityIndicatorView.frame = waitingForSurveyView.bounds;
-        [waitingForSurveyView addSubview:activityIndicatorView];
-        [activityIndicatorView release];
+        UIImageView *loadingImageView = [[UIImageView alloc] initWithFrame:waitingForSurveyView.bounds];
+        loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
+        loadingImageView.contentMode = UIViewContentModeCenter;
+        [waitingForSurveyView addSubview:loadingImageView];
+        
+        CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+        loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+        loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
+        loadingAnimation.duration = 1.0f;
+        loadingAnimation.repeatCount = HUGE_VAL;
+        [loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
         
         UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
         loadingLabel.backgroundColor = [UIColor clearColor];
@@ -775,19 +780,40 @@
         [waitingForSurveyView addSubview:loadingLabel];
         [loadingLabel release];
         
+        UILabel* loadingSubLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
+        loadingSubLabel.backgroundColor = [UIColor clearColor];
+        loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        loadingSubLabel.textColor = [UIColor whiteColor];
+        loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
+        loadingSubLabel.textAlignment = UITextAlignmentCenter;
+        loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
+        [waitingForSurveyView addSubview:loadingSubLabel];
+        [loadingSubLabel release];
+        
         UIButton* waitingForSurveyViewButton = [[UIButton alloc] initWithFrame:waitingForSurveyView.bounds];
         waitingForSurveyViewButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [waitingForSurveyView addSubview:waitingForSurveyViewButton];
         [waitingForSurveyViewButton addTarget:self action:@selector(waitingForSurveyButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         [waitingForSurveyViewButton release];
         
-        CGRect aFrame = activityIndicatorView.frame;
+        CGRect aFrame = loadingImageView.frame;
         aFrame.origin.y = aFrame.origin.y - 30;
-        activityIndicatorView.frame = aFrame;
+        loadingImageView.frame = aFrame;
         
-        [UIView animateWithDuration:0.3 animations:^{
-            waitingForSurveyView.alpha = 1.0;
-        }];
+        aFrame = loadingSubLabel.frame;
+        aFrame.origin.y = aFrame.origin.y + 20;
+        loadingSubLabel.frame = aFrame;
+        
+        if (padUI) {
+            [UIView animateWithDuration:0.3 delay:0.5 options:UIViewAnimationCurveLinear animations:^{
+                waitingForSurveyView.alpha = 1.0;
+            } completion:^(BOOL finished) {
+            }];
+        } else {
+            [UIView animateWithDuration:0.3 animations:^{
+                waitingForSurveyView.alpha = 1.0;
+            }];
+        }
     }
     
     double delayInSeconds = 0.6;

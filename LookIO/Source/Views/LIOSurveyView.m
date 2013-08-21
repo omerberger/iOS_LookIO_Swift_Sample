@@ -602,9 +602,9 @@
     
     UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
 
-    aFrame.origin.x = LIOSurveyViewSideMargin;
-    aFrame.origin.y = landscape ? LIOSurveyViewIntroTopMarginLandscape : LIOSurveyViewIntroTopMarginPortrait;
-    aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
+    aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
+    aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
+    aFrame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     headerLabel.frame = aFrame;
@@ -1173,7 +1173,7 @@
             }
         }
     
-        tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2, tableViewContentHeight);
+        tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
