@@ -809,7 +809,7 @@
     [waitingForSurveyViewButton release];
     
     aFrame = loadingImageView.frame;
-    aFrame.origin.y = aFrame.origin.y - 30;
+    aFrame.origin.y = aFrame.origin.y - 25;
     loadingImageView.frame = aFrame;
     
     aFrame = loadingLabel.frame;
