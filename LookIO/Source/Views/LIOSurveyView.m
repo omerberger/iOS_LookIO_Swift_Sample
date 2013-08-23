@@ -85,7 +85,11 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
+    
+    [alertView dismissWithClickedButtonIndex:-1 animated:NO];
+    [alertView autorelease];
+    alertView = nil;
+    
     [currentScrollView removeFromSuperview];
     currentScrollView = nil;
     
@@ -1220,7 +1224,30 @@
         [self switchToPreviousQuestion];
 }
 
+/*
+ "LIOSurveyView.LeaveSurveyAlertTitle" = "Leave Survey";
+ "LIOSurveyView.LeaveSurveyAlertBody" = "Are you sure you want to exit without finishing this survey?";
+ "LIOSurveyView.LeaveSurveyAlertNoButton = "Yes";
+ "LIOSurveyView.LeaveSurveyAlertNoButton" = "No";
+ */
+
 -(void)cancelButtonWasTapped:(id)sender {
+    if (self.currentSurveyType == LIOSurveyManagerSurveyTypeOffline || self.currentSurveyType == LIOSurveyManagerSurveyTypePost) {
+        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle") message:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertBody") delegate:self cancelButtonTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertNoButton") otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertYesButton"), nil];
+        [alertView show];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    } else {
+        [self cancelSurveyView];
+    }
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 1)
+        [self cancelSurveyView];
+}
+
+- (void)cancelSurveyView {
     if (delegate) {
         pageControl.alpha = 0.0;
         [delegate surveyViewDidCancel:self];
@@ -1228,9 +1255,20 @@
 }
 
 -(void)handleTapGesture:(UITapGestureRecognizer*)sender {
-    if (delegate) {
-        pageControl.alpha = 0.0;
-        [delegate surveyViewDidCancel:self];
+    if (self.currentSurveyType == LIOSurveyManagerSurveyTypeOffline || self.currentSurveyType == LIOSurveyManagerSurveyTypePost) {
+        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle") message:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertBody") delegate:self cancelButtonTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertNoButton") otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertYesButton"), nil];
+        [alertView show];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    } else {
+        [self cancelSurveyView];
+    }
+}
+
+- (void) applicationDidEnterBackground:(id) sender {
+    // Remove alertView if going to background
+    if (alertView) {
+        [alertView dismissWithClickedButtonIndex:-1 animated:NO];
     }
 }
 

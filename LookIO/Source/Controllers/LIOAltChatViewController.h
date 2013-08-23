@@ -122,5 +122,6 @@
 - (void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType;
 - (void)noSurveyRecieved;
 - (void)engagementDidStart;
+- (void)hideChatUIForSurvey:(BOOL)animated;
 
 @end

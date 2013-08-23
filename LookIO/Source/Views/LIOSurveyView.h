@@ -23,7 +23,7 @@
 - (void)surveyViewDidFinish:(LIOSurveyView *)aView;
 @end
 
-@interface LIOSurveyView : UIView <UITextFieldDelegate, UITextViewDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate, LIOStarRatingViewDelegate> {
+@interface LIOSurveyView : UIView <UITextFieldDelegate, UITextViewDelegate, UIGestureRecognizerDelegate, UITableViewDataSource, UITableViewDelegate, LIOSurveyValidationViewDelegate, LIOStarRatingViewDelegate, UIAlertViewDelegate> {
 
     id<LIOSurveyViewDelegate> delegate;
 
@@ -46,6 +46,8 @@
     
     LIOSurveyValidationView *validationView;
     LIOTimerProxy *validationTimer;
+    
+    UIAlertView *alertView;
 }
 
 @property (nonatomic, assign) id<LIOSurveyViewDelegate> delegate;

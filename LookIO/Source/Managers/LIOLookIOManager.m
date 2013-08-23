@@ -4073,12 +4073,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    [pendingChatText release];
-    pendingChatText = [[altChatViewController currentChatText] retain];
-    [altChatViewController bailOnSecondaryViews];
-    [altChatViewController.view removeFromSuperview];
-    [altChatViewController release];
-    altChatViewController = nil;
+    if (altChatViewController) {
+        [pendingChatText release];
+        pendingChatText = [[altChatViewController currentChatText] retain];
+        [altChatViewController bailOnSecondaryViews];
+        [altChatViewController.view removeFromSuperview];
+        [altChatViewController release];
+        altChatViewController = nil;
+    }
     
     int64_t delayInSeconds = 0.25;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -4242,12 +4244,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
 {
     if (socketConnected)
-    {    
+    {
+        // In rare cases, this method is called when there is not altChatViewController
+        // In that case, we should just terminate the session
+
         sessionEnding = YES;
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
         killConnectionAfterChatViewDismissal = YES;
-        [altChatViewController performDismissalAnimation];
+
+        if (altChatViewController)
+            [altChatViewController performDismissalAnimation];
+        else
+            [self altChatViewControllerDidFinishDismissalAnimation:nil];
     }
     else
     {
@@ -4388,33 +4397,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
                 if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
-                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                    // Let's check to see if the chat view controller is visible. If not, present it before
+                    // killing the session or presenting the survey
+                    
+                    if (altChatViewController)
+                        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                    else {
+                        [self showChatAnimated:YES];
+                        
+                        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+                        if (!padUI) {
+                            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                        } else {
+                            [altChatViewController hideChatUIForSurvey:NO];
+                            double delayInSeconds = 1.0;
+                            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
+                            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                                [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                            });
+                        }
+                    }
                     return;
                 }
                 
                 [self altChatViewControllerWantsSessionTermination:altChatViewController];
                 return;
-                
-                sessionEnding = YES;
-                userWantsSessionTermination = YES;
-                                
-                if (NO == socketConnected)
-                {
-                    double delayInSeconds = 0.1;
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                        [self reset];
-                    });
-                }
-                else
-                {
-                    double delayInSeconds = 0.1;
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                        resetAfterDisconnect = YES;
-                        [self killConnection];
-                    });
-                }
             }
             
             break;
