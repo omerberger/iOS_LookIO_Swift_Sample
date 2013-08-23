@@ -2733,6 +2733,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
             [alertView show];
             [alertView autorelease];
+            
+            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
         }
         else
         {
@@ -2760,6 +2762,41 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                       otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
             [alertView show];
             [alertView autorelease];
+        }
+    }
+    else if ([type isEqualToString:@"line_list"]) {
+        // Add message after the initial populated message
+        int messagePosition = 0;
+        if (chatHistory.count > 0)
+            messagePosition = 1;        
+        
+        NSArray *lines = [aPacket objectForKey:@"lines"];
+        for (NSDictionary *lineWrapperDictionary in lines) {
+            if ([lineWrapperDictionary objectForKey:@"line"]) {
+                NSDictionary *lineDictionary = [lineWrapperDictionary objectForKey:@"line"];
+ 
+                LIOChatMessage* chatMessage = [[LIOChatMessage alloc] init];
+                    
+                if ([lineDictionary objectForKey:@"source"]) {
+                    chatMessage.senderName = [lineDictionary objectForKey:@"source"];
+                if ([chatMessage.senderName isEqualToString:@"visitor"])
+                    chatMessage.kind = LIOChatMessageKindLocal;
+                else
+                    chatMessage.kind = LIOChatMessageKindRemote;
+                }
+                else
+                    chatMessage.senderName = @"";
+                    
+                if ([lineDictionary objectForKey:@"text"])
+                    chatMessage.text = [lineDictionary objectForKey:@"text"];
+                else
+                    chatMessage.text = @"";
+                
+                if (messagePosition <= chatHistory.count) {
+                    [chatHistory insertObject:chatMessage atIndex:messagePosition];
+                    messagePosition += 1;
+                }
+            }
         }
     }
 }
