@@ -1410,7 +1410,6 @@
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
     alertView.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
-    alertView.alertViewStyle = UIAlertViewStyleDefault;
     
     CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
     
