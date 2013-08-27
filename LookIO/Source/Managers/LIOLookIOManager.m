@@ -2278,7 +2278,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         userWantsSessionTermination = NO;
         introduced = NO;
         resumeMode = NO;
-        
+        controlButton.currentMode = LIOControlButtonViewModeDefault;
+        [controlButton layoutSubviews];
+
         [self refreshControlButtonVisibility];
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
