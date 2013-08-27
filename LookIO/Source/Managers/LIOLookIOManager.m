@@ -1824,7 +1824,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
                                                                 message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
                                                                delegate:nil
-                                                      cancelButtonTitle:@"LIOLookIOManager.FailedMessageSendButton"
+                                                      cancelButtonTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendButton")
                                                       otherButtonTitles:nil];
             [alertView show];
             [alertView autorelease];
@@ -1860,7 +1860,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
                                                            delegate:nil
-                                                  cancelButtonTitle:@"LIOLookIOManager.FailedMessageSendButton"
+                                                  cancelButtonTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendButton")
                                                   otherButtonTitles:nil];
             [alertView show];
             [alertView autorelease];
@@ -2267,8 +2267,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self connectSSESocket];
         return;
     }
-    
+
     sseSocketAttemptingReconnect = NO;
+
+    // If the user in the process of trying to reconnect, we should show a different alert view, and not the general
+    // failure alert view
+    
+    if (resumeMode) {
+        resetAfterDisconnect = YES;
+        userWantsSessionTermination = NO;
+        introduced = NO;
+        resumeMode = NO;
+        
+        [self refreshControlButtonVisibility];
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
+                                                           delegate:nil
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
+        [alertView show];
+        [alertView autorelease];
+        
+        return;
+    }
     
     // We don't show error boxes if resume mode is possible, or if we're unprovisioned.
     if (/*NO == firstChatMessageSent && */NO == unprovisioned)
@@ -2280,6 +2302,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (introduced)
             {
+                // Let's not show an alert view in this case, because we want to offer the reconnection alert view
+                /*
                 UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                     message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                    delegate:self
@@ -2288,8 +2312,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
                 [alertView show];
                 [alertView autorelease];
+                 */
                 
-                resetAfterDisconnect = YES;
+                resetAfterDisconnect = NO;
                 
                 LIOLog(@"Session forcibly terminated. Reason: socket closed unexpectedly during an introduced session.");
             }
@@ -2734,7 +2759,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
             
-            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
+            // If we don't currently have the history, let's ask for it
+            if (chatHistory.count == 1)
+                [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
         }
         else
         {
