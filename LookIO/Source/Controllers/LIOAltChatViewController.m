@@ -1645,10 +1645,12 @@
         else
         {
             CGFloat result = tableView.bounds.size.height - heightAccum - 10.0;
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-                result = 10;
-            else
-                result = 7.0;
+            if (result < 0.0) {
+                if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                    result = 10;
+                else
+                    result = 7.0;
+            }
         
             NSLog(@"Height of table view is %f", tableView.bounds.size.height);
             NSLog(@"Height of expanding footer is %f", result);
