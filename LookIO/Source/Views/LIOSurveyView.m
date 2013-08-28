@@ -947,11 +947,6 @@
                             [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
                     }
                 }
-                
-                // Finally, if no answers are set for a rating view, we should set the 5 star answer as the correct answer
-                if (question.shouldUseStarRatingView && !questionHasInitiallyCheckedAnswer)
-                    [selectedIndices addObject:[NSIndexPath indexPathForRow:0 inSection:0]];
-                
             }
         }
     }
@@ -1545,10 +1540,13 @@
                 previousQuestionImageView = currentQuestionImageView;
                 currentQuestionImageView = nil;
                 
-                
+                LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+                if (currentQuestion.shouldUseStarRatingView) {
+                    LIOStarRatingView* starRatingView = (LIOStarRatingView*)[currentScrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
+                    if (starRatingView)
+                        [starRatingView showIntroAnimation];
+                }
             }];
-
-            
         } else {
             isAnimating = YES;
             [UIView animateWithDuration:0.3 animations:^{
@@ -1568,6 +1566,13 @@
                 currentScrollView = nextQuestionScrollView;
                 
                 isAnimating = NO;
+                
+                LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
+                if (currentQuestion.shouldUseStarRatingView) {
+                    LIOStarRatingView* starRatingView = (LIOStarRatingView*)[currentScrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
+                    if (starRatingView)
+                        [starRatingView showIntroAnimation];
+                }
             }];
         }
     }
@@ -2085,7 +2090,8 @@
 
 -(void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(int)aRating {
     [selectedIndices removeAllObjects];
-    [selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
+    if (aRating > 0 && aRating < 6)
+        [selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

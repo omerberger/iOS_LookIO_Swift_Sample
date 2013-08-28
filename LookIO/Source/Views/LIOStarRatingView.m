@@ -18,7 +18,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        currentRating = 5;
+        currentRating = 0;
         
         starButtonArray = [[NSMutableArray alloc] init];
         for (int i=0; i<5; i++) {
@@ -50,8 +50,10 @@
         [self addSubview:ratingLabel];
         [ratingLabel release];
         
-        self.valueLabelArray = [[NSMutableArray alloc] init];
-
+        valueLabelArray = [[NSMutableArray alloc] init];
+        
+        panGestureRecognizer = [[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)] autorelease];
+        [self addGestureRecognizer:panGestureRecognizer];
     }
     return self;
 }
@@ -64,13 +66,15 @@
     [starButtonArray removeAllObjects];
     [starButtonArray release];
     starButtonArray = nil;
+    
 }
 
 -(void)layoutSubviews {
     for (int i=0; i<5; i++) {
         if (i < starButtonArray.count) {
             UIButton* starButton = [starButtonArray objectAtIndex:i];
-            starButton.selected = (i < currentRating);
+            if (!isAnimating)
+                starButton.selected = (i < currentRating);
             
             CGRect aFrame = starButton.frame;
             aFrame.origin.x = (self.frame.size.width/2 - 75.0) + i * 30.0;
@@ -80,6 +84,13 @@
             
             starButton.frame = aFrame;
             
+            if (!isAnimating) {
+                if (isPanning && i == currentRating - 1) {
+                    starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
+                } else {
+                    starButton.transform = CGAffineTransformIdentity;
+                }
+            }
         }
     }
     
@@ -90,10 +101,37 @@
     aFrame.size.height = 15.0;
     ratingLabel.frame = aFrame;
     
-    if (self.valueLabelArray && self.valueLabelArray.count == 5) {
-        ratingLabel.text = (NSString*)[self.valueLabelArray objectAtIndex:(5 - currentRating)];
-    } else {        
-        switch (currentRating) {
+    if (!isAnimating)
+        [self setRatingTextForRating:currentRating];
+
+}
+
+- (void)handlePan:(UIPanGestureRecognizer *)recognizer {
+    if (recognizer.state == UIGestureRecognizerStateBegan)
+        isPanning = YES;
+    
+    CGPoint translation = [recognizer locationInView:self];
+
+    if (translation.y > -10 && translation.y < self.bounds.size.height + 10) {
+        int newRating = (translation.x - (self.frame.size.width/2 - 75.0))/30.0 + 1;
+        if (newRating >= 0 && newRating <= 5)
+            [self setRating:newRating];
+    }
+    
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        isPanning = NO;
+        [self setNeedsLayout];
+    }
+}
+
+- (void)setRatingTextForRating:(int)rating {
+    if (valueLabelArray && valueLabelArray.count == 5) {
+        if (rating == 0)
+            ratingLabel.text = @"";
+        else
+            ratingLabel.text = (NSString*)[valueLabelArray objectAtIndex:(5 - rating)];
+    } else {
+        switch (rating) {
             case 5:
                 ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
                 break;
@@ -114,22 +152,61 @@
                 ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
                 break;
                 
+            case 0:
+                ratingLabel.text = @"";
+                
             default:
                 break;
         }
     }
 }
 
+- (void)showIntroAnimationForAnswerAtIndex:(int)index {
+    [self setRatingTextForRating:5 - index];
+    UIButton* starButton = [starButtonArray objectAtIndex:index];
+    starButton.selected = YES;
+
+    [UIView animateWithDuration:0.3 animations:^{
+        starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.3 animations:^{
+            UIButton* starButton = [starButtonArray objectAtIndex:index];
+            starButton.transform = CGAffineTransformIdentity;
+            
+            ratingLabel.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            if (index < 4)
+                [self showIntroAnimationForAnswerAtIndex:index+1];
+            else {
+                isAnimating = NO;
+                [self setNeedsLayout];
+            }
+        }];
+    }];
+}
+
+- (void)showIntroAnimation {
+    isAnimating = YES;
+
+    for (int i=0; i<5; i++) {
+        if (i < starButtonArray.count) {
+            UIButton* starButton = [starButtonArray objectAtIndex:i];
+            starButton.selected = NO;
+        }
+    }
+    
+    [self showIntroAnimationForAnswerAtIndex:0];
+}
+
 -(void)starWasTapped:(id)sender {
     UIButton* button = (UIButton*)sender;
-    currentRating = [starButtonArray indexOfObject:button] + 1;
-    [self setNeedsLayout];
-    
-    if ([(NSObject *)delegate respondsToSelector:@selector(starRatingView:didUpdateRating:)])
-        [delegate starRatingView:self didUpdateRating:currentRating];
+    [self setRating:[starButtonArray indexOfObject:button] + 1];
 }
 
 - (void)setRating:(int)newRating {
+    if (isAnimating)
+        return;
+    
     currentRating = newRating;
     [self setNeedsLayout];
     
@@ -141,11 +218,11 @@
     if (newValueLabelsArray.count != 5)
         return;
     
-    [self.valueLabelArray removeAllObjects];
+    [valueLabelArray removeAllObjects];
     
     for (int i=0; i<newValueLabelsArray.count; i++) {
         NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
-        [self.valueLabelArray addObject:valueLabel];
+        [valueLabelArray addObject:valueLabel];
     }
 }
                                     

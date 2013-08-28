@@ -22,7 +22,12 @@
     UILabel* ratingLabel;
     int currentRating;
     
+    BOOL isAnimating;
+    BOOL isPanning;
+    
     NSMutableArray* valueLabelArray;
+    
+    UIPanGestureRecognizer *panGestureRecognizer;
 }
 
 @property (nonatomic, assign) id<LIOStarRatingViewDelegate> delegate;
@@ -31,5 +36,6 @@
 
 - (void)setRating:(int)newRating;
 - (void)setValueLabels:(NSArray*)newValueLabelsArray;
+- (void)showIntroAnimation;
 
 @end
