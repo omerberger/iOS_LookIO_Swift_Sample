@@ -1142,7 +1142,7 @@
         if (padUI)
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
         else
-            aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 30;
+            aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 60;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;

@@ -77,10 +77,10 @@
                 starButton.selected = (i < currentRating);
             
             CGRect aFrame = starButton.frame;
-            aFrame.origin.x = (self.frame.size.width/2 - 75.0) + i * 30.0;
+            aFrame.origin.x = (self.frame.size.width/2 - 125.0) + i * 50.0;
             aFrame.origin.y = 0;
-            aFrame.size.width = 25;
-            aFrame.size.height = 25;
+            aFrame.size.width = 50;
+            aFrame.size.height = 50;
             
             starButton.frame = aFrame;
             
@@ -96,7 +96,7 @@
     
     CGRect aFrame = ratingLabel.frame;
     aFrame.origin.x = 0.0;
-    aFrame.origin.y = 34.0;
+    aFrame.origin.y = 60.0;
     aFrame.size.width = self.bounds.size.width;
     aFrame.size.height = 15.0;
     ratingLabel.frame = aFrame;
@@ -113,7 +113,7 @@
     CGPoint translation = [recognizer locationInView:self];
 
     if (translation.y > -10 && translation.y < self.bounds.size.height + 10) {
-        int newRating = (translation.x - (self.frame.size.width/2 - 75.0))/30.0 + 1;
+        int newRating = (translation.x - (self.frame.size.width/2 - 125.0))/50.0 + 1;
         if (newRating >= 0 && newRating <= 5)
             [self setRating:newRating];
     }
@@ -162,7 +162,7 @@
 }
 
 - (void)showIntroAnimationForAnswerAtIndex:(int)index {
-    [self setRatingTextForRating:5 - index];
+    [self setRatingTextForRating:index + 1];
     UIButton* starButton = [starButtonArray objectAtIndex:index];
     starButton.selected = YES;
 
