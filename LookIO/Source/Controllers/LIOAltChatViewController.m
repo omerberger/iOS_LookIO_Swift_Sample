@@ -378,9 +378,6 @@
                         poweredByLabel.font = [UIFont systemFontOfSize:13.0];
                         poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
                         
-
-                        
-                        
                         UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
                         aFrame = logoView.frame;
                         aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
@@ -392,7 +389,6 @@
                         [functionHeaderChat.contentView addSubview:logoView];
                     }
                 }
-        
     }
     
     functionHeaderChat.backgroundColor = [UIColor clearColor];

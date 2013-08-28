@@ -98,6 +98,7 @@
 #define LIOLookIOManagerReconnectionCancelAlertViewTag      8
 #define LIOLookIOManagerReconnectionSucceededAlertViewTag   9
 #define LIOLookIOManagerReconnectionFailedAlertViewTag      10
+#define LIOLookIOManagerDisconnectOutroAlertViewTag         11
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -2343,7 +2344,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                delegate:self
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-            alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+            if (outroReceived)
+                alertView.tag = LIOLookIOManagerDisconnectOutroAlertViewTag;
+            else
+                alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+            
             [alertView show];
             [alertView autorelease];
             
@@ -2351,6 +2356,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server (with outro).");
             else
                 LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server but WITHOUT outro.");
+            
+            return;
         }
     }
     
@@ -2728,9 +2735,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     else if ([type isEqualToString:@"outro"])
     {
         sessionEnding = YES;
-        resetAfterDisconnect = YES;
         outroReceived = YES;
-        firstChatMessageSent = NO;
     }
     else if ([type isEqualToString:@"reintroed"] && resumeMode)
     {
@@ -2789,6 +2794,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                delegate:self
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
+            alertView.tag = LIOLookIOManagerReconnectionFailedAlertViewTag;
+            
             [alertView show];
             [alertView autorelease];
         }
@@ -4309,7 +4316,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
 {
-    if (socketConnected)
+    if (socketConnected || outroReceived)
     {
         // In rare cases, this method is called when there is not altChatViewController
         // In that case, we should just terminate the session
@@ -4317,8 +4324,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sessionEnding = YES;
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
-        killConnectionAfterChatViewDismissal = YES;
-
+        if (outroReceived)
+            resetAfterChatViewDismissal = YES;
+        else
+            killConnectionAfterChatViewDismissal = YES;
+        
         if (altChatViewController)
             [altChatViewController performDismissalAnimation];
         else
@@ -4403,6 +4413,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         case LIOLookIOManagerReconnectionFailedAlertViewTag:
         {
+            controlButton.currentMode = LIOControlButtonViewModeDefault;
+            [controlButton setNeedsLayout];
+            [self rejiggerControlButtonFrame];
+
             [self reset];
             break;
         }
@@ -4456,6 +4470,42 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self rejiggerWindows];
             break;
         }
+            
+        case LIOLookIOManagerDisconnectOutroAlertViewTag:
+        {
+            LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
+            if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
+                // Let's check to see if the chat view controller is visible. If not, present it before
+                // killing the session or presenting the survey
+                
+                if (altChatViewController)
+                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                else {
+                    [self showChatAnimated:YES];
+                    
+                    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+                    
+                    if (!padUI) {
+                        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                    } else {
+                        [altChatViewController hideChatUIForSurvey:NO];
+                        double delayInSeconds = 1.0;
+                        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
+                        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                        });
+                    }
+                }
+                return;
+            }
+        
+            [self altChatViewControllerWantsSessionTermination:altChatViewController];
+            return;
+
+            
+            break;
+        }
+            
             
         case LIOLookIOManagerDisconnectConfirmAlertViewTag:
         {
