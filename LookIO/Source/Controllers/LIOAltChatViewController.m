@@ -318,7 +318,12 @@
         
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
-    
+
+    // Fix for iOS 7.0 - allow Powered By Area to appear, otherwise it is clipped
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        for (UIView *subview in functionHeaderChat.subviews)
+            subview.clipsToBounds = NO;
+
     if (!padUI) {
         if (headerBar)
             if (headerBar.notificationArea)
@@ -362,10 +367,19 @@
                         aFrame = poweredByLabel.frame;
                         aFrame.origin.x = 10.0;
                         aFrame.origin.y = -54.0;
+                        
+                        // iOS 7.0 + iPad requires originating the powered by logo a bit higher
+                        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                                aFrame.origin.y = -74.0;
+                        
                         aFrame.size.width = 320.0 - 20.0;
                         poweredByLabel.frame = aFrame;
                         poweredByLabel.font = [UIFont systemFontOfSize:13.0];
                         poweredByLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+                        
+
+                        
                         
                         UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
                         aFrame = logoView.frame;
