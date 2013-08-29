@@ -1647,9 +1647,6 @@
                     result = 7.0 - 10.0;
             }
             
-            NSLog(@"Height of table view is %f", tableView.bounds.size.height);
-            NSLog(@"Height of expanding footer is %f", result);
-            
             return result;
         }
         else
@@ -1662,9 +1659,6 @@
                     result = 7.0;
             }
         
-            NSLog(@"Height of table view is %f", tableView.bounds.size.height);
-            NSLog(@"Height of expanding footer is %f", result);
-            
             return result;
         }
     }
