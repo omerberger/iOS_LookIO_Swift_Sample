@@ -223,6 +223,13 @@ typedef enum
     NSMutableArray* funnelRequestQueue;
     BOOL funnelRequestIsActive;
     BOOL callChatNotAnsweredAfterDismissal;
+
+    BOOL shouldSendCapabilitiesPacket;
+    int failedCapabilitiesCount;
+    
+    BOOL shouldSendChatHistoryPacket;
+    NSDictionary *failedChatHistoryDict;
+    int failedChatHistoryCount;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1081,6 +1088,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
     
+    shouldSendCapabilitiesPacket = NO;
+    failedCapabilitiesCount = 0;
+    
+    shouldSendChatHistoryPacket = NO;
+    failedChatHistoryCount = 0;
+    [failedChatHistoryDict release];
+    failedChatHistoryDict = nil;
+    
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
@@ -1898,6 +1913,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    shouldSendCapabilitiesPacket = NO;
+    
     NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
     NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                               capsArray, @"capabilities",
@@ -1912,6 +1929,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<CAPABILITIES> failure: %@", error);
+        
+        failedCapabilitiesCount += 1;
+        if (failedCapabilitiesCount < 3)
+            shouldSendCapabilitiesPacket = YES;
     }];
 }
 
@@ -1965,6 +1986,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    shouldSendChatHistoryPacket = NO;
+    
     NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1974,6 +1997,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOLog(@"<CHAT_HISTORY> success");
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<CHAT_HISTORY> failure: %@", error);
+        
+        failedChatHistoryCount += 1;
+        // Retry if this is not an empty dictionary request, and if we haven't surpassed our retry limit
+        if (failedChatHistoryCount < 3 && emailDict.allKeys.count > 0) {
+            shouldSendChatHistoryPacket = YES;
+            
+            if (failedChatHistoryDict) {
+                [failedChatHistoryDict release];
+                failedChatHistoryDict = nil;
+            }
+            failedChatHistoryDict = [emailDict retain];
+        }
     }];
 }
 
@@ -3844,6 +3879,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)realtimeExtrasTimerDidFire
 {
+    if (shouldSendCapabilitiesPacket)
+        [self sendCapabilitiesPacket];
+    
+    if (shouldSendChatHistoryPacket)
+        [self sendChatHistoryPacketWithDict:failedChatHistoryDict];
+    
     // We watch for changes to:
     // 1) the extras dictionary
     // 2) network: wifi / cell
