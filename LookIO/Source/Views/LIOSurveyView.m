@@ -1023,8 +1023,7 @@
         
         // iOS 7.0: Remove 3px for the textfield in iOS 7.0
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-            if (![[UIApplication sharedApplication] isStatusBarHidden])
-                aFrame.origin.y -= 3.0;
+            aFrame.origin.y -= 3.0;
         
         inputField.frame = aFrame;
         
