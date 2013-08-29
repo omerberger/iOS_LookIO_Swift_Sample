@@ -1934,7 +1934,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }];
 }
 
--(void)sendSurveyPacketWithDict:(NSDictionary*)surveyDict {
+-(void)sendSurveyPacketWithDict:(NSDictionary*)surveyDict withType:(LIOSurveyManagerSurveyType)type {
     if (chatEngagementId == nil) {
         LIOLog(@"<SURVEY> failure - no engagement ID");
         return;
@@ -1950,6 +1950,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<SURVEY> failure: %@", error);
+        
+        // If submitting the survey fails, and it's a pre chat survey, it's better to start the chat without the survey than ending the session
+        if (type == LIOSurveyManagerSurveyTypePre) {
+            if (altChatViewController)
+                [altChatViewController engagementDidStart];
+        }
     }];
 }
 
@@ -4282,7 +4288,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                              aResponseDict, @"offline",
                                              nil];
         
-        [self sendSurveyPacketWithDict:surveyDict];
+        [self sendSurveyPacketWithDict:surveyDict withType:LIOSurveyManagerSurveyTypeOffline];
     
     } else {
         NSString* anEmail = [surveyManager answerObjectForSurveyType:LIOSurveyManagerSurveyTypeOffline withQuestionIndex:0];
@@ -4311,7 +4317,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                            aResponseDict, @"postchat",
                                            nil];
         
-    [self sendSurveyPacketWithDict:surveyDict];
+    [self sendSurveyPacketWithDict:surveyDict withType:LIOSurveyManagerSurveyTypePost];
 }
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
@@ -4358,7 +4364,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                        surveyResponsesToBeSent, @"prechat",
                                        nil];
     
-    [self sendSurveyPacketWithDict:surveyDict];
+    [self sendSurveyPacketWithDict:surveyDict withType:LIOSurveyManagerSurveyTypePre];
 
 }
 
