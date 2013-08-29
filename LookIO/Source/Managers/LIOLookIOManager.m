@@ -1722,11 +1722,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 # pragma mark Visit API Methods
 
 -(void)sendFunnelPacketForState:(LIOFunnelState)funnelState {
-    if (funnelRequestIsActive) {
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+
+    // Let's check if we are in the middle of a request, or disconnected,
+    // otherwise queue this request until network returns or a new state is updated
+
+    if (funnelRequestIsActive || (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)) {
         NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
         [funnelRequestQueue addObject:nextFunnelRequest];
         return;
+    }    
+    
+    if (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        
+        return;        
     }
+
     
     funnelRequestIsActive = YES;
     
@@ -4842,6 +4854,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [queuedLaunchReportDates removeAllObjects];
             [[NSUserDefaults standardUserDefaults] setObject:queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
+            
+            // Send out packets in the funnel queue in case network was disconnected
+            if (funnelRequestQueue.count > 0) {
+                NSNumber* nextFunnelState = [funnelRequestQueue objectAtIndex:0];
+                [self sendFunnelPacketForState:[nextFunnelState intValue]];
+                [funnelRequestQueue removeObjectAtIndex:0];
+            }
             
             break;
         }
