@@ -25,6 +25,7 @@ typedef enum
     NSString *senderName;
     NSString *attachmentId;
     BOOL sendingFailed;
+    NSString *lineId;
 }
 
 @property(nonatomic, assign) LIOChatMessageKind kind;
@@ -33,6 +34,7 @@ typedef enum
 @property(nonatomic, retain) NSString *senderName;
 @property(nonatomic, retain) NSString *attachmentId;
 @property(nonatomic, assign) BOOL sendingFailed;
+@property(nonatomic, copy) NSString *lineId;
 
 + (LIOChatMessage *)chatMessage;
 

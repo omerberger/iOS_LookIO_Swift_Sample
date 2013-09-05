@@ -2492,33 +2492,45 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         NSString *text = [aPacket objectForKey:@"text"];
         NSString *senderName = [aPacket objectForKey:@"sender_name"];
+        NSString *lineId = [aPacket objectForKey:@"line_id"];
         
         LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
         newMessage.text = text;
         newMessage.senderName = senderName;
         newMessage.kind = LIOChatMessageKindRemote;
         newMessage.date = [NSDate date];
-        [chatHistory addObject:newMessage];
+        newMessage.lineId = lineId;
         
-        if (nil == altChatViewController)
-        {
-            [self showChatAnimated:YES];
-        }
-        else
-        {
-            [altChatViewController reloadMessages];
-            [altChatViewController scrollToBottomDelayed:YES];
+        BOOL shouldAddMessage = YES;
+        if (newMessage.lineId) {
+            NSPredicate *lineIdPredicate = [NSPredicate predicateWithFormat:@"lineId = %@", newMessage.lineId];
+            NSArray *messagesWithLineId = [chatHistory filteredArrayUsingPredicate:lineIdPredicate];
+            if (messagesWithLineId.count > 0)
+                shouldAddMessage = NO;
         }
         
-        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
-        {
-            UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+        if (shouldAddMessage) {
+            [chatHistory addObject:newMessage];
+            if (nil == altChatViewController)
+            {
+                [self showChatAnimated:YES];
+            }
+            else
+            {
+                [altChatViewController reloadMessages];
+                [altChatViewController scrollToBottomDelayed:YES];
+            }
+        
+            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+            {
+                UILocalNotification *localNotification = [[[UILocalNotification alloc] init] autorelease];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             
-            chatReceivedWhileAppBackgrounded = YES;
+                chatReceivedWhileAppBackgrounded = YES;
+            }
         }
     }
     else if ([type isEqualToString:@"permission"])
@@ -2867,12 +2879,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 LIOChatMessage* chatMessage = [[LIOChatMessage alloc] init];
                     
                 if ([lineDictionary objectForKey:@"source"]) {
-                    chatMessage.senderName = [lineDictionary objectForKey:@"source"];
-                if ([chatMessage.senderName isEqualToString:@"visitor"])
-                    chatMessage.kind = LIOChatMessageKindLocal;
-                else
-                    chatMessage.kind = LIOChatMessageKindRemote;
+                    NSString *source = [lineDictionary objectForKey:@"source"];
+                    if ([source isEqualToString:@"visitor"])
+                        chatMessage.kind = LIOChatMessageKindLocal;
+                    else
+                        chatMessage.kind = LIOChatMessageKindRemote;
                 }
+                
+                if ([lineDictionary objectForKey:@"sender_name"])
+                    chatMessage.senderName = [lineDictionary objectForKey:@"sender_name"];
                 else
                     chatMessage.senderName = @"";
                     
@@ -2881,7 +2896,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 else
                     chatMessage.text = @"";
                 
-                if (messagePosition <= chatHistory.count) {
+                if ([lineDictionary objectForKey:@"line_id"])
+                    chatMessage.lineId = [lineDictionary objectForKey:@"line_id"];
+                else
+                    chatMessage.lineId = nil;
+
+                BOOL shouldAddMessage = YES;
+                if (chatMessage.lineId) {
+                    NSPredicate *lineIdPredicate = [NSPredicate predicateWithFormat:@"lineId = %@", chatMessage.lineId];
+                    NSArray *messagesWithLineId = [chatHistory filteredArrayUsingPredicate:lineIdPredicate];
+                    if (messagesWithLineId.count > 0)
+                        shouldAddMessage = NO;
+                }
+                
+                if (messagePosition <= chatHistory.count && shouldAddMessage) {
                     [chatHistory insertObject:chatMessage atIndex:messagePosition];
                     messagePosition += 1;
                 }
@@ -3967,6 +3995,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
         firstMessage.kind = LIOChatMessageKindRemote;
         firstMessage.date = [NSDate date];
+        firstMessage.lineId = nil;
         [chatHistory addObject:firstMessage];
         
         if ([lastKnownWelcomeMessage length])
@@ -4118,6 +4147,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     newMessage.kind = LIOChatMessageKindLocal;
     newMessage.text = aString;
     newMessage.sendingFailed = NO;
+    newMessage.lineId = nil;
     [chatHistory addObject:newMessage];
     
     [altChatViewController reloadMessages];
