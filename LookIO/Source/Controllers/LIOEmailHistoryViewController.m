@@ -105,6 +105,8 @@
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 14.0;
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        aFrame.origin.y = 10.0;
     aFrame.size.width = fieldBackground.frame.size.width - 20.0;
     aFrame.size.height = 28.0;
     inputField.frame = aFrame;

@@ -557,11 +557,10 @@
 }
 
 // TODO: When compiling with xCode 5, use this
-//
-//- (UIStatusBarStyle)preferredStatusBarStyle {
-///    return UIStatusBarStyleLightContent;
-//}
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleLightContent;
+}
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -1411,9 +1410,13 @@
     NSString *bodyString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationBody"];
     NSString *sendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationSend"];
     NSString *dontSendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationDontSend"];
+
+    NSString *message = [bodyString stringByAppendingString:@"\n\n\n\n\n"];
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        message = bodyString;
     
     alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                 message:[bodyString stringByAppendingString:@"\n\n\n\n\n"]
+                                           message:message
                                                 delegate:self
                                        cancelButtonTitle:nil
                                        otherButtonTitles:dontSendString, sendString, nil];
@@ -1548,8 +1551,8 @@
                     
                     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
                     
-                    // Fix for iOS 7.0 - allow Bubbles to bounce on iPad
-                    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && padUI)
+                    // Fix for iOS 7.0 - allow Bubbles to bounce
+                    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
                         for (UIView *subview in aCell.subviews)
                             subview.clipsToBounds = NO;
 
@@ -1602,8 +1605,8 @@
 
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-        // Fix for iOS 7.0 - allow Bubbles to bounce on iPad
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && padUI)
+        // Fix for iOS 7.0 - allow Bubbles to bounce
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
             for (UIView *subview in aCell.subviews)
                 subview.clipsToBounds = NO;
     }
