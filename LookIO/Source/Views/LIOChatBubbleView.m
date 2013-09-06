@@ -450,7 +450,7 @@ static NSDataDetector *dataDetector = nil;
     
     [self becomeFirstResponder];
     
-    CGRect targetFrame = CGRectMake(self.frame.size.width / 2.0, self.frame.size.height / 2.0, 0.0, 0.0);
+    CGRect targetFrame = CGRectMake(self.bounds.size.width / 2.0, self.bounds.size.height / 2.0, 0.0, 0.0);
     UIMenuController *menu = [UIMenuController sharedMenuController];
     menu.arrowDirection = UIMenuControllerArrowUp;
     [menu setTargetRect:targetFrame inView:self];
