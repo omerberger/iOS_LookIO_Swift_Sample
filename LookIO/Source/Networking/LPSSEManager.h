@@ -37,21 +37,19 @@ typedef enum {
     int port;
     id <LPSSEManagerDelegate> delegate;
     BOOL usesTLS;
-    BOOL usesSecretToken;
-    NSString* secretToken;
+    NSArray *cookies;
 }
 
-- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId useSecretToken:(BOOL)shouldUseSecretToken secretToken:(NSString*)aSecretToken;
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)cookies;
 - (void)connect;
 - (void)disconnect;
 - (void)reset;
 
-@property(nonatomic, retain) NSString *host;
-@property(nonatomic, retain) NSString *urlEndpoint;
-@property(nonatomic, assign) int port;
-@property(nonatomic, assign) id <LPSSEManagerDelegate> delegate;
-@property(nonatomic, assign) BOOL usesTLS;
-@property(nonatomic, assign) BOOL usesSecretToken;
-@property(nonatomic, retain) NSString* secretToken;
+@property (nonatomic, retain) NSString *host;
+@property (nonatomic, retain) NSString *urlEndpoint;
+@property (nonatomic, assign) int port;
+@property (nonatomic, assign) id <LPSSEManagerDelegate> delegate;
+@property (nonatomic, assign) BOOL usesTLS;
+@property (nonatomic, retain) NSArray *cookies;
 
 @end

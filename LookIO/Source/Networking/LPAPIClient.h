@@ -12,13 +12,9 @@
 
 @interface LPAPIClient : NSObject {
     NSURL *baseURL;
-    NSString* secretToken;
-    BOOL usesSecretToken;
 }
 
 @property (nonatomic, retain) NSURL *baseURL;
-@property (nonatomic, retain) NSString *secretToken;
-@property (nonatomic, assign) BOOL usesSecretToken;
 
 + (LPAPIClient *)sharedClient;
 - (void)postPath:(NSString *)path

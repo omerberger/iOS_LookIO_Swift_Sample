@@ -35,9 +35,9 @@
 
 @implementation LPSSEManager
 
-@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS, usesSecretToken, secretToken;
+@synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS, cookies;
 
-- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId useSecretToken:(BOOL)shouldUseSecretToken secretToken:(NSString*)aSecretToken
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)cookies
 {
     self = [super init];
     if (self)
@@ -50,9 +50,8 @@
         self.port = [aPort intValue];
         self.urlEndpoint = anEndpoint;
         self.usesTLS = usesTLS;
-        self.usesSecretToken = shouldUseSecretToken;
-        if (shouldUseSecretToken)
-            self.secretToken = aSecretToken;
+        if (cookies)
+            self.cookies = cookies;
         lastEventId = @"";
         if (lastEventId)
             self.lastEventId = anEventId;
@@ -83,9 +82,7 @@
     self.host = nil;
     self.port = 0;
     self.urlEndpoint = nil;
-    self.usesSecretToken = NO;
-    self.secretToken = nil;
-    
+            
     [events removeAllObjects];
     lastEventId = @"";
     
@@ -152,8 +149,16 @@
         if (lastEventId)
             if (![lastEventId isEqualToString:@""])
                 httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"Last-Event-ID: %@\n", lastEventId]];
-        if (usesSecretToken)
-            httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"X-LP-Secret-Token: %@\n", secretToken]];
+        
+        if (cookies) {
+            if (cookies.count > 0) {
+                httpRequest = [httpRequest stringByAppendingString:@"Cookie: "];
+                for (NSHTTPCookie *cookie in cookies) {
+                    httpRequest = [httpRequest stringByAppendingString:[NSString stringWithFormat:@"%@=%@; ", cookie.name, cookie.value]];
+                }
+                httpRequest = [httpRequest stringByAppendingString:@"\n"];
+            }
+        }
                 
         httpRequest = [httpRequest stringByAppendingString:@"\n"];
                 

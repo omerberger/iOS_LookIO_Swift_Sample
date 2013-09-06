@@ -119,7 +119,7 @@
 #define LIOLookIOManagerLastKnownChatPostUrlString      @"LIOLookIOManagerLastKnownChatPostUrlString"
 #define LIOLookIOManagerLastKnownChatMediaUrlString     @"LIOLookIOManagerLastKnownChatMediaUrlString"
 #define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
-#define LIOLookIOManagerLastKnownSecretTokenKey         @"LIOLookIOManagerLastKnownSecretTokenKey"
+#define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -204,11 +204,11 @@ typedef enum
     BOOL shouldLockOrientation;
 
     NSString* chatEngagementId;
-    NSString* chatSecretToken;
     NSString* chatSSEUrlString;
     NSString* chatPostUrlString;
     NSString* chatMediaUrlString;
     NSString* chatLastEventId;
+    NSMutableArray *chatCookies;
     
     LPSSEManager* sseManager;
     BOOL sseSocketAttemptingReconnect;
@@ -423,13 +423,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
-        chatClient.usesSecretToken = NO;
-        chatClient.secretToken = nil;
         
         LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
-        mediaClient.usesSecretToken = NO;
-        mediaClient.secretToken = nil;
         
         LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
         visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
@@ -466,13 +462,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-    chatClient.usesSecretToken = NO;
-    chatClient.secretToken = nil;
     
     LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
     mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-    mediaClient.usesSecretToken = NO;
-    mediaClient.secretToken = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
@@ -486,13 +478,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // Init the ChatAPIClient
     LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
     chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
-    chatClient.usesSecretToken = NO;
-    chatClient.secretToken = nil;
     
     LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
     mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
-    mediaClient.usesSecretToken = NO;
-    mediaClient.secretToken = nil;
     
     LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
@@ -611,6 +599,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
     
+    [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+
     [[LIOMediaManager sharedInstance] purgeAllMedia];
     
     appForegrounded = YES;
@@ -794,11 +784,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             willAskUserToReconnect = YES;
             
             chatEngagementId = engagementId;
-            chatSecretToken = [userDefaults objectForKey:LIOLookIOManagerLastKnownSecretTokenKey];
             chatPostUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
             chatMediaUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             chatSSEUrlString = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
             chatLastEventId = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+            NSData *cookieData = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatCookiesKey];
+            chatCookies = [[NSKeyedUnarchiver unarchiveObjectWithData:cookieData] retain];
+
             [self setupAPIClientBaseURL];
             
             double delayInSeconds = 2.0;
@@ -1129,11 +1121,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     
     chatEngagementId = nil;
-    chatSecretToken = nil;
     chatSSEUrlString = nil;
     chatPostUrlString = nil;
     chatMediaUrlString = nil;
     chatLastEventId = nil;
+
+    if (chatCookies) {
+        [chatCookies removeAllObjects];
+        [chatCookies release];
+        chatCookies = nil;
+    }
     
     [sseManager reset];
     [sseManager release];
@@ -1141,26 +1138,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     introPacketWasSent = NO;
 
-    LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
-    LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+    LPChatAPIClient *chatClient = [LPChatAPIClient sharedClient];
+    LPMediaAPIClient *mediaClient = [LPMediaAPIClient sharedClient];
+    
+    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatClient.baseURL]];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:mediaClient.baseURL]];
+    for (NSHTTPCookie *cookie in cookiesToDelete)
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
 
     if (developmentMode) {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-        chatClient.usesSecretToken = NO;
-        chatClient.secretToken = nil;
         
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-        mediaClient.usesSecretToken = NO;
-        mediaClient.secretToken = nil;
     }
     else {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
-        chatClient.usesSecretToken = NO;
-        chatClient.secretToken = nil;
 
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
-        mediaClient.usesSecretToken = NO;
-        mediaClient.secretToken = nil;
 
     }
     
@@ -1803,6 +1798,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     introPacketWasSent = YES;
     [self updateAndReportFunnelState];
     
+    LPChatAPIClient *chatClient = [LPChatAPIClient sharedClient];
+    
+    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatClient.baseURL]];
+    for (NSHTTPCookie *cookie in cookiesToDelete)
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+    
     NSDictionary *introDict = [self buildIntroDictionaryIncludingExtras:YES includingType:YES includingSurveyResponses:YES includingEvents:YES];
     [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         
@@ -1815,8 +1817,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         enqueued = YES;
         
         NSDictionary* responseDict = (NSDictionary*)responseObject;
+        [self saveChatCookies];
         [self parseAndSaveEngagementInfoPayload:responseDict];
-        
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         introPacketWasSent = NO;
         
@@ -2200,10 +2202,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([engagementId length])
         [resolvedPayload setObject:engagementId forKey:@"engagement_id"];
     
-    NSString* secretToken = [params objectForKey:@"secret_token"];
-    if ([secretToken length])
-        [resolvedPayload setObject:secretToken forKey:@"secret_token"];
-
     NSString* sseUrl = [params objectForKey:@"sse_url"];
     if ([engagementId length])
         [resolvedPayload setObject:sseUrl forKey:@"sse_url"];
@@ -2217,6 +2215,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [resolvedPayload setObject:mediaUrl forKey:@"media_url"];
     
     return resolvedPayload;
+}
+
+- (void)saveChatCookies {
+    if (chatCookies) {
+        [chatCookies removeAllObjects];
+        [chatCookies release];
+        chatCookies = nil;
+    }
+    
+    chatCookies = [[[NSMutableArray alloc] init] retain];
+    
+    NSArray *all = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:[LPChatAPIClient sharedClient].baseURL];
+    for (NSHTTPCookie *cookie in all) {
+        [chatCookies addObject:cookie];
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+    }
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSData *cookieData = [NSKeyedArchiver archivedDataWithRootObject:chatCookies];
+    [userDefaults setObject:cookieData forKey:LIOLookIOManagerLastKnownChatCookiesKey];
+    [userDefaults synchronize];
+
 }
 
 -(void)parseAndSaveEngagementInfoPayload:(NSDictionary*)params {
@@ -2237,7 +2257,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([resolvedPayload count])
     {
         chatEngagementId = [[resolvedPayload objectForKey:@"engagement_id"] retain];
-        chatSecretToken = [[resolvedPayload objectForKey:@"secret_token"] retain];
         chatSSEUrlString = [[resolvedPayload objectForKey:@"sse_url"] retain];
         chatPostUrlString = [[resolvedPayload objectForKey:@"post_url"] retain];
         chatMediaUrlString = [[resolvedPayload objectForKey:@"media_url"] retain];
@@ -2246,30 +2265,54 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults setObject:chatEngagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
-        [userDefaults setObject:chatSecretToken forKey:LIOLookIOManagerLastKnownSecretTokenKey];
         [userDefaults setObject:chatSSEUrlString forKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
         [userDefaults setObject:chatPostUrlString forKey:LIOLookIOManagerLastKnownChatPostUrlString];
         [userDefaults setObject:chatMediaUrlString forKey:LIOLookIOManagerLastKnownChatMediaUrlString];
-
+        
         [userDefaults synchronize];
         
         [self connectSSESocket];
     }
 }
 
--(void)setupAPIClientBaseURL {
+- (void)setupAPIClientBaseURL {
     LPChatAPIClient *chatAPIClient = [LPChatAPIClient sharedClient];
     chatAPIClient.baseURL = [NSURL URLWithString:chatPostUrlString];
-    chatAPIClient.usesSecretToken = YES;
-    chatAPIClient.secretToken = chatSecretToken;
     
     LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
     mediaAPIClient.baseURL = [NSURL URLWithString:chatMediaUrlString];
-    mediaAPIClient.usesSecretToken = YES;
-    mediaAPIClient.secretToken = chatSecretToken;
+    
+    // Let's remove any cookies from previous sessions
+    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatAPIClient.baseURL]];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:mediaAPIClient.baseURL]];
+    for (NSHTTPCookie *cookie in cookiesToDelete)
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+    
+    for (NSHTTPCookie *cookie in chatCookies) {
+        NSMutableDictionary *chatCookieProperties = [NSMutableDictionary dictionary];
+        [chatCookieProperties setObject:cookie.name forKey:NSHTTPCookieName];
+        [chatCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
+        [chatCookieProperties setObject:chatAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
+        [chatCookieProperties setObject:chatAPIClient.baseURL.path forKey:NSHTTPCookiePath];
+        [chatCookieProperties setObject:[NSString stringWithFormat:@"%d", cookie.version] forKey:NSHTTPCookieVersion];
+        
+        NSHTTPCookie *chatCookie = [NSHTTPCookie cookieWithProperties:chatCookieProperties];
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:chatCookie];
+                
+        NSMutableDictionary *mediaCookieProperties = [NSMutableDictionary dictionary];
+        [mediaCookieProperties setObject:cookie.name forKey:NSHTTPCookieName];
+        [mediaCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
+        [mediaCookieProperties setObject:mediaAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
+        [mediaCookieProperties setObject:mediaAPIClient.baseURL.path forKey:NSHTTPCookiePath];
+        [mediaCookieProperties setObject:[NSString stringWithFormat:@"%d", cookie.version] forKey:NSHTTPCookieVersion];
+        
+        NSHTTPCookie *mediaCookie = [NSHTTPCookie cookieWithProperties:mediaCookieProperties];
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:mediaCookie];
+    }
 }
 
--(void)connectSSESocket {
+- (void)connectSSESocket {
     if (sseManager) {
         [sseManager reset];
         [sseManager release];
@@ -2285,9 +2328,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([url.scheme isEqualToString:@"http"])
         sseSocketUsesTLS = NO;
     
-    LPChatAPIClient* chatAPIClient = [LPChatAPIClient sharedClient];
-    
-    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] usesTLS:sseSocketUsesTLS lastEventId:chatLastEventId useSecretToken:chatAPIClient.usesSecretToken secretToken:chatAPIClient.secretToken];
+    sseManager = [[LPSSEManager alloc] initWithHost:url.host port:portToUse urlEndpoint:[NSString stringWithFormat:@"%@/%@", url.path, chatEngagementId] usesTLS:sseSocketUsesTLS lastEventId:chatLastEventId cookies:[NSArray arrayWithArray:chatCookies]];
     
     sseManager.delegate = self;
     [sseManager connect];
@@ -2483,6 +2524,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     NSString *type = [aPacket objectForKey:@"type"];
     if ([type isEqualToString:@"engagement_info"]) {
+    }
+    else if ([type isEqualToString:@"dispatch_error"]) {
+
     }
     else if ([type isEqualToString:@"line"])
     {
@@ -4723,6 +4767,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
+    [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+
     appForegrounded = YES;
     
     if (UIBackgroundTaskInvalid != backgroundTaskId)
