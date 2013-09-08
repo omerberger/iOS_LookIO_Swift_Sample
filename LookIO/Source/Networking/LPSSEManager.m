@@ -37,7 +37,7 @@
 
 @synthesize host, port, urlEndpoint, delegate, socket, events, lastEventId, readyState, usesTLS, cookies;
 
-- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)cookies
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)aUsesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)aCookies
 {
     self = [super init];
     if (self)
@@ -49,9 +49,9 @@
         self.host = aHost;
         self.port = [aPort intValue];
         self.urlEndpoint = anEndpoint;
-        self.usesTLS = usesTLS;
+        self.usesTLS = aUsesTLS;
         if (cookies)
-            self.cookies = cookies;
+            self.cookies = aCookies;
         lastEventId = @"";
         if (lastEventId)
             self.lastEventId = anEventId;
@@ -161,7 +161,9 @@
         }
                 
         httpRequest = [httpRequest stringByAppendingString:@"\n"];
-                
+        
+        LIOLog(@"SSE request is %@", httpRequest);
+        
         [socket writeData:[httpRequest dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
         
         [socket readDataWithTimeout:-1 tag:0];

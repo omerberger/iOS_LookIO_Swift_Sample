@@ -40,7 +40,7 @@ typedef enum {
     NSArray *cookies;
 }
 
-- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)usesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)cookies;
+- (id)initWithHost:(NSString *)aHost port:(NSNumber*)aPort urlEndpoint:(NSString *)anEndpoint usesTLS:(BOOL)aUsesTLS lastEventId:(NSString *)anEventId cookies:(NSArray*)aCookies;
 - (void)connect;
 - (void)disconnect;
 - (void)reset;

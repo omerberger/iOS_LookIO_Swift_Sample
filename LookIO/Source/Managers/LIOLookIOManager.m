@@ -99,6 +99,7 @@
 #define LIOLookIOManagerReconnectionSucceededAlertViewTag   9
 #define LIOLookIOManagerReconnectionFailedAlertViewTag      10
 #define LIOLookIOManagerDisconnectOutroAlertViewTag         11
+#define LIOLookIOManagerSSEConnectionFailedAlertViewTag     12
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -212,6 +213,9 @@ typedef enum
     
     LPSSEManager* sseManager;
     BOOL sseSocketAttemptingReconnect;
+    BOOL sseConnectionDidFail;
+    int sseConnectionRetryAfter;
+    LIOTimerProxy *sseReconnectTimer;
     
     BOOL chatClosingAsPartOfReset;
     
@@ -230,6 +234,7 @@ typedef enum
     BOOL shouldSendChatHistoryPacket;
     NSDictionary *failedChatHistoryDict;
     int failedChatHistoryCount;
+    
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -1137,7 +1142,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     sseManager = nil;
     
     introPacketWasSent = NO;
-
+    
+    sseConnectionDidFail = NO;
+    sseConnectionRetryAfter = -1;
+    
+    [sseReconnectTimer stopTimer];
+    [sseReconnectTimer release];
+    sseReconnectTimer = nil;
+    
     LPChatAPIClient *chatClient = [LPChatAPIClient sharedClient];
     LPMediaAPIClient *mediaClient = [LPMediaAPIClient sharedClient];
     
@@ -2334,6 +2346,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [sseManager connect];
 }
 
+- (void)retrySSEconnection {
+    [sseReconnectTimer stopTimer];
+    [sseReconnectTimer release];
+    sseReconnectTimer = nil;
+    
+    [self connectSSESocket];
+}
 
 -(void)sseManagerDidConnect:(LPSSEManager *)aManager {
     socketConnected = YES;
@@ -2357,7 +2376,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Socket will disconnect. Reason: %@", [err localizedDescription]);
     
     // If the socket disconnected without an outro and without the user asking to disconnect, let's try to reconnect it immediately
-    if (NO == userWantsSessionTermination && NO == outroReceived && NO == sseSocketAttemptingReconnect) {
+    if (NO == userWantsSessionTermination && NO == outroReceived && NO == sseSocketAttemptingReconnect && NO == sseConnectionDidFail) {
         sseSocketAttemptingReconnect = YES;
         [self connectSSESocket];
         return;
@@ -2399,18 +2418,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (introduced)
             {
-                // Let's not show an alert view in this case, because we want to offer the reconnection alert view
-                /*
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
-                                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                                   delegate:self
-                                                          cancelButtonTitle:nil
-                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-                alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
-                [alertView show];
-                [alertView autorelease];
-                 */
-                
+                if (sseConnectionDidFail) {
+                    if (sseConnectionRetryAfter != -1)
+                        return;
+                    else {
+                        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+                                                                        message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
+                                                                       delegate:self
+                                                              cancelButtonTitle:nil
+                                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
+                        alertView.tag = LIOLookIOManagerSSEConnectionFailedAlertViewTag;
+                        [alertView show];
+                        [alertView autorelease];
+                    }
+                }
+
                 resetAfterDisconnect = NO;
                 
                 LIOLog(@"Session forcibly terminated. Reason: socket closed unexpectedly during an introduced session.");
@@ -2489,7 +2511,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sessionEnding = YES;
         [self reset];
     }
-    else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent)
+    else if (NO == resumeMode && NO == outroReceived && firstChatMessageSent && NO == sseConnectionDidFail)
     {
         LIOLog(@"Unexpected disconnection! Asking user for resume mode...");
         
@@ -2526,7 +2548,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if ([type isEqualToString:@"engagement_info"]) {
     }
     else if ([type isEqualToString:@"dispatch_error"]) {
-
+        sseConnectionDidFail = YES;
+        sessionEnding = YES;
+        
+        if ([aPacket objectForKey:@"retry_after"]) {
+            NSNumber *sseConnectionRetryAfterObject = [aPacket objectForKey:@"retry_after"];
+            sseConnectionRetryAfter = sseConnectionRetryAfterObject.intValue;
+            if (sseConnectionRetryAfter != -1) {
+                sseReconnectTimer = [[LIOTimerProxy alloc] initWithTimeInterval:sseConnectionRetryAfter target:self selector:@selector(retrySSEconnection)];
+                sessionEnding = NO;
+                
+                LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", sseConnectionRetryAfter);
+            }
+        }
     }
     else if ([type isEqualToString:@"line"])
     {
@@ -2846,10 +2880,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sessionEnding = YES;
         outroReceived = YES;
     }
-    else if ([type isEqualToString:@"reintroed"] && resumeMode)
+    else if ([type isEqualToString:@"reintroed"])
     {
         NSNumber *success = [aPacket objectForKey:@"success"];
-        if ([success boolValue])
+        
+        if ([success boolValue] && resumeMode)
         {
             [reintroTimeoutTimer stopTimer];
             [reintroTimeoutTimer release];
@@ -2879,34 +2914,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (chatHistory.count == 1)
                 [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
         }
-        else
-        {
-            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownSessionIdKey];
+        
+        if (![success boolValue]) {
+            sseConnectionDidFail = YES;
+            sessionEnding = YES;
             
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementIdKey];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatSSEUrlStringKey];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
-            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
-            
-            [userDefaults synchronize];
-            
-            resumeMode = NO;
-            firstChatMessageSent = NO;
-            resetAfterDisconnect = YES;
-            [self killConnection];
-            
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
-                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
-            alertView.tag = LIOLookIOManagerReconnectionFailedAlertViewTag;
-            
-            [alertView show];
-            [alertView autorelease];
+            if ([aPacket objectForKey:@"retry_after"]) {
+                NSNumber *sseConnectionRetryAfterObject = [aPacket objectForKey:@"retry_after"];
+                sseConnectionRetryAfter = sseConnectionRetryAfterObject.intValue;
+                if (sseConnectionRetryAfter != -1) {
+                    sseReconnectTimer = [[LIOTimerProxy alloc] initWithTimeInterval:sseConnectionRetryAfter target:self selector:@selector(retrySSEconnection)];
+                    sessionEnding = NO;
+                    
+                    LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", sseConnectionRetryAfter);
+                }
+            }
         }
     }
     else if ([type isEqualToString:@"line_list"]) {
@@ -4595,6 +4617,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self reset];
             }
             
+            break;
+        }
+            
+        case LIOLookIOManagerSSEConnectionFailedAlertViewTag:
+        {
+            [self reset];
             break;
         }
             
