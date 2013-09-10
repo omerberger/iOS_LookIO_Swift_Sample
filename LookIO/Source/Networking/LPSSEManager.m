@@ -50,8 +50,9 @@
         self.port = [aPort intValue];
         self.urlEndpoint = anEndpoint;
         self.usesTLS = aUsesTLS;
-        if (cookies)
+        if (aCookies)
             self.cookies = aCookies;
+        
         lastEventId = @"";
         if (lastEventId)
             self.lastEventId = anEventId;
