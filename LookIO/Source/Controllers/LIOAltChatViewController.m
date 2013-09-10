@@ -782,6 +782,7 @@
     loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
     loadingImageView.contentMode = UIViewContentModeCenter;
     [waitingForSurveyView addSubview:loadingImageView];
+    [loadingImageView release];
     
     CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
@@ -1550,8 +1551,6 @@
                         [aCell.contentView addSubview:failedMessageButton];
                     }
                     
-                    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-                    
                     // Fix for iOS 7.0 - allow Bubbles to bounce
                     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
                         for (UIView *subview in aCell.subviews)
@@ -1603,8 +1602,6 @@
             failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
             [aCell.contentView addSubview:failedMessageButton];
         }
-
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
         // Fix for iOS 7.0 - allow Bubbles to bounce
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)

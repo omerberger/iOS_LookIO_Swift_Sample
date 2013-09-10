@@ -2189,8 +2189,6 @@
 {
     NSDictionary *userInfo = [aNotification userInfo];
     
-    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    
     NSTimeInterval animationDuration;
     NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     [animationDurationValue getValue:&animationDuration];
@@ -2198,10 +2196,7 @@
     UIViewAnimationCurve animationCurve;
     NSValue *animationCurveValue = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
     [animationCurveValue getValue:&animationCurve];
-    
-    NSValue *keyboardBoundsValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect keyboardBounds = [keyboardBoundsValue CGRectValue];
-    
+        
     keyboardHeight = 0.0;
     
     [UIView beginAnimations:nil context:NULL];

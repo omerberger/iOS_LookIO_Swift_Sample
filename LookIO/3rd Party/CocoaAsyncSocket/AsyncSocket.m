@@ -4155,7 +4155,6 @@ Failed:
 		BOOL didStartOnWriteStream = CFWriteStreamSetProperty(theWriteStream, kCFStreamPropertySSLSettings,
 															 (CFDictionaryRef)tlsPacket->tlsSettings);
         
-        float systemVersion = [[[UIDevice currentDevice] systemVersion] floatValue];
         if (([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0f) && ([[[UIDevice currentDevice] systemVersion] floatValue] < 5.1f)) {
             const void* keys[] = { kCFStreamSSLLevel };
             const void* values[] = { CFSTR("kCFStreamSocketSecurityLevelTLSv1_1") };

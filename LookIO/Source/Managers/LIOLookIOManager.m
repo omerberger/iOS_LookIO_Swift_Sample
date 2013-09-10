@@ -1153,7 +1153,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LPChatAPIClient *chatClient = [LPChatAPIClient sharedClient];
     LPMediaAPIClient *mediaClient = [LPMediaAPIClient sharedClient];
     
-    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    NSMutableArray *cookiesToDelete = [[[NSMutableArray alloc] init] autorelease];
     [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatClient.baseURL]];
     [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:mediaClient.baseURL]];
     for (NSHTTPCookie *cookie in cookiesToDelete)
@@ -1812,7 +1812,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     LPChatAPIClient *chatClient = [LPChatAPIClient sharedClient];
     
-    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    NSMutableArray *cookiesToDelete = [[[NSMutableArray alloc] init] autorelease];
     [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatClient.baseURL]];
     for (NSHTTPCookie *cookie in cookiesToDelete)
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
@@ -2295,7 +2295,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     mediaAPIClient.baseURL = [NSURL URLWithString:chatMediaUrlString];
     
     // Let's remove any cookies from previous sessions
-    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    NSMutableArray *cookiesToDelete = [[[NSMutableArray alloc] init] autorelease];
     [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:chatAPIClient.baseURL]];
     [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:mediaAPIClient.baseURL]];
     for (NSHTTPCookie *cookie in cookiesToDelete)
@@ -3856,7 +3856,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             NSNumber *lat = [NSNumber numberWithDouble:lastKnownLocation.coordinate.latitude];
             NSNumber *lon = [NSNumber numberWithDouble:lastKnownLocation.coordinate.longitude];
-            NSArray *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
+            NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
             [detectedDict setObject:location forKey:@"location"];
         }
                                        

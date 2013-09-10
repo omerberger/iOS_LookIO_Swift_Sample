@@ -55,8 +55,6 @@
 @property (nonatomic, copy) NSString* headerString;
 @property (nonatomic, assign) int currentQuestionIndex;
 @property (nonatomic, assign) LIOSurveyManagerSurveyType currentSurveyType;
-@property (nonatomic, retain) UIImageView* imageView;
-@property (nonatomic, retain) UIView* contentView;
 
 - (void)setupViews;
 - (id)initWithFrame:(CGRect)frame;

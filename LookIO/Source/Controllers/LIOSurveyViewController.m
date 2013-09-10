@@ -514,9 +514,7 @@
 }
 
 - (void)showAlertWithMessage:(NSString *)aMessage
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
+{    
     [validationView removeFromSuperview];
     [validationView release];
     validationView = [[LIOSurveyValidationView alloc] init];
