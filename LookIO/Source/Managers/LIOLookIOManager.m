@@ -2910,9 +2910,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [alertView show];
             [alertView autorelease];
             
-            // If we don't currently have the history, let's ask for it
-            if (chatHistory.count == 1)
-                [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
+            // After reconnecting, let's ask for chat history, to make sure we didn't miss any lines
+            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
         }
         
         if (![success boolValue]) {
@@ -2933,9 +2932,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"line_list"]) {
         // Add message after the initial populated message
-        int messagePosition = 0;
-        if (chatHistory.count > 0)
-            messagePosition = 1;        
+        int messagePosition = chatHistory.count;
         
         NSArray *lines = [aPacket objectForKey:@"lines"];
         for (NSDictionary *lineWrapperDictionary in lines) {
