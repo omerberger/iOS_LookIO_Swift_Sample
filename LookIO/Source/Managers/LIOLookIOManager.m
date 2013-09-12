@@ -1895,17 +1895,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<LINE> failure: %@", error);
         
-        aMessage.sendingFailed = YES;
-        if (altChatViewController)
-            [altChatViewController reloadMessages];
-        else {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
+        // If we get a 404, let's terminate the engagement
+        if (operation.responseCode == 404) {
+
+            if (altChatViewController) {
+                [self altChatViewControllerWantsSessionTermination:altChatViewController];
+            }
+            else {
+                [sseManager disconnect];
+                outroReceived = YES;
+                [self reset];
+            }
+                
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                                   delegate:self
+                                                          cancelButtonTitle:nil
+                                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+            [alertView show];
+            [alertView autorelease];
+        } else {
+            aMessage.sendingFailed = YES;
+            if (altChatViewController)
+                [altChatViewController reloadMessages];
+            else {
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendBody")
                                                            delegate:nil
                                                   cancelButtonTitle:LIOLocalizedString(@"LIOLookIOManager.FailedMessageSendButton")
                                                   otherButtonTitles:nil];
-            [alertView show];
-            [alertView autorelease];
+                [alertView show];
+                [alertView autorelease];
+            }
         }
     }];
 }
