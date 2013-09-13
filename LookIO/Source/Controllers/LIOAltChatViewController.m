@@ -684,6 +684,9 @@
 }
 
 -(void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType {
+    if (surveyInProgress)
+        return;
+    
     [self.view endEditing:YES];
     [self hideChatUIForSurvey:YES];
     
