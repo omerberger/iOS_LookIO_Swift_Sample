@@ -16,10 +16,17 @@
 
 @synthesize delegate, initialEmailAddress;
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleDefault;
+}
+
 - (void)loadView
 {
     [super loadView];
     UIView *rootView = self.view;
+
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
     
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
         
