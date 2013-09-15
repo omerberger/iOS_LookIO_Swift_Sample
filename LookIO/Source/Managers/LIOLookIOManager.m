@@ -4299,7 +4299,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
-    [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+        [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
     [self sendPermissionPacketWithAsset:@"screenshare" granted:NO];
     
@@ -4729,7 +4730,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 screenshotsAllowed = YES;
                 statusBarUnderlay.hidden = NO;
-                [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+                if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+                    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
                 
                 [self sendPermissionPacketWithAsset:@"screenshare" granted:YES];
                 
