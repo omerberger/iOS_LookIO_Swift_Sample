@@ -102,6 +102,8 @@
     int clickedFailedMessageIndex;
     
     BOOL isAnimatingDismissal;
+    
+    BOOL shouldHideStatusBarAfterImagePicker;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

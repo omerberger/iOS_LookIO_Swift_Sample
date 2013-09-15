@@ -26,7 +26,8 @@
     UIView *rootView = self.view;
 
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
         
