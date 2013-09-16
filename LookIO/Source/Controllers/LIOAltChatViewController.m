@@ -3047,6 +3047,7 @@
         dismissalBar.alpha = 1.0;
         inputBar.alpha = 1.0;
         tableView.alpha = 1.0;
+        keyboardMenu.alpha = 1.0;
         dismissalBar.hidden = NO;
         inputBar.hidden = NO;
         tableView.hidden = NO;
