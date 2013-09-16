@@ -766,7 +766,7 @@
     
     UIView *bezelView = [[UIView alloc] initWithFrame:CGRectZero];
     bezelView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
-    bezelView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    bezelView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     bezelView.layer.cornerRadius = 6.0;
     [waitingForSurveyView addSubview:bezelView];
     [bezelView release];
@@ -778,10 +778,11 @@
     aFrame.origin.y = waitingForSurveyView.bounds.size.height/2 - aFrame.size.height/2;
     bezelView.frame = aFrame;
     
-    UIImageView *loadingImageView = [[UIImageView alloc] initWithFrame:waitingForSurveyView.bounds];
+    UIImageView *loadingImageView = [[UIImageView alloc] initWithFrame:bezelView.bounds];
     loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
     loadingImageView.contentMode = UIViewContentModeCenter;
-    [waitingForSurveyView addSubview:loadingImageView];
+    loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [bezelView addSubview:loadingImageView];
     [loadingImageView release];
     
     CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
