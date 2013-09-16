@@ -4721,7 +4721,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (altChatViewController) {
             [altChatViewController performDismissalAnimation];
-            [self dismissBlurImageView];
+            [self dismissBlurImageView:YES];
         }
         else
             [self altChatViewControllerDidFinishDismissalAnimation:nil];

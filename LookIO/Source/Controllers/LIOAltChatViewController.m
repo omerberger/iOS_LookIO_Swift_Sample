@@ -1995,13 +1995,13 @@
         if (UIInterfaceOrientationIsLandscape(actualOrientation))
         {
             tableFrame.origin.y = 0.0;
-            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBarFrame.size.height;
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight  - inputBarFrame.size.height;
 
         }
         else
         {
             tableFrame.origin.y = 32.0;
-            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarHeight - inputBarFrame.size.height - 32.0;
+            tableFrame.size.height = self.view.bounds.size.height - keyboardHeight  - inputBarFrame.size.height - 32.0;
 
             if (LIOIsUIKitFlatMode())
                 if (![[UIApplication sharedApplication] isStatusBarHidden]) {
