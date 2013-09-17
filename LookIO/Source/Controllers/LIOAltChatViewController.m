@@ -282,6 +282,7 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
+<<<<<<< HEAD
     BOOL shouldHideEmailChat = [delegate altChatViewControllerShouldHideEmailChat:self];
 
     CGRect aFrame;
@@ -313,12 +314,16 @@
 
     UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
-    [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
     endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
         endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
         endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    } else {
+        endSessionButton.backgroundColor = [UIColor lightGrayColor];
+        endSessionButton.layer.cornerRadius = 5.0;
+        endSessionButton.alpha = 0.8;
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -589,6 +594,11 @@
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        return UIStatusBarStyleDefault;
+    else
+        return UIStatusBarStyleBlackTranslucent;
+    
     return UIStatusBarStyleBlackTranslucent;
 }
 
@@ -666,8 +676,12 @@
         }
     }
     
-    if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+    if (NO == [[UIApplication sharedApplication] isStatusBarHidden]) {
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+        else
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackOpaque];
+    }
 
     [self reloadMessages];
     
@@ -839,7 +853,10 @@
     [waitingForSurveyView release];
     
     UIView *bezelView = [[UIView alloc] initWithFrame:CGRectZero];
-    bezelView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic)
+        bezelView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.66];
+    else
+        bezelView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.66];
     bezelView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     bezelView.layer.cornerRadius = 6.0;
     [waitingForSurveyView addSubview:bezelView];
@@ -869,7 +886,10 @@
     UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
     loadingLabel.backgroundColor = [UIColor clearColor];
     loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    loadingLabel.textColor = [UIColor whiteColor];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        loadingLabel.textColor = [UIColor darkGrayColor];
+    else
+        loadingLabel.textColor = [UIColor whiteColor];
     loadingLabel.font = [UIFont boldSystemFontOfSize:16.0];
     loadingLabel.textAlignment = UITextAlignmentCenter;
     loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
@@ -879,7 +899,10 @@
     UILabel* loadingSubLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
     loadingSubLabel.backgroundColor = [UIColor clearColor];
     loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    loadingSubLabel.textColor = [UIColor whiteColor];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        loadingLabel.textColor = [UIColor darkGrayColor];
+    else
+        loadingLabel.textColor = [UIColor whiteColor];
     loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
     loadingSubLabel.textAlignment = UITextAlignmentCenter;
     loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");

@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOAnimatedKeyboardIcon.h"
 #import "LIOTimerProxy.h"
+#import "LIOLookIOManager.h"
 
 @implementation LIOToasterView
 
@@ -24,7 +25,10 @@
     {
         self.layer.cornerRadius = 5.0;
         self.layer.masksToBounds = YES;
-        self.backgroundColor = [UIColor colorWithWhite:0.15 alpha:0.8];
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
+            self.backgroundColor = [UIColor colorWithWhite:0.15 alpha:0.8];
+        else
+            self.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
         
         CGRect aFrame = self.frame;
         aFrame.size.height = 50.0;

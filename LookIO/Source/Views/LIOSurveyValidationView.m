@@ -9,6 +9,7 @@
 #import "LIOSurveyValidationView.h"
 #import "LIOBundleManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOLookIOManager.h"
 
 @implementation LIOSurveyValidationView
 
@@ -24,10 +25,14 @@
         self.clipsToBounds = NO;
         
         // The bar portion of this image is 22.5 points high.
-        UIImage *repeatableBackground = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableEtchedRedGlassMiniToolbar"];
-        repeatableBackground = [repeatableBackground stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-        backgroundImage = [[UIImageView alloc] initWithImage:repeatableBackground];
-        [self addSubview:backgroundImage];
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+            UIImage *repeatableBackground = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableEtchedRedGlassMiniToolbar"];
+            repeatableBackground = [repeatableBackground stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+            backgroundImage = [[UIImageView alloc] initWithImage:repeatableBackground];
+            [self addSubview:backgroundImage];
+        } else {
+            self.backgroundColor = [UIColor colorWithRed:1.0f green:0.22f blue:0.22f alpha:1.0f];
+        }
         
         label = [[UILabel alloc] init];
         label.textColor = [UIColor whiteColor];
@@ -58,7 +63,10 @@
 - (void)layoutSubviews
 {
     CGRect aFrame = self.frame;
-    aFrame.size.height = 36.0;
+    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
+        aFrame.size.height = 36.0;
+    else
+        aFrame.size.height = 26.0;
     self.frame = aFrame;
     
     CGFloat maxLabelWidth = self.bounds.size.width - 40.0;
@@ -68,6 +76,7 @@
     aFrame = label.frame;
     aFrame.size.width = labelSize.width;
     aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0) + 7.0;
+
     aFrame.origin.y = (self.bounds.size.height - aFrame.size.height)/3.0;
     label.frame = aFrame;
     

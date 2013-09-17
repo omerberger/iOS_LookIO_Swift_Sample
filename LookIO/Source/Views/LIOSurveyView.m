@@ -15,6 +15,7 @@
 #import "LIOSurveyValidationView.h"
 #import "LIOTimerProxy.h"
 #import "LIOStarRatingView.h"
+#import "LIOLookIOManager.h"
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -220,6 +221,10 @@
     }
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.5 alpha:0.5];
+        pageControl.currentPageIndicatorTintColor = [UIColor colorWithWhite:0.2 alpha:1.0];
+    }
     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
@@ -333,7 +338,11 @@
     headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     headerLabel.backgroundColor = [UIColor clearColor];
     headerLabel.textColor = [UIColor whiteColor];
-    headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        headerLabel.font = [UIFont systemFontOfSize:17.0];
+    else
+        headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    
     headerLabel.numberOfLines = 0;
     headerLabel.text = LIOLocalizedString(@"LIOSurveyView.DefaultPostSurveyTitle");
     headerLabel.textAlignment = UITextAlignmentCenter;
@@ -522,13 +531,19 @@
     }
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    headerLabel.layer.shadowRadius = 1.0;
-    headerLabel.layer.shadowOpacity = 1.0;
-    headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     headerLabel.backgroundColor = [UIColor clearColor];
     headerLabel.textColor = [UIColor whiteColor];
-    headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        headerLabel.font = [UIFont boldSystemFontOfSize:17.0];
+        headerLabel.textColor = [UIColor darkGrayColor];
+    }
+    else {
+        headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+        headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        headerLabel.layer.shadowRadius = 1.0;
+        headerLabel.layer.shadowOpacity = 1.0;
+        headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    }
     headerLabel.numberOfLines = 0;
     headerLabel.text = headerString;
     headerLabel.textAlignment = UITextAlignmentCenter;
@@ -538,13 +553,19 @@
     [headerLabel release];
     
     UILabel* requiredLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    requiredLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    requiredLabel.layer.shadowRadius = 1.0;
-    requiredLabel.layer.shadowOpacity = 1.0;
-    requiredLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     requiredLabel.backgroundColor = [UIColor clearColor];
     requiredLabel.textColor = [UIColor whiteColor];
-    requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        requiredLabel.font = [UIFont systemFontOfSize:14.0];
+        requiredLabel.textColor = [UIColor darkGrayColor];
+    }
+    else {
+        requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+        requiredLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        requiredLabel.layer.shadowRadius = 1.0;
+        requiredLabel.layer.shadowOpacity = 1.0;
+        requiredLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+    }
     requiredLabel.numberOfLines = 0;
     requiredLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
     requiredLabel.textAlignment = UITextAlignmentCenter;
@@ -554,13 +575,18 @@
     [requiredLabel release];
     
     UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
-    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-    UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-    [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
     [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
-    nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-    nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
-    nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+        [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+        nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    } else {
+        nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+        [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+    }
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
     nextButton.tag = LIOSurveyViewIntroNextButton;
@@ -568,13 +594,18 @@
     [nextButton release];
 
     UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
-    UIImage *cancelButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRedButton"];
-    UIImage *stretchableCancelButtonImage = [cancelButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-    [cancelButton setBackgroundImage:stretchableCancelButtonImage forState:UIControlStateNormal];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-    cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-    cancelButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
-    cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+        [cancelButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+        cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+        cancelButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+        cancelButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+    } else {
+        cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+        [cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+    }
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
     cancelButton.tag = LIOSurveyViewIntroCancelButton;
@@ -712,13 +743,18 @@
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     questionLabel.tag = LIOSurveyViewTitleLabelTag;
-    questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    questionLabel.layer.shadowRadius = 1.0;
-    questionLabel.layer.shadowOpacity = 1.0;
-    questionLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     questionLabel.backgroundColor = [UIColor clearColor];
-    questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
-    questionLabel.textColor = [UIColor whiteColor];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
+        questionLabel.textColor = [UIColor darkGrayColor];
+    } else {
+        questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+        questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        questionLabel.layer.shadowRadius = 1.0;
+        questionLabel.layer.shadowOpacity = 1.0;
+        questionLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        questionLabel.textColor = [UIColor whiteColor];
+    }
     questionLabel.numberOfLines = 0;
     questionLabel.text = question.label;
     if (question.mandatory)
@@ -750,7 +786,12 @@
             inputField.returnKeyType = UIReturnKeyDone;
         else
             inputField.returnKeyType = UIReturnKeyNext;
-        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+            inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        } else {
+            inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        }
+
         
         if (LIOSurveyQuestionValidationTypeEmail == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
@@ -759,8 +800,7 @@
         }
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
-        }
-        
+        }        
         
         NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         if (currentQuestionIndex == numberOfQuestions - 1)
@@ -867,14 +907,21 @@
     if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI) {
         UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         nextButton.tag = LIOSurveyViewButtonTag;
-        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
-        UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
-        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
-        nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
-        nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
-        [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+        
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+            UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+            UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+            nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
+            nextButton.titleLabel.shadowColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+            nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
+            [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
+        }
+        else {
+            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+            nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+        }
+
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
-        nextButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
         nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         if (currentQuestionIndex == numberOfQuestions - 1)
             [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
@@ -893,19 +940,19 @@
             [scrollView addSubview:starRatingView];
             [starRatingView release];
         } else {
-            UITableView* tableView = [[UITableView alloc]
-                                      initWithFrame:CGRectZero style:UITableViewStylePlain];
+            UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+                                
             CGFloat tableViewContentHeight = [self heightForTableView:tableView];
             if (padUI)
                 tableView.frame = CGRectMake(0, 0, scrollView.frame.size.width - 2*LIOSurveyViewSideMarginiPad, tableViewContentHeight);
             else
                 tableView.frame = CGRectMake(LIOSurveyViewSideMargin, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, scrollView.bounds.size.width - LIOSurveyViewSideMargin*2, tableViewContentHeight);
-            
+
+            tableView.backgroundColor = [UIColor clearColor];
+            tableView.backgroundView = nil;
             tableView.tag = LIOSurveyViewTableViewTag;
             tableView.delegate = self;
             tableView.dataSource = self;
-            tableView.backgroundColor = [UIColor clearColor];
-            tableView.backgroundView = nil;
             tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
             tableView.showsVerticalScrollIndicator = NO;
@@ -1995,10 +2042,18 @@
             isRowSelected = YES;
         }
     }
-
-    UIFont* font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-    if (isRowSelected)
-        font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    
+    UIFont* font;
+    if ([[LIOLookIOManager sharedLookIOManager] selectedChatTheme] == kLPChatThemeClassic) {
+        font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+        if (isRowSelected)
+            font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+    } else {
+        font = [UIFont systemFontOfSize:17.0];
+        if (isRowSelected)
+            font = [UIFont boldSystemFontOfSize:17.0];
+    }
+    
 
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
@@ -2030,7 +2085,10 @@
         cell.backgroundColor = [UIColor clearColor];
         
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
-        textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+            textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+        else
+            textLabel.font = [UIFont systemFontOfSize:17.0];
         textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         textLabel.backgroundColor = [UIColor clearColor];
         textLabel.tag = LIOSurveyViewTableCellLabelTag;
@@ -2052,6 +2110,7 @@
     UIImageView* backgroundImageView = (UIImageView*)cell.backgroundView;
 
     UIImage *backgroundImage;
+    
     if (indexPath.row == 0) {
         if ([self tableView:tableView numberOfRowsInSection:0] == 1)
             backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableSingleCell"];
@@ -2079,20 +2138,31 @@
     if (!padUI) {
         if (isRowSelected) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+            if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+            else
+                textLabel.font = [UIFont boldSystemFontOfSize:17.0];
         } else {
             cell.accessoryType = UITableViewCellAccessoryNone;
-            textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        }
+            if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+            else
+                textLabel.font = [UIFont systemFontOfSize:17.0];        }
     }
     else {
         if (tableViewQuestionIndex == currentQuestionIndex) {
             if (isRowSelected) {
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
-                textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+                if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                    textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+                else
+                    textLabel.font = [UIFont boldSystemFontOfSize:17.0];
             } else {
                 cell.accessoryType = UITableViewCellAccessoryNone;
-                textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+                if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                    textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+                else
+                    textLabel.font = [UIFont systemFontOfSize:17.0];
             }
         }
     }

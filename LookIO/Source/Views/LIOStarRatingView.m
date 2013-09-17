@@ -9,6 +9,7 @@
 #import "LIOStarRatingView.h"
 #import "LIOBundleManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "LIOLookIOManager.h"
 
 #define LIOStarRatingViewTempStarButtonTag 1000
 
@@ -39,13 +40,19 @@
         }
         
         ratingLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        ratingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-        ratingLabel.layer.shadowRadius = 1.0;
-        ratingLabel.layer.shadowOpacity = 1.0;
-        ratingLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
         ratingLabel.backgroundColor = [UIColor clearColor];
-        ratingLabel.textColor = [UIColor whiteColor];
-        ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+            ratingLabel.font = [UIFont boldSystemFontOfSize:15.0];
+            ratingLabel.textColor = [UIColor darkGrayColor];
+        } else {
+            ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+            ratingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+            ratingLabel.layer.shadowRadius = 1.0;
+            ratingLabel.layer.shadowOpacity = 1.0;
+            ratingLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+            ratingLabel.textColor = [UIColor whiteColor];
+        }
+        
         ratingLabel.numberOfLines = 0;
         ratingLabel.textAlignment = UITextAlignmentCenter;
         ratingLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;

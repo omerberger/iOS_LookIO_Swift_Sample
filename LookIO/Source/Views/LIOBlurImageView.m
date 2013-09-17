@@ -26,8 +26,9 @@
         self.tintLayer = [[[CALayer alloc] init] autorelease];
         self.tintLayer.frame = self.bounds;
         self.tintLayer.opacity = 0.5;
+        self.tintLayer.backgroundColor = [[UIColor whiteColor] CGColor];
         
-        [self.layer addSublayer:self.tintLayer];
+//        [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }
@@ -39,7 +40,7 @@
 -(void)setImageAndBlur:(UIImage*)imageToBlur {
     NSData *imageData = UIImageJPEGRepresentation(imageToBlur, 1.0);
 
-    UIColor *tintColor = [UIColor colorWithWhite:0.2 alpha:0.4];
+    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
     self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:6 tintColor:tintColor saturationDeltaFactor:1.0 maskImage:nil];
 }
 
