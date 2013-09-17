@@ -231,6 +231,10 @@
     }
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.5 alpha:0.5];
+        pageControl.currentPageIndicatorTintColor = [UIColor colorWithWhite:0.2 alpha:1.0];
+    }
     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
@@ -563,7 +567,7 @@
     requiredLabel.backgroundColor = [UIColor clearColor];
     requiredLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
-        requiredLabel.font = [UIFont boldSystemFontOfSize:14.0];
+        requiredLabel.font = [UIFont systemFontOfSize:14.0];
         requiredLabel.textColor = [UIColor darkGrayColor];
     }
     else {
@@ -593,7 +597,6 @@
     } else {
         nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
@@ -604,7 +607,7 @@
     UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
-        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRedButton"];
+        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
         UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         [cancelButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
@@ -613,7 +616,6 @@
     } else {
         cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
@@ -987,9 +989,8 @@
             [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         }
         else {
-            nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
             [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+            nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         }
 
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
@@ -1018,13 +1019,6 @@
                 tableView.frame = CGRectMake(0, 0, scrollView.frame.size.width - 2*LIOSurveyViewSideMarginiPad, tableViewContentHeight);
             else
                 tableView.frame = CGRectMake(LIOSurveyViewSideMargin, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, scrollView.bounds.size.width - LIOSurveyViewSideMargin*2, tableViewContentHeight);
-            
-            if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                CGRect frame = tableView.frame;
-                frame.origin.x = 25;
-                frame.size.width = scrollView.bounds.size.width - 50;
-                tableView.frame = frame;
-            }
 
             tableView.backgroundColor = [UIColor clearColor];
             tableView.backgroundView = nil;
@@ -2354,15 +2348,11 @@
         cell.backgroundColor = [UIColor clearColor];
         
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
-        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
             textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-            textLabel.textColor = [UIColor darkGrayColor];
-            
-        }
-        else {
+        else
             textLabel.font = [UIFont systemFontOfSize:17.0];
-            textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
-        }
+        textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
         textLabel.backgroundColor = [UIColor clearColor];
         textLabel.tag = LIOSurveyViewTableCellLabelTag;
         [cell.contentView addSubview:textLabel];

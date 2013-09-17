@@ -7,46 +7,18 @@
 //
 
 #import "LIOBlurImageView.h"
-<<<<<<< HEAD
-#import <QuartzCore/QuartzCore.h>
-#import <Accelerate/Accelerate.h>
-#import <float.h>
-#import "LIOBundleManager.h"
-
-@interface LIOBlurImageView ()
-
-@property (nonatomic, retain) CALayer *tintLayer;
-
-@end
 
 @implementation LIOBlurImageView
 
-@synthesize tintLayer;
-
-=======
-
-@implementation LIOBlurImageView
-
->>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-<<<<<<< HEAD
-        self.tintLayer = [[[CALayer alloc] init] autorelease];
-        self.tintLayer.frame = self.bounds;
-        self.tintLayer.opacity = 0.4;
-        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
-        
-        [self.layer addSublayer:self.tintLayer];
-=======
->>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
     }
     return self;
 }
 
-<<<<<<< HEAD
 -(void)dealloc {
     [super dealloc];
 }
@@ -55,12 +27,8 @@
 //    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
 ///    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
 
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0")) {
-        UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
-        self.image = [self blurImage:imageToBlur withRadius:24 iterations:8 tintColor:tintColor saturationDeltaFactor:3.0];
-    } else {
-        self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
-    }
+    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
+    self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:6 tintColor:tintColor saturationDeltaFactor:1.0 maskImage:nil];
 }
 
 - (UIImage *)blurImage:(UIImage*)image withRadius:(CGFloat)radius iterations:(NSUInteger)iterations tintColor:(UIColor *)tintColor saturationDeltaFactor:(CGFloat)saturationDeltaFactor
@@ -149,17 +117,5 @@
     free(buffer1.data);
     return resultImage;
 }
-
-
-=======
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
-*/
->>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
 
 @end

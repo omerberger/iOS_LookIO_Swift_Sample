@@ -294,14 +294,19 @@
     
     emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
     emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
-    [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
     emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
 
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
         emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
         emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    }  else {
+        emailConvoButton.backgroundColor = [UIColor lightGrayColor];
+        emailConvoButton.layer.cornerRadius = 5.0;
+        emailConvoButton.alpha = 0.8;
     }
+
 
     emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -323,9 +328,14 @@
     endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
     endSessionButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        [endSessionButton setBackgroundImage:redStretchableButtonImage forState:UIControlStateNormal];
         endSessionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
         endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+    } else {
+        endSessionButton.backgroundColor = [UIColor lightGrayColor];
+        endSessionButton.layer.cornerRadius = 5.0;
+        endSessionButton.alpha = 0.8;
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -905,9 +915,9 @@
     loadingSubLabel.backgroundColor = [UIColor clearColor];
     loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
-        loadingSubLabel.textColor = [UIColor darkGrayColor];
+        loadingLabel.textColor = [UIColor darkGrayColor];
     else
-        loadingSubLabel.textColor = [UIColor whiteColor];
+        loadingLabel.textColor = [UIColor whiteColor];
     loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
     loadingSubLabel.textAlignment = UITextAlignmentCenter;
     loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
