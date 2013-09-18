@@ -25,10 +25,10 @@
         // Initialization code
         self.tintLayer = [[[CALayer alloc] init] autorelease];
         self.tintLayer.frame = self.bounds;
-        self.tintLayer.opacity = 0.5;
-        self.tintLayer.backgroundColor = [[UIColor whiteColor] CGColor];
+        self.tintLayer.opacity = 0.4;
+        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
         
-//        [self.layer addSublayer:self.tintLayer];
+        [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }

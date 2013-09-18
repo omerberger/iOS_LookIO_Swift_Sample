@@ -195,7 +195,10 @@
     aLabel.tag = LIONotificationAreaNotificationLabelTag;
     aLabel.backgroundColor = [UIColor clearColor];
     aLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    aLabel.textColor = [UIColor whiteColor];
+    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
+        aLabel.textColor = [UIColor whiteColor];
+    else
+        aLabel.textColor = [UIColor darkGrayColor];
     aLabel.text = aString;
     [newNotification addSubview:aLabel];        
 

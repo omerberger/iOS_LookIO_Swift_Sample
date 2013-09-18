@@ -282,7 +282,6 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-<<<<<<< HEAD
     BOOL shouldHideEmailChat = [delegate altChatViewControllerShouldHideEmailChat:self];
 
     CGRect aFrame;
@@ -321,9 +320,8 @@
         endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
         endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     } else {
-        endSessionButton.backgroundColor = [UIColor lightGrayColor];
+        endSessionButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
         endSessionButton.layer.cornerRadius = 5.0;
-        endSessionButton.alpha = 0.8;
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;

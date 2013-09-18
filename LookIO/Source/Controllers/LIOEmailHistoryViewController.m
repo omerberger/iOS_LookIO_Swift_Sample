@@ -54,17 +54,20 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [rootView addSubview:scrollView];
 
-    UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"];
-    texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-    
-    UIImageView *backgroundView = [[[UIImageView alloc] init] autorelease];
-    backgroundView.image = texture;
-    aFrame = CGRectZero;
-    aFrame.size.width = rootView.bounds.size.width;
-    aFrame.size.height = rootView.bounds.size.height * 2.0;
-    backgroundView.frame = aFrame;
-    backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [scrollView addSubview:backgroundView];
+    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+        UIImage *texture = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutRepeatableGrayTexture"];
+        texture = [texture stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+        
+        UIImageView *backgroundView = [[[UIImageView alloc] init] autorelease];
+        backgroundView.image = texture;
+        aFrame = CGRectZero;
+        aFrame.size.width = rootView.bounds.size.width;
+        aFrame.size.height = rootView.bounds.size.height * 2.0;
+        backgroundView.frame = aFrame;
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [scrollView addSubview:backgroundView];
+    } else
+        scrollView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1.0];
     
     label01 = [[UILabel alloc] init];
     label01.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderText");
@@ -129,21 +132,28 @@
     inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     inputField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     inputField.returnKeyType = UIReturnKeySend;
-    inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
+        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+    else
+        inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
     if ([[[LIOLookIOManager sharedLookIOManager] pendingEmailAddress] length])
         inputField.text = [[LIOLookIOManager sharedLookIOManager] pendingEmailAddress];
     [fieldBackground addSubview:inputField];
     
-    UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableMatteOrangeButton"];
-    UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
-    
     submitButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableMatteOrangeButton"];
+        UIImage *stretchableButtonImage = [buttonImage stretchableImageWithLeftCapWidth:15 topCapHeight:0];
+        [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
+        [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    } else {
+        submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+        [submitButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+    }
     submitButton.accessibilityLabel = @"LIOEmailHistoryViewController.submitButton";
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    [submitButton setBackgroundImage:stretchableButtonImage forState:UIControlStateNormal];
     [submitButton setTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SubmitButton") forState:UIControlStateNormal];
-    [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:16.0];
     submitButton.bounds = fieldBackground.bounds;
     aFrame = submitButton.frame;
     aFrame.size.width = self.view.bounds.size.width - 20.0;
