@@ -2608,6 +2608,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 shouldAddMessage = NO;
         }
         
+        // Don't add messages which originated from the visitor and are echoed back to the client
+        if ([aPacket objectForKey:@"source"]) {
+            NSString *source = [aPacket objectForKey:@"source"];
+            if ([source isEqualToString:@"visitor"])
+                shouldAddMessage = NO;
+        }
+        
         if (shouldAddMessage) {
             [chatHistory addObject:newMessage];
             if (nil == altChatViewController)
