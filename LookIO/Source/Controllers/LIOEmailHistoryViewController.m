@@ -150,7 +150,6 @@
     } else {
         submitButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [submitButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [submitButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     submitButton.accessibilityLabel = @"LIOEmailHistoryViewController.submitButton";
     [submitButton addTarget:self action:@selector(submitButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];

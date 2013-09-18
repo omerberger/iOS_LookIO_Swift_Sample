@@ -302,9 +302,8 @@
         emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
         emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     }  else {
-        emailConvoButton.backgroundColor = [UIColor lightGrayColor];
         emailConvoButton.layer.cornerRadius = 5.0;
-        emailConvoButton.alpha = 0.8;
+        emailConvoButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
     }
 
 
@@ -333,9 +332,8 @@
         endSessionButton.titleLabel.layer.shadowOpacity = 0.8;
         endSessionButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
     } else {
-        endSessionButton.backgroundColor = [UIColor lightGrayColor];
+        endSessionButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
         endSessionButton.layer.cornerRadius = 5.0;
-        endSessionButton.alpha = 0.8;
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
