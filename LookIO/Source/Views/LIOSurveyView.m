@@ -291,7 +291,7 @@
         }
         
         // iOS 7.0: Add another 20px on top for the status bar
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
                 aFrame.origin.y += 20.0;
         
@@ -613,7 +613,7 @@
     aFrame.size.height = expectedLabelSize.height;
     
     // iOS 7.0: Add another 20px on top for the status bar
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
             aFrame.origin.y += 20.0;
 
@@ -1003,7 +1003,7 @@
         aFrame.size.height = expectedLabelSize.height;
         
         // iOS 7.0: Add another 20px on top for the status bar
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
                 aFrame.origin.y += 20.0;
         
@@ -1028,7 +1028,7 @@
         aFrame.size.height = 28.0;
         
         // iOS 7.0: Remove 3px for the textfield in iOS 7.0
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             aFrame.origin.y -= 3.0;
         
         inputField.frame = aFrame;
@@ -1786,7 +1786,7 @@
     }    
     
     // iOS 7.0: Add another 20px on top for the status bar
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
             aFrame.origin.y += 20.0;
         

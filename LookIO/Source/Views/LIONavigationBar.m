@@ -103,7 +103,7 @@
     {
         CGRect selfFrame = self.frame;
         selfFrame.size.height = 44.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 selfFrame.size.height += 15;
             }
@@ -115,7 +115,7 @@
         backgroundFrame.origin = CGPointZero;
         backgroundFrame.size.width = self.bounds.size.width;
         backgroundFrame.size.height = 46.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 backgroundFrame.size.height += 15.0;
             }
@@ -134,7 +134,7 @@
             //leftFrame.size.width += 5.0;
             leftFrame.origin.x = 7.0;
             leftFrame.origin.y = (self.bounds.size.height / 2.0) - (leftFrame.size.height / 2.0);
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+            if (LIOIsUIKitFlatMode()) {
                 if (![[UIApplication sharedApplication] isStatusBarHidden]&& !padUI) {
                     leftFrame.origin.y += 10.0;
                 }
@@ -154,7 +154,7 @@
             //rightFrame.size.width += 5.0;
             rightFrame.origin.x = self.bounds.size.width - rightFrame.size.width - 7.0;
             rightFrame.origin.y = (self.bounds.size.height / 2.0) - (rightFrame.size.height / 2.0);
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+            if (LIOIsUIKitFlatMode()) {
                 if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                     rightFrame.origin.y += 10.0;
                 }
@@ -166,7 +166,7 @@
     {
         CGRect selfFrame = self.frame;
         selfFrame.size.height = 32.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 selfFrame.size.height += 15.0;
             }
@@ -178,7 +178,7 @@
         backgroundFrame.origin = CGPointZero;
         backgroundFrame.size.width = self.bounds.size.width;
         backgroundFrame.size.height = 34.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 backgroundFrame.size.height += 15.0;
             }
@@ -197,7 +197,7 @@
             //leftFrame.size.width += 10.0;
             leftFrame.origin.x = 7.0;
             leftFrame.origin.y = (self.bounds.size.height / 2.0) - (leftFrame.size.height / 2.0);
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+            if (LIOIsUIKitFlatMode()) {
                 if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                     leftFrame.origin.y += 10.0;
                 }
@@ -217,7 +217,7 @@
             //rightFrame.size.width += 10.0;
             rightFrame.origin.x = self.bounds.size.width - rightFrame.size.width - 7.0;
             rightFrame.origin.y = (self.bounds.size.height / 2.0) - (rightFrame.size.height / 2.0);
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+            if (LIOIsUIKitFlatMode()) {
                 if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                     rightFrame.origin.y += 10.0;
                 }
@@ -244,7 +244,7 @@
         if (aFrame.size.height > maxHeight) aFrame.size.height = maxHeight;
         aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
         aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 aFrame.origin.y += 10.0;
             }
@@ -261,7 +261,7 @@
         aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
         aFrame.origin.x = leftButton.frame.origin.x + leftButton.frame.size.width + 10.0;
         aFrame.size.width = rightButton.frame.origin.x - aFrame.origin.x - 10.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI) {
                 aFrame.origin.y += 10.0;
             }

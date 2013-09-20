@@ -226,7 +226,7 @@
         aFrame = inputField.frame;
         aFrame.origin.x = inputFieldBackground.frame.origin.x;
         aFrame.size.width = inputFieldBackground.frame.size.width - 3.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        if (LIOIsUIKitFlatMode()) {
             aFrame.origin.x = inputFieldBackground.frame.origin.x + 6.0;
             aFrame.size.width = inputFieldBackground.frame.size.width - 12.0;
         }
@@ -246,7 +246,7 @@
     if ([stringToMeasure length] && [[stringToMeasure substringFromIndex:[stringToMeasure length] - 1] isEqualToString:@"\n"])
         [stringToMeasure replaceCharactersInRange:NSMakeRange([stringToMeasure length] - 1, 1) withString:@"\n "];
     CGFloat backgroundHeightMod = 14.0; // im not even really sure what this
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         backgroundHeightMod = 22.0;
 
     CGFloat maxWidth = inputField.frame.size.width - 16.0;
@@ -254,7 +254,7 @@
     CGSize newSize = [stringToMeasure sizeWithFont:inputField.font constrainedToSize:CGSizeMake(maxWidth, FLT_MAX)];
     
     NSInteger calculatedNumLines = newSize.height / singleLineHeight;
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         calculatedNumLines += 1;
 
     if (calculatedNumLines > maxLines)

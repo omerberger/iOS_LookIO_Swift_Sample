@@ -20,6 +20,12 @@
 #define LIOBundleManagerStringTableDictKey  @"LIOBundleManagerStringTableDictKey"
 #define LIOBundleManagerStringTableHashKey  @"LIOBundleManagerStringTableHashKey"
 
+#ifndef kCFCoreFoundationVersionNumber_iOS_7_0
+#define kCFCoreFoundationVersionNumber_iOS_7_0 847.2
+#endif
+
+BOOL LIOIsUIKitFlatMode(void);
+
 @class LIOBundleManager;
 
 @interface LIOBundleManager : NSObject

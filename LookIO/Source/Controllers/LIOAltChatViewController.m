@@ -159,7 +159,7 @@
         tableViewAutoresizing = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     }
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         if (![[UIApplication sharedApplication] isStatusBarHidden]) {
             tableViewFrame.origin.y += 20.0;
             tableViewFrame.size.height -= 20.0;
@@ -243,7 +243,7 @@
         aFrame.size.width = self.view.bounds.size.width;
         aFrame.size.height = LIOHeaderBarViewDefaultHeight;
         
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             if (![[UIApplication sharedApplication] isStatusBarHidden])
                 aFrame.size.height += 20.0;
         
@@ -320,7 +320,7 @@
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
 
     // Fix for iOS 7.0 - allow Powered By Area to appear, otherwise it is clipped
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         for (UIView *subview in functionHeaderChat.subviews)
             subview.clipsToBounds = NO;
 
@@ -369,7 +369,7 @@
                         aFrame.origin.y = -54.0;
                         
                         // iOS 7.0 + iPad requires originating the powered by logo a bit higher
-                        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                        if (LIOIsUIKitFlatMode())
                             if (![[UIApplication sharedApplication] isStatusBarHidden])
                                 aFrame.origin.y = -74.0;
                         
@@ -557,7 +557,7 @@
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
+    return UIStatusBarStyleBlackTranslucent;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -1006,7 +1006,7 @@
      
     }
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+    if (LIOIsUIKitFlatMode()) {
         if (![[UIApplication sharedApplication] isStatusBarHidden]) {
             if (UIInterfaceOrientationIsLandscape(actualOrientation && keyboardHeight > 0.0))
                 tableFrame.origin.y = 0;
@@ -1420,7 +1420,7 @@
     NSString *dontSendString = [[LIOBundleManager sharedBundleManager] localizedStringWithKey:@"LIOAltChatViewController.AttachConfirmationDontSend"];
 
     NSString *message = [bodyString stringByAppendingString:@"\n\n\n\n\n"];
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+    if (LIOIsUIKitFlatMode())
         message = bodyString;
     
     alertView = [[UIAlertView alloc] initWithTitle:nil
@@ -1558,7 +1558,7 @@
                     }
                     
                     // Fix for iOS 7.0 - allow Bubbles to bounce
-                    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                    if (LIOIsUIKitFlatMode())
                         for (UIView *subview in aCell.subviews)
                             subview.clipsToBounds = NO;
 
@@ -1610,7 +1610,7 @@
         }
 
         // Fix for iOS 7.0 - allow Bubbles to bounce
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             for (UIView *subview in aCell.subviews)
                 subview.clipsToBounds = NO;
     }
@@ -1648,7 +1648,7 @@
         {
             CGFloat result = tableView.bounds.size.height - heightAccum;
             if (result < 0.0) {
-                if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                if (LIOIsUIKitFlatMode())
                     result = 10;
                 else
                     result = 7.0 - 10.0;
@@ -1660,7 +1660,7 @@
         {
             CGFloat result = tableView.bounds.size.height - heightAccum - 10.0;
             if (result < 0.0) {
-                if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+                if (LIOIsUIKitFlatMode())
                     result = 10;
                 else
                     result = 7.0;
@@ -1901,7 +1901,7 @@
             tableFrame.origin.y = 32.0;
             tableFrame.size.height = self.view.bounds.size.height - keyboardHeight - dismissalBarFrame.size.height - inputBarFrame.size.height - 32.0;
 
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+            if (LIOIsUIKitFlatMode())
                 if (![[UIApplication sharedApplication] isStatusBarHidden]) {
                     tableFrame.origin.y += 20.0;
                     tableFrame.size.height -= 20.0;
@@ -1979,7 +1979,7 @@
             headerFrame.origin.y = 0.0;
         
         tableFrame.origin.y = 32.0;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             if (![[UIApplication sharedApplication] isStatusBarHidden])
                 tableFrame.origin.y += 20.0;
         

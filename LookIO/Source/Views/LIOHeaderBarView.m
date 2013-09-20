@@ -39,7 +39,7 @@
         [separator release];
                 
         notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (LIOIsUIKitFlatMode())
             if (![[UIApplication sharedApplication] isStatusBarHidden]) {
                 aFrame = notificationArea.frame;
                 aFrame.origin.y += 20.0;
