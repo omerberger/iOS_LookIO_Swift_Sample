@@ -235,6 +235,7 @@ typedef enum
     NSDictionary *failedChatHistoryDict;
     int failedChatHistoryCount;
     
+    int lastClientLineId;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -336,6 +337,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        lastClientLineId = 0;
         
         customButtonChatAvailable = NO;
         customButtonInvitationShown = NO;
@@ -1092,6 +1094,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     failedChatHistoryCount = 0;
     [failedChatHistoryDict release];
     failedChatHistoryDict = nil;
+    
+    lastClientLineId = 0;
     
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
@@ -1875,7 +1879,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", nil];
+    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", aMessage.text, @"text", aMessage.clientLineId, @"client_line_id", nil];
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, chatEngagementId];
 
     [[LPChatAPIClient sharedClient] postPath:lineRequestUrl parameters:lineDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -2377,6 +2381,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 -(void)sseManagerDidConnect:(LPSSEManager *)aManager {
     socketConnected = YES;
+    sseSocketAttemptingReconnect = NO;
 
     [self sendCapabilitiesPacket];
     
@@ -2384,6 +2389,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [realtimeExtrasTimer stopTimer];
     [realtimeExtrasTimer release];
     realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
+    
+    if (resumeMode)
+    {
+        [reintroTimeoutTimer stopTimer];
+        [reintroTimeoutTimer release];
+        reintroTimeoutTimer = nil;
+        
+        resumeMode = NO;
+        sessionEnding = NO;
+        resetAfterDisconnect = NO;
+        introduced = YES;
+        introPacketWasSent = YES;
+        killConnectionAfterChatViewDismissal = NO;
+        
+        [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
+        
+        [self populateChatWithFirstMessage];
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
+                                                           delegate:self
+                                                  cancelButtonTitle:nil
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
+        alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
+        [alertView show];
+        [alertView autorelease];
+        
+        if (chatHistory.count == 1)
+            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
+    }
 
 }
 
@@ -2592,6 +2627,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSString *text = [aPacket objectForKey:@"text"];
         NSString *senderName = [aPacket objectForKey:@"sender_name"];
         NSString *lineId = [aPacket objectForKey:@"line_id"];
+        NSString *clientLineId = nil;
+        if ([aPacket objectForKey:@"client_line_id"])
+            clientLineId = [aPacket objectForKey:@"client_line_id"];
         
         LIOChatMessage *newMessage = [LIOChatMessage chatMessage];
         newMessage.text = text;
@@ -2599,19 +2637,31 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         newMessage.kind = LIOChatMessageKindRemote;
         newMessage.date = [NSDate date];
         newMessage.lineId = lineId;
+        newMessage.clientLineId = clientLineId;
         
         BOOL shouldAddMessage = YES;
+        // Don't add messages which originated from the visitor and are echoed back to the client
+        // but add their line_id by matching their client_line_id
+        if ([aPacket objectForKey:@"source"]) {
+            NSString *source = [aPacket objectForKey:@"source"];
+            if ([source isEqualToString:@"visitor"]) {
+                shouldAddMessage = NO;
+            
+                NSPredicate *clientLineIdPredicate = [NSPredicate predicateWithFormat:@"clientLineId = %@", newMessage.clientLineId];
+                NSArray *messagesWithClientLineId = [chatHistory filteredArrayUsingPredicate:clientLineIdPredicate];
+                if (messagesWithClientLineId.count > 0) {
+                    LIOChatMessage *matchedClientLineIdMessage = [messagesWithClientLineId objectAtIndex:0];
+                    if (matchedClientLineIdMessage.lineId == nil)
+                        matchedClientLineIdMessage.lineId = newMessage.lineId;
+                }
+            }
+        }
+        
+        
         if (newMessage.lineId) {
             NSPredicate *lineIdPredicate = [NSPredicate predicateWithFormat:@"lineId = %@", newMessage.lineId];
             NSArray *messagesWithLineId = [chatHistory filteredArrayUsingPredicate:lineIdPredicate];
             if (messagesWithLineId.count > 0)
-                shouldAddMessage = NO;
-        }
-        
-        // Don't add messages which originated from the visitor and are echoed back to the client
-        if ([aPacket objectForKey:@"source"]) {
-            NSString *source = [aPacket objectForKey:@"source"];
-            if ([source isEqualToString:@"visitor"])
                 shouldAddMessage = NO;
         }
         
@@ -2912,36 +2962,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSNumber *success = [aPacket objectForKey:@"success"];
         
-        if ([success boolValue] && resumeMode)
-        {
-            [reintroTimeoutTimer stopTimer];
-            [reintroTimeoutTimer release];
-            reintroTimeoutTimer = nil;
-            
-            resumeMode = NO;
-            sessionEnding = NO;
-            resetAfterDisconnect = NO;
-            introduced = YES;
-            introPacketWasSent = YES;
-            killConnectionAfterChatViewDismissal = NO;
-            
-            [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
-            
-            [self populateChatWithFirstMessage];
-            
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
-                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
-                                                               delegate:self
-                                                      cancelButtonTitle:nil
-                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
-            alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
-            [alertView show];
-            [alertView autorelease];
-            
-            // After reconnecting, let's ask for chat history, to make sure we didn't miss any lines
-            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
-        }
-        
         if (![success boolValue]) {
             sseConnectionDidFail = YES;
             sessionEnding = YES;
@@ -2991,6 +3011,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     chatMessage.lineId = [lineDictionary objectForKey:@"line_id"];
                 else
                     chatMessage.lineId = nil;
+                
+                if ([lineDictionary objectForKey:@"client_line_id"])
+                    chatMessage.clientLineId = [lineDictionary objectForKey:@"client_line_id"];
+                else
+                    chatMessage.clientLineId = nil;
 
                 BOOL shouldAddMessage = YES;
                 if (chatMessage.lineId) {
@@ -3913,6 +3938,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)configureReconnectionTimer
 {
+    /*
     // Are we done?
     if (socketConnected)
     {
@@ -3961,6 +3987,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     previousReconnectionTimerStep++;
     if (previousReconnectionTimerStep > 6)
         previousReconnectionTimerStep = 6;
+     */
 }
 
 - (void)killReconnectionTimer
@@ -4239,6 +4266,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     newMessage.text = aString;
     newMessage.sendingFailed = NO;
     newMessage.lineId = nil;
+    newMessage.clientLineId = [NSString stringWithFormat:@"%d", lastClientLineId];
+    lastClientLineId += 1;
     [chatHistory addObject:newMessage];
     
     [altChatViewController reloadMessages];
@@ -4606,7 +4635,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             willAskUserToReconnect = NO;
             
-            if (1 == buttonIndex)
+            if (1 == buttonIndex && !altChatViewController)
                 [self showChatAnimated:YES];
             
             controlButton.currentMode = LIOControlButtonViewModeDefault;

@@ -53,9 +53,10 @@
         if (aCookies)
             self.cookies = aCookies;
         
-        lastEventId = @"";
-        if (lastEventId)
-            self.lastEventId = anEventId;
+        if (anEventId)
+            lastEventId = anEventId;
+        else
+            lastEventId = @"";
             
         events = [[NSMutableDictionary alloc] init];
         
