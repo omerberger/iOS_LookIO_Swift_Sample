@@ -91,7 +91,7 @@
         if ([selectedIndices count])
         {
             NSNumber *selectedIndex = [selectedIndices anyObject];
-            int index = [selectedIndex intValue] + 1;
+            NSInteger index = [selectedIndex integerValue] + 1;
             [pickerView selectRow:index inComponent:0 animated:NO];
         }
     }
@@ -268,10 +268,10 @@
     
     if (LIOSurveyPickerViewModeSingle == currentMode)
     {
-        int selectedRow = [pickerView selectedRowInComponent:0];
+        NSInteger selectedRow = [pickerView selectedRowInComponent:0];
         if (selectedRow > 0)
         {
-            NSNumber *result = [NSNumber numberWithInt:(selectedRow - 1)];
+            NSNumber *result = [NSNumber numberWithInteger:(selectedRow - 1)];
             [temp addObject:result];
         }
     }
@@ -279,7 +279,7 @@
     {
         for (NSIndexPath *anIndexPath in selectedIndices)
         {
-            NSNumber *result = [NSNumber numberWithInt:anIndexPath.row];
+            NSNumber *result = [NSNumber numberWithInteger:anIndexPath.row];
             [temp addObject:result];
         }
     }

@@ -15,15 +15,15 @@ typedef enum
 
 @interface LIOSurveyLogicItem : NSObject
 {
-    int sourceLogicId;
-    int targetLogicId;
+    NSInteger sourceLogicId;
+    NSInteger targetLogicId;
     NSString* sourceAnswerLabel;
     BOOL enabled;
     LIOSurveyLogicPropType propType;
 }
 
-@property (nonatomic, assign) int sourceLogicId;
-@property (nonatomic, assign) int targetLogicId;
+@property (nonatomic, assign) NSInteger sourceLogicId;
+@property (nonatomic, assign) NSInteger targetLogicId;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) LIOSurveyLogicPropType propType;
 @property (nonatomic, copy) NSString* sourceAnswerLabel;

@@ -174,7 +174,7 @@
     if (nextScrollView)
         return;
     
-    int numQuestions = [currentSurvey.questions count];
+    NSInteger numQuestions = [currentSurvey.questions count];
     if (nextQuestionIndex > numQuestions - 1 || nextQuestionIndex < 0)
         return;
     

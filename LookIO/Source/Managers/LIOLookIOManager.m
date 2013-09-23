@@ -633,16 +633,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         NSMutableArray *orientationNumbers = [NSMutableArray array];
         
         if ([plistOrientations containsObject:@"UIInterfaceOrientationPortrait"])
-            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortrait]];
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationPortrait]];
         
         if ([plistOrientations containsObject:@"UIInterfaceOrientationPortraitUpsideDown"])
-            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationPortraitUpsideDown]];
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationPortraitUpsideDown]];
         
         if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeLeft"])
-            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft]];
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationLandscapeLeft]];
         
         if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeRight"])
-            [orientationNumbers addObject:[NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]];
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationLandscapeRight]];
         
         supportedOrientations = [orientationNumbers retain];
     }
@@ -1508,7 +1508,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             NSTimeInterval timeSinceSharingStarted = [[NSDate date] timeIntervalSinceDate:screenSharingStartedDate];
             
             // screenshot:ver:time:orientation:w:h:datalen:[blarghle]
-            NSString *header = [NSString stringWithFormat:@"screenshot:2:%f:%@:%d:%d:%u:", timeSinceSharingStarted, orientationString, (int)screenshotSize.width, (int)screenshotSize.height, [screenshotData length]];
+            NSString *header = [NSString stringWithFormat:@"screenshot:2:%f:%@:%d:%d:%lu:", timeSinceSharingStarted, orientationString, (int)screenshotSize.width, (int)screenshotSize.height, (unsigned long)[screenshotData length]];
             NSData *headerData = [header dataUsingEncoding:NSUTF8StringEncoding];
             
             NSMutableData *dataToSend = [NSMutableData data];
@@ -2332,7 +2332,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [chatCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
         [chatCookieProperties setObject:chatAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
         [chatCookieProperties setObject:chatAPIClient.baseURL.path forKey:NSHTTPCookiePath];
-        [chatCookieProperties setObject:[NSString stringWithFormat:@"%d", cookie.version] forKey:NSHTTPCookieVersion];
+        [chatCookieProperties setObject:[NSString stringWithFormat:@"%lu", (unsigned long)cookie.version] forKey:NSHTTPCookieVersion];
         
         NSHTTPCookie *chatCookie = [NSHTTPCookie cookieWithProperties:chatCookieProperties];
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:chatCookie];
@@ -2342,7 +2342,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [mediaCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
         [mediaCookieProperties setObject:mediaAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
         [mediaCookieProperties setObject:mediaAPIClient.baseURL.path forKey:NSHTTPCookiePath];
-        [mediaCookieProperties setObject:[NSString stringWithFormat:@"%d", cookie.version] forKey:NSHTTPCookieVersion];
+        [mediaCookieProperties setObject:[NSString stringWithFormat:@"%lu", (unsigned long)cookie.version] forKey:NSHTTPCookieVersion];
         
         NSHTTPCookie *mediaCookie = [NSHTTPCookie cookieWithProperties:mediaCookieProperties];
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:mediaCookie];
@@ -2356,7 +2356,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         sseManager = nil;
     }
     
-    NSNumber *portToUse = [NSNumber numberWithInt:443];
+    NSNumber *portToUse = [NSNumber numberWithInteger:443];
     NSURL* url = [NSURL URLWithString:chatSSEUrlString];
     if (url.port != 0)
         portToUse = url.port;
@@ -2980,7 +2980,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if ([type isEqualToString:@"line_list"]) {
         // Add message after the initial populated message
-        int messagePosition = chatHistory.count;
+        NSUInteger messagePosition = chatHistory.count;
         
         NSArray *lines = [aPacket objectForKey:@"lines"];
         for (NSDictionary *lineWrapperDictionary in lines) {
@@ -3660,7 +3660,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     // Fall back on plist settings.
     [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Using .plist keys to determine rotation behavior. This may not be accurate. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:"];
-    return [supportedOrientations containsObject:[NSNumber numberWithInt:anOrientation]];
+    return [supportedOrientations containsObject:[NSNumber numberWithInteger:anOrientation]];
 }
 
 - (BOOL)shouldAutorotate // iOS >= 6.0

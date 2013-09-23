@@ -124,7 +124,7 @@
     }
 }
 
-- (void)setRatingTextForRating:(int)rating {
+- (void)setRatingTextForRating:(NSInteger)rating {
     if (valueLabelArray && valueLabelArray.count == 5) {
         if (rating == 0)
             ratingLabel.text = @"";
@@ -203,7 +203,7 @@
     [self setRating:[starButtonArray indexOfObject:button] + 1];
 }
 
-- (void)setRating:(int)newRating {
+- (void)setRating:(NSInteger)newRating {
     if (isAnimating)
         return;
     

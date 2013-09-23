@@ -329,7 +329,7 @@
     if (padUI)
         maxTextLength = LIOInputBarViewMaxTextLength_iPad;
     
-    characterCount.text = [NSString stringWithFormat:@"(%u/%u)", [inputField.text length], maxTextLength];
+    characterCount.text = [NSString stringWithFormat:@"(%lu/%u)", (unsigned long)[inputField.text length], maxTextLength];
     [characterCount sizeToFit];
     characterCount.hidden = totalLines < 3;
     

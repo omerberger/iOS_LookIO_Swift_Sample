@@ -11,11 +11,11 @@
 
 @interface LIOSurveyLogicProp : NSObject
 {
-    int targetLogicId;
+    NSInteger targetLogicId;
     LIOSurveyLogicPropType propType;
 }
 
-@property(nonatomic, assign) int targetLogicId;
+@property(nonatomic, assign) NSInteger targetLogicId;
 @property(nonatomic, assign) LIOSurveyLogicPropType propType;
 
 @end

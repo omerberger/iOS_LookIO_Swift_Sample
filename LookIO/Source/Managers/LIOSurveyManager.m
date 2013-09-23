@@ -282,7 +282,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:i];
             
             // If the question is a target of any logic, it will be in the survey's logic dictionary
-            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInteger:question.logicId]];
             if (logicItem)
                 if (!logicItem.enabled)
                     shouldCountQuestion = NO;
@@ -316,7 +316,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
             BOOL shouldShowQuestion = YES;
             
             // If the question is a target of any logic, it will be in the survey's logic dictionary
-            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+            LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInteger:question.logicId]];
             if (logicItem)
                 if (!logicItem.enabled)
                     shouldShowQuestion = NO;
@@ -345,7 +345,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         LIOSurveyQuestion* question = [aSurvey.questions objectAtIndex:index];
         
         // If the question is a target of any logic, it will be in the survey's logic dictionary
-        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInt:question.logicId]];
+        LIOSurveyLogicItem* logicItem = [aSurvey.logicDictionary objectForKey:[NSNumber numberWithInteger:question.logicId]];
         if (logicItem)
             if (!logicItem.enabled)
                 shouldShowQuestion = NO;
@@ -374,7 +374,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 NSMutableDictionary *questionDict = [NSMutableDictionary dictionary];
                 
                 LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
-                [questionDict setObject:[NSString stringWithFormat:@"%d", aQuestion.questionId] forKey:@"question_id"];
+                [questionDict setObject:[NSString stringWithFormat:@"%ld", (long)aQuestion.questionId] forKey:@"question_id"];
                 
                 id aResponse = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
                 if (aResponse != nil) {
@@ -540,11 +540,11 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         LIOSurveyQuestion *newQuestion = [[[LIOSurveyQuestion alloc] init] autorelease];
         NSDictionary* aQuestionDict = [questionsDict objectForKey:aQuestionId];
         
-        newQuestion.questionId = [aQuestionId intValue];
+        newQuestion.questionId = [aQuestionId integerValue];
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
-        newQuestion.order = [[aQuestionDict objectForKey:@"order"] intValue];
+        newQuestion.order = [[aQuestionDict objectForKey:@"order"] integerValue];
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
-        newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] intValue];
+        newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] integerValue];
         newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
@@ -582,7 +582,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 
                 LIOSurveyPickerEntry *newPickerEntry = [[[LIOSurveyPickerEntry alloc] init] autorelease];
                 newPickerEntry.initiallyChecked = [[anEntryDict objectForKey:@"checked"] boolValue];
-                newPickerEntry.order = [[anEntryDict objectForKey:@"order"] intValue];
+                newPickerEntry.order = [[anEntryDict objectForKey:@"order"] integerValue];
                 newPickerEntry.label = anEntryName;
                 
                 NSMutableArray *logicItems = [NSMutableArray array];
@@ -590,14 +590,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
                 for (NSString *logicId in logicData)
                 {
                     LIOSurveyLogicItem* logicItem = [[[LIOSurveyLogicItem alloc] init] autorelease];
-                    logicItem.targetLogicId = [logicId intValue];
+                    logicItem.targetLogicId = [logicId integerValue];
                     logicItem.sourceLogicId = newQuestion.logicId;
                     logicItem.sourceAnswerLabel = newPickerEntry.label;
                     logicItem.enabled = NO;
                     logicItem.propType = LIOSurveyLogicPropTypeShow;
 
                     [logicItems addObject:logicItem];                    
-                    [logicDictionary setObject:logicItem forKey:[NSNumber numberWithInt:logicItem.targetLogicId]];
+                    [logicDictionary setObject:logicItem forKey:[NSNumber numberWithInteger:logicItem.targetLogicId]];
                 }
                 
                 newPickerEntry.logicItems = logicItems;

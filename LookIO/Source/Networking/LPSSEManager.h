@@ -34,7 +34,7 @@ typedef enum {
 @interface LPSSEManager : NSObject <AsyncSocketDelegate_LIO> {
     NSString* host;
     NSString* urlEndpoint;
-    int port;
+    NSInteger port;
     id <LPSSEManagerDelegate> delegate;
     BOOL usesTLS;
     NSArray *cookies;
@@ -47,7 +47,7 @@ typedef enum {
 
 @property (nonatomic, retain) NSString *host;
 @property (nonatomic, retain) NSString *urlEndpoint;
-@property (nonatomic, assign) int port;
+@property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) id <LPSSEManagerDelegate> delegate;
 @property (nonatomic, assign) BOOL usesTLS;
 @property (nonatomic, retain) NSArray *cookies;

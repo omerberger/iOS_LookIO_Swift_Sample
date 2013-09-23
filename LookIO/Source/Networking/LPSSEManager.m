@@ -47,7 +47,7 @@
         socket = [[AsyncSocket_LIO alloc] initWithDelegate:self];
         
         self.host = aHost;
-        self.port = [aPort intValue];
+        self.port = [aPort integerValue];
         self.urlEndpoint = anEndpoint;
         self.usesTLS = aUsesTLS;
         if (aCookies)

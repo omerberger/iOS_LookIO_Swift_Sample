@@ -12,7 +12,7 @@
 
 @protocol LIOStarRatingViewDelegate
 @optional
-- (void)starRatingView:(LIOStarRatingView*)aView didUpdateRating:(int)aRating;
+- (void)starRatingView:(LIOStarRatingView*)aView didUpdateRating:(NSInteger)aRating;
 @end
 
 @interface LIOStarRatingView : UIView {
@@ -20,7 +20,7 @@
 
     NSMutableArray* starButtonArray;
     UILabel* ratingLabel;
-    int currentRating;
+    NSInteger currentRating;
     
     BOOL isAnimating;
     BOOL isPanning;
@@ -31,10 +31,10 @@
 }
 
 @property (nonatomic, assign) id<LIOStarRatingViewDelegate> delegate;
-@property (nonatomic, readonly) int currentRating;
+@property (nonatomic, readonly) NSInteger currentRating;
 @property (nonatomic, retain) NSMutableArray* valueLabelArray;
 
-- (void)setRating:(int)newRating;
+- (void)setRating:(NSInteger)newRating;
 - (void)setValueLabels:(NSArray*)newValueLabelsArray;
 - (void)showIntroAnimation;
 

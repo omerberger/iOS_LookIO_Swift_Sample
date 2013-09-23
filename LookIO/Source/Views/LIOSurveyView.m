@@ -671,7 +671,7 @@
 -(UIScrollView*)scrollViewForQuestionAtIndex:(int)index {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    int numberOfQuestions = [currentSurvey.questions count];
+    NSInteger numberOfQuestions = [currentSurvey.questions count];
     if (index > numberOfQuestions - 1 || index < 0)
         return nil;
     
@@ -928,7 +928,7 @@
                 for (NSString* answer in answersArray)
                     for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
                         if ([pickerEntry.label isEqualToString:answer]) {
-                            int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                            NSUInteger questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                             [selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
                             
                             if (question.shouldUseStarRatingView) {
@@ -946,7 +946,7 @@
                     if (pickerEntry.initiallyChecked) {
                         questionHasInitiallyCheckedAnswer = YES;
                         
-                        int questionRow = [question.pickerEntries indexOfObject:pickerEntry];
+                        NSUInteger questionRow = [question.pickerEntries indexOfObject:pickerEntry];
                         if (question.shouldUseStarRatingView)
                             [selectedIndices addObject:[NSIndexPath indexPathForRow:(5-questionRow) inSection:0]];
                         else
@@ -1194,7 +1194,7 @@
 
 -(CGFloat)heightForTableView:(UITableView*)tableView {
     CGFloat tableViewContentHeight = 0.0;
-    int numberOfTableRows = [self tableView:tableView numberOfRowsInSection:0];
+    NSInteger numberOfTableRows = [self tableView:tableView numberOfRowsInSection:0];
     for (int i=0; i<numberOfTableRows; i++) {
         tableViewContentHeight += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
     }
@@ -1413,7 +1413,7 @@
 -(void)switchToNextQuestion {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    int numberOfQuestions = [currentSurvey.questions count];
+    NSInteger numberOfQuestions = [currentSurvey.questions count];
     
     if (currentQuestionIndex > numberOfQuestions - 1)
         return;
@@ -1972,7 +1972,7 @@
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     UIView* scrollView = tableView.superview;
-    int tableViewQuestionIndex = scrollView.tag;
+    NSInteger tableViewQuestionIndex = scrollView.tag;
     
     BOOL isRowSelected = NO;
     
@@ -1995,7 +1995,7 @@
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     UIView* scrollView = tableView.superview;
-    int tableViewQuestionIndex = scrollView.tag;
+    NSInteger tableViewQuestionIndex = scrollView.tag;
 
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
     return question.pickerEntries.count;
@@ -2006,7 +2006,7 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     UIView* scrollView = tableView.superview;
-    int tableViewQuestionIndex = scrollView.tag;
+    NSInteger tableViewQuestionIndex = scrollView.tag;
     
     static NSString *CellIdentifier = @"TableViewCell";
     
@@ -2093,7 +2093,7 @@
     return cell;
 }
 
--(void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(int)aRating {
+-(void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(NSInteger)aRating {
     [selectedIndices removeAllObjects];
     if (aRating > 0 && aRating < 6)
         [selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
@@ -2101,7 +2101,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UIView* scrollView = tableView.superview;
-    int tableViewQuestionIndex = scrollView.tag;
+    NSInteger tableViewQuestionIndex = scrollView.tag;
 
     LIOSurveyQuestion *question = [currentSurvey.questions objectAtIndex:tableViewQuestionIndex];
 

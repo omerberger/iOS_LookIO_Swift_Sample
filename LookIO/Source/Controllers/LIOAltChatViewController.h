@@ -99,7 +99,7 @@
     int currentPopoverType;
 
     LIOChatMessage *clickedFailedMessage;
-    int clickedFailedMessageIndex;
+    NSInteger clickedFailedMessageIndex;
     
     BOOL isAnimatingDismissal;
     

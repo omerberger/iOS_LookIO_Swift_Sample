@@ -1625,7 +1625,7 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    int row = indexPath.row;
+    NSInteger row = indexPath.row;
     
     if (0 > row)
         return 0.0;
@@ -1640,7 +1640,7 @@
         CGFloat heightAccum = 0.0;
         for (int i=0; i<numPreviousMessagesToShowInScrollback; i++)
         {
-            int aRow = [chatMessages count] - i;
+            NSInteger aRow = [chatMessages count] - i;
             heightAccum += [self tableView:tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
         }
         

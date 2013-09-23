@@ -683,7 +683,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     }
     else
     {
-        NSString *errorMessage = [NSString stringWithFormat:@"[LOOKIO] BUNDLE: Warning! Bundle download failed with HTTP response code: %d", bundleDownloadResponseCode];
+        NSString *errorMessage = [NSString stringWithFormat:@"[LOOKIO] BUNDLE: Warning! Bundle download failed with HTTP response code: %ld", (long)bundleDownloadResponseCode];
         LIOLog(@"%@", errorMessage);
         
         NSDictionary *errorUserInfo = [NSDictionary dictionaryWithObjectsAndKeys:errorMessage, NSLocalizedDescriptionKey, nil];
