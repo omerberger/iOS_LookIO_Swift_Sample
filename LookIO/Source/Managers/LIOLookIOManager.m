@@ -1128,6 +1128,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+    [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
+    [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownOfflineSurveyDictKey];    
     
     chatEngagementId = nil;
     chatSSEUrlString = nil;

@@ -35,16 +35,14 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     
     if (self)
     {
-        /*
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
-        NSDictionary *savedPreChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
-        if (savedPreChatDict)
-            [self populateTemplateWithDictionary:savedPreChatDict type:LIOSurveyManagerSurveyTypePre];
         NSDictionary *savedPostChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
         if (savedPostChatDict)
             [self populateTemplateWithDictionary:savedPostChatDict type:LIOSurveyManagerSurveyTypePost];
-         */
+        NSDictionary *savedOfflineChatDict = [userDefaults objectForKey:LIOSurveyManagerLastKnownOfflineSurveyDictKey];
+        if (savedOfflineChatDict)
+            [self populateTemplateWithDictionary:savedOfflineChatDict type:LIOSurveyManagerSurveyTypeOffline];
         
         preChatResponses = [[NSMutableDictionary alloc] init];
         postChatResponses = [[NSMutableDictionary alloc] init];
@@ -481,8 +479,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     {
         if (LIOSurveyManagerSurveyTypePre == surveyType)
         {
-            [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
-            
             [preChatHeader release];
             preChatHeader = nil;
             
@@ -519,8 +515,6 @@ static LIOSurveyManager *sharedSurveyManager = nil;
         return;
     }
     
-    if (LIOSurveyManagerSurveyTypePre == surveyType)
-        [userDefaults setObject:aDict forKey:LIOSurveyManagerLastKnownPreChatSurveyDictKey];
     if (LIOSurveyManagerSurveyTypePost == surveyType)
         [userDefaults setObject:aDict forKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)

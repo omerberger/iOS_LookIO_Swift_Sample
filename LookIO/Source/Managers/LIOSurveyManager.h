@@ -11,7 +11,7 @@
 // User defaults keys
 #define LIOSurveyManagerLastKnownPreChatSurveyDictKey   @"LIOSurveyManagerLastPreChatSurveyDictKey"
 #define LIOSurveyManagerLastKnownPostChatSurveyDictKey  @"LIOSurveyManagerLastPostChatSurveyDictKey"
-#define LIOSurveyManagerLastKnownOfflineSurveyDictKey  @"LIOSurveyManagerLastOfflineSurveyDictKey"
+#define LIOSurveyManagerLastKnownOfflineSurveyDictKey   @"LIOSurveyManagerLastOfflineSurveyDictKey"
 
 @class LIOSurveyManager, LIOSurveyTemplate, LIOSurveyQuestion;
 
