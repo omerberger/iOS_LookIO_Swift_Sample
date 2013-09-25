@@ -1951,10 +1951,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         else
             LIOLog(@"<OUTRO> success");
         
-        [sseManager disconnect];
+        if (sseManager)
+            [sseManager disconnect];
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<OUTRO> failure: %@", error);
-        [sseManager disconnect];        
+        if (sseManager)
+            [sseManager disconnect];
     }];
 }
 
@@ -3202,10 +3204,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)killConnection
 {
     [self sendOutroPacket];
-    
-    if (sseManager)
-        [sseManager disconnect];
-
 }
 
 - (void)setSkill:(NSString *)aRequiredSkill
