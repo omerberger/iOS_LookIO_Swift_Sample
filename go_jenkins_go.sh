@@ -26,6 +26,12 @@ then
     COMMIT_DESCRIPTION="Unstable Enterprise version $1"
 fi
 
+if [ $2 == "master.ios7" ]
+then
+	COMMIT_DESCRIPTION="Unstable iOS 7 version $1"
+fi
+	
+
 cd /Users/marc/Development/ios_lib
 ./build_lio.sh $1
 
