@@ -1072,6 +1072,11 @@
     ipc.allowsEditing = NO;
     ipc.delegate = self;
     
+    // Fix for a bug in iOS 7.0 where image picker shows the status bar even if it was hidden before
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if ([[UIApplication sharedApplication] isStatusBarHidden])
+            shouldHideStatusBarAfterImagePicker = YES;
+    
     if (padUI)
     {
         [self.view endEditing:YES];
@@ -1291,6 +1296,11 @@
         
         [aBubble setNeedsLayout];
         [aBubble setNeedsDisplay];
+        
+        // Fix for iOS 7.0 - allow Bubbles to bounce
+        if (LIOIsUIKitFlatMode())
+            for (UIView *subview in aCell.subviews)
+                subview.clipsToBounds = NO;
     }
     
     return aCell;
@@ -2061,6 +2071,14 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
+    // Fix for a bug in iOS 7 where image picker brings up the status bar even if it was hidden before
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (picker.sourceType == (UIImagePickerControllerSourceTypePhotoLibrary | UIImagePickerControllerSourceTypeSavedPhotosAlbum))
+            if (shouldHideStatusBarAfterImagePicker) {
+                [[UIApplication sharedApplication] setStatusBarHidden:YES];
+                shouldHideStatusBarAfterImagePicker = NO;
+            }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (padUI) {
@@ -2091,6 +2109,14 @@
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
+    // Fix for a bug in iOS 7.0 where image picker brings up the status bar even if it was hidden before
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+        if (picker.sourceType == (UIImagePickerControllerSourceTypePhotoLibrary | UIImagePickerControllerSourceTypeSavedPhotosAlbum))
+            if (shouldHideStatusBarAfterImagePicker) {
+                [[UIApplication sharedApplication] setStatusBarHidden:YES];
+                shouldHideStatusBarAfterImagePicker = NO;
+            }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (padUI)

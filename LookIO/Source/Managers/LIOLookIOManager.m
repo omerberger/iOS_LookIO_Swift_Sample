@@ -2691,7 +2691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                           delegate:self
+                                                           delegate:nil
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
         [alertView show];

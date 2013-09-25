@@ -193,6 +193,8 @@
         
         aFrame.origin.x = 10.0;
         aFrame.origin.y = 12.0;
+        if (LIOIsUIKitFlatMode())
+            aFrame.origin.y = 10.0;
         aFrame.size.width = fieldBackground.frame.size.width - 21.0;
         aFrame.size.height = 23.0;
         emailField.frame = aFrame;
@@ -209,6 +211,8 @@
         aFrame.size.width = messageBackground.frame.size.width - 10.0;
         if (padUI) aFrame.size.height = 90.0;
         else aFrame.size.height = 73.0;
+        if (LIOIsUIKitFlatMode())
+            aFrame.origin.x = 5.0;
         messageView.frame = aFrame;
         
         submitButton.bounds = fieldBackground.bounds;

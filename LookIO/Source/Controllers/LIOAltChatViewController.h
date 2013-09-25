@@ -92,6 +92,8 @@
     BOOL surveyPreCompleted;
     int currentPopoverType;
     
+    BOOL shouldHideStatusBarAfterImagePicker;
+    
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

@@ -10,7 +10,7 @@ fi
 
 TARGET_DIR=_LOOKIO_$1_
 LOG_FILE_MAIN=$TARGET_DIR/main_lio_$1.log
-LOG_FILE_LEGACY=$TARGET_DIR/legacy_lio_$1.log
+LOG_FILE_ARM64=$TARGET_DIR/arm64_lio_$1.log
 LOG_FILE_LIPO=$TARGET_DIR/lipo_lio_$1.log
 
 rm -rf $TARGET_DIR
@@ -40,27 +40,27 @@ cp -R LookIO/Resources/Strings/* $TARGET_DIR/LookIO.bundle
 mv LookIO/build/Release-universal/libLookIO.a $TARGET_DIR/libLookIO_main.a
 cp LookIO/Source/Managers/LIOLookIOManager.h $TARGET_DIR
 
-
 #
-# Next, build the "legacy" library: older SDK, armv6.
+# Next, build the "arm64" library: 64-bit support, arm64
 #
 rm -rf LookIO/build
-PATH=/Applications/Xcode4.3.3.app/Contents/Developer/usr/bin:$PATH xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release -xcconfig legacy.xcconfig &>$LOG_FILE_LEGACY
+PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH xcodebuild -project LookIO/LookIO.xcodeproj -target LookIO -configuration Release -xcconfig arm64.xcconfig &>$LOG_FILE_ARM64
 
 if [ $? -ne 0 ]
 then
-    echo "Legacy build failed. Here's why:"
-    cat "$LOG_FILE_LEGACY"
+    echo "Arm64 build failed. Here's why:"
+    cat "$LOG_FILE_ARM64"
     exit 1
 fi
 
-lipo LookIO/build/Release-iphoneos/libLookIO.a -thin armv6 -output $TARGET_DIR/libLookIO_legacy.a
+# lipo LookIO/build/Release-iphonesimulator/libLookIO.a -thin x86_64 -output $TARGET_DIR/libLookIO_x86_64.a
 
+mv LookIO/build/Release-iphoneos/libLookIO.a $TARGET_DIR/libLookIO_arm64.a
 
 #
 # Now, combine the two build products.
 #
-lipo $TARGET_DIR/libLookIO_main.a $TARGET_DIR/libLookIO_legacy.a -create -output $TARGET_DIR/libLookIO.a &>$LOG_FILE_LIPO
+lipo $TARGET_DIR/libLookIO_main.a $TARGET_DIR/libLookIO_arm64.a -create -output $TARGET_DIR/libLookIO.a &>$LOG_FILE_LIPO
 
 if [ $? -ne 0 ]
 then
@@ -70,9 +70,7 @@ then
 fi
 
 rm $TARGET_DIR/libLookIO_main.a
-rm $TARGET_DIR/libLookIO_legacy.a
-
+rm $TARGET_DIR/libLookIO_arm64.a
 
 # Undo the sed change.
 git checkout ./LookIO/Source/Managers/LIOLookIOManager.h
-
