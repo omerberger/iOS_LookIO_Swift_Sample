@@ -226,6 +226,10 @@
         aFrame = inputField.frame;
         aFrame.origin.x = inputFieldBackground.frame.origin.x;
         aFrame.size.width = inputFieldBackground.frame.size.width - 3.0;
+        if (LIOIsUIKitFlatMode()) {
+            aFrame.origin.x = inputFieldBackground.frame.origin.x + 6.0;
+            aFrame.size.width = inputFieldBackground.frame.size.width - 12.0;
+        }
         inputField.frame = aFrame;
     }
     
@@ -243,10 +247,15 @@
         [stringToMeasure replaceCharactersInRange:NSMakeRange([stringToMeasure length] - 1, 1) withString:@"\n "];
     
     CGFloat backgroundHeightMod = 14.0; // im not even really sure what this
+    if (LIOIsUIKitFlatMode())
+        backgroundHeightMod = 22.0;
     
     CGFloat maxWidth = inputField.frame.size.width - 16.0;
     CGSize newSize = [stringToMeasure sizeWithFont:inputField.font constrainedToSize:CGSizeMake(maxWidth, FLT_MAX)];
     NSInteger calculatedNumLines = newSize.height / singleLineHeight;
+    if (LIOIsUIKitFlatMode())
+        calculatedNumLines += 1;
+        
     if (calculatedNumLines > maxLines)
     {
         calculatedNumLines = maxLines;

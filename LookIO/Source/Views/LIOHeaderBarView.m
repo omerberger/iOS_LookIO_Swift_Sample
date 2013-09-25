@@ -37,6 +37,13 @@
         [self addSubview:separator];
                 
         notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
+        if (LIOIsUIKitFlatMode())
+            if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+                aFrame = notificationArea.frame;
+                aFrame.origin.y += 20.0;
+                notificationArea.frame = aFrame;
+            }
+        
         notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:notificationArea];
         

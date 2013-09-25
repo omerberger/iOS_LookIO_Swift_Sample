@@ -16,10 +16,18 @@
 
 @synthesize delegate, initialEmailAddress;
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return UIStatusBarStyleDefault;
+}
+
 - (void)loadView
 {
     [super loadView];
     UIView *rootView = self.view;
+    
+    if (LIOIsUIKitFlatMode())
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
         
@@ -105,6 +113,8 @@
     inputField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 14.0;
+    if (LIOIsUIKitFlatMode())
+        aFrame.origin.y = 10.0;
     aFrame.size.width = fieldBackground.frame.size.width - 20.0;
     aFrame.size.height = 28.0;
     inputField.frame = aFrame;
