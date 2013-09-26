@@ -60,8 +60,8 @@
 #define LIOLookIOManagerRealtimeExtrasTimeInterval 5.0
 #define LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold 0.0001 // Sort of like walking to a new room...?
 
-#define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
-#define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
+#define LIOLookIOManagerReconnectionTimeLimit           600.0 // 2 minutes
+#define LIOLookIOManagerReconnectionAfterCrashTimeLimit 600.0 // 1 minutes
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
@@ -121,6 +121,7 @@
 #define LIOLookIOManagerLastKnownChatMediaUrlString     @"LIOLookIOManagerLastKnownChatMediaUrlString"
 #define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
 #define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
+#define LIOLookIOManagerLastKnownChatHistoryKey         @"LIOLookIOManagerLastKnownChatHistoryKey"
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
@@ -607,8 +608,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
     
     [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
-
-    [[LIOMediaManager sharedInstance] purgeAllMedia];
     
     appForegrounded = YES;
     
@@ -797,6 +796,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             chatLastEventId = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
             NSData *cookieData = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatCookiesKey];
             chatCookies = [[NSKeyedUnarchiver unarchiveObjectWithData:cookieData] retain];
+            
+            NSData *chatHistoryData = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatHistoryKey];
+            if (chatHistoryData) {
+                [chatHistoryData release];
+                chatHistory = [[NSKeyedUnarchiver unarchiveObjectWithData:chatHistoryData] retain];
+            }
 
             [self setupAPIClientBaseURL];
             
@@ -818,10 +823,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatPostUrlString];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
             [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+            [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatHistoryKey];
             
             [userDefaults synchronize];
         }
     }
+    
+    if (!willAskUserToReconnect)
+        [[LIOMediaManager sharedInstance] purgeAllMedia];
     
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
@@ -1129,7 +1138,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatMediaUrlString];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatLastEventIdString];
     [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownPostChatSurveyDictKey];
-    [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownOfflineSurveyDictKey];    
+    [userDefaults removeObjectForKey:LIOSurveyManagerLastKnownOfflineSurveyDictKey];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownChatHistoryKey];
     
     chatEngagementId = nil;
     chatSSEUrlString = nil;
@@ -2393,37 +2403,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [realtimeExtrasTimer stopTimer];
     [realtimeExtrasTimer release];
     realtimeExtrasTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOLookIOManagerRealtimeExtrasTimeInterval target:self selector:@selector(realtimeExtrasTimerDidFire)];
-    
-    if (resumeMode)
-    {
-        [reintroTimeoutTimer stopTimer];
-        [reintroTimeoutTimer release];
-        reintroTimeoutTimer = nil;
-        
-        resumeMode = NO;
-        sessionEnding = NO;
-        resetAfterDisconnect = NO;
-        introduced = YES;
-        introPacketWasSent = YES;
-        killConnectionAfterChatViewDismissal = NO;
-        
-        [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
-        
-        [self populateChatWithFirstMessage];
-        
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
-                                                            message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
-                                                           delegate:self
-                                                  cancelButtonTitle:nil
-                                                  otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
-        alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
-        [alertView show];
-        [alertView autorelease];
-        
-        if (chatHistory.count == 1)
-            [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
-    }
-
 }
 
 -(void)forceSSEManagerDisconnect {
@@ -2464,6 +2443,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                   otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
         [alertView show];
         [alertView autorelease];
+        
+        [[LIOMediaManager sharedInstance] purgeAllMedia];
         
         return;
     }
@@ -2671,6 +2652,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (shouldAddMessage) {
             [chatHistory addObject:newMessage];
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
+            [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+            [userDefaults synchronize];
+            
             if (nil == altChatViewController)
             {
                 [self showChatAnimated:YES];
@@ -2966,6 +2952,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         NSNumber *success = [aPacket objectForKey:@"success"];
         
+        if ([success boolValue] && resumeMode)
+        {
+            [reintroTimeoutTimer stopTimer];
+            [reintroTimeoutTimer release];
+            reintroTimeoutTimer = nil;
+            
+            resumeMode = NO;
+            sessionEnding = NO;
+            resetAfterDisconnect = NO;
+            introduced = YES;
+            introPacketWasSent = YES;
+            killConnectionAfterChatViewDismissal = NO;
+            
+            [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
+            
+            [self populateChatWithFirstMessage];
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
+                                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
+                                                               delegate:self
+                                                      cancelButtonTitle:nil
+                                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
+            alertView.tag = LIOLookIOManagerReconnectionSucceededAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+            
+            if (chatHistory.count == 1)
+                [self sendChatHistoryPacketWithDict:[NSDictionary dictionary]];
+        }
+        
         if (![success boolValue]) {
             sseConnectionDidFail = YES;
             sessionEnding = YES;
@@ -3032,6 +3048,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 if (messagePosition <= chatHistory.count && shouldAddMessage) {
                     [chatHistory insertObject:chatMessage atIndex:messagePosition];
                     messagePosition += 1;
+                    
+                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                    NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
+                    [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+                    [userDefaults synchronize];
+
                 }
             }
         }
@@ -4116,6 +4138,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         firstMessage.lineId = nil;
         [chatHistory addObject:firstMessage];
         
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
+        [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+        [userDefaults synchronize];
+        
         if ([lastKnownWelcomeMessage length])
             firstMessage.text = lastKnownWelcomeMessage;
         else
@@ -4270,6 +4297,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     lastClientLineId += 1;
     [chatHistory addObject:newMessage];
     
+    NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
+    [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+    [userDefaults synchronize];
+    
     [altChatViewController reloadMessages];
     [altChatViewController scrollToBottomDelayed:YES];
     
@@ -4304,6 +4335,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         newMessage.kind = LIOChatMessageKindLocal;
         newMessage.attachmentId = aString;
         [chatHistory addObject:newMessage];
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
+        [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+        [userDefaults synchronize];
         
         [altChatViewController reloadMessages];
         [altChatViewController scrollToBottomDelayed:YES];
