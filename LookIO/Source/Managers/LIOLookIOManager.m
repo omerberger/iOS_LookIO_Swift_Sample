@@ -77,6 +77,7 @@
 #define LIOLookIOManagerReconnectionCancelAlertViewTag      8
 #define LIOLookIOManagerReconnectionSucceededAlertViewTag   9
 #define LIOLookIOManagerReconnectionFailedAlertViewTag      10
+#define LIOLookIOManagerDisconnectOutroAlertViewTag         11
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -3017,7 +3018,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                delegate:self
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-            alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+            if (outroReceived)
+                alertView.tag = LIOLookIOManagerDisconnectOutroAlertViewTag;
+            else
+                alertView.tag = LIOLookIOManagerDisconnectErrorAlertViewTag;
+
             [alertView show];
             [alertView autorelease];
             
@@ -3025,6 +3030,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server (with outro).");
             else
                 LIOLog(@"Session forcibly terminated. Reason: socket closed cleanly by server but WITHOUT outro.");
+            
+            resetAfterDisconnect = NO;
+            return;
         }
     }
     
@@ -3407,13 +3415,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController
 {
-    if (socketConnected)
+    if (socketConnected || outroReceived)
     {    
         sessionEnding = YES;
         userWantsSessionTermination = YES;
         resetAfterDisconnect = YES;
-        killConnectionAfterChatViewDismissal = YES;
-        [altChatViewController performDismissalAnimation];
+        if (outroReceived)
+            resetAfterChatViewDismissal = YES;
+        else
+            killConnectionAfterChatViewDismissal = YES;
+        
+        if (altChatViewController)
+            [altChatViewController performDismissalAnimation];
+        else
+            [self altChatViewControllerDidFinishDismissalAnimation:nil];
     }
     else
     {
@@ -3534,30 +3549,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
         }
             
+        case LIOLookIOManagerDisconnectOutroAlertViewTag:
+        {
+            [self altChatViewControllerWantsSessionTermination:altChatViewController];
+            return;
+                        
+            break;
+        }
+            
         case LIOLookIOManagerDisconnectConfirmAlertViewTag:
         {
             if (1 == buttonIndex) // "Yes"
             {
-                sessionEnding = YES;
-                userWantsSessionTermination = YES;
-                
-                if (NO == socketConnected)
-                {
-                    double delayInSeconds = 0.1;
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                        [self reset];
-                    });
-                }
-                else
-                {
-                    double delayInSeconds = 0.1;
-                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                        resetAfterDisconnect = YES;
-                        [self killConnection];
-                    });
-                }
+                [self altChatViewControllerWantsSessionTermination:altChatViewController];
+                return;
             }
             
             break;
