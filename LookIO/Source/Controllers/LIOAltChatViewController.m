@@ -1134,6 +1134,8 @@
     NSString *message = [bodyString stringByAppendingString:@"\n\n\n\n\n"];
     if (LIOIsUIKitFlatMode())
         message = bodyString;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+        message = bodyString;
     
     alertView = [[UIAlertView alloc] initWithTitle:nil
                                                  message:message
@@ -1142,25 +1144,27 @@
                                        otherButtonTitles:dontSendString, sendString, nil];
     alertView.tag = LIOAltChatViewControllerAttachConfirmAlertViewTag;
     
-    CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
+    if (!LIOIsUIKitFlatMode() && !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+        CGSize expectedSize = [bodyString sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(255, 9999) lineBreakMode:UILineBreakModeCharacterWrap];
+        
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:pendingImageAttachment];
+        
+        CGFloat imageHeight = 80.0;
+        CGFloat imageWidth = imageHeight * (pendingImageAttachment.size.width / pendingImageAttachment.size.height);
+        if (imageWidth > 260.0)
+            imageWidth = 260.0;
+        
+        imageView.frame = CGRectMake(floor((284 - imageWidth)/2), expectedSize.height + 27.0, imageWidth, imageHeight);
+        imageView.layer.cornerRadius = 2.0;
+        imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageView.layer.masksToBounds = YES;
+        
+        [alertView addSubview:imageView];
+        [imageView autorelease];
+    }
     
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:pendingImageAttachment];
-
-    CGFloat imageHeight = 80.0;
-    CGFloat imageWidth = imageHeight * (pendingImageAttachment.size.width / pendingImageAttachment.size.height);
-    if (imageWidth > 260.0)
-        imageWidth = 260.0;
     
-    imageView.frame = CGRectMake(floor((284 - imageWidth)/2), expectedSize.height + 27.0, imageWidth, imageHeight);
-    imageView.layer.cornerRadius = 2.0;
-    imageView.contentMode = UIViewContentModeScaleAspectFill;
-    imageView.layer.masksToBounds = YES;
-    
-    [alertView addSubview:imageView];
-    [imageView autorelease];
-
     [alertView show];
-
 }
 
 #pragma mark -
