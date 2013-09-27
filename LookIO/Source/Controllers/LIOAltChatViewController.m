@@ -58,6 +58,8 @@
 #define LIOIpadPopoverTypeImagePicker 1
 #define LIOIpadPopoverTypeSurvey 2
 
+#define LIO_IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+
 // LIOGradientLayer gets rid of implicit layer animations.
 @interface LIOGradientLayer : CAGradientLayer
 @end
@@ -83,6 +85,10 @@
     if (self)
     {
         numPreviousMessagesToShowInScrollback = 1;
+        
+        if (LIO_IS_IPHONE_5)
+            numPreviousMessagesToShowInScrollback = 2;
+        
         chatBubbleHeights = [[NSMutableArray alloc] init];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -603,6 +609,7 @@
     if ([chatMessages count])
     {
         NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[chatMessages count] - 1 inSection:0];
+
         [tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:NO];
     }
     
@@ -2729,7 +2736,16 @@
             resizedImageSize.height = targetSize*(image.size.height/image.size.width);
         }
         pendingImageAttachment = [[[LIOMediaManager sharedInstance] scaleImage:image toSize:resizedImageSize] retain];
-        [self showAttachmentUploadConfirmation];
+        
+        if (padUI)
+            [self showAttachmentUploadConfirmation];
+        else {
+            double delayInSeconds = 0.8;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self showAttachmentUploadConfirmation];
+            });
+        }
     }
 }
 
