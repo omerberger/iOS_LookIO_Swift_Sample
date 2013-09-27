@@ -24,6 +24,8 @@
 #define kCFCoreFoundationVersionNumber_iOS_7_0 847.2
 #endif
 
+#define LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+
 BOOL LIOIsUIKitFlatMode(void);
 
 @class LIOBundleManager;

@@ -60,8 +60,8 @@
 #define LIOLookIOManagerRealtimeExtrasTimeInterval 5.0
 #define LIOLookIOManagerRealtimeExtrasLocationChangeThreshhold 0.0001 // Sort of like walking to a new room...?
 
-#define LIOLookIOManagerReconnectionTimeLimit           600.0 // 2 minutes
-#define LIOLookIOManagerReconnectionAfterCrashTimeLimit 600.0 // 1 minutes
+#define LIOLookIOManagerReconnectionTimeLimit           120.0 // 2 minutes
+#define LIOLookIOManagerReconnectionAfterCrashTimeLimit 60.0 // 1 minutes
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
@@ -2994,66 +2994,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     sessionEnding = NO;
                     
                     LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", sseConnectionRetryAfter);
-                }
-            }
-        }
-    }
-    else if ([type isEqualToString:@"line_list"]) {
-        // Add message after the initial populated message
-        NSUInteger messagePosition = chatHistory.count;
-        
-        NSArray *lines = [aPacket objectForKey:@"lines"];
-        for (NSDictionary *lineWrapperDictionary in lines) {
-            if ([lineWrapperDictionary objectForKey:@"line"]) {
-                NSDictionary *lineDictionary = [lineWrapperDictionary objectForKey:@"line"];
- 
-                LIOChatMessage* chatMessage = [[LIOChatMessage alloc] init];
-                    
-                if ([lineDictionary objectForKey:@"source"]) {
-                    NSString *source = [lineDictionary objectForKey:@"source"];
-                    if ([source isEqualToString:@"visitor"])
-                        chatMessage.kind = LIOChatMessageKindLocal;
-                    else
-                        chatMessage.kind = LIOChatMessageKindRemote;
-                }
-                
-                if ([lineDictionary objectForKey:@"sender_name"])
-                    chatMessage.senderName = [lineDictionary objectForKey:@"sender_name"];
-                else
-                    chatMessage.senderName = @"";
-                    
-                if ([lineDictionary objectForKey:@"text"])
-                    chatMessage.text = [lineDictionary objectForKey:@"text"];
-                else
-                    chatMessage.text = @"";
-                
-                if ([lineDictionary objectForKey:@"line_id"])
-                    chatMessage.lineId = [lineDictionary objectForKey:@"line_id"];
-                else
-                    chatMessage.lineId = nil;
-                
-                if ([lineDictionary objectForKey:@"client_line_id"])
-                    chatMessage.clientLineId = [lineDictionary objectForKey:@"client_line_id"];
-                else
-                    chatMessage.clientLineId = nil;
-
-                BOOL shouldAddMessage = YES;
-                if (chatMessage.lineId) {
-                    NSPredicate *lineIdPredicate = [NSPredicate predicateWithFormat:@"lineId = %@", chatMessage.lineId];
-                    NSArray *messagesWithLineId = [chatHistory filteredArrayUsingPredicate:lineIdPredicate];
-                    if (messagesWithLineId.count > 0)
-                        shouldAddMessage = NO;
-                }
-                
-                if (messagePosition <= chatHistory.count && shouldAddMessage) {
-                    [chatHistory insertObject:chatMessage atIndex:messagePosition];
-                    messagePosition += 1;
-                    
-                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                    NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:chatHistory];
-                    [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
-                    [userDefaults synchronize];
-
                 }
             }
         }
