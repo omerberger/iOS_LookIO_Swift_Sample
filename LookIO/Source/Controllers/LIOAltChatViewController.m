@@ -694,6 +694,14 @@
     if (surveyInProgress)
         return;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+        [headerBar revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
+    else {
+        if (toasterView.isShown)
+            [toasterView hideAnimated:YES];
+    }
+    
     [self.view endEditing:YES];
     [self hideChatUIForSurvey:YES];
     
@@ -720,7 +728,6 @@
     }
 
     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     surveyView = [[[LIOSurveyView alloc] initWithFrame:CGRectZero] autorelease];
     surveyView.currentSurveyType = surveyType;
