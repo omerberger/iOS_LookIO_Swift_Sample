@@ -747,11 +747,6 @@
         //surveyView.clipsToBounds = YES;
         surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self.view addSubview:surveyView];
-        [UIView animateWithDuration:0.3 animations:^{
-            CGRect aRect = surveyView.frame;
-            aRect.origin.x = 0;
-            surveyView.frame = aRect;
-        }];
     }
     
     [surveyView setupViews];
@@ -1042,6 +1037,7 @@
 - (void)performRevealAnimationWithFadeIn:(BOOL)fadeIn
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    isAnimatingReveal = YES;
     
     if (padUI)
     {
@@ -1056,6 +1052,7 @@
                              }
                              completion:^(BOOL finished) {
                                  background.alpha = 1.0;
+                                 isAnimatingReveal = NO;
                              }];
         }
         
@@ -1083,6 +1080,9 @@
                              tableView.layer.anchorPoint = CGPointMake(0.5, 0.5);
                              [self scrollToBottomDelayed:YES];
                              [self rejiggerTableViewFrame];
+                             
+                             if (!fadeIn)
+                                 isAnimatingReveal = NO;
                          }];
     }
     else
@@ -1125,12 +1125,17 @@
                              
                              if (!surveyInProgress && !waitingForSurvey)
                                  [inputBar.inputField becomeFirstResponder];
+                             
+                             isAnimatingReveal = NO;
                          }];
     }
 }
 
 - (void)performDismissalAnimation
 {
+    if (isAnimatingReveal)
+        return;
+    
     [delegate altChatViewControllerDidStartDismissalAnimation:self];
     isAnimatingDismissal = YES;
     
@@ -1830,6 +1835,12 @@
 
 - (void)handlePadDismissalAreaTap:(UITapGestureRecognizer *)aTapper
 {
+    if (isAnimatingReveal)
+        return;
+    
+    if (surveyInProgress)
+        return;
+    
     [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
 }
 

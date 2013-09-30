@@ -102,6 +102,7 @@
     NSInteger clickedFailedMessageIndex;
     
     BOOL isAnimatingDismissal;
+    BOOL isAnimatingReveal;
     
     BOOL shouldHideStatusBarAfterImagePicker;
 }

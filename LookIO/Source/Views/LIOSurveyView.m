@@ -238,8 +238,16 @@
         } completion:^(BOOL finished) {
             isAnimating = NO;
         }];
-    }
-
+    } else {
+        isAnimating = YES;
+        [UIView animateWithDuration:0.3 animations:^{
+            CGRect aRect = self.frame;
+            aRect.origin.x = 0;
+            self.frame = aRect;
+        } completion:^(BOOL finished) {
+            isAnimating = NO;
+        }];
+    };
 }
 
 #pragma mark
@@ -1261,7 +1269,8 @@
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     } else {
-        [self cancelSurveyView];
+        if (!isAnimating)
+            [self cancelSurveyView];
     }
 }
 
