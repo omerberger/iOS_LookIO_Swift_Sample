@@ -41,7 +41,7 @@
     NSData *imageData = UIImageJPEGRepresentation(imageToBlur, 1.0);
 
     UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
-    self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:6 tintColor:tintColor saturationDeltaFactor:1.0 maskImage:nil];
+    self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
 }
 
 

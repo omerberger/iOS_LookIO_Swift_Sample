@@ -541,10 +541,15 @@
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.backgroundColor = [UIColor clearColor];
-    headerLabel.textColor = [UIColor whiteColor];
+    headerLabel.textColor = [UIColor blackColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         headerLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        headerLabel.textColor = [UIColor whiteColor];
+        if (!padUI) {
+            headerLabel.textColor = [UIColor whiteColor];
+            headerLabel.shadowColor = [UIColor darkGrayColor];
+            headerLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+        } else
+            headerLabel.textColor = [UIColor darkGrayColor];
     }
     else {
         headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
@@ -565,8 +570,13 @@
     requiredLabel.backgroundColor = [UIColor clearColor];
     requiredLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
-        requiredLabel.font = [UIFont systemFontOfSize:14.0];
-        requiredLabel.textColor = [UIColor whiteColor];
+        requiredLabel.font = [UIFont boldSystemFontOfSize:14.0];
+        if (!padUI) {
+            requiredLabel.textColor = [UIColor whiteColor];
+            requiredLabel.shadowColor = [UIColor darkGrayColor];
+            requiredLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+        } else
+            requiredLabel.textColor = [UIColor darkGrayColor];
     }
     else {
         requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
@@ -755,7 +765,12 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        questionLabel.textColor = [UIColor whiteColor];
+        if (!padUI) {
+            questionLabel.textColor = [UIColor whiteColor];
+            questionLabel.shadowColor = [UIColor darkGrayColor];
+            questionLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+        } else
+            questionLabel.textColor = [UIColor darkGrayColor];
     } else {
         questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
         questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -838,8 +853,7 @@
         else {
             if (question.lastKnownValue)
                 inputField.text = question.lastKnownValue;
-        }
-        
+        }        
         
         [fieldBackground addSubview:inputField];
         [inputField becomeFirstResponder];
@@ -2102,11 +2116,15 @@
         cell.backgroundColor = [UIColor clearColor];
         
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
-        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
             textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        else
+            textLabel.textColor = [UIColor darkGrayColor];
+            
+        }
+        else {
             textLabel.font = [UIFont systemFontOfSize:17.0];
-        textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+            textLabel.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        }
         textLabel.backgroundColor = [UIColor clearColor];
         textLabel.tag = LIOSurveyViewTableCellLabelTag;
         [cell.contentView addSubview:textLabel];

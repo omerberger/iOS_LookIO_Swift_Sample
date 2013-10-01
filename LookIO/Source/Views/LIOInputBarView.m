@@ -194,7 +194,10 @@
         
         characterCount = [[UILabel alloc] init];
         characterCount.backgroundColor = [UIColor clearColor];
-        characterCount.textColor = [UIColor lightGrayColor];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            characterCount.textColor = [UIColor whiteColor];
+        else
+            characterCount.textColor = [UIColor lightGrayColor];
         characterCount.font = [UIFont italicSystemFontOfSize:12.0];
         [self addSubview:characterCount];
         
