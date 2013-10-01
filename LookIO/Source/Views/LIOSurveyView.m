@@ -759,25 +759,26 @@
         }
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
-            
-            NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
-            if (currentQuestionIndex == numberOfQuestions - 1)
-                buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
-            
-            if (!padUI) {
-                UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
-                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
-                numberToolbar.items = [NSArray arrayWithObjects:
-                                       [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
-                                       [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
-                                       nil];
-                [numberToolbar sizeToFit];
-                inputField.inputAccessoryView = numberToolbar;
-                [numberToolbar release];
-            }
         }
         
-        // If the user has answered this survey, we should display their answer        
+        
+        NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
+        if (currentQuestionIndex == numberOfQuestions - 1)
+            buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
+        
+        if (!padUI) {
+            UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
+            numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            numberToolbar.items = [NSArray arrayWithObjects:
+                                   [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
+                                   [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
+                                   nil];
+            [numberToolbar sizeToFit];
+            inputField.inputAccessoryView = numberToolbar;
+            [numberToolbar release];
+        }
+        
+        // If the user has answered this survey, we should display their answer
         id aResponse = [[LIOSurveyManager sharedSurveyManager] answerObjectForSurveyType:currentSurveyType withQuestionIndex:index];
         if (aResponse && [aResponse isKindOfClass:[NSString class]])
         {
@@ -824,24 +825,25 @@
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
             inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         }
+        
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
-            
-            NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
-            if (currentQuestionIndex == numberOfQuestions - 1)
-                buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
-            
-            if (!padUI) {
-                UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
-                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
-                numberToolbar.items = [NSArray arrayWithObjects:
-                                       [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
-                                       [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
-                                       nil];
-                [numberToolbar sizeToFit];
-                inputField.inputAccessoryView = numberToolbar;
-                [numberToolbar release];
-            }
+        }        
+        
+        NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
+        if (currentQuestionIndex == numberOfQuestions - 1)
+            buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
+        
+        if (!padUI) {
+            UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
+            numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            numberToolbar.items = [NSArray arrayWithObjects:
+                                   [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
+                                   [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
+                                   nil];
+            [numberToolbar sizeToFit];
+            inputField.inputAccessoryView = numberToolbar;
+            [numberToolbar release];
         }
         
         // If the user has answered this survey, we should display their answer
