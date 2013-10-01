@@ -130,12 +130,25 @@
 
 -(void)setupViews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
+    
     if (padUI) {
         backgroundDismissableArea = [[UIView alloc] initWithFrame:self.bounds];
         backgroundDismissableArea.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self addSubview:backgroundDismissableArea];
         [backgroundDismissableArea release];
+    }
+    
+    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        backgroundDismissableArea = [[UIView alloc] initWithFrame:self.bounds];
+        backgroundDismissableArea.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
+        backgroundDismissableArea.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        backgroundDismissableArea.alpha = 0.0;
+        [self addSubview:backgroundDismissableArea];
+        [backgroundDismissableArea release];
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            backgroundDismissableArea.alpha = 1.0;
+        }];
     }
     
     leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
@@ -221,10 +234,6 @@
     }
     
     pageControl = [[UIPageControl alloc] initWithFrame:pageControlFrame];
-    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:0.5 alpha:0.5];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithWhite:0.2 alpha:1.0];
-    }
     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
@@ -535,7 +544,7 @@
     headerLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         headerLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        headerLabel.textColor = [UIColor darkGrayColor];
+        headerLabel.textColor = [UIColor whiteColor];
     }
     else {
         headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
@@ -557,7 +566,7 @@
     requiredLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         requiredLabel.font = [UIFont systemFontOfSize:14.0];
-        requiredLabel.textColor = [UIColor darkGrayColor];
+        requiredLabel.textColor = [UIColor whiteColor];
     }
     else {
         requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
@@ -746,7 +755,7 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        questionLabel.textColor = [UIColor darkGrayColor];
+        questionLabel.textColor = [UIColor whiteColor];
     } else {
         questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
         questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -1308,6 +1317,14 @@
     if (delegate) {
         pageControl.alpha = 0.0;
         [delegate surveyViewDidCancel:self];
+        
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        
+        if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            [UIView animateWithDuration:0.3 animations:^{
+                backgroundDismissableArea.alpha = 0.0;
+            }];
+        }
     }
 }
 
