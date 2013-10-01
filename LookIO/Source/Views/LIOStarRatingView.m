@@ -43,7 +43,7 @@
         ratingLabel.backgroundColor = [UIColor clearColor];
         if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
             ratingLabel.font = [UIFont boldSystemFontOfSize:15.0];
-            ratingLabel.textColor = [UIColor darkGrayColor];
+            ratingLabel.textColor = [UIColor whiteColor];
         } else {
             ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
             ratingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
