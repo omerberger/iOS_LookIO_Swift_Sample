@@ -10,6 +10,8 @@
 #import "LIOBundleManager.h"
 #import <QuartzCore/QuartzCore.h>
 
+#define LIOStarRatingViewTempStarButtonTag 1000
+
 @implementation LIOStarRatingView
 
 @synthesize currentRating, valueLabelArray, delegate;
@@ -107,6 +109,8 @@
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
+    isAnimating = NO;
+    
     if (recognizer.state == UIGestureRecognizerStateBegan)
         isPanning = YES;
     
@@ -165,6 +169,12 @@
     [self setRatingTextForRating:index + 1];
     UIButton* starButton = [starButtonArray objectAtIndex:index];
     starButton.selected = YES;
+    
+    UIButton *tempStarButton = [[UIButton alloc] initWithFrame:starButton.frame];
+    tempStarButton.tag = LIOStarRatingViewTempStarButtonTag + index;
+    [tempStarButton addTarget:self action:@selector(tempButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:tempStarButton];
+    [tempStarButton release];
 
     [UIView animateWithDuration:0.3 animations:^{
         starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
@@ -175,7 +185,11 @@
             
             ratingLabel.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
-            if (index < 4)
+            UIButton *tempStarButton = [self viewWithTag:LIOStarRatingViewTempStarButtonTag + index];
+            if (tempStarButton)
+                [tempStarButton removeFromSuperview];
+            
+            if (index < 4 && isAnimating)
                 [self showIntroAnimationForAnswerAtIndex:index+1];
             else {
                 isAnimating = NO;
@@ -198,15 +212,21 @@
     [self showIntroAnimationForAnswerAtIndex:0];
 }
 
--(void)starWasTapped:(id)sender {
+- (void)tempButtonWasTapped:(id)sender {
+    isAnimating = NO;
+    
+    UIButton* button = (UIButton*)sender;
+    [self setRating:button.tag - LIOStarRatingViewTempStarButtonTag + 1];
+}
+
+- (void)starWasTapped:(id)sender {
+    isAnimating = NO;
+    
     UIButton* button = (UIButton*)sender;
     [self setRating:[starButtonArray indexOfObject:button] + 1];
 }
 
 - (void)setRating:(NSInteger)newRating {
-    if (isAnimating)
-        return;
-    
     currentRating = newRating;
     [self setNeedsLayout];
     
