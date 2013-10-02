@@ -251,8 +251,8 @@
             currentScrollView.alpha = 1.0;
             currentScrollView.transform = CGAffineTransformIdentity;
             
-//            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
-//                backgroundDismissableArea.alpha = 1.0;
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                backgroundDismissableArea.alpha = 1.0;
 
         } completion:^(BOOL finished) {
             isAnimatingEntrance = NO;
