@@ -2489,10 +2489,11 @@
 -(void)surveyViewDidCancel:(LIOSurveyView *)aView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {        
+    if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {
         [self.view endEditing:YES];
-        
         if (padUI) {
+            [self.view endEditing:YES];
+
             [UIView animateWithDuration:0.3 animations:^{
                 CGRect aFrame = surveyView.frame;
                 aFrame.origin.y = -aFrame.size.height;
@@ -2510,22 +2511,15 @@
             }];
         }
         else {
-            [UIView animateWithDuration:0.5 animations:^{
-                aView.alpha = 0.0;
-                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-                
-            } completion:^(BOOL finished) {
-                [aView removeFromSuperview];
-
-                LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
-                NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
-                NSDictionary* questionsArray = [surveyDict objectForKey:@"questions"];
-                if (!questionsArray || questionsArray.count == 0)
-                    [delegate altChatViewControllerWantsSessionTermination:self];
-                else
-                    [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
-
-            }];
+            [aView removeFromSuperview];
+            
+            LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+            NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
+            NSDictionary* questionsArray = [surveyDict objectForKey:@"questions"];
+            if (!questionsArray || questionsArray.count == 0)
+                [delegate altChatViewControllerWantsSessionTermination:self];
+            else
+                [delegate altChatViewController:self wasDismissedWithPendingChatText:pendingChatText];
         }
         surveyInProgress = NO;
     }
@@ -2544,14 +2538,8 @@
             }];
         }
         else {
-            [UIView animateWithDuration:0.5 animations:^{
-                aView.alpha = 0.0;
-                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-                
-            } completion:^(BOOL finished) {
-                [aView removeFromSuperview];
-                [delegate altChatViewControllerWantsSessionTermination:self];
-            }];
+            [aView removeFromSuperview];
+            [delegate altChatViewControllerWantsSessionTermination:self];
         }
         surveyInProgress = NO;
     }
@@ -2584,14 +2572,8 @@
             }];
         }
         else {
-            [UIView animateWithDuration:0.5 animations:^{
-                aView.alpha = 0.0;
-                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height);
-                
-            } completion:^(BOOL finished) {
-                [aView removeFromSuperview];
-                [delegate altChatViewControllerWantsSessionTermination:self];
-            }];
+            [aView removeFromSuperview];
+            [delegate altChatViewControllerWantsSessionTermination:self];
         }
         surveyInProgress = NO;
     }
@@ -2686,9 +2668,9 @@
         [alertView show];
         
         if (surveyView) {
-            [surveyView endEditing:YES];
-            
             if (padUI) {
+                [surveyView endEditing:YES];
+
                 [UIView animateWithDuration:0.3 animations:^{
                     CGRect aFrame = surveyView.frame;
                     aFrame.origin.y = -aFrame.size.height;
@@ -2698,14 +2680,8 @@
                     surveyView = nil;
                 }];
             } else {
-                [UIView animateWithDuration:0.3 animations:^{
-                    surveyView.alpha = 0.0;
-                    surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
-                    
-                } completion:^(BOOL finished) {
-                    [surveyView removeFromSuperview];
-                    surveyView = nil;
-                }];
+                [surveyView removeFromSuperview];
+                surveyView = nil;
             }
         }
     }
@@ -2738,14 +2714,8 @@
                     surveyView = nil;
                 }];
             } else {
-                [UIView animateWithDuration:0.3 animations:^{
-                    surveyView.alpha = 0.0;
-                    surveyView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
-                
-                } completion:^(BOOL finished) {
-                    [surveyView removeFromSuperview];
-                    surveyView = nil;
-                }];
+                [surveyView removeFromSuperview];
+                surveyView = nil;
             }
         }
     }
@@ -2798,27 +2768,11 @@
              */
         }
         else {
-            [UIView animateWithDuration:0.3 animations:^{
-                aView.alpha = 0.0;
-                aView.transform = CGAffineTransformMakeTranslation(0.0, -self.view.bounds.size.height/2);
-                
-            } completion:^(BOOL finished) {
-                /*
-                if (!surveyInProgress && !isAnimatingDismissal) {
-                    
-                    dismissalBar.alpha = 1.0;
-                    inputBar.alpha = 1.0;
-                    tableView.alpha = 1.0;
-                    [self performRevealAnimationWithFadeIn:NO];
-                }
-                 */
-                if (waitingForEngagementToStart)
-                    [self showLoadingViewWithiPadDelay:NO];
+            if (waitingForEngagementToStart)
+                [self showLoadingViewWithiPadDelay:NO];
 
-                [aView removeFromSuperview];
-            }];
+            [aView removeFromSuperview];
         }
-        
     }
 }
 

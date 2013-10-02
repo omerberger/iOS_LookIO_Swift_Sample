@@ -145,10 +145,6 @@
         backgroundDismissableArea.alpha = 0.0;
         [self addSubview:backgroundDismissableArea];
         [backgroundDismissableArea release];
-        
-        [UIView animateWithDuration:0.3 animations:^{
-            backgroundDismissableArea.alpha = 1.0;
-        }];
     }
     
     leftSwipeGestureRecognizer = [[[UISwipeGestureRecognizer alloc]
@@ -246,9 +242,13 @@
     
     if (!padUI) {
         isAnimating = YES;
-        [UIView animateWithDuration:0.5 animations:^{
+        [UIView animateWithDuration:0.4 animations:^{
             currentScrollView.alpha = 1.0;
             currentScrollView.transform = CGAffineTransformIdentity;
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) 
+                backgroundDismissableArea.alpha = 1.0;
+
         } completion:^(BOOL finished) {
             isAnimating = NO;
         }];
@@ -1330,14 +1330,44 @@
 - (void)cancelSurveyView {
     if (delegate) {
         pageControl.alpha = 0.0;
-        [delegate surveyViewDidCancel:self];
-        
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
-        if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        if (!padUI) {
+            [self.superview endEditing:YES];
+            
             [UIView animateWithDuration:0.3 animations:^{
-                backgroundDismissableArea.alpha = 0.0;
+                currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height/2);
+                currentScrollView.alpha = 0.0;
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                    backgroundDismissableArea.alpha = 0.0;
+                }
+            } completion:^(BOOL finished) {
+                [delegate surveyViewDidCancel:self];
             }];
+        } else {
+            [delegate surveyViewDidCancel:self];
+        }
+    }
+}
+
+- (void)finishSurveyView {
+    if (delegate) {
+        pageControl.alpha = 0.0;
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        
+        if (!padUI) {
+            [self.superview endEditing:YES];
+            [UIView animateWithDuration:0.3 animations:^{
+                currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height/2);
+                currentScrollView.alpha = 0.0;
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                    backgroundDismissableArea.alpha = 0.0;
+                }
+            } completion:^(BOOL finished) {
+                [delegate surveyViewDidFinish:self];
+            }];
+        } else {
+            [delegate surveyViewDidFinish:self];
         }
     }
 }
@@ -1516,8 +1546,7 @@
         while (!foundNextPage) {
             // If we're at the last question, finish the survey
             if (currentQuestionIndex == numberOfQuestions - 1) {
-                pageControl.alpha = 0.0;
-                [delegate surveyViewDidFinish:self];
+                [self finishSurveyView];
                 return;
             }
             
