@@ -874,6 +874,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     realtimeExtrasLastKnownCellNetworkInUse = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse];
     
+    [self setupBundle];
+
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Loaded."];
+}
+
+- (void)setupBundle {
     selectedChatTheme = kLPChatThemeClassic;
     if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerSelectedChatTheme:)]) {
         UInt32 developerTheme = [delegate lookIOManagerSelectedChatTheme:self];
@@ -883,8 +889,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [LIOBundleManager sharedBundleManager].selectedChatTheme = selectedChatTheme;
     [[LIOBundleManager sharedBundleManager] resetBundle];
-
-    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
 - (NSString *)dateToStandardizedString:(NSDate *)aDate

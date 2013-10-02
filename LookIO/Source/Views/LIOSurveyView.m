@@ -553,7 +553,7 @@
     }
     else {
         headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
-        headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        headerLabel.layer.shadowColor = [UIColor whiteColor].CGColor;
         headerLabel.layer.shadowRadius = 1.0;
         headerLabel.layer.shadowOpacity = 1.0;
         headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -940,7 +940,8 @@
             [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         }
         else {
-            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+//            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+//            [nextButton setTitleColor:[UIColor whiteColor] forState:UIControlState
             nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         }
 
@@ -1263,8 +1264,14 @@
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
         if (padUI)
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
-        else
-            aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
+        else {
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                aFrame.origin.x = referenceFrame.size.width - 80.0;
+                aFrame.origin.y = 15;
+            } else {
+                aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
+            }
+        }
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;

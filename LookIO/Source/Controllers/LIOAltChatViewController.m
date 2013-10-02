@@ -820,6 +820,7 @@
     if (!padUI) {
         surveyView.frame = self.view.bounds;
         [self.view insertSubview:surveyView belowSubview:headerBar];
+        headerBar.userInteractionEnabled = NO;
         surveyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     } else {
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -2512,6 +2513,7 @@
         }
         else {
             [aView removeFromSuperview];
+            headerBar.userInteractionEnabled = YES;
             
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
             NSDictionary* surveyDict = [surveyManager responseDictForSurveyType:aView.currentSurveyType];
@@ -2534,6 +2536,8 @@
                 surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
+                headerBar.userInteractionEnabled = YES;
+
                 [delegate altChatViewControllerWantsSessionTermination:self];
             }];
         }
@@ -2568,6 +2572,8 @@
                 surveyView.frame = aFrame;
             } completion:^(BOOL finished) {
                 [aView removeFromSuperview];
+                headerBar.userInteractionEnabled = YES;
+
                 [delegate altChatViewControllerWantsSessionTermination:self];
             }];
         }
@@ -2682,6 +2688,8 @@
             } else {
                 [surveyView removeFromSuperview];
                 surveyView = nil;
+                
+                headerBar.userInteractionEnabled = YES;
             }
         }
     }
@@ -2715,6 +2723,8 @@
                 }];
             } else {
                 [surveyView removeFromSuperview];
+                headerBar.userInteractionEnabled = YES;
+
                 surveyView = nil;
             }
         }
@@ -2772,6 +2782,7 @@
                 [self showLoadingViewWithiPadDelay:NO];
 
             [aView removeFromSuperview];
+            headerBar.userInteractionEnabled = YES;
         }
     }
 }

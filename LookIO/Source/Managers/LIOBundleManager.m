@@ -158,6 +158,10 @@ BOOL LIOIsUIKitFlatMode(void) {
     [lioBundle release];
     lioBundle = nil;
     [self findBundle];
+
+    [imageCache release];
+    imageCache = [[NSMutableDictionary alloc] init];
+
 }
 
 - (NSString *)bundleZipPath
