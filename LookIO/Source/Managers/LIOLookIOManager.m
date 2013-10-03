@@ -4670,8 +4670,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 // Let's check to see if the chat view controller is visible. If not, present it before
                 // killing the session or presenting the survey
                 
-                if (altChatViewController)
-                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                if (altChatViewController) {
+                    double delayInSeconds = 0.2;
+                    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                    });
+                }
                 else {
                     [self showChatAnimated:YES];
                     
