@@ -541,7 +541,7 @@
     
     UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     headerLabel.backgroundColor = [UIColor clearColor];
-    headerLabel.textColor = [UIColor blackColor];
+    headerLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         headerLabel.font = [UIFont boldSystemFontOfSize:17.0];
         if (!padUI) {
@@ -553,7 +553,7 @@
     }
     else {
         headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
-        headerLabel.layer.shadowColor = [UIColor whiteColor].CGColor;
+        headerLabel.layer.shadowColor = [UIColor blackColor].CGColor;
         headerLabel.layer.shadowRadius = 1.0;
         headerLabel.layer.shadowOpacity = 1.0;
         headerLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
@@ -604,7 +604,7 @@
         nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     } else {
         nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+        [nextButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     }
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
@@ -615,7 +615,7 @@
     UIButton* cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
     [cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
-        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableGrayButton"];
+        UIImage *buttonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRedButton"];
         UIImage *stretchableGrayButton = [buttonImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
         [cancelButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         cancelButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:15.0];
@@ -689,6 +689,10 @@
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
     aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
+    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        aFrame.origin.x = referenceFrame.size.width - 80.0;
+        aFrame.origin.y = 15;
+    }
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
     nextButton.frame = aFrame;
@@ -822,9 +826,10 @@
             inputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
             
         }
+
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
-        }        
+        }
         
         NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         if (currentQuestionIndex == numberOfQuestions - 1)
@@ -927,7 +932,7 @@
     }
         
     // Add next button for all iPad views, and relevant iPhone views
-    if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI) {
+    if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI || kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
         UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         nextButton.tag = LIOSurveyViewButtonTag;
         
@@ -940,8 +945,6 @@
             [nextButton setBackgroundImage:stretchableGrayButton forState:UIControlStateNormal];
         }
         else {
-//            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-//            [nextButton setTitleColor:[UIColor whiteColor] forState:UIControlState
             nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         }
 
@@ -1080,6 +1083,10 @@
         aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
         aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
         aFrame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
+        if (landscape && [LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
+            aFrame.origin.x = LIOSurveyViewSideMargin * 8;
+            aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 8);
+        }
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
         
@@ -1146,6 +1153,15 @@
                 aSize.height = nextButton.frame.origin.y + nextButton.frame.size.height + 30.0;
                 scrollView.contentSize = aSize;
             }
+        } else {
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
+                aFrame.origin.x = referenceFrame.size.width - 80.0;
+                aFrame.origin.y = 15;
+                aFrame.size.width = 92.0;
+                aFrame.size.height = 44.0;
+                nextButton.frame = aFrame;
+            }
         }
     }    
     
@@ -1199,6 +1215,15 @@
                 aSize.height = nextButton.frame.origin.y + nextButton.frame.size.height + 30.0;
                 scrollView.contentSize = aSize;
             }
+        } else {
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
+                aFrame.origin.x = referenceFrame.size.width - 80.0;
+                aFrame.origin.y = 15;
+                aFrame.size.width = 92.0;
+                aFrame.size.height = 44.0;
+                nextButton.frame = aFrame;
+            }
         }
     }
     
@@ -1227,8 +1252,14 @@
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
         if (padUI)
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
-        else
-            aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 60;
+        else {
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                aFrame.origin.x = referenceFrame.size.width - 80.0;
+                aFrame.origin.y = 15;
+            } else {
+                aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 60;
+            }
+        }
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;

@@ -899,9 +899,9 @@
     loadingSubLabel.backgroundColor = [UIColor clearColor];
     loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
-        loadingLabel.textColor = [UIColor darkGrayColor];
+        loadingSubLabel.textColor = [UIColor darkGrayColor];
     else
-        loadingLabel.textColor = [UIColor whiteColor];
+        loadingSubLabel.textColor = [UIColor whiteColor];
     loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
     loadingSubLabel.textAlignment = UITextAlignmentCenter;
     loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
