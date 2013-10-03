@@ -18,7 +18,7 @@
 #define LIOChatMessageSendingFailedKey  @"LIOChatMessageSendingFailedKey"
 #define LIOChatMessageLineIdKey         @"LIOChatMessageLineIdKey"
 
-@synthesize kind, text, date, senderName, attachmentId, sendingFailed, lineId;
+@synthesize kind, text, date, senderName, attachmentId, sendingFailed, lineId ,clientLineId;
 
 + (LIOChatMessage *)chatMessage
 {

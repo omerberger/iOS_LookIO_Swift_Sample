@@ -57,7 +57,7 @@
         sendButton.accessibilityLabel = @"LIOInputBarView.sendButton";
         [sendButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
-        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        sendButton.titleLabel.font = sendButtonFont;
         sendButton.frame = sendButtonFrame;
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;

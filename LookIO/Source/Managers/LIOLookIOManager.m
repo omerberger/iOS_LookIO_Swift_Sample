@@ -799,7 +799,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             NSData *chatHistoryData = [userDefaults objectForKey:LIOLookIOManagerLastKnownChatHistoryKey];
             if (chatHistoryData) {
-                [chatHistoryData release];
+                [chatHistory release];
                 chatHistory = [[NSKeyedUnarchiver unarchiveObjectWithData:chatHistoryData] retain];
             }
 

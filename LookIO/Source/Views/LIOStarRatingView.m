@@ -185,7 +185,7 @@
             
             ratingLabel.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
-            UIButton *tempStarButton = [self viewWithTag:LIOStarRatingViewTempStarButtonTag + index];
+            UIButton *tempStarButton = (UIButton*)[self viewWithTag:LIOStarRatingViewTempStarButtonTag + index];
             if (tempStarButton)
                 [tempStarButton removeFromSuperview];
             
