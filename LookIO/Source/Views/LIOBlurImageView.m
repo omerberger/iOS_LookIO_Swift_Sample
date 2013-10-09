@@ -10,6 +10,8 @@
 
 @implementation LIOBlurImageView
 
+@synthesize tintLayer;
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -30,11 +32,17 @@
 }
 
 -(void)setImageAndBlur:(UIImage*)imageToBlur {
+<<<<<<< HEAD
 //    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
 ///    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
 
     UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
     self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:6 tintColor:tintColor saturationDeltaFactor:1.0 maskImage:nil];
+=======
+    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
+    
+    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
+>>>>>>> Card UI for flat survey and overrides for demo app
 }
 
 - (UIImage *)blurImage:(UIImage*)image withRadius:(CGFloat)radius iterations:(NSUInteger)iterations tintColor:(UIColor *)tintColor saturationDeltaFactor:(CGFloat)saturationDeltaFactor

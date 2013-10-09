@@ -257,6 +257,12 @@ typedef enum
     LIOBlurImageView *blurImageView;
 
     UInt32 selectedChatTheme;
+    
+    BOOL disableSurveysOverride;
+    BOOL previousSurveysEnabledValue;
+    
+    BOOL disableControlButtonOverride;
+    BOOL previousControlButtonValue;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -825,6 +831,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             previousSurveysEnabledValue = surveyManager.surveysEnabled;
             surveyManager.surveysEnabled = NO;
         }
+        
     }
     
     continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
@@ -3827,6 +3834,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             surveyManager.surveysEnabled = lastKnownSurveysEnabled;
         }
         
+<<<<<<< HEAD
         NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
         if (hideEmailChat)
         {
@@ -3834,6 +3842,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             lastKnownHideEmailChat = [hideEmailChat boolValue];
         }
             
+=======
+>>>>>>> Card UI for flat survey and overrides for demo app
         if (disableSurveysOverride) {
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
 

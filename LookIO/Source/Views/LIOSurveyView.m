@@ -250,6 +250,10 @@
         [UIView animateWithDuration:0.4 animations:^{
             currentScrollView.alpha = 1.0;
             currentScrollView.transform = CGAffineTransformIdentity;
+            
+//            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+//                backgroundDismissableArea.alpha = 1.0;
+
         } completion:^(BOOL finished) {
             isAnimatingEntrance = NO;
         }];
@@ -567,7 +571,7 @@
     requiredLabel.backgroundColor = [UIColor clearColor];
     requiredLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
-        requiredLabel.font = [UIFont systemFontOfSize:14.0];
+        requiredLabel.font = [UIFont boldSystemFontOfSize:14.0];
         requiredLabel.textColor = [UIColor darkGrayColor];
     }
     else {
@@ -691,6 +695,11 @@
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
     aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
+    /*
+        aFrame.origin.x = referenceFrame.size.width - 80.0;
+        aFrame.origin.y = 15;
+    }
+     */
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
@@ -744,21 +753,13 @@
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 65;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.origin.y -= 20;
                 frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 30;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.size.height += 20;
             }
             else {
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 25;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.origin.y -= 20;
                 frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 60;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.size.height += 20;
             }
             backgroundImageView.frame = frame;
         }
@@ -808,7 +809,12 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        questionLabel.textColor = [UIColor darkGrayColor];
+//        if (!padUI) {
+//            questionLabel.textColor = [UIColor whiteColor];
+//            questionLabel.shadowColor = [UIColor darkGrayColor];
+//            questionLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+//        } else
+            questionLabel.textColor = [UIColor darkGrayColor];
     } else {
         questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
         questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -991,6 +997,7 @@
         else {
             [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
             nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
         }
 
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
@@ -1019,6 +1026,13 @@
                 tableView.frame = CGRectMake(0, 0, scrollView.frame.size.width - 2*LIOSurveyViewSideMarginiPad, tableViewContentHeight);
             else
                 tableView.frame = CGRectMake(LIOSurveyViewSideMargin, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, scrollView.bounds.size.width - LIOSurveyViewSideMargin*2, tableViewContentHeight);
+            
+            if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGRect frame = tableView.frame;
+                frame.origin.x = 25;
+                frame.size.width = scrollView.bounds.size.width - 50;
+                tableView.frame = frame;
+            }
 
             tableView.backgroundColor = [UIColor clearColor];
             tableView.backgroundView = nil;
@@ -1285,6 +1299,27 @@
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 65;
+                frame.size.height = scrollView.contentSize.height - 70;
+            }
+            else {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 25;
+                frame.size.height = scrollView.contentSize.height - 30;
+            }
+            backgroundImageView.frame = frame;
+            NSLog(@"alpha is %f", backgroundImageView.alpha);
+        }
+    }
+    
+    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
+        if (backgroundImageView) {
+            CGRect frame = backgroundImageView.frame;
+            if (!landscape) {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 65;
                 if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
                     frame.origin.y -= 20;
                 frame.size.height = scrollView.contentSize.height - 70;
@@ -1341,13 +1376,11 @@
         }
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
-                aFrame.size.width = expectedButtonSize.width;
                 if (landscape) {
-                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
                     aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height - 5;
                 } else {
-                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
                     aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 25;
                 }
             } else {
@@ -1358,6 +1391,7 @@
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
         
+        
         if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
             UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
             if (backgroundImageView) {
@@ -1366,21 +1400,13 @@
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 65;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.origin.y -= 20;
                     frame.size.height = nextButton.frame.origin.y - 5.0;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden]  || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.size.height += 20;
                 }
                 else {
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 25;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") )
-                        frame.origin.y -= 20;
                     frame.size.height = nextButton.frame.origin.y + 25;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") )
-                        frame.size.height += 20;
                 }
                 backgroundImageView.frame = frame;
             }
@@ -1435,13 +1461,11 @@
         }
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
-                aFrame.size.width = expectedButtonSize.width;
                 if (landscape) {
-                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
                     aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height;
                 } else {
-                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
                     aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 2;
                 }
             } else {
@@ -1460,26 +1484,20 @@
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 65;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.origin.y -= 20;
                     frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 60 + 50;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.size.height += 20;
                 }
                 else {
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 25;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.origin.y -= 20;
                     frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 20 + 45;
-                    if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                        frame.size.height += 20;
                 }
                 backgroundImageView.frame = frame;
             }
         }
     }
+
+
 }
 
 -(CGFloat)heightForTableView:(UITableView*)tableView {

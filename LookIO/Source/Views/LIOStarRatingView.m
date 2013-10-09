@@ -45,7 +45,12 @@
         ratingLabel.backgroundColor = [UIColor clearColor];
         if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
             ratingLabel.font = [UIFont boldSystemFontOfSize:15.0];
-            ratingLabel.textColor = [UIColor darkGrayColor];
+//            if (!padUI) {
+//                ratingLabel.textColor = [UIColor whiteColor];
+//                ratingLabel.shadowColor = [UIColor darkGrayColor];
+//                ratingLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+//            } else
+                ratingLabel.textColor = [UIColor darkGrayColor];
         } else {
             ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
             ratingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
