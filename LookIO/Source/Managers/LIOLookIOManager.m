@@ -4611,8 +4611,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             willAskUserToReconnect = NO;
             
+            // In case we've disconnected in the meantime, just don't do anything
+            if (!socketConnected)
+                break;
+            
             if (1 == buttonIndex && !altChatViewController)
                 [self showChatAnimated:YES];
+            
+            if (0 == buttonIndex && altChatViewController)
+                [altChatViewController performDismissalAnimation];
             
             controlButton.currentMode = LIOControlButtonViewModeDefault;
             [controlButton setNeedsLayout];
