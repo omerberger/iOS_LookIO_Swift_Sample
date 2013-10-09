@@ -45,11 +45,11 @@
         ratingLabel.backgroundColor = [UIColor clearColor];
         if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
             ratingLabel.font = [UIFont boldSystemFontOfSize:15.0];
-            if (!padUI) {
-                ratingLabel.textColor = [UIColor whiteColor];
-                ratingLabel.shadowColor = [UIColor darkGrayColor];
-                ratingLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-            } else
+//            if (!padUI) {
+//                ratingLabel.textColor = [UIColor whiteColor];
+//                ratingLabel.shadowColor = [UIColor darkGrayColor];
+//                ratingLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+//            } else
                 ratingLabel.textColor = [UIColor darkGrayColor];
         } else {
             ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
@@ -115,7 +115,7 @@
 
     aFrame.origin.y = 60.0;
     aFrame.size.width = self.bounds.size.width;
-    aFrame.size.height = 15.0;
+    aFrame.size.height = 18.0;
     ratingLabel.frame = aFrame;
     
     if (!isAnimating)

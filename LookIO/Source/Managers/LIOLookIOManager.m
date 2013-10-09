@@ -248,6 +248,12 @@ typedef enum
     LIOBlurImageView *blurImageView;
 
     UInt32 selectedChatTheme;
+    
+    BOOL disableSurveysOverride;
+    BOOL previousSurveysEnabledValue;
+    
+    BOOL disableControlButtonOverride;
+    BOOL previousControlButtonValue;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -520,6 +526,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
 }
 
+- (void)disableSurveys {
+    disableSurveysOverride = YES;
+    previousSurveysEnabledValue = [LIOSurveyManager sharedSurveyManager];
+    [LIOSurveyManager sharedSurveyManager].surveysEnabled = NO;
+}
+
+- (void)undisableSurveys {
+    disableSurveysOverride = NO;
+    [LIOSurveyManager sharedSurveyManager].surveysEnabled = previousSurveysEnabledValue;
+}
+
+- (void)disableControlButton {
+    disableControlButtonOverride = YES;
+    previousControlButtonValue = [lastKnownButtonVisibility boolValue];
+    lastKnownButtonVisibility = [NSNumber numberWithBool:NO];
+    
+    [self refreshControlButtonVisibility];
+}
+
+- (void)undisableControlButton {
+    disableControlButtonOverride = NO;
+    lastKnownButtonVisibility = [NSNumber numberWithBool:previousControlButtonValue];
+    
+    [self refreshControlButtonVisibility];
+}
+
 - (void)uploadLog:(NSString *)logBody
 {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerLogUploadRequestURL]];
@@ -713,6 +745,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (nil == lastKnownButtonVisibility)
         lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
     
+    if (disableControlButtonOverride) {
+        previousControlButtonValue = [lastKnownButtonVisibility boolValue];
+        lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
+    }
+    
+    
     [lastKnownButtonText release];
     lastKnownButtonText = [[userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey] retain];
     controlButton.labelText = lastKnownButtonText;
@@ -762,12 +800,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         lastKnownSurveysEnabled = [surveysEnabled boolValue];
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         surveyManager.surveysEnabled = lastKnownSurveysEnabled;
-    }
-    
-    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat])
-    {
-        NSNumber *hideEmailChat = (NSNumber *)[userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat];
-        lastKnownHideEmailChat = [hideEmailChat boolValue];
+        
+        if (disableSurveysOverride) {
+            previousSurveysEnabledValue = surveyManager.surveysEnabled;
+            surveyManager.surveysEnabled = NO;
+        }
     }
     
     continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
@@ -3645,6 +3682,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             [userDefaults setObject:lastKnownButtonVisibility forKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
             
+            if (disableControlButtonOverride) {
+                previousControlButtonValue = [lastKnownButtonVisibility boolValue];
+                lastKnownButtonVisibility = [NSNumber numberWithBool:NO];
+            }
+            
             [self refreshControlButtonVisibility];
         }
         
@@ -3756,6 +3798,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             lastKnownHideEmailChat = [hideEmailChat boolValue];
         }
             
+        if (disableSurveysOverride) {
+            LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+
+            previousSurveysEnabledValue = surveyManager.surveysEnabled;
+            surveyManager.surveysEnabled = NO;
+        }
+        
         [self refreshControlButtonVisibility];
         [self applicationDidChangeStatusBarOrientation:nil];
     }
@@ -4418,7 +4467,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [blurImageView release];
             blurImageView = nil;
         }];
->>>>>>> Small fixes for flat UI
     }
 }
 

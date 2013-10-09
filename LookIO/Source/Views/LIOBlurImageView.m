@@ -18,6 +18,8 @@
 
 @implementation LIOBlurImageView
 
+@synthesize tintLayer;
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -38,10 +40,9 @@
 }
 
 -(void)setImageAndBlur:(UIImage*)imageToBlur {
-    NSData *imageData = UIImageJPEGRepresentation(imageToBlur, 1.0);
-
     UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
-    self.image = [[UIImage imageWithData:imageData] applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
+    
+    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
 }
 
 

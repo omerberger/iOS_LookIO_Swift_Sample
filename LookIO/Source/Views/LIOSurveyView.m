@@ -43,6 +43,7 @@
 #define LIOSurveyViewTableCellLabelTag          1007
 #define LIOSurveyViewInputTextViewTag           1008
 #define LIOSurveyViewStarRatingViewTag          1009
+#define LIOSurveyViewBackgroundViewTag          1010
 
 #define LIOSurveyViewIntroHeaderLabel           1101
 #define LIOSurveyViewIntroRequiredLabel         1102
@@ -246,8 +247,8 @@
             currentScrollView.alpha = 1.0;
             currentScrollView.transform = CGAffineTransformIdentity;
             
-            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) 
-                backgroundDismissableArea.alpha = 1.0;
+//            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+//                backgroundDismissableArea.alpha = 1.0;
 
         } completion:^(BOOL finished) {
             isAnimating = NO;
@@ -523,9 +524,10 @@
     }
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     
-    if (padUI) {
+    if (padUI || [LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         UIImageView* imageView = [[UIImageView alloc] initWithFrame:scrollView.bounds];
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        imageView.tag = LIOSurveyViewBackgroundViewTag;
         imageView.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
         [scrollView addSubview:imageView];
         [imageView release];
@@ -544,12 +546,7 @@
     headerLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         headerLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        if (!padUI) {
-            headerLabel.textColor = [UIColor whiteColor];
-            headerLabel.shadowColor = [UIColor darkGrayColor];
-            headerLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-        } else
-            headerLabel.textColor = [UIColor darkGrayColor];
+        headerLabel.textColor = [UIColor darkGrayColor];
     }
     else {
         headerLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
@@ -571,12 +568,7 @@
     requiredLabel.textColor = [UIColor whiteColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         requiredLabel.font = [UIFont boldSystemFontOfSize:14.0];
-        if (!padUI) {
-            requiredLabel.textColor = [UIColor whiteColor];
-            requiredLabel.shadowColor = [UIColor darkGrayColor];
-            requiredLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-        } else
-            requiredLabel.textColor = [UIColor darkGrayColor];
+        requiredLabel.textColor = [UIColor darkGrayColor];
     }
     else {
         requiredLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
@@ -604,7 +596,7 @@
         nextButton.titleLabel.shadowOffset = CGSizeMake(0.0, -1.0);
     } else {
         nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        [nextButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
     }
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
@@ -667,6 +659,12 @@
     aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
     aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
     aFrame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
+        aFrame.origin.x = LIOSurveyViewSideMargin * 4;
+        if (landscape)
+            aFrame.origin.y = LIOSurveyViewTopMarginLandscape + 10;
+        aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
+    }
     CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     
@@ -682,6 +680,10 @@
     aFrame.origin.x = LIOSurveyViewSideMargin;
     aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
     aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
+        aFrame.origin.x = LIOSurveyViewSideMargin * 4;
+        aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
+    }
     expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
     aFrame.size.height = expectedLabelSize.height;
     requiredLabel.frame = aFrame;
@@ -689,10 +691,11 @@
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
     aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+    /*
         aFrame.origin.x = referenceFrame.size.width - 80.0;
         aFrame.origin.y = 15;
     }
+     */
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
     nextButton.frame = aFrame;
@@ -725,6 +728,26 @@
         aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
         cancelButton.frame = aFrame;
     }
+    
+    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
+        if (backgroundImageView) {
+            CGRect frame = backgroundImageView.frame;
+            if (!landscape) {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 65;
+                frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 30;
+            }
+            else {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 25;
+                frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 60;
+            }
+            backgroundImageView.frame = frame;
+        }
+    }
 }
 
 #pragma mark
@@ -748,10 +771,11 @@
     scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     scrollView.showsVerticalScrollIndicator = NO;
     
-    if (padUI) {
+    if (padUI || [LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         UIImageView* imageView = [[UIImageView alloc] initWithFrame:scrollView.bounds];
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         imageView.image = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableChatBubble"] stretchableImageWithLeftCapWidth:16 topCapHeight:16];
+        imageView.tag = LIOSurveyViewBackgroundViewTag;
         [scrollView addSubview:imageView];
         [imageView release];
     }
@@ -769,11 +793,11 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        if (!padUI) {
-            questionLabel.textColor = [UIColor whiteColor];
-            questionLabel.shadowColor = [UIColor darkGrayColor];
-            questionLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-        } else
+//        if (!padUI) {
+//            questionLabel.textColor = [UIColor whiteColor];
+//            questionLabel.shadowColor = [UIColor darkGrayColor];
+//            questionLabel.shadowOffset = CGSizeMake(0.0, 1.0);
+//        } else
             questionLabel.textColor = [UIColor darkGrayColor];
     } else {
         questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
@@ -896,7 +920,7 @@
         
         if (LIOSurveyQuestionValidationTypeNumeric == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeNumberPad;
-        }        
+        }
         
         NSString* buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         if (currentQuestionIndex == numberOfQuestions - 1)
@@ -932,7 +956,7 @@
     }
         
     // Add next button for all iPad views, and relevant iPhone views
-    if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI || kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+    if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI) {
         UIButton* nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         nextButton.tag = LIOSurveyViewButtonTag;
         
@@ -946,6 +970,7 @@
         }
         else {
             nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
         }
 
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
@@ -974,6 +999,13 @@
                 tableView.frame = CGRectMake(0, 0, scrollView.frame.size.width - 2*LIOSurveyViewSideMarginiPad, tableViewContentHeight);
             else
                 tableView.frame = CGRectMake(LIOSurveyViewSideMargin, questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, scrollView.bounds.size.width - LIOSurveyViewSideMargin*2, tableViewContentHeight);
+            
+            if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGRect frame = tableView.frame;
+                frame.origin.x = 25;
+                frame.size.width = scrollView.bounds.size.width - 50;
+                tableView.frame = frame;
+            }
 
             tableView.backgroundColor = [UIColor clearColor];
             tableView.backgroundView = nil;
@@ -1083,9 +1115,11 @@
         aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
         aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
         aFrame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
-        if (landscape && [LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
-            aFrame.origin.x = LIOSurveyViewSideMargin * 8;
-            aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 8);
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
+            aFrame.origin.x = LIOSurveyViewSideMargin * 4;
+            if (landscape)
+                aFrame.origin.y = LIOSurveyViewTopMarginLandscape + 10;
+            aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
         }
         CGSize expectedLabelSize = [questionLabel.text sizeWithFont:questionLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
@@ -1107,6 +1141,10 @@
             aFrame.size.width = referenceFrame.size.width - 20.0 - (padUI ? 30.0 : 0);
             aFrame.size.height = landscape ? 43.0 : 43.0;
             aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
+            if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
+                aFrame.origin.x = LIOSurveyViewSideMargin * 3;
+                aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 3);
+            }
             fieldBackground.frame = aFrame;
         }
         
@@ -1153,15 +1191,6 @@
                 aSize.height = nextButton.frame.origin.y + nextButton.frame.size.height + 30.0;
                 scrollView.contentSize = aSize;
             }
-        } else {
-            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
-                aFrame.origin.x = referenceFrame.size.width - 80.0;
-                aFrame.origin.y = 15;
-                aFrame.size.width = 92.0;
-                aFrame.size.height = 44.0;
-                nextButton.frame = aFrame;
-            }
         }
     }    
     
@@ -1174,6 +1203,11 @@
             aFrame.size.width = referenceFrame.size.width - 20.0 - (padUI ? 30.0 : 0);
             aFrame.size.height = landscape ? 75.0 : 105.0;
             aFrame.origin.y = questionLabel.frame.origin.y + questionLabel.frame.size.height + (landscape ? 12.0 : 15.0);
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme && !padUI) {
+                aFrame.origin.x = 30.0;
+                aFrame.size.width = referenceFrame.size.width - 60;
+            }
             fieldBackground.frame = aFrame;
         }
         
@@ -1215,15 +1249,27 @@
                 aSize.height = nextButton.frame.origin.y + nextButton.frame.size.height + 30.0;
                 scrollView.contentSize = aSize;
             }
-        } else {
-            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
-                aFrame.origin.x = referenceFrame.size.width - 80.0;
-                aFrame.origin.y = 15;
-                aFrame.size.width = 92.0;
-                aFrame.size.height = 44.0;
-                nextButton.frame = aFrame;
+        }
+    }
+    
+    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
+        if (backgroundImageView) {
+            CGRect frame = backgroundImageView.frame;
+            if (!landscape) {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 65;
+                frame.size.height = scrollView.contentSize.height - 70;
             }
+            else {
+                frame.origin.x = 10;
+                frame.size.width = scrollView.bounds.size.width - 20;
+                frame.origin.y = 25;
+                frame.size.height = scrollView.contentSize.height - 30;
+            }
+            backgroundImageView.frame = frame;
+            NSLog(@"alpha is %f", backgroundImageView.alpha);
         }
     }
     
@@ -1254,8 +1300,13 @@
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                aFrame.origin.x = referenceFrame.size.width - 80.0;
-                aFrame.origin.y = 15;
+                if (landscape) {
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height - 5;
+                } else {
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 25;
+                }
             } else {
                 aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 60;
             }
@@ -1263,6 +1314,27 @@
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
+        
+        
+        if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
+            if (backgroundImageView) {
+                CGRect frame = backgroundImageView.frame;
+                if (!landscape) {
+                    frame.origin.x = 10;
+                    frame.size.width = scrollView.bounds.size.width - 20;
+                    frame.origin.y = 65;
+                    frame.size.height = nextButton.frame.origin.y - 5.0;
+                }
+                else {
+                    frame.origin.x = 10;
+                    frame.size.width = scrollView.bounds.size.width - 20;
+                    frame.origin.y = 25;
+                    frame.size.height = nextButton.frame.origin.y + 25;
+                }
+                backgroundImageView.frame = frame;
+            }
+        }
     }
     
     UITableView* tableView = (UITableView*)[scrollView viewWithTag:LIOSurveyViewTableViewTag];
@@ -1291,14 +1363,26 @@
     
         tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), questionLabel.frame.origin.y + questionLabel.frame.size.height + 10.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
         
+        if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            CGRect frame = tableView.frame;
+            frame.origin.x = 25;
+            frame.size.width = scrollView.bounds.size.width - 50;
+            tableView.frame = frame;
+        }
+        
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
         if (padUI)
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-                aFrame.origin.x = referenceFrame.size.width - 80.0;
-                aFrame.origin.y = 15;
+                if (landscape) {
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height;
+                } else {
+                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 2;
+                }
             } else {
                 aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
             }
@@ -1306,7 +1390,28 @@
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
+        
+        if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
+            if (backgroundImageView) {
+                CGRect frame = backgroundImageView.frame;
+                if (!landscape) {
+                    frame.origin.x = 10;
+                    frame.size.width = scrollView.bounds.size.width - 20;
+                    frame.origin.y = 65;
+                    frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 60 + 50;
+                }
+                else {
+                    frame.origin.x = 10;
+                    frame.size.width = scrollView.bounds.size.width - 20;
+                    frame.origin.y = 25;
+                    frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 20 + 45;
+                }
+                backgroundImageView.frame = frame;
+            }
+        }
     }
+
 
 }
 
