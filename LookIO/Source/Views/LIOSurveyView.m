@@ -843,7 +843,6 @@
         } else {
             inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         }
-
         
         if (LIOSurveyQuestionValidationTypeEmail == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
@@ -861,7 +860,11 @@
         
         if (!padUI) {
             UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
-            numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                numberToolbar.barStyle = UIBarStyleDefault;
+            else
+                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            
             numberToolbar.items = [NSArray arrayWithObjects:
                                    [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
                                    [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
@@ -911,7 +914,10 @@
             inputField.returnKeyType = UIReturnKeyDone;
         else
             inputField.returnKeyType = UIReturnKeyNext;
-        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+            inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        else
+            inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         
         if (LIOSurveyQuestionValidationTypeEmail == question.validationType) {
             inputField.keyboardType = UIKeyboardTypeEmailAddress;
@@ -928,7 +934,11 @@
         
         if (!padUI) {
             UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, 320, 50)];
-            numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+                numberToolbar.barStyle = UIBarStyleDefault;
+            else
+                numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+            
             numberToolbar.items = [NSArray arrayWithObjects:
                                    [[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease],
                                    [[[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(switchToNextQuestion)] autorelease],
