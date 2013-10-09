@@ -176,10 +176,10 @@
     [self addSubview:tempStarButton];
     [tempStarButton release];
 
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
         starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
     } completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
             UIButton* starButton = [starButtonArray objectAtIndex:index];
             starButton.transform = CGAffineTransformIdentity;
             
