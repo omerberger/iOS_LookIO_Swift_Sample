@@ -354,6 +354,8 @@ static NSDataDetector *dataDetector = nil;
             UIButton *newLinkButton = [[self createLinkButton] autorelease];
             NSString *curLink = [links objectAtIndex:i];
             [newLinkButton setTitle:curLink forState:UIControlStateNormal];
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                [newLinkButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
             [linkButtons addObject:newLinkButton];
             [self addSubview:newLinkButton];
             

@@ -516,6 +516,9 @@
     aFrame = topButtonsView.frame;
     aFrame.origin.x = 0;
     aFrame.origin.y = padUI ? 10 : 40;
+    if (LIOIsUIKitFlatMode())
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            aFrame.origin.y += 20;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = 50;
     topButtonsView.alpha = 0.0;
@@ -540,6 +543,18 @@
     dismissModuleButton.frame = aFrame;
     [topButtonsView addSubview:dismissModuleButton];
     
+    keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectZero];
+    keyboardMenu.delegate = self;
+    keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    keyboardMenu.contentMode = UIViewContentModeRedraw;
+    aFrame = keyboardMenu.frame;
+    aFrame.origin.x = 0;
+    aFrame.origin.y = self.view.bounds.size.height;
+    aFrame.size.width = self.view.bounds.size.width;
+    aFrame.size.height = 0;
+    keyboardMenu.frame = aFrame;
+    [self.view addSubview:keyboardMenu];
+
     chatModules = [[[NSMutableArray alloc] init] retain];
     
     moduleView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -551,6 +566,9 @@
     aFrame.origin.y = self.view.bounds.size.height;
     aFrame.size.width = self.view.bounds.size.width;
     aFrame.size.height = self.view.bounds.size.height - (padUI ? 70.0 : 100);
+    if (LIOIsUIKitFlatMode())
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            aFrame.size.height -= 20;
     moduleView.backgroundColor = [UIColor whiteColor];
     moduleView.frame = aFrame;
     
@@ -1150,6 +1168,9 @@
         aFrame.origin.y = self.view.bounds.size.height;
         aFrame.size.width = self.view.bounds.size.width;
         aFrame.size.height = self.view.bounds.size.height - (padUI ? 70.0 : 100);
+        if (LIOIsUIKitFlatMode())
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.size.height -= 20;
         moduleView.frame = aFrame;
     }
     
@@ -2844,6 +2865,9 @@
         CGRect aFrame = moduleView.frame;
         
         aFrame.origin.y = padUI ? 70 : 95;
+        if (LIOIsUIKitFlatMode())
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.origin.y += 20;
         moduleView.frame = aFrame;
         
         tableView.alpha = 0.5;
