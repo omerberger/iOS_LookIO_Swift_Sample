@@ -123,6 +123,7 @@
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
 - (void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType;
+- (void)dismissSurveyView;
 - (void)noSurveyRecieved;
 - (void)engagementDidStart;
 - (void)hideChatUIForSurvey:(BOOL)animated;

@@ -237,6 +237,8 @@ typedef enum
     int failedChatHistoryCount;
     
     int lastClientLineId;
+    
+    UIAlertView *dismissibleAlertView;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -4218,7 +4220,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [pendingChatText release];
     pendingChatText = [aString retain];
 
-    [altChatViewController performDismissalAnimation];
+    // In case the user hasn't typed in any messages, and either surveys are turned off, or he recived and empty survey, we can reset the session
+    LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+    if (([chatHistory count] == 1) && (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)))
+        [self altChatViewControllerWantsSessionTermination:altChatViewController];
+    else
+        [altChatViewController performDismissalAnimation];
+    
 }
 
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString
@@ -4295,14 +4303,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertTitle")
+    dismissibleAlertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonNo"), LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonYes"), nil];
-    alertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
-    [alertView show];
-    [alertView autorelease];
+    dismissibleAlertView.tag = LIOLookIOManagerDisconnectConfirmAlertViewTag;
+    [dismissibleAlertView show];
+    [dismissibleAlertView autorelease];
 }
 
 - (void)altChatViewControllerDidTapEndScreenshotsButton:(LIOAltChatViewController *)aController
@@ -4324,6 +4332,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
 }
+
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
 {
@@ -4713,6 +4722,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOLookIOManagerDisconnectConfirmAlertViewTag:
         {
+            dismissibleAlertView = nil;
+            
             if (1 == buttonIndex) // "Yes"
             {
                 LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
@@ -4794,6 +4805,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     appForegrounded = NO;
     
+    if (dismissibleAlertView) {
+        [dismissibleAlertView dismissWithClickedButtonIndex:-1 animated:NO];
+        dismissibleAlertView = nil;
+    }
+    
     if (UIBackgroundTaskInvalid == backgroundTaskId)
     {
         backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -4818,12 +4834,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (altChatViewController)
     {
+        [altChatViewController dismissSurveyView];
+        
         [pendingChatText release];
         pendingChatText = [[altChatViewController currentChatText] retain];
         [altChatViewController bailOnSecondaryViews];
         [altChatViewController.view removeFromSuperview];
         [altChatViewController release];
         altChatViewController = nil;
+
+        // In case the user hasn't typed in any messages, and either surveys are turned off, or he recived and empty survey, we can reset the session
+        LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+        if ([chatHistory count] == 1) {
+            if (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)) {
+                userWantsSessionTermination = YES;
+                resetAfterDisconnect = YES;
+                [self killConnection];
+            }
+        }
+        
     }
         
     [pendingIntraAppLinkURL release];

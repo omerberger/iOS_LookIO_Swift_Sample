@@ -2375,11 +2375,18 @@
     }
 }
 
+- (void)dismissSurveyView {
+    if (!surveyInProgress)
+        return;
+    else
+        if (surveyView)
+            [self surveyViewDidCancel:surveyView];
+}
+
 -(void)surveyViewDidCancel:(LIOSurveyView *)aView {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {
-        
+    if (LIOSurveyManagerSurveyTypePre == aView.currentSurveyType) {        
         [self.view endEditing:YES];
         
         if (padUI) {
