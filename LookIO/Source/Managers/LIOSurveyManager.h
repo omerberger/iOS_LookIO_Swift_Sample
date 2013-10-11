@@ -47,7 +47,7 @@ typedef enum
 - (BOOL)shouldShowQuestion:(int)index surveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (int)realIndexWithLogicOfQuestionAtIndex:(int)anIndex forSurveyType:(LIOSurveyManagerSurveyType)surveyType;
 - (NSDictionary*)responseDictForSurveyType:(LIOSurveyManagerSurveyType)surveyType;
-- (void)populateDefaultOfflineSurvey;
+- (void)populateDefaultOfflineSurveyWithResponse:(NSString*)response;
 
 @property (nonatomic, readonly) NSString *preChatHeader, *postChatHeader, *offlineHeader;
 @property (nonatomic, readonly) LIOSurveyTemplate *preChatTemplate, *postChatTemplate, *offlineTemplate;

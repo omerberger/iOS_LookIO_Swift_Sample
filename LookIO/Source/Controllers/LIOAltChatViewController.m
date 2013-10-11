@@ -356,7 +356,7 @@
                     logoView.frame = aFrame;
                     logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
                     
-                    [functionHeaderChat.contentView addSubview:poweredByLabel];
+//                    [functionHeaderChat.contentView addSubview:poweredByLabel];
                     [functionHeaderChat.contentView addSubview:logoView];
                 }
     } else {
@@ -391,7 +391,7 @@
                         logoView.frame = aFrame;
                         logoView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
                         
-                        [functionHeaderChat.contentView addSubview:poweredByLabel];
+//                        [functionHeaderChat.contentView addSubview:poweredByLabel];
                         [functionHeaderChat.contentView addSubview:logoView];
                     }
                 }
@@ -2164,6 +2164,10 @@
     [self.view endEditing:YES];
     
     //[self reloadMessages];
+}
+
+- (NSString*)lastSentMessageText {
+    return lastSentMessageText;
 }
 
 - (void)inputBarViewDidTapAdArea:(LIOInputBarView *)aView

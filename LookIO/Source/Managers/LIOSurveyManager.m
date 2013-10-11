@@ -392,7 +392,7 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     return nil;
 }
 
-- (void)populateDefaultOfflineSurvey {
+- (void)populateDefaultOfflineSurveyWithResponse:(NSString*)response {
     NSString *headerString = LIOLocalizedString(@"LIOSurveyView.DefaultOfflineSurveyHeader");
     
     LIOSurveyTemplate *newTemplate = [[LIOSurveyTemplate alloc] init];
@@ -423,6 +423,9 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     newTemplate.logicDictionary = logicDictionary;
     
     [offlineResponses removeAllObjects];
+    
+    if (response)
+        [self registerAnswerObject:response forSurveyType:LIOSurveyManagerSurveyTypeOffline withQuestionIndex:1];        
 
     [offlineHeader release];
     offlineHeader = [headerString retain];

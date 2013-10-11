@@ -2461,20 +2461,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (introduced)
             {
+                // Is this an expected disconnection? If so, show an alert. Otherwise, we will ask for reconnect
                 if (sseConnectionDidFail) {
                     if (sseConnectionRetryAfter != -1)
                         return;
                     else {
-                        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
-                                                                        message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
+                        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                        delegate:self
                                                               cancelButtonTitle:nil
-                                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
+                                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
                         alertView.tag = LIOLookIOManagerSSEConnectionFailedAlertViewTag;
                         [alertView show];
                         [alertView autorelease];
                     }
                 }
+                
 
                 resetAfterDisconnect = NO;
                 
@@ -2778,8 +2780,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             } else {
                 LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
                 surveyManager.offlineSurveyIsDefault = YES;
+                
+                NSString *lastSentMessageText = nil;
+                if (altChatViewController)
+                    lastSentMessageText = altChatViewController.lastSentMessageText;
 
-                [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
+                [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurveyWithResponse:lastSentMessageText];
+                
                 [altChatViewController forceLeaveMessageScreen];
             }
         } else if ([action isEqualToString:@"engagement_started"])
@@ -2815,7 +2822,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
                     surveyManager.offlineSurveyIsDefault = YES;
                     
-                    [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurvey];
+                    NSString *lastSentMessageText = nil;
+                    if (altChatViewController)
+                        lastSentMessageText = altChatViewController.lastSentMessageText;
+                    
+                    [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurveyWithResponse:lastSentMessageText];
                 }
                 
                 [altChatViewController forceLeaveMessageScreen];
@@ -4222,7 +4233,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     // In case the user hasn't typed in any messages, and either surveys are turned off, or he recived and empty survey, we can reset the session
     LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-    if (([chatHistory count] == 1) && (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)))
+    if (!firstChatMessageSent && (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)))
         [self altChatViewControllerWantsSessionTermination:altChatViewController];
     else
         [altChatViewController performDismissalAnimation];
@@ -4845,7 +4856,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         // In case the user hasn't typed in any messages, and either surveys are turned off, or he recived and empty survey, we can reset the session
         LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
-        if ([chatHistory count] == 1) {
+        if (!firstChatMessageSent) {
             if (!surveyManager.surveysEnabled || (surveyManager.surveysEnabled && surveyManager.receivedEmptyPreSurvey)) {
                 userWantsSessionTermination = YES;
                 resetAfterDisconnect = YES;

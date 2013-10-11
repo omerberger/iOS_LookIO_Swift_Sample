@@ -119,6 +119,7 @@
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;
 - (NSString *)currentChatText;
+- (NSString*)lastSentMessageText;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
