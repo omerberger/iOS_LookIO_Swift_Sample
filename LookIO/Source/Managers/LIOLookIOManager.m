@@ -926,6 +926,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [LIOBundleManager sharedBundleManager].selectedChatTheme = selectedChatTheme;
     [[LIOBundleManager sharedBundleManager] resetBundle];
+    
+    [controlButton updateButtonForChatTheme];
 }
 
 - (NSString *)dateToStandardizedString:(NSDate *)aDate

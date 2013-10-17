@@ -65,6 +65,30 @@
     return self;
 }
 
+- (void)updateButtonForChatTheme {
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        innerShadow.hidden = NO;
+        
+        label.layer.shadowColor = [UIColor blackColor].CGColor;
+        label.layer.shadowOpacity = 1.0;
+        label.layer.shadowOffset = CGSizeMake(1.5, 1.5);
+        label.layer.shadowRadius = 1.5;
+        
+        self.layer.shadowRadius = 4.0;
+    } else {
+        innerShadow.hidden = YES;
+        
+        label.layer.shadowColor = [UIColor blackColor].CGColor;
+        label.layer.shadowOpacity = 0.0;
+        label.layer.shadowOffset = CGSizeMake(0.0, 0.0);
+        label.layer.shadowRadius = 0.0;
+        
+        self.layer.shadowRadius = 1.0;
+    }
+    
+    [self setNeedsDisplay];
+}
+
 - (void)dealloc
 {
     [tintColor release];
@@ -75,6 +99,7 @@
     [shadowColor release];
     [innerShadow release];
     [spinner release];
+    [borderColor release];
     
     [super dealloc];
 }
@@ -186,12 +211,25 @@
     [innerShadowPath stroke];
     */
     
-    CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
-    UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width/* + 5.0*/, rect.size.height)
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
+        CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
+    
+        UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width/* + 5.0*/, rect.size.height)
                                                     byRoundingCorners:corners
                                                           cornerRadii:CGSizeMake(13.0, 13.0)];
-    outerPath.lineWidth = 2.0;
-    [outerPath stroke];
+        outerPath.lineWidth = 2.0;
+        [outerPath stroke];
+    } else {
+        CGContextSetStrokeColorWithColor(context, borderColor.CGColor);
+
+        CGRect smallerRect2 = CGRectMake(rect.origin.x + 0.5, rect.origin.y + 0.5, rect.size.width - 1.0, rect.size.height - 1.0);
+
+        UIBezierPath *innerPath = [UIBezierPath bezierPathWithRoundedRect:smallerRect2
+                                                        byRoundingCorners:corners
+                                                              cornerRadii:CGSizeMake(8.0, 8.0)];
+        innerPath.lineWidth = 1.0;
+        [innerPath stroke];
+    }
 }
 
 #pragma mark -
@@ -208,6 +246,9 @@
     [shadowColor release];
     shadowColor = nil;
     
+    [borderColor release];
+    borderColor = nil;
+    
     if (aColor)
     {
         const CGFloat *rgba = CGColorGetComponents(tintColor.CGColor);
@@ -218,6 +259,15 @@
         
         // The "fill color" is the color we actually paint inside the control button.
         fillColor = [[UIColor alloc] initWithRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:0.66];
+        
+        CGFloat lightness = (rgba[0] + rgba[1] + rgba[2])/3;
+        
+        
+        CGFloat borderRed = lightness < 0.5 ? (1.0 + rgba[0])/2 : (0.0 + rgba[0])/2;
+        CGFloat borderGreen = lightness < 0.5 ? (1.0 + rgba[1])/2 : (0.0 + rgba[1])/2;
+        CGFloat borderBlue = lightness < 0.5 ? (1.0 + rgba[2])/2 : (0.0 + rgba[2])/2;
+        
+        borderColor = [[UIColor alloc] initWithRed:borderRed green:borderGreen blue:borderBlue alpha:1.0];
     }
 }
 
