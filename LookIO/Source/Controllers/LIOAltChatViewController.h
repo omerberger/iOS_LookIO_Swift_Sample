@@ -105,6 +105,7 @@
     BOOL isAnimatingReveal;
     
     BOOL shouldHideStatusBarAfterImagePicker;
+    BOOL viewWereUpdatedForPreferedStatusBar;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

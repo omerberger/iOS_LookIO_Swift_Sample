@@ -20,6 +20,10 @@
     return UIStatusBarStyleDefault;
 }
 
+- (BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
 - (void)loadView
 {
     [super loadView];

@@ -52,6 +52,8 @@
 
 #define LIOAltChatViewControllerLoadingViewTag                       1007
 
+#define LIOAltChatViewControllerLogoViewTag                          1008
+
 #define LIOSurveyViewPadding 10.0
 
 #define LIOIpadPopoverTypeNone 0
@@ -386,6 +388,7 @@
                         
                         UIImageView *logoView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
                         aFrame = logoView.frame;
+                        logoView.tag = LIOAltChatViewControllerLogoViewTag;
                         aFrame.origin.x = (320.0 / 2.0) - (aFrame.size.width / 2.0);
                         aFrame.origin.y = poweredByLabel.frame.origin.y + poweredByLabel.frame.size.height + 4.0;
                         logoView.frame = aFrame;
@@ -564,6 +567,46 @@
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return UIStatusBarStyleBlackTranslucent;
+}
+
+- (BOOL)prefersStatusBarHidden {
+    NSLog(@"Prefered status bar hidden is YES");
+    if (!viewWereUpdatedForPreferedStatusBar) {
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self updateViewsForPreferedStatusBar];
+        });
+    }
+    return NO;
+}
+
+- (void)updateViewsForPreferedStatusBar {
+    viewWereUpdatedForPreferedStatusBar = YES;
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI) {
+        UIImageView *logoView = (UIImageView*)[functionHeaderChat.contentView viewWithTag:LIOAltChatViewControllerLogoViewTag];
+
+        // iOS 7.0 + iPad requires originating the powered by logo a bit higher
+        if (LIOIsUIKitFlatMode())
+            if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+                CGRect frame = logoView.frame;
+                frame.origin.y = -74.0;
+                logoView.frame = frame;
+            }
+    } else {
+        CGRect aFrame = CGRectZero;
+        aFrame.size.width = self.view.bounds.size.width;
+        aFrame.size.height = LIOHeaderBarViewDefaultHeight;
+    
+        if (LIOIsUIKitFlatMode())
+            if (![[UIApplication sharedApplication] isStatusBarHidden])
+                aFrame.size.height += 20.0;
+        headerBar.frame = aFrame;
+    
+        [headerBar rejiggerSubviews];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated

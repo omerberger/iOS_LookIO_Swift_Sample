@@ -61,6 +61,22 @@
     return self;
 }
 
+- (void)rejiggerSubviews {
+    CGRect aFrame = separator.frame;
+    aFrame.size.height = 15.0;
+    aFrame.size.width = self.bounds.size.width;
+    aFrame.origin.y = self.bounds.size.height - 14.0;
+    separator.frame = aFrame;
+    
+    aFrame = self.bounds;
+    if (LIOIsUIKitFlatMode()) {
+        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+            aFrame.origin.y += 20.0;
+        }
+    }
+    notificationArea.frame = aFrame;
+}
+
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
