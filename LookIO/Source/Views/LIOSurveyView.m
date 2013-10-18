@@ -737,13 +737,21 @@
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 65;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.origin.y -= 20;
                 frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 30;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.size.height += 20;
             }
             else {
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 25;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.origin.y -= 20;
                 frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 60;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.size.height += 20;
             }
             backgroundImageView.frame = frame;
         }
@@ -1270,13 +1278,21 @@
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 65;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.origin.y -= 20;
                 frame.size.height = scrollView.contentSize.height - 70;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.size.height += 20;
             }
             else {
                 frame.origin.x = 10;
                 frame.size.width = scrollView.bounds.size.width - 20;
                 frame.origin.y = 25;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.origin.y -= 20;
                 frame.size.height = scrollView.contentSize.height - 30;
+                if ([[UIApplication sharedApplication] isStatusBarHidden])
+                    frame.size.height += 20;
             }
             backgroundImageView.frame = frame;
             NSLog(@"alpha is %f", backgroundImageView.alpha);
@@ -1334,13 +1350,21 @@
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 65;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.origin.y -= 20;
                     frame.size.height = nextButton.frame.origin.y - 5.0;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.size.height += 20;
                 }
                 else {
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 25;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.origin.y -= 20;
                     frame.size.height = nextButton.frame.origin.y + 25;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.size.height += 20;
                 }
                 backgroundImageView.frame = frame;
             }
@@ -1409,13 +1433,21 @@
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 65;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.origin.y -= 20;
                     frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 60 + 50;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.size.height += 20;
                 }
                 else {
                     frame.origin.x = 10;
                     frame.size.width = scrollView.bounds.size.width - 20;
                     frame.origin.y = 25;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.origin.y -= 20;
                     frame.size.height = tableView.frame.origin.y + tableViewContentHeight - 20 + 45;
+                    if ([[UIApplication sharedApplication] isStatusBarHidden])
+                        frame.size.height += 20;
                 }
                 backgroundImageView.frame = frame;
             }
