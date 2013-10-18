@@ -7,19 +7,50 @@
 //
 
 #import "LIOSurveyQuestion.h"
+#import "LIOSurveyPickerEntry.h"
+
 
 @implementation LIOSurveyQuestion
 
 @synthesize questionId, mandatory, order, label, logicId, displayType;
-@synthesize validationType, pickerEntries, validationRegexp;
+@synthesize validationType, pickerEntries;
+@synthesize lastKnownValue;
 
 - (void)dealloc
 {
     [label release];
-    [validationRegexp release];
     [pickerEntries release];
     
     [super dealloc];
+}
+
+- (NSArray*)pickerEntryTitles {
+    NSMutableArray* pickerEntryTitles = [[[NSMutableArray alloc] init] autorelease];
+    
+    for (int i=0; i < self.pickerEntries.count; i++) {
+        LIOSurveyPickerEntry* pickerEntry = [self.pickerEntries objectAtIndex:i];
+        [pickerEntryTitles addObject:pickerEntry.label];
+    }
+    
+    return pickerEntryTitles;
+}
+
+- (BOOL)shouldUseStarRatingView {
+    if (self.displayType != LIOSurveyQuestionDisplayTypePicker)
+        return NO;
+    
+    if (self.pickerEntries.count != 5)
+        return NO;
+
+    NSArray* pickerEntryTitles = [self pickerEntryTitles];
+    
+    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Satisfied", @"Satisfied", @"Neither Satisfied Nor Dissatisfied", @"Dissatisfied", @"Very Dissatisfied", nil]])
+        return YES;
+    
+    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Likely", @"Likely", @"Neither Likely Nor Unlikely", @"Unlikely", @"Very Unlikely", nil]])
+        return YES;
+    
+    return NO;
 }
 
 @end

@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOSurveyManager.h"
 
-@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyViewPre;
-@class LIOTimerProxy;
+@class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
+@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -30,12 +31,15 @@
 - (BOOL)altChatViewController:(LIOAltChatViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 - (BOOL)altChatViewControllerShouldAutorotate:(LIOAltChatViewController *)aController;
 - (NSInteger)altChatViewControllerSupportedInterfaceOrientations:(LIOAltChatViewController *)aController;
-- (void)altChatViewController:(LIOAltChatViewController *)aController didEnterBetaEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterTranscriptEmail:(NSString *)anEmail;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didEnterLeaveMessageEmail:(NSString *)anEmail withMessage:(NSString *)aMessage;
 - (void)altChatViewControllerWantsSessionTermination:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerWantsToLeaveSurvey:(LIOAltChatViewController *)aController;
-- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didResendChatMessage:(LIOChatMessage*)aMessage;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPreSurveyWithResponses:(NSDictionary *)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishOfflineSurveyWithResponses:(NSDictionary*)aResponseDict;
+- (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPostSurveyWithResponses:(NSDictionary*)aResponseDict;
+
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController;
@@ -89,11 +93,19 @@
     id<LIOAltChatViewControllerDelegate> delegate;
     id<LIOAltChatViewControllerDataSource> dataSource;
     
-    BOOL surveyPreCompleted;
+    LIOSurveyView* surveyView;
+    BOOL surveyInProgress, waitingForSurvey, waitingForEngagementToStart;
+
     int currentPopoverType;
+
+    LIOChatMessage *clickedFailedMessage;
+    NSInteger clickedFailedMessageIndex;
+    
+    BOOL isAnimatingDismissal;
+    BOOL isAnimatingReveal;
     
     BOOL shouldHideStatusBarAfterImagePicker;
-    
+    BOOL viewWereUpdatedForPreferedStatusBar;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
@@ -103,13 +115,19 @@
 
 - (void)reloadMessages;
 - (void)scrollToBottomDelayed:(BOOL)delayed;
-- (void)performRevealAnimation;
+- (void)performRevealAnimationWithFadeIn:(BOOL)fadeIn;
 - (void)performDismissalAnimation;
 - (void)showReconnectionOverlay;
 - (void)hideReconnectionOverlay;
 - (NSString *)currentChatText;
+- (NSString*)lastSentMessageText;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated;
 - (void)forceLeaveMessageScreen;
 - (void)bailOnSecondaryViews;
+- (void)showSurveyViewForType:(LIOSurveyManagerSurveyType)surveyType;
+- (void)dismissSurveyView;
+- (void)noSurveyRecieved;
+- (void)engagementDidStart;
+- (void)hideChatUIForSurvey:(BOOL)animated;
 
 @end

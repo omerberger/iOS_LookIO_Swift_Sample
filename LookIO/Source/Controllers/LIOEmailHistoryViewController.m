@@ -20,10 +20,18 @@
     return UIStatusBarStyleDefault;
 }
 
+- (BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
 - (void)loadView
 {
     [super loadView];
     UIView *rootView = self.view;
+
+    if (LIOIsUIKitFlatMode())
+        if (![[UIApplication sharedApplication] isStatusBarHidden])
+            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
     if (LIOIsUIKitFlatMode())
         if (![[UIApplication sharedApplication] isStatusBarHidden])
@@ -359,12 +367,28 @@
 {
     if ([inputField.text length])
     {
-        alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle")
+        BOOL stricterFilter = YES; // Discussion http://blog.logichigh.com/2010/09/02/validating-an-e-mail-address/
+        NSString *stricterFilterString = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+        NSString *laxString = @".+@.+\\.[A-Za-z]{2}[A-Za-z]*";
+        NSString *emailRegex = stricterFilter ? stricterFilterString : laxString;
+        NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
+        if (![emailTest evaluateWithObject:inputField.text]) {
+            alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertTitle")
+                                                   message:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertBody")
+                                                  delegate:nil
+                                         cancelButtonTitle:nil
+                                         otherButtonTitles:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertButton"), nil];
+            [alertView show];
+            return;
+        } else {
+            alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle")
                                                message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody")
                                               delegate:self
                                      cancelButtonTitle:nil
                                      otherButtonTitles:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton"), nil];
-        [alertView show];
+            [alertView show];
+        }
+        
     }
     else
     {
@@ -379,7 +403,7 @@
 {
     if (buttonIndex < 0)
         return;
-        
+    
     double delayInSeconds = 0.1;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){

@@ -40,7 +40,7 @@
 
 - (NSString *)description
 {
-    return [[super description] stringByAppendingFormat:@" (weight: %d)", weight];
+    return [[super description] stringByAppendingFormat:@" (weight: %ld)", (long)weight];
 }
 
 @end

@@ -15,7 +15,7 @@
 
 @implementation LIOHeaderBarView
 
-@synthesize delegate;
+@synthesize delegate, notificationArea;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -32,9 +32,11 @@
         aFrame.size.height = 15.0;
         aFrame.size.width = self.bounds.size.width;
         aFrame.origin.y = self.bounds.size.height - 14.0;
+        
         separator.frame = aFrame;
         separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:separator];
+        [separator release];
                 
         notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
         if (LIOIsUIKitFlatMode())
@@ -46,25 +48,38 @@
         
         notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:notificationArea];
+        [notificationArea release];
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
         tappableBackground.backgroundColor = [UIColor clearColor];
         [tappableBackground addGestureRecognizer:tapper];
         [self addSubview:tappableBackground];
+        [tappableBackground release];
     }
     
     return self;
 }
 
+- (void)rejiggerSubviews {
+    CGRect aFrame = separator.frame;
+    aFrame.size.height = 15.0;
+    aFrame.size.width = self.bounds.size.width;
+    aFrame.origin.y = self.bounds.size.height - 14.0;
+    separator.frame = aFrame;
+    
+    aFrame = self.bounds;
+    if (LIOIsUIKitFlatMode()) {
+        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
+            aFrame.origin.y += 20.0;
+        }
+    }
+    notificationArea.frame = aFrame;
+}
+
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [notificationArea release];
-    [separator release];
-    [tappableBackground release];
-    
     [super dealloc];
 }
 

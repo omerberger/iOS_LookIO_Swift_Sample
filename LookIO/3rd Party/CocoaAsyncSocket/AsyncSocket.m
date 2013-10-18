@@ -13,6 +13,7 @@
 #import <netinet/in.h>
 #import <arpa/inet.h>
 #import <netdb.h>
+#import <UIKit/UIDevice.h>
 
 #if TARGET_OS_IPHONE
 // Note: You may need to add the CFNetwork Framework to your project
@@ -3882,7 +3883,7 @@ Failed:
 	if (theFlags & kForbidReadsWrites) return;
 	
 	AsyncWritePacket_LIO *packet = [[AsyncWritePacket_LIO alloc] initWithData:data timeout:timeout tag:tag];
-	
+	    
 	[theWriteQueue addObject:packet];
 	[self scheduleDequeueWrite];
 	
@@ -4153,7 +4154,17 @@ Failed:
 														   (CFDictionaryRef)tlsPacket->tlsSettings);
 		BOOL didStartOnWriteStream = CFWriteStreamSetProperty(theWriteStream, kCFStreamPropertySSLSettings,
 															 (CFDictionaryRef)tlsPacket->tlsSettings);
-		
+        
+        if (([[[UIDevice currentDevice] systemVersion] floatValue] >= 5.0f) && ([[[UIDevice currentDevice] systemVersion] floatValue] < 5.1f)) {
+            const void* keys[] = { kCFStreamSSLLevel };
+            const void* values[] = { CFSTR("kCFStreamSocketSecurityLevelTLSv1_1") };
+            CFDictionaryRef sslSettingsDict = CFDictionaryCreate(kCFAllocatorDefault, keys, values, 1,
+                                                                 &kCFTypeDictionaryKeyCallBacks,
+                                                                 &kCFTypeDictionaryValueCallBacks);
+            CFReadStreamSetProperty(theReadStream, kCFStreamPropertySSLSettings, sslSettingsDict);
+            CFRelease(sslSettingsDict);
+        }
+        
 		if(!didStartOnReadStream || !didStartOnWriteStream)
 		{
             [self closeWithError:[self getSocketError]];

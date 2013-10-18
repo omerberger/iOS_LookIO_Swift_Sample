@@ -16,7 +16,7 @@
 
 @implementation LIOInputBarView
 
-@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea, attachButton;
+@synthesize delegate, singleLineHeight, inputField, desiredHeight, adArea, notificationArea, attachButton, sendButton;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -57,7 +57,7 @@
         sendButton.accessibilityLabel = @"LIOInputBarView.sendButton";
         [sendButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
-        sendButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        sendButton.titleLabel.font = sendButtonFont;
         sendButton.frame = sendButtonFrame;
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
@@ -245,17 +245,18 @@
     NSMutableString *stringToMeasure = [[inputField.text mutableCopy] autorelease];
     if ([stringToMeasure length] && [[stringToMeasure substringFromIndex:[stringToMeasure length] - 1] isEqualToString:@"\n"])
         [stringToMeasure replaceCharactersInRange:NSMakeRange([stringToMeasure length] - 1, 1) withString:@"\n "];
-    
     CGFloat backgroundHeightMod = 14.0; // im not even really sure what this
     if (LIOIsUIKitFlatMode())
         backgroundHeightMod = 22.0;
-    
+
     CGFloat maxWidth = inputField.frame.size.width - 16.0;
+    
     CGSize newSize = [stringToMeasure sizeWithFont:inputField.font constrainedToSize:CGSizeMake(maxWidth, FLT_MAX)];
+    
     NSInteger calculatedNumLines = newSize.height / singleLineHeight;
     if (LIOIsUIKitFlatMode())
         calculatedNumLines += 1;
-        
+
     if (calculatedNumLines > maxLines)
     {
         calculatedNumLines = maxLines;
@@ -296,7 +297,6 @@
     aFrame.size.height = singleLineHeight * calculatedNumLines + backgroundHeightMod;
     if (aFrame.size.height < minHeight) aFrame.size.height = minHeight;
     inputFieldBackground.frame = aFrame;
-    
     if (padUI)
     {
         aFrame = inputField.frame;
@@ -329,7 +329,7 @@
     if (padUI)
         maxTextLength = LIOInputBarViewMaxTextLength_iPad;
     
-    characterCount.text = [NSString stringWithFormat:@"(%u/%u)", [inputField.text length], maxTextLength];
+    characterCount.text = [NSString stringWithFormat:@"(%lu/%u)", (unsigned long)[inputField.text length], maxTextLength];
     [characterCount sizeToFit];
     characterCount.hidden = totalLines < 3;
     

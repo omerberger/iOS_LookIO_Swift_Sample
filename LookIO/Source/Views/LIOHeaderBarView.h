@@ -25,7 +25,9 @@
 }
 
 @property(nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
+@property(nonatomic, readonly) LIONotificationArea* notificationArea;
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
+- (void)rejiggerSubviews;
 
 @end

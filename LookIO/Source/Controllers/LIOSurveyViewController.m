@@ -174,7 +174,7 @@
     if (nextScrollView)
         return;
     
-    int numQuestions = [currentSurvey.questions count];
+    NSInteger numQuestions = [currentSurvey.questions count];
     if (nextQuestionIndex > numQuestions - 1 || nextQuestionIndex < 0)
         return;
     
@@ -256,7 +256,7 @@
         navBar.rightButtonText = LIOLocalizedString(@"LIOSurveyViewController.NavButtonRight");
     [navBar layoutSubviews];
     
-    if (LIOSurveyQuestionDisplayTypeText == nextQuestion.displayType)
+    if (LIOSurveyQuestionDisplayTypeTextField == nextQuestion.displayType)
     {
         UIImage *fieldImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAboutStretchableInputField"];
         UIImage *stretchableFieldImage = [fieldImage stretchableImageWithLeftCapWidth:11 topCapHeight:0];
@@ -514,9 +514,7 @@
 }
 
 - (void)showAlertWithMessage:(NSString *)aMessage
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
+{    
     [validationView removeFromSuperview];
     [validationView release];
     validationView = [[LIOSurveyValidationView alloc] init];
@@ -777,15 +775,6 @@
                     validated = YES;
                 else
                     [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.NumericValidationAlertBody")];
-            }
-            else if ([currentQuestion.validationRegexp length])
-            {
-                NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:currentQuestion.validationRegexp options:0 error:nil];
-                NSArray *matches = [regex matchesInString:stringResponse options:0 range:NSMakeRange(0, [stringResponse length])];
-                if ([matches count])
-                    validated = YES;
-                else
-                    [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.RegexpValidationAlertBody")];
             }
             
             if (validated)

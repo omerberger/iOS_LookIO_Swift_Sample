@@ -10,10 +10,11 @@
 
 typedef enum
 {
-    LIOSurveyQuestionDisplayTypeText,
+    LIOSurveyQuestionDisplayTypeTextField,
     LIOSurveyQuestionDisplayTypePicker,
     LIOSurveyQuestionDisplayTypeMultiselect,
-    LIOSurveyQuestionDisplayTypeSwitch
+    LIOSurveyQuestionDisplayTypeSwitch,
+    LIOSurveyQuestionDisplayTypeTextArea
 } LIOSurveyQuestionDisplayType;
 
 typedef enum
@@ -26,25 +27,29 @@ typedef enum
 
 @interface LIOSurveyQuestion : NSObject
 {
-    int questionId;
+    NSInteger questionId;
     BOOL mandatory;
-    int order;
+    NSInteger order;
     NSString *label;
-    int logicId;
-    NSString *validationRegexp;
+    NSInteger logicId;
     LIOSurveyQuestionDisplayType displayType;
     LIOSurveyQuestionValidationType validationType;
     NSArray *pickerEntries;
+    
+    NSString* lastKnownValue;
 }
 
-@property(nonatomic, assign) int questionId;
+@property(nonatomic, assign) NSInteger questionId;
 @property(nonatomic, assign) BOOL mandatory;
-@property(nonatomic, assign) int order;
+@property(nonatomic, assign) NSInteger order;
 @property(nonatomic, retain) NSString *label;
-@property(nonatomic, assign) int logicId;
+@property(nonatomic, assign) NSInteger logicId;
 @property(nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
 @property(nonatomic, assign) LIOSurveyQuestionValidationType validationType;
 @property(nonatomic, retain) NSArray *pickerEntries;
-@property(nonatomic, retain) NSString *validationRegexp;
 
+@property (nonatomic, retain) NSString* lastKnownValue;
+
+- (BOOL)shouldUseStarRatingView;
+- (NSArray*)pickerEntryTitles;
 @end

@@ -31,11 +31,10 @@
         
         label = [[UILabel alloc] init];
         label.textColor = [UIColor whiteColor];
-        label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:12.0];
+        label.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:15.0];
         label.numberOfLines = 1;
         label.lineBreakMode = UILineBreakModeTailTruncation;
         label.backgroundColor = [UIColor clearColor];
-        label.alpha = 0.66;
         [self addSubview:label];
         
         cautionSign = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOTinyTransparentCautionIcon"]];
@@ -59,7 +58,7 @@
 - (void)layoutSubviews
 {
     CGRect aFrame = self.frame;
-    aFrame.size.height = 22.5;
+    aFrame.size.height = 36.0;
     self.frame = aFrame;
     
     CGFloat maxLabelWidth = self.bounds.size.width - 40.0;
@@ -69,20 +68,21 @@
     aFrame = label.frame;
     aFrame.size.width = labelSize.width;
     aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0) + 7.0;
-    aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.origin.y = (self.bounds.size.height - aFrame.size.height)/3.0;
     label.frame = aFrame;
     
     aFrame = cautionSign.frame;
     aFrame.size.width = 15.0;
     aFrame.size.height = 13.0;
     aFrame.origin.x = label.frame.origin.x - 20.0;
-    aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
+    aFrame.origin.y = (self.bounds.size.height - aFrame.size.height)/3.0;
     cautionSign.frame = aFrame;
     
     aFrame = backgroundImage.frame;
     aFrame.origin.x = 0.0;
     aFrame.origin.y = verticallyMirrored ? 0.0 : -4.5; // Shadow spills over top. Or bottom!
     aFrame.size.width = self.bounds.size.width;
+    aFrame.size.height = self.frame.size.height;
     backgroundImage.frame = aFrame;
     
     if (verticallyMirrored)
@@ -95,17 +95,20 @@
 {
     [self layoutSubviews];
     
+    /*
     CGRect endingFrame = self.frame;
     
     CGRect startingFrame = self.frame;
     startingFrame.origin.y += startingFrame.size.height * (verticallyMirrored ? -1.0 : 1.0);
     self.frame = startingFrame;
-    
+     */
+    self.alpha = 0.0;
     [UIView animateWithDuration:0.33
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
-                         self.frame = endingFrame;
+//                         self.frame = endingFrame;
+                         self.alpha = 1.0;
                      }
                      completion:^(BOOL finished) {
                      }];
@@ -115,14 +118,15 @@
 {
     [self layoutSubviews];
     
-    CGRect endingFrame = self.frame;
-    endingFrame.origin.y += endingFrame.size.height * (verticallyMirrored ? -1.0 : 1.0);
+//    CGRect endingFrame = self.frame;
+//    endingFrame.origin.y += endingFrame.size.height * (verticallyMirrored ? -1.0 : 1.0);
         
     [UIView animateWithDuration:0.33
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         self.frame = endingFrame;
+//                         self.frame = endingFrame;
+                         self.alpha = 0.0;
                      }
                      completion:^(BOOL finished) {
                          [delegate surveyValidationViewDidFinishDismissalAnimation:self];
