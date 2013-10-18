@@ -33,10 +33,6 @@
         if (![[UIApplication sharedApplication] isStatusBarHidden])
             [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
-    if (LIOIsUIKitFlatMode())
-        if (![[UIApplication sharedApplication] isStatusBarHidden])
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-    
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
         
     navBar = [[LIONavigationBar alloc] init];

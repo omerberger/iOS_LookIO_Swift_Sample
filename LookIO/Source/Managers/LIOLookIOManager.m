@@ -3935,7 +3935,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                             message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                           delegate:nil
+                                                           delegate:self
                                                   cancelButtonTitle:nil
                                                   otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
         [alertView show];
@@ -4117,7 +4117,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return [delegate lookIOManager:self linkViewForURL:aURL];
     
     return nil;
-
 }
 
 - (void)beginTransitionWithIntraAppLinkURL:(NSURL *)aURL

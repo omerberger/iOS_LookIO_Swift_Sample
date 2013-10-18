@@ -325,7 +325,6 @@
         endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         
     functionHeaderChat = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    functionHeaderChat.backgroundColor = [UIColor clearColor];
     functionHeaderChat.selectionStyle = UITableViewCellSelectionStyleNone;
 
     // Fix for iOS 7.0 - allow Powered By Area to appear, otherwise it is clipped
@@ -1487,7 +1486,7 @@
         message = bodyString;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
         message = bodyString;
-        
+    
     alertView = [[UIAlertView alloc] initWithTitle:nil
                                            message:message
                                                 delegate:self
@@ -1515,6 +1514,7 @@
     }
 
     [alertView show];
+
 }
 
 #pragma mark -
@@ -1665,7 +1665,7 @@
         
         [aBubble setNeedsLayout];
         [aBubble setNeedsDisplay];
-        
+
         if (LIOChatMessageKindLocal == aMessage.kind && aMessage.sendingFailed) {
             UIButton* failedMessageButton = [[UIButton alloc] initWithFrame:CGRectMake(tableView.bounds.size.width - 313.0, 20, 22, 22)];
             UIImage* failedMessageButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFailedMessageAlertIcon"];

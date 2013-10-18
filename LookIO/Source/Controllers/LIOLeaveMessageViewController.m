@@ -16,18 +16,10 @@
 
 @synthesize delegate, initialMessage, initialEmailAddress;
 
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleDefault;
-}
-
 - (void)loadView
 {
     [super loadView];
     UIView *rootView = self.view;
-    
-    if (LIOIsUIKitFlatMode())
-        if (![[UIApplication sharedApplication] isStatusBarHidden])
-            [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     
     UIColor *textColor = [UIColor colorWithWhite:0.4 alpha:1.0];
     
@@ -97,8 +89,6 @@
     emailField.backgroundColor = [UIColor clearColor];
     aFrame.origin.x = 10.0;
     aFrame.origin.y = 12.0;
-    if (LIOIsUIKitFlatMode())
-        aFrame.origin.y = 10.0;
     aFrame.size.width = 269.0;
     aFrame.size.height = 23.0;
     emailField.frame = aFrame;
@@ -134,8 +124,6 @@
     messageView.font = [UIFont systemFontOfSize:14.0];
     messageView.delegate = self;
     aFrame.origin.x = 1.0;
-    if (LIOIsUIKitFlatMode())
-        aFrame.origin.x = 5.0;
     aFrame.origin.y = 3.0;
     aFrame.size.width = 280.0;
     aFrame.size.height = 73.0;
@@ -193,8 +181,6 @@
         
         aFrame.origin.x = 10.0;
         aFrame.origin.y = 12.0;
-        if (LIOIsUIKitFlatMode())
-            aFrame.origin.y = 10.0;
         aFrame.size.width = fieldBackground.frame.size.width - 21.0;
         aFrame.size.height = 23.0;
         emailField.frame = aFrame;
@@ -211,8 +197,6 @@
         aFrame.size.width = messageBackground.frame.size.width - 10.0;
         if (padUI) aFrame.size.height = 90.0;
         else aFrame.size.height = 73.0;
-        if (LIOIsUIKitFlatMode())
-            aFrame.origin.x = 5.0;
         messageView.frame = aFrame;
         
         submitButton.bounds = fieldBackground.bounds;
