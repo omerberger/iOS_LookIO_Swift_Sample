@@ -13,8 +13,6 @@
 		A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0491795C24A00914649 /* LPVisitAPIClient.m */; };
 		A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B676517ABFA600053A62E /* LIOBlurImageView.h */; };
 		A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676617ABFA600053A62E /* LIOBlurImageView.m */; };
-		A70B676B17AC02820053A62E /* UIImage+ImageEffects.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B676917AC02820053A62E /* UIImage+ImageEffects.h */; };
-		A70B676C17AC02820053A62E /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676A17AC02820053A62E /* UIImage+ImageEffects.m */; };
 		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
 		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
@@ -151,8 +149,6 @@
 		A703A0491795C24A00914649 /* LPVisitAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPVisitAPIClient.m; path = Source/Networking/LPVisitAPIClient.m; sourceTree = "<group>"; };
 		A70B676517ABFA600053A62E /* LIOBlurImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBlurImageView.h; path = Source/Views/LIOBlurImageView.h; sourceTree = "<group>"; };
 		A70B676617ABFA600053A62E /* LIOBlurImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBlurImageView.m; path = Source/Views/LIOBlurImageView.m; sourceTree = "<group>"; };
-		A70B676917AC02820053A62E /* UIImage+ImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+ImageEffects.h"; path = "UIImage+ImageEffects/UIImage+ImageEffects.h"; sourceTree = "<group>"; };
-		A70B676A17AC02820053A62E /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+ImageEffects.m"; path = "UIImage+ImageEffects/UIImage+ImageEffects.m"; sourceTree = "<group>"; };
 		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
@@ -296,15 +292,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A7BC8D9017A1E42F00D31068 /* UIImage+ImageEffects */ = {
-			isa = PBXGroup;
-			children = (
-				A70B676917AC02820053A62E /* UIImage+ImageEffects.h */,
-				A70B676A17AC02820053A62E /* UIImage+ImageEffects.m */,
-			);
-			name = "UIImage+ImageEffects";
-			sourceTree = "<group>";
-		};
 		A7C859361779E23100493BF8 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
@@ -524,7 +511,6 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				A7BC8D9017A1E42F00D31068 /* UIImage+ImageEffects */,
 				D440D47B1541E8450045DBFF /* TTTAttributedLabel */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
@@ -661,7 +647,6 @@
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
 				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
 				A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */,
-				A70B676B17AC02820053A62E /* UIImage+ImageEffects.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -798,7 +783,6 @@
 				A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */,
 				A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */,
 				A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */,
-				A70B676C17AC02820053A62E /* UIImage+ImageEffects.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
