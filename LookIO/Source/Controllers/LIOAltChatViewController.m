@@ -2452,32 +2452,6 @@
     popover = nil;
 }
 
-#pragma mark -
-#pragma mark LIOSurveyViewControllerDelegate methods
-
-- (BOOL)surveyViewController:(LIOSurveyViewController *)aController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return [delegate altChatViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
-}
-
-- (void)surveyViewControllerDidCancel:(LIOSurveyViewController *)aController
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    surveyWasCanceled = YES;
-    [self dismissModalViewControllerAnimated:YES];
-    
-    // viewDidAppear doesn't trigger on iPad, so we have to manually dismiss the chat here.
-    if (padUI)
-    {
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self performDismissalAnimation];
-        });
-    }
-}
-
 - (void)dismissSurveyView {
     if (!surveyInProgress)
         return;
