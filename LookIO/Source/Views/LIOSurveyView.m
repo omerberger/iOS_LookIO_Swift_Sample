@@ -277,7 +277,8 @@
     if (padUI)
         currentScrollView.frame = [self frameForIpadScrollView];
 
-    if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
+
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage && !isAnimating) {
             [self rejiggerIntroScrollView:currentScrollView];
     } else {
         if (!isAnimating && currentScrollView != nil)
@@ -1487,13 +1488,6 @@
     else
         [self switchToPreviousQuestion];
 }
-
-/*
- "LIOSurveyView.LeaveSurveyAlertTitle" = "Leave Survey";
- "LIOSurveyView.LeaveSurveyAlertBody" = "Are you sure you want to exit without finishing this survey?";
- "LIOSurveyView.LeaveSurveyAlertNoButton = "Yes";
- "LIOSurveyView.LeaveSurveyAlertNoButton" = "No";
- */
 
 -(void)cancelButtonWasTapped:(id)sender {
     if (self.currentSurveyType == LIOSurveyManagerSurveyTypeOffline || self.currentSurveyType == LIOSurveyManagerSurveyTypePost) {
