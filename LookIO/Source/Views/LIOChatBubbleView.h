@@ -32,11 +32,15 @@ typedef enum
 } LIOChatBubbleViewLinkSupertype;
 
 @protocol LIOChatBubbleViewDelegate
+
 - (void)chatBubbleViewWantsCopyMenu:(LIOChatBubbleView *)aView;
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapSupertypeLinkWithURL:(NSURL *)aURL link:(NSString*)aLink scheme:(NSString*)aScheme superType:(int)aSupertype;
 - (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL;
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapPhoneURL:(NSURL *)aURL link:(NSString *)aLink;
+
 @end
 
-@interface LIOChatBubbleView : UIView <UIAlertViewDelegate>
+@interface LIOChatBubbleView : UIView
 {
     LIOChatBubbleViewFormattingMode formattingMode;
     LIOChatBubbleViewLinkMode linkMode;
@@ -45,10 +49,8 @@ typedef enum
         *linkURLs, *linkSchemes;
     UIImageView *backgroundImage;
     NSString *senderName;
-    NSURL *urlBeingLaunched;
     LIOChatMessage *rawChatMessage;
     NSInteger index;
-    UIAlertView *alertView;
     id<LIOChatBubbleViewDelegate> delegate;
 }
 

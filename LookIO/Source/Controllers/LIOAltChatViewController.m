@@ -41,19 +41,16 @@
 #define LIOAltChatViewControllerTableViewCellReuseId       @"LIOAltChatViewControllerTableViewCellReuseId"
 #define LIOAltChatViewControllerTableViewCellBubbleViewTag           1001
 #define LIOAltChatViewControllerTableViewCellFailedMessageButtonTag  1002
-
 #define LIOAltChatViewControllerPhotoSourceActionSheetTag            1003
 #define LIOAltChatViewControllerAttachConfirmAlertViewTag            1004
 #define LIOAltChatViewControllerResendMessageActionSheetTag          1005
-#define LIOSurveyViewPrePadding 10.0
-
 #define LIOAltChatViewControllerOfflineSurveyConfirmAlertViewTag     1006
-
 #define LIOAltChatViewControllerLoadingViewTag                       1007
-
 #define LIOAltChatViewControllerLogoViewTag                          1008
+#define LIOAltChatViewControllerSuperlinkCofirmAlertViewTag          1009
 
 #define LIOSurveyViewPadding 10.0
+#define LIOSurveyViewPrePadding 10.0
 
 #define LIOIpadPopoverTypeNone 0
 #define LIOIpadPopoverTypeImagePicker 1
@@ -583,6 +580,8 @@
     [lastSentMessageText release];
     [dismissButton release];
     [pendingImageAttachment release];
+    
+    [urlBeingLaunched release];
     
     // I... don't know if this is such a great idea, but.
     [[LIOBundleManager sharedBundleManager] pruneImageCache];
@@ -2415,10 +2414,51 @@
     });
 }
 
-- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL
-{
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL {
     [[LIOLookIOManager sharedLookIOManager] beginTransitionWithIntraAppLinkURL:aURL];
 }
+
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapSupertypeLinkWithURL:(NSURL *)aURL link:(NSString *)aLink scheme:(NSString *)aScheme superType:(int)aSupertype {
+    NSString *alertMessage = nil;
+    NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
+    NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
+    if ([[aScheme lowercaseString] hasPrefix:@"http"])
+        alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
+    else if ([[aScheme lowercaseString] hasPrefix:@"mailto"])
+        alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
+    else if ([[aScheme lowercaseString] hasPrefix:@"tel"])
+    {
+        alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
+        alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone");
+        alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone");
+    }
+    
+    [urlBeingLaunched release];
+    urlBeingLaunched = [aURL retain];
+    
+    alertView = [[UIAlertView alloc] initWithTitle:nil
+                                           message:alertMessage
+                                          delegate:self
+                                 cancelButtonTitle:nil
+                                 otherButtonTitles:alertCancel, alertOpen, nil];
+    alertView.tag = LIOAltChatViewControllerSuperlinkCofirmAlertViewTag;
+    [alertView show];
+}
+
+- (void)chatBubbleView:(LIOChatBubbleView *)aView didTapPhoneURL:(NSURL *)aLinkURL link:(NSString *)aLink {
+    [urlBeingLaunched release];
+    urlBeingLaunched = [aLinkURL retain];
+    
+    NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
+    alertView = [[UIAlertView alloc] initWithTitle:nil
+                                           message:alertMessage
+                                          delegate:self
+                                 cancelButtonTitle:nil
+                                 otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
+    alertView.tag = LIOAltChatViewControllerSuperlinkCofirmAlertViewTag;
+    [alertView show];
+}
+
 
 #pragma mark -
 #pragma mark LIOToasterViewDelegate methods
@@ -2857,6 +2897,16 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
+    if (LIOAltChatViewControllerSuperlinkCofirmAlertViewTag == alertView.tag) {
+        if (1 == buttonIndex && urlBeingLaunched)
+        {
+            [[UIApplication sharedApplication] openURL:urlBeingLaunched];
+        }
+        
+        [urlBeingLaunched release];
+        urlBeingLaunched = nil;
+    }
+    
     if (LIOAltChatViewControllerAttachConfirmAlertViewTag == alertView.tag)
     {
         if (buttonIndex == 1) // yes

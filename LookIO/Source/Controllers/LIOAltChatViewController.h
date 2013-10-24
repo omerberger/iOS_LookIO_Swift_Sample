@@ -106,6 +106,8 @@
     
     BOOL shouldHideStatusBarAfterImagePicker;
     BOOL viewWereUpdatedForPreferedStatusBar;
+    
+    NSURL *urlBeingLaunched;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;

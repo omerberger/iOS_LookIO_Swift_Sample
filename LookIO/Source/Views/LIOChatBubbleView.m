@@ -62,24 +62,13 @@ static NSDataDetector *dataDetector = nil;
         linkSupertypes = [[NSMutableArray alloc] init];
         linkURLs = [[NSMutableArray alloc] init];
         linkSchemes = [[NSMutableArray alloc] init];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationWillResignActive:)
-                                                     name:UIApplicationWillResignActiveNotification
-                                                   object:nil];
     }
     
     return self;
 }
 
 - (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [alertView dismissWithClickedButtonIndex:0 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
-    
+{    
     [mainMessageView release];
     [backgroundImage release];
     [senderName release];
@@ -87,7 +76,6 @@ static NSDataDetector *dataDetector = nil;
     [links release];
     [linkButtons release];
     [linkTypes release];
-    [urlBeingLaunched release];
     [rawChatMessage release];
     [intraAppLinkViews release];
     [linkSupertypes release];
@@ -504,29 +492,7 @@ static NSDataDetector *dataDetector = nil;
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            NSString *alertMessage = nil;
-            NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
-            NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
-            if ([[aScheme lowercaseString] hasPrefix:@"http"])
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
-            else if ([[aScheme lowercaseString] hasPrefix:@"mailto"])
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
-            else if ([[aScheme lowercaseString] hasPrefix:@"tel"])
-            {
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
-                alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone");
-                alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone");
-            }
-            
-            [urlBeingLaunched release];
-            urlBeingLaunched = [aLinkURL retain];
-            
-            alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                   message:alertMessage
-                                                  delegate:self
-                                         cancelButtonTitle:nil
-                                         otherButtonTitles:alertCancel, alertOpen, nil];
-            [alertView show];
+            [delegate chatBubbleView:self didTapSupertypeLinkWithURL:aLinkURL link:aLink scheme:aScheme superType:aSupertype];
         }
         else
         {
@@ -536,44 +502,8 @@ static NSDataDetector *dataDetector = nil;
     }
     else if (NSTextCheckingTypePhoneNumber)
     {
-        [urlBeingLaunched release];
-        urlBeingLaunched = [aLinkURL retain];
-        
-        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
-        alertView = [[UIAlertView alloc] initWithTitle:nil
-                                               message:alertMessage
-                                              delegate:self
-                                     cancelButtonTitle:nil
-                                     otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
-        [alertView show];
+        [delegate chatBubbleView:self didTapPhoneURL:aLinkURL link:aLink];
     }
-}
-
-#pragma mark -
-#pragma mark UIAlertViewDelegate methods
-
-- (void)alertView:(UIAlertView *)anAlertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (1 == buttonIndex && urlBeingLaunched)
-    {
-        [[UIApplication sharedApplication] openURL:urlBeingLaunched];
-    }
-    
-    [urlBeingLaunched release];
-    urlBeingLaunched = nil;
-    
-    [alertView autorelease];
-    alertView = nil;
-}
-
-#pragma mark -
-#pragma mark Notification handlers
-
-- (void)applicationWillResignActive:(NSNotification *)aNotification
-{
-    [alertView dismissWithClickedButtonIndex:0 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
 }
 
 @end
