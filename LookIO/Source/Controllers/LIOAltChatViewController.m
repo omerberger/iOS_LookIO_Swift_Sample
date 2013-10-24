@@ -26,7 +26,6 @@
 #import "LIOSurveyTemplate.h"
 #import "LIOSurveyPickerEntry.h"
 #import "LIOTimerProxy.h"
-#import "LIOSurveyViewController.h"
 #import "LIOMediaManager.h"
 #import "LIOSurveyView.h"
 #import "LIOImageBubbleView.h"
