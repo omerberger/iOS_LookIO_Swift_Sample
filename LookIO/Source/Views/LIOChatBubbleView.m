@@ -197,6 +197,9 @@ static NSDataDetector *dataDetector = nil;
     [newLinkButton addTarget:self action:@selector(linkButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 20.0, 0.0, 20.0);
     
+    if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+        [newLinkButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    
     return newLinkButton;
 }
 
