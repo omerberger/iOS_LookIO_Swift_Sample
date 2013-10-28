@@ -279,7 +279,11 @@ static NSDataDetector *dataDetector = nil;
                         NSString *aString = (NSString *)linkView;
                         UILabel *aLabel = [[[UILabel alloc] init] autorelease];
                         aLabel.backgroundColor = [UIColor clearColor];
+                        
                         aLabel.textColor = [UIColor whiteColor];
+                        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                            aLabel.textColor = [UIColor darkGrayColor];
+                                                 
                         aLabel.text = aString;
                         aLabel.textAlignment = UITextAlignmentCenter;
                         [intraAppLinkViews addObject:aLabel];
