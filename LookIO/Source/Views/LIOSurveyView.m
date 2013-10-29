@@ -242,25 +242,21 @@
     [pageControl release];
     
     if (!padUI) {
-        isAnimating = YES;
+        isAnimatingEntrance = YES;
         [UIView animateWithDuration:0.4 animations:^{
             currentScrollView.alpha = 1.0;
             currentScrollView.transform = CGAffineTransformIdentity;
-            
-//            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
-//                backgroundDismissableArea.alpha = 1.0;
-
         } completion:^(BOOL finished) {
-            isAnimating = NO;
+            isAnimatingEntrance = NO;
         }];
     } else {
-        isAnimating = YES;
+        isAnimatingEntrance = YES;
         [UIView animateWithDuration:0.3 animations:^{
             CGRect aRect = self.frame;
             aRect.origin.x = 0;
             self.frame = aRect;
         } completion:^(BOOL finished) {
-            isAnimating = NO;
+            isAnimatingEntrance = NO;
         }];
     };
 }
@@ -277,15 +273,14 @@
     if (padUI)
         currentScrollView.frame = [self frameForIpadScrollView];
 
-
-    if (currentQuestionIndex == LIOIndexForSurveyIntroPage && !isAnimating) {
+    if (currentQuestionIndex == LIOIndexForSurveyIntroPage && !isAnimatingTransition) {
             [self rejiggerIntroScrollView:currentScrollView];
     } else {
-        if (!isAnimating && currentScrollView != nil)
+        if (!isAnimatingTransition && currentScrollView != nil)
             [self rejiggerSurveyScrollView:currentScrollView];
     }
     
-    if (previousQuestionImageView && !isAnimating) {
+    if (previousQuestionImageView && !isAnimatingTransition) {
         previousQuestionImageView.transform = CGAffineTransformIdentity;
         previousQuestionImageView.frame = currentScrollView.frame;
         CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
@@ -293,7 +288,7 @@
         previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
     }
     
-    if (nextQuestionImageView && !isAnimating) {
+    if (nextQuestionImageView && !isAnimatingTransition) {
         nextQuestionImageView.transform = CGAffineTransformIdentity;
         nextQuestionImageView.frame = currentScrollView.frame;
         CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
@@ -802,12 +797,7 @@
     questionLabel.backgroundColor = [UIColor clearColor];
     if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
         questionLabel.font = [UIFont boldSystemFontOfSize:17.0];
-//        if (!padUI) {
-//            questionLabel.textColor = [UIColor whiteColor];
-//            questionLabel.shadowColor = [UIColor darkGrayColor];
-//            questionLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-//        } else
-            questionLabel.textColor = [UIColor darkGrayColor];
+        questionLabel.textColor = [UIColor darkGrayColor];
     } else {
         questionLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
         questionLabel.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -1298,7 +1288,7 @@
             backgroundImageView.frame = frame;
         }
     }
-    
+
     LIOStarRatingView* starRatingView = (LIOStarRatingView*)[scrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
     if (starRatingView) {
         aFrame.size.width = scrollView.frame.size.width;
@@ -1453,8 +1443,6 @@
             }
         }
     }
-
-
 }
 
 -(CGFloat)heightForTableView:(UITableView*)tableView {
@@ -1472,7 +1460,7 @@
 
 -(void)handleLeftSwipeGesture:(UISwipeGestureRecognizer*)sender
 {
-    if (isAnimating)
+    if (isAnimatingTransition || isAnimatingEntrance)
         return;
     
     [self switchToNextQuestion];
@@ -1480,7 +1468,7 @@
 
 -(void)handleRightSwipeGesture:(UISwipeGestureRecognizer*)sender
 {
-    if (isAnimating)
+    if (isAnimatingTransition || isAnimatingEntrance)
         return;
     
     if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
@@ -1557,7 +1545,7 @@
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     } else {
-        if (!isAnimating)
+        if (!isAnimatingTransition && !isAnimatingEntrance)
             [self cancelSurveyView];
     }
 }
@@ -1570,7 +1558,7 @@
 }
 
 -(void)bounceViewLeft {
-    isAnimating = YES;
+    isAnimatingTransition = YES;
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -1595,7 +1583,7 @@
                         aFrame.origin.x -= 20;
                         currentScrollView.frame = aFrame;
                 } completion:^(BOOL finished) {
-                        isAnimating = NO;
+                        isAnimatingTransition = NO;
                     }];
                 }];
             }];
@@ -1632,14 +1620,14 @@
                 }
 
             } completion:^(BOOL finished) {
-                isAnimating = NO;
+                isAnimatingTransition = NO;
             }];
         }];
     }
 }
 
 -(void)bounceViewRight {
-    isAnimating = YES;
+    isAnimatingTransition = YES;
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -1664,7 +1652,7 @@
                         aFrame.origin.x += 20;
                         currentScrollView.frame = aFrame;
                     } completion:^(BOOL finished) {
-                        isAnimating = NO;
+                        isAnimatingTransition = NO;
                     }];
                 }];
             }];
@@ -1701,7 +1689,7 @@
                 }
                 
             } completion:^(BOOL finished) {
-                isAnimating = NO;
+                isAnimatingTransition = NO;
             }];
         }];
     }
@@ -1746,7 +1734,7 @@
         [self setNeedsLayout];
         
         if (padUI) {
-            isAnimating = YES;
+            isAnimatingTransition = YES;
             
             CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
             CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
@@ -1833,7 +1821,7 @@
                 
             } completion:^(BOOL finished) {
                 currentScrollView = nextQuestionScrollView;                
-                isAnimating = NO;
+                isAnimatingTransition = NO;
                 
                 [previousQuestionImageView removeFromSuperview];
                 previousQuestionImageView = nil;
@@ -1849,7 +1837,7 @@
                 }
             }];
         } else {
-            isAnimating = YES;
+            isAnimatingTransition = YES;
             [UIView animateWithDuration:0.3 animations:^{
                 [currentScrollView endEditing:YES];
                 
@@ -1866,7 +1854,7 @@
                 currentScrollView = nil;
                 currentScrollView = nextQuestionScrollView;
                 
-                isAnimating = NO;
+                isAnimatingTransition = NO;
                 
                 LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
                 if (currentQuestion.shouldUseStarRatingView) {
@@ -1917,7 +1905,7 @@
     [self addSubview:previousQuestionScrollView];
     
     if (padUI) {
-        isAnimating = YES;
+        isAnimatingTransition = YES;
 
         CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
         CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
@@ -2019,7 +2007,7 @@
             
         } completion:^(BOOL finished) {
             currentScrollView = previousQuestionScrollView;
-            isAnimating = NO;
+            isAnimatingTransition = NO;
             
             [nextQuestionImageView removeFromSuperview];
             nextQuestionImageView = nil;
@@ -2032,7 +2020,7 @@
     }
     else {
         
-        isAnimating = YES;
+        isAnimatingTransition = YES;
         [UIView animateWithDuration:0.3 animations:^{
             [currentScrollView endEditing:YES];
             
@@ -2052,7 +2040,7 @@
             currentScrollView = nil;
             currentScrollView = previousQuestionScrollView;
             
-            isAnimating = NO;
+            isAnimatingTransition = NO;
         }];
     }
 }
