@@ -146,6 +146,20 @@
             [background.layer addSublayer:vertGradient];
             [background.layer addSublayer:horizGradient];
             [self.view addSubview:background];
+            
+            if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation)) {
+                CGRect frame = horizGradient.frame;
+                CGFloat height = frame.size.height;
+                frame.size.height = frame.size.width;
+                frame.size.width = height;
+                horizGradient.frame = frame;
+                
+                frame = vertGradient.frame;
+                height = frame.size.height;
+                frame.size.height = frame.size.width;
+                frame.size.width = height;
+                vertGradient.frame = frame;
+            }
         }
     }
     
