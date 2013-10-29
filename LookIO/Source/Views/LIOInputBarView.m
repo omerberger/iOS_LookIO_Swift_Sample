@@ -73,6 +73,8 @@
         sendButton.frame = sendButtonFrame;
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            [sendButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
         [self addSubview:sendButton];
         
         CGRect attachButtonFrame = sendButton.frame;
