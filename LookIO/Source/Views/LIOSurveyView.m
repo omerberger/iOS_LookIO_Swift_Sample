@@ -601,6 +601,7 @@
     } else {
         nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+        [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
@@ -620,6 +621,7 @@
     } else {
         cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+        [cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
@@ -998,6 +1000,7 @@
             [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
             nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
             [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+            [nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         }
 
         [nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];

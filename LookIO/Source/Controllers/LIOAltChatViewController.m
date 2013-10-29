@@ -304,6 +304,7 @@
     }  else {
         emailConvoButton.layer.cornerRadius = 5.0;
         emailConvoButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
+        [emailConvoButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
 
 
@@ -334,6 +335,7 @@
     } else {
         endSessionButton.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.6];
         endSessionButton.layer.cornerRadius = 5.0;
+        [endSessionButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
     }
     endSessionButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
     endSessionButton.titleLabel.adjustsFontSizeToFitWidth = YES;

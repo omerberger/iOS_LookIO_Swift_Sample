@@ -62,6 +62,7 @@
         } else {
             leftButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
             [leftButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+            [leftButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         }
         [self addSubview:leftButton];
         
