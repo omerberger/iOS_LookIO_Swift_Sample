@@ -29,6 +29,11 @@ extern NSString *const kLPEventAddedToCart;
 #define kLPChatThemeClassic   0
 #define kLPChatThemeFlat      1
 
+// Control Button type constants
+// Return these via the "lookIOManagerControlButtonType:" delegate method.
+#define kLPControlButtonClassic   0
+#define kLPControlButtonSquare    1
+
 @class LIOLookIOManager;
 @protocol LIOPlugin;
 
@@ -122,6 +127,20 @@ extern NSString *const kLPEventAddedToCart;
  @return Constant representing the collaboration component you would like to enable.
  Return the constant kLPCollaborationComponentPhoto to enable photo sharing.
  Return the constant kLPCollaborationComponentNone to disable all collaboration components.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ */
+
+- (UInt32)lookIOManagerControlButtonType:(LIOLookIOManager*)aManager;
+
+/*!
+ Implement this method to specify which type of Live Chat control button you would like to use.
+ The contro button appears on the middle-left of your app's view and is a call to action for
+ users to chat.
+ 
+ @return Constant representing the control button type you would like to use.
+ Return the constant kLPControlButtonClassic to use the classic control button, which is a rectangle button with a label.
+ Return the constant kLPControlButtonSquare to use the square control button, which is square with a chat icon.
  
  @param aManager The LIOLookIOManager shared instance.
  */

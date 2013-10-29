@@ -20,6 +20,10 @@
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
+		A7B32B9118203EE300273A6C /* LIOSquareControlButtonView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */; };
+		A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */; };
+		A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B931820603A00273A6C /* LIODragToDeleteView.h */; };
+		A7B32B961820603A00273A6C /* LIODragToDeleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B32B941820603A00273A6C /* LIODragToDeleteView.m */; };
 		A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C859371779E26B00493BF8 /* LPSSEManager.h */; };
 		A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C859381779E26B00493BF8 /* LPSSEManager.m */; };
 		A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */; };
@@ -155,6 +159,10 @@
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
+		A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSquareControlButtonView.h; path = Source/Views/LIOSquareControlButtonView.h; sourceTree = "<group>"; };
+		A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSquareControlButtonView.m; path = Source/Views/LIOSquareControlButtonView.m; sourceTree = "<group>"; };
+		A7B32B931820603A00273A6C /* LIODragToDeleteView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODragToDeleteView.h; path = Source/Views/LIODragToDeleteView.h; sourceTree = "<group>"; };
+		A7B32B941820603A00273A6C /* LIODragToDeleteView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODragToDeleteView.m; path = Source/Views/LIODragToDeleteView.m; sourceTree = "<group>"; };
 		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Source/Networking/LPSSEManager.h; sourceTree = "<group>"; };
 		A7C859381779E26B00493BF8 /* LPSSEManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSSEManager.m; path = Source/Networking/LPSSEManager.m; sourceTree = "<group>"; };
 		A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
@@ -412,6 +420,10 @@
 				D4ADC7BF14F322B500713F29 /* LIOChatBubbleView.m */,
 				D4ADC7C014F322B500713F29 /* LIOControlButtonView.h */,
 				D4ADC7C114F322B500713F29 /* LIOControlButtonView.m */,
+				A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */,
+				A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */,
+				A7B32B931820603A00273A6C /* LIODragToDeleteView.h */,
+				A7B32B941820603A00273A6C /* LIODragToDeleteView.m */,
 				D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */,
 				D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */,
 				D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */,
@@ -606,6 +618,7 @@
 				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
+				A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
 				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
 				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
@@ -644,6 +657,7 @@
 				A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */,
 				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
 				A7C85943177B3F1900493BF8 /* LPAPIClient.h in Headers */,
+				A7B32B9118203EE300273A6C /* LIOSquareControlButtonView.h in Headers */,
 				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
 				A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */,
 				A7C96CB11757D40B0028F39C /* LIOSurveyView.h in Headers */,
@@ -736,6 +750,7 @@
 				D4ADC7CD14F322B500713F29 /* LIOChatBubbleView.m in Sources */,
 				D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */,
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
+				A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */,
 				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,
 				D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */,
 				D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */,
@@ -776,6 +791,7 @@
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
 				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
+				A7B32B961820603A00273A6C /* LIODragToDeleteView.m in Sources */,
 				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
 				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,

@@ -21,6 +21,10 @@
 @protocol LIOToasterViewDelegate;
 @protocol LIOSurveyViewDelegate;
 
+// LIOGradientLayer gets rid of implicit layer animations.
+@interface LIOGradientLayer : CAGradientLayer
+@end
+
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didChatWithText:(NSString *)aString;

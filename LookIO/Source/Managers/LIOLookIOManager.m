@@ -22,6 +22,7 @@
 #import "NSData+Base64.h"
 #import "LIOAltChatViewController.h"
 #import "LIOControlButtonView.h"
+#import "LIOSquareControlButtonView.h"
 #import "LIOAnalyticsManager.h"
 #import "LIOChatMessage.h"
 #import "LIOBundleManager.h"
@@ -44,6 +45,7 @@
 #import <AdSupport/AdSupport.h>
 #import "DRNRealTimeBlurView.h"
 #import "LIOBlurImageView.h"
+#import "LIODragToDeleteView.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -131,6 +133,7 @@
 
 #define LIOLookIOManagerControlButtonMinHeight 110.0
 #define LIOLookIOManagerControlButtonMinWidth  35.0
+#define LIOLookIOManagerSquareControlButtonSize 50.0;
 
 // Event constants.
 NSString *const kLPEventConversion  = @"LPEventConversion";
@@ -156,7 +159,7 @@ typedef enum
 } LIOServerMode;
 
 @interface LIOLookIOManager ()
-    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate>
+    <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate, LIOSquareControlButtonViewDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
@@ -168,6 +171,9 @@ typedef enum
     SBJsonWriter_LIO *jsonWriter;
     UIImageView *cursorView, *clickView;
     LIOControlButtonView *controlButton;
+    LIOSquareControlButtonView *squareControlButton;
+    LIODragToDeleteView *dragToDeleteView;
+    UInt32 controlButtonType;
     NSMutableArray *chatHistory;
     NSNumber *lastKnownQueuePosition;
     UIBackgroundTaskIdentifier backgroundTaskId;
@@ -263,6 +269,9 @@ typedef enum
     
     BOOL disableControlButtonOverride;
     BOOL previousControlButtonValue;
+    
+    CGFloat controlButtonPanX;
+    CGFloat controlButtonPanY;
 }
 
 @property(nonatomic, readonly) BOOL screenshotsAllowed;
@@ -755,13 +764,39 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     messageSeparatorData = [[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding] retain];
     
     chatHistory = [[NSMutableArray alloc] init];
+    
+    controlButtonType = kLPControlButtonClassic;
+    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerControlButtonType:)])
+        controlButtonType = [delegate lookIOManagerControlButtonType:self];
+    
+    if (controlButtonType == kLPControlButtonClassic) {
+        controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
+        controlButton.delegate = self;
+        controlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
+        [keyWindow addSubview:controlButton];
+        [self rejiggerControlButtonFrame];
+         controlButton.frame = controlButtonHiddenFrame;
+    }
+    
+    if (controlButtonType == kLPControlButtonSquare) {
+        dragToDeleteView = [[LIODragToDeleteView alloc] initWithFrame:CGRectMake(0, keyWindow.bounds.size.height, keyWindow.bounds.size.width, 100)];
+        dragToDeleteView.alpha = 0.0;
+        dragToDeleteView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        [keyWindow addSubview:dragToDeleteView];
         
-    controlButton = [[LIOControlButtonView alloc] initWithFrame:CGRectZero];
-    controlButton.delegate = self;
-    controlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
-    [keyWindow addSubview:controlButton];
-    [self rejiggerControlButtonFrame];
-    controlButton.frame = controlButtonHiddenFrame;
+        squareControlButton = [[LIOSquareControlButtonView alloc] initWithFrame:CGRectZero];
+        squareControlButton.delegate = self;
+        squareControlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
+        [keyWindow addSubview:squareControlButton];
+        [self rejiggerControlButtonFrame];
+        squareControlButton.frame = controlButtonHiddenFrame;
+        
+        UIPanGestureRecognizer *panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragSquareControlButton:)];
+        [panRecognizer setMinimumNumberOfTouches:1];
+        [panRecognizer setMaximumNumberOfTouches:1];
+        [squareControlButton addGestureRecognizer:panRecognizer];
+        [panRecognizer release];
+    }
     
     // Restore control button settings.
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -1327,7 +1362,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
-- (void)rejiggerControlButtonFrame
+- (void)rejiggerControlButtonFrame {
+    if (controlButtonType == kLPControlButtonClassic)
+        [self rejiggerClassicControlButtonFrame];
+    if (controlButtonType == kLPControlButtonSquare)
+        [self rejiggerSquareControlButtonFrame];
+}
+
+- (void)rejiggerClassicControlButtonFrame
 {
     if (NO == [controlButton.superview isKindOfClass:[UIWindow class]])
         return;
@@ -1415,6 +1457,139 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     //[controlButton setNeedsLayout];
     [controlButton setNeedsDisplay];
+}
+
+- (void)rejiggerSquareControlButtonFrame
+{
+    if (NO == [squareControlButton.superview isKindOfClass:[UIWindow class]])
+        return;
+    
+    UIWindow *buttonWindow = (UIWindow *)squareControlButton.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    [squareControlButton layoutSubviews];
+    
+    CGFloat buttonHeight = LIOLookIOManagerSquareControlButtonSize;
+    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+    // Manually position the control button. Ugh.
+    CGRect aFrame = squareControlButton.frame;
+    aFrame.size.width = buttonWidth + 4.0;
+    aFrame.size.height = buttonHeight;
+
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
+        aFrame.origin.x = screenSize.width - buttonWidth + 2.0;
+        
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.x = screenSize.width + 10.0;
+        controlButtonHiddenFrame = aFrame;
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    {
+        aFrame.origin.y = -2.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.y = -aFrame.size.height - 10.0;
+        controlButtonHiddenFrame = aFrame;
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
+        aFrame.origin.x = -2.0;
+
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.x = -aFrame.size.width - 10.0;
+        controlButtonHiddenFrame = aFrame;
+    }
+    else // Landscape, home button right
+    {
+        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
+        aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+
+        if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+
+        controlButtonShownFrame = aFrame;
+        aFrame.origin.y = screenSize.height + 10.0;
+        controlButtonHiddenFrame = aFrame;
+    }
+
+
+    [squareControlButton setNeedsDisplay];
+}
+
+- (void)dragSquareControlButton:(id)sender {
+    UIPanGestureRecognizer *panGestureRecognizer = (UIPanGestureRecognizer*)sender;
+    UIWindow *buttonWindow = (UIWindow *)squareControlButton.superview;
+    
+    CGPoint translatedPoint = [panGestureRecognizer translationInView:buttonWindow];
+    
+    if ([panGestureRecognizer state] == UIGestureRecognizerStateBegan) {
+        controlButtonPanX = [[sender view] center].x;
+        controlButtonPanY = [[sender view] center].y;
+        
+        [UIView animateWithDuration:0.2 animations:^{
+            CGRect frame = dragToDeleteView.frame;
+            frame.origin.y -= 100;
+            dragToDeleteView.frame = frame;
+
+            dragToDeleteView.alpha = 1.0;
+        }];
+    }
+    
+    translatedPoint = CGPointMake(controlButtonPanX+translatedPoint.x, controlButtonPanY+translatedPoint.y);
+    
+    [[sender view] setCenter:translatedPoint];
+    if (CGRectContainsPoint(dragToDeleteView.frame, translatedPoint)) {
+        if (!dragToDeleteView.isZoomedIn)
+            [dragToDeleteView zoomInOnDeleteArea];
+    } else {
+        if (dragToDeleteView.isZoomedIn)
+            [dragToDeleteView zoomOutOfDeleteArea];
+    }
+    
+    if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
+        if (dragToDeleteView.isZoomedIn) {
+            [UIView animateWithDuration:0.2 animations:^{
+                CGRect frame = squareControlButton.frame;
+                frame.size = CGSizeMake(0, 0);
+                squareControlButton.frame = frame;
+                squareControlButton.alpha = 0.0;
+                
+                squareControlButton.center = dragToDeleteView.center;
+            } completion:^(BOOL finished) {
+                controlButtonHidden = YES;
+                [UIView animateWithDuration:0.2 animations:^{
+                    CGRect frame = dragToDeleteView.frame;
+                    frame.origin.y += 100;
+                    dragToDeleteView.frame = frame;
+                    
+                    dragToDeleteView.alpha = 0.0;
+                }];
+            }];
+            
+        } else {
+            [UIView animateWithDuration:0.2 animations:^{
+                [self rejiggerSquareControlButtonFrame];
+                [UIView animateWithDuration:0.2 animations:^{
+                    CGRect frame = dragToDeleteView.frame;
+                    frame.origin.y += 100;
+                    dragToDeleteView.frame = frame;
+                    
+                    dragToDeleteView.alpha = 0.0;
+                }];
+            } completion:^(BOOL finished) {
+            }];
+        }
+    }
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -3409,6 +3584,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)refreshControlButtonVisibility
 {
+    if (controlButtonType == kLPControlButtonClassic)
+        [self refreshClassicControlButtonVisibility];
+    if (controlButtonType == kLPControlButtonSquare)
+        [self refreshSquareControlButtonVisibility];
+}
+
+- (void)refreshClassicControlButtonVisibility {
     [controlButton.layer removeAllAnimations];
     
     // Trump card #-1: If the session is ending, button is hidden.
@@ -3535,9 +3717,130 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.currentMode = LIOControlButtonViewModePending;
     else
         controlButton.currentMode = LIOControlButtonViewModeDefault;
+}
+
+- (void)refreshSquareControlButtonVisibility {
+    [squareControlButton.layer removeAllAnimations];
     
-    //[controlButton setNeedsLayout];
-    //[controlButton setNeedsDisplay];
+    // Trump card #-1: If the session is ending, button is hidden.
+    if (sessionEnding)
+    {
+        controlButtonHidden = YES;
+        squareControlButton.frame = controlButtonHiddenFrame;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: session is ending.");
+        return;
+    }
+    
+    // Trump card #0: If we have no visibility information, button is hidden.
+    if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
+        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerMultiskillMappingKey])
+    {
+        controlButtonHidden = YES;
+        squareControlButton.frame = controlButtonHiddenFrame;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+        return;
+    }
+    
+    // Trump card #1: Not in a session, and not "enabled" from server-side settings.
+    if (NO == socketConnected && NO == [self enabled])
+    {
+        controlButtonHidden = YES;
+        squareControlButton.frame = controlButtonHiddenFrame;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: [self enabled] == NO.");
+        return;
+    }
+    
+    BOOL willHide = NO, willShow = NO;
+    NSString *aReason;
+    
+    if (lastKnownButtonVisibility)
+    {
+        int val = [lastKnownButtonVisibility intValue];
+        if (0 == val) // never
+        {
+            // Want to hide.
+            willHide = NO == controlButtonHidden;
+            aReason = @"lastKnownButtonVisibility == 0 (never)";
+        }
+        else if (1 == val) // always
+        {
+            // Want to show.
+            willShow = controlButtonHidden;
+            aReason = @"lastKnownButtonVisibility == 1 (always)";
+        }
+        else // 3 = only in session
+        {
+            if (introduced || resumeMode)
+            {
+                // Want to show.
+                willShow = controlButtonHidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only) && (introduced || resumeMode)";
+            }
+            else
+            {
+                // Want to hide.
+                willHide = NO == controlButtonHidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only)";
+            }
+        }
+    }
+    else
+    {
+        willShow = controlButtonHidden;
+        aReason = @"no visibility setting";
+    }
+    
+    // Trump card #2: If chat is up, button is always hidden.
+    if (altChatViewController)
+    {
+        willShow = NO;
+        willHide = NO == controlButtonHidden;
+        aReason = @"chat is up";
+    }
+    
+    if (willHide)
+    {
+        LIOLog(@"<<CONTROL>> Hiding. Reason: %@", aReason);
+        
+        controlButtonVisibilityAnimating = YES;
+        controlButtonHidden = YES;
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:0
+                         animations:^{
+                             squareControlButton.frame = controlButtonHiddenFrame;
+                         } completion:^(BOOL finished) {
+                             controlButtonVisibilityAnimating = NO;
+                         }];
+        
+        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
+            [delegate lookIOManagerDidHideControlButton:self];
+    }
+    else if (willShow)
+    {
+        LIOLog(@"<<CONTROL>> Showing. Reason: %@", aReason);
+        
+        controlButtonVisibilityAnimating = YES;
+        controlButtonHidden = NO;
+        
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:0
+                         animations:^{
+                             squareControlButton.frame = controlButtonShownFrame;
+                         } completion:^(BOOL finished) {
+                             controlButtonVisibilityAnimating = NO;
+                         }];
+        
+        if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
+            [delegate lookIOManagerDidShowControlButton:self];
+    }
+    
+    if (resumeMode && NO == socketConnected)
+        squareControlButton.currentMode = LIOSquareControlButtonViewModePending;
+    else
+        squareControlButton.currentMode = LIOSquareControlButtonViewModeDefault;
 }
 
 - (NSDictionary *)resolveSettingsPayload:(NSDictionary *)params fromContinue:(BOOL)fromContinue

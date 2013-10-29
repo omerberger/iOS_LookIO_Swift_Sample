@@ -58,9 +58,7 @@
 
 #define LIO_IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
 
-// LIOGradientLayer gets rid of implicit layer animations.
-@interface LIOGradientLayer : CAGradientLayer
-@end
+
 @implementation LIOGradientLayer
 + (id<CAAction>)defaultActionForKey:(NSString *)key { return NULL; }
 - (id<CAAction>)actionForKey:(NSString *)key { return NULL; }
