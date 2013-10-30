@@ -64,6 +64,8 @@
         [self addSubview:backgroundView];
         
         spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        spinner.frame = self.bounds;
+        spinner.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [spinner startAnimating];
         [self addSubview:spinner];
         
@@ -130,48 +132,10 @@
     }
     
     spinner.hidden = currentMode != LIOSquareControlButtonViewModePending;
-    CGRect spinnerFrame = CGRectZero;
-    spinnerFrame.size.height = 16.0;
-    spinnerFrame.size.width = 16.0;
-    
-    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    if (UIInterfaceOrientationPortrait == actualOrientation)
-    {
-        innerShadow.transform = CGAffineTransformIdentity;
-        
-        spinnerFrame.origin.x = (self.bounds.size.width / 2.0) - (spinnerFrame.size.width / 2.0);
-        spinnerFrame.origin.y = self.bounds.size.height - spinnerFrame.size.height - 8.0;
-    }
-    else if (UIInterfaceOrientationLandscapeLeft == actualOrientation)
-    {
-        CGAffineTransform rotate = CGAffineTransformMakeRotation((3.0*M_PI)/2.0);
-        CGAffineTransform translate = CGAffineTransformMakeTranslation(37.0, 37.0);
-        innerShadow.transform = CGAffineTransformConcat(translate, rotate);
-        
-        spinnerFrame.origin.x = self.bounds.size.width - spinnerFrame.size.height - 8.0;
-        spinnerFrame.origin.y = (self.bounds.size.height / 2.0) - (spinnerFrame.size.width / 2.0);
-    }
-    else if (UIInterfaceOrientationPortraitUpsideDown == actualOrientation)
-    {
-        innerShadow.transform = CGAffineTransformMakeScale(-1.0, -1.0);
-        
-        spinnerFrame.origin.x = (self.bounds.size.width / 2.0) - (spinnerFrame.size.width / 2.0);
-        spinnerFrame.origin.y = 8.0;
-    }
-    else if (UIInterfaceOrientationLandscapeRight == actualOrientation)
-    {
-        CGAffineTransform translate = CGAffineTransformMakeTranslation(-37.0, -37.0);
-        CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2.0);
-        innerShadow.transform = CGAffineTransformConcat(translate, rotate);
-        
-        spinnerFrame.origin.x = 8.0;
-        spinnerFrame.origin.y = (self.bounds.size.height / 2.0) - (spinnerFrame.size.width / 2.0);
-    }
+    spinner.frame = self.bounds;
+    bubbleImageView.hidden = currentMode == LIOSquareControlButtonViewModePending;
     
     innerShadow.frame = self.bounds;
-    
-    spinner.frame = spinnerFrame;
-    
     bubbleImageView.frame = CGRectMake(12.5, 10, self.bounds.size.width - 25.0, self.bounds.size.width - 25.0);
 
 }
@@ -262,28 +226,42 @@
         label.alpha = 1.0;
     } completion:nil];
     
-    timerProxy = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(dismissLabel)];
+    timerProxy = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(dismissLabelTimerDidExpire)];
 }
 
-- (void)dismissLabel {
+- (void)dismissLabelTimerDidExpire {
+    [timerProxy stopTimer];
+    [self dismissLabelWithAnimation:LIOSquareControlButtonViewAnimationSlideIn];
+}
+
+- (void)dismissLabelWithAnimation:(LIOSquareControlButtonViewAnimationType)animationType {
     if (!labelVisible)
         return;
     
     labelVisible = NO;
     
     [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-        label.alpha = 0.0;
+        if (LIOSquareControlButtonViewAnimationSlideIn == animationType) {
+            CGRect frame = label.frame;
+            frame.origin.x = 0;
+            label.frame = frame;
+        }
+        if (LIOSquareControlButtonViewAnimationFadeOut == animationType) {
+            label.alpha = 0.0;
+        }
     } completion:^(BOOL finished) {
         CGRect frame = label.frame;
         frame.origin.x = 0;
         frame.size.width = 1;
         label.frame = frame;
+
+        label.alpha = 0.0;
     }];
 }
 
 - (void)toggleLabel {
     if (labelVisible)
-        [self dismissLabel];
+        [self dismissLabelWithAnimation:LIOSquareControlButtonViewAnimationSlideIn];
     else
         [self presentLabel];
 }
@@ -293,7 +271,7 @@
 
 - (void)handleTap:(UITapGestureRecognizer *)tapper
 {
-    [self dismissLabel];
+    [self dismissLabelWithAnimation:LIOSquareControlButtonViewAnimationFadeOut];
     [delegate controlButtonViewWasTapped:self];
 }
 

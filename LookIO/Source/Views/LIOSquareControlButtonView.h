@@ -21,6 +21,12 @@ typedef enum
     LIOSquareControlButtonViewModePending
 } LIOSquareControlButtonViewMode;
 
+typedef enum
+{
+    LIOSquareControlButtonViewAnimationFadeOut,
+    LIOSquareControlButtonViewAnimationSlideIn
+} LIOSquareControlButtonViewAnimationType;
+
 @interface LIOSquareControlButtonView : UIView
 {
     UILabel *label;
@@ -36,6 +42,7 @@ typedef enum
     id<LIOSquareControlButtonViewDelegate> delegate;
     
     LIOTimerProxy *timerProxy;
+    BOOL isDragging;
 }
 
 @property(nonatomic, retain) UIColor *tintColor, *textColor;
@@ -45,8 +52,9 @@ typedef enum
 @property(nonatomic, assign) LIOSquareControlButtonViewMode currentMode;
 @property(nonatomic, readonly) UIActivityIndicatorView *spinner;
 @property(nonatomic, assign) id<LIOSquareControlButtonViewDelegate> delegate;
+@property(nonatomic, assign) BOOL isDragging;
 
-- (void)dismissLabel;
+- (void)dismissLabelWithAnimation:(LIOSquareControlButtonViewAnimationType)animationType;
 - (void)presentLabel;
 - (void)toggleLabel;
 - (void)updateButtonColor;

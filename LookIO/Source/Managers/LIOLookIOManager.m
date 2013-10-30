@@ -780,7 +780,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (controlButtonType == kLPControlButtonSquare) {
         dragToDeleteView = [[LIODragToDeleteView alloc] initWithFrame:CGRectMake(0, keyWindow.bounds.size.height, keyWindow.bounds.size.width, 110)];
-//        dragToDeleteView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
         [keyWindow addSubview:dragToDeleteView];
         
         squareControlButton = [[LIOSquareControlButtonView alloc] initWithFrame:CGRectZero];
@@ -825,7 +824,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[NSScanner scannerWithString:tintString] scanHexInt:&colorValue];
         UIColor *aColor = HEXCOLOR(colorValue);
         lastKnownButtonTintColor = [aColor retain];
-        controlButton.tintColor = lastKnownButtonTintColor;
+        if (controlButtonType == kLPControlButtonClassic)
+            controlButton.tintColor = lastKnownButtonTintColor;
+        if (controlButtonType == kLPControlButtonSquare)
+            controlButton.tintColor = lastKnownButtonTintColor;
     }
     
     [lastKnownButtonTextColor release];
@@ -1060,6 +1062,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [controlButton release];
     controlButton = nil;
+    
+    [squareControlButton release];
+    squareControlButton = nil;
     
     [messageSeparatorData release];
     [jsonParser release];
@@ -1377,9 +1382,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerSquareControlButtonLabel
 {
-    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
-
 }
 
 - (void)rejiggerControlButtonFrame {
@@ -1391,6 +1394,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerClassicControlButtonFrame
 {
+    if (squareControlButton.isDragging)
+        return;
+    
     if (NO == [controlButton.superview isKindOfClass:[UIWindow class]])
         return;
     
@@ -1534,7 +1540,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
-        aFrame.origin.y = 0;
+        aFrame.origin.y = -4.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
         aFrame.size.width = buttonWidth;
         aFrame.size.height = buttonHeight + 4.0;
@@ -1573,8 +1579,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         dragToDeleteView.frame = CGRectMake(-110, 0, 110, buttonWindow.bounds.size.height);
 
-        // Bigger X = Smaller Y
-        // Bigger Y = Smaller X
         controlButtonShownFrame = aFrame;
         aFrame.origin.y = screenSize.height + 10.0;
         controlButtonHiddenFrame = aFrame;
@@ -1591,11 +1595,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     CGPoint translatedPoint = [panGestureRecognizer translationInView:buttonWindow];
     
     if ([panGestureRecognizer state] == UIGestureRecognizerStateBegan) {
+        squareControlButton.isDragging = YES;
+        
         controlButtonPanX = [[sender view] center].x;
         controlButtonPanY = [[sender view] center].y;
         
         [dragToDeleteView presentDeleteArea];
-        [squareControlButton dismissLabel];
+        [squareControlButton dismissLabelWithAnimation:LIOSquareControlButtonViewAnimationFadeOut];
     }
     
     translatedPoint = CGPointMake(controlButtonPanX+translatedPoint.x, controlButtonPanY+translatedPoint.y);
@@ -1619,8 +1625,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
                 squareControlButton.center = dragToDeleteView.center;
             } completion:^(BOOL finished) {
-                controlButtonHidden = YES;
                 [dragToDeleteView dismissDeleteArea];
+                squareControlButton.isDragging = NO;
             }];
             
         } else {
@@ -1628,6 +1634,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [UIView animateWithDuration:0.2 animations:^{
                 [self rejiggerSquareControlButtonFrame];
             } completion:^(BOOL finished) {
+                squareControlButton.isDragging = NO;
             }];
         }
     }
@@ -1798,6 +1805,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (controlButton)
             [keyWindow bringSubviewToFront:controlButton];
+        
+        if (squareControlButton)
+            [keyWindow bringSubviewToFront:squareControlButton];
 
         [clickView removeFromSuperview];
         if (clickView)
@@ -1956,7 +1966,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                          nil];
         [self sendAdvisoryPacketWithDict:chatUp];
     }
-        
+    
+    if (controlButtonType == kLPControlButtonSquare)
+        [squareControlButton dismissLabelWithAnimation:LIOSquareControlButtonViewAnimationSlideIn];
+    
     [self refreshControlButtonVisibility];
 }
 
@@ -2795,8 +2808,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         userWantsSessionTermination = NO;
         introduced = NO;
         resumeMode = NO;
-        controlButton.currentMode = LIOControlButtonViewModeDefault;
-        [controlButton layoutSubviews];
+        if (controlButtonType == kLPControlButtonClassic) {
+            controlButton.currentMode = LIOControlButtonViewModeDefault;
+            [controlButton layoutSubviews];
+        }
+        if (controlButtonType == kLPControlButtonSquare) {
+            squareControlButton.currentMode = LIOControlButtonViewModeDefault;
+            [squareControlButton layoutSubviews];
+        }
 
         [self refreshControlButtonVisibility];
         
@@ -3754,10 +3773,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [delegate lookIOManagerDidShowControlButton:self];
     }
     
-    if (resumeMode && NO == socketConnected)
-        controlButton.currentMode = LIOControlButtonViewModePending;
-    else
-        controlButton.currentMode = LIOControlButtonViewModeDefault;
+    if (controlButtonType == kLPControlButtonClassic) {
+        if (resumeMode && NO == socketConnected)
+            controlButton.currentMode = LIOControlButtonViewModePending;
+        else
+            controlButton.currentMode = LIOControlButtonViewModeDefault;
+    }
+    
+    if (controlButtonType == kLPControlButtonSquare) {
+        if (resumeMode && NO == socketConnected)
+            squareControlButton.currentMode = LIOControlButtonViewModePending;
+        else
+            squareControlButton.currentMode = LIOControlButtonViewModeDefault;
+    }
+
 }
 
 - (void)refreshSquareControlButtonVisibility {
@@ -4108,7 +4137,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
             UIColor *color = HEXCOLOR(colorValue);
             
-            controlButton.tintColor = color;
+            if (controlButtonType == kLPControlButtonClassic)
+                controlButton.tintColor = color;
+            if (controlButtonType == kLPControlButtonSquare)
+                squareControlButton.tintColor = color;
             
             [lastKnownButtonTintColor release];
             lastKnownButtonTintColor = [color retain];
@@ -4130,7 +4162,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 squareControlButton.textColor = color;
                 [squareControlButton updateButtonColor];
                 
-                [squareControlButton presentLabel];
+                if (!altChatViewController && !squareControlButton.isDragging)
+                    [squareControlButton presentLabel];
             }
             
             [lastKnownButtonTextColor release];
@@ -4990,7 +5023,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [self rejiggerControlButtonFrame];
         controlButtonHidden = YES;
-        controlButton.frame = controlButtonHiddenFrame;
+        if (controlButtonType == kLPControlButtonClassic)
+            controlButton.frame = controlButtonHiddenFrame;
+        if (controlButtonType == kLPControlButtonSquare)
+            squareControlButton.frame = controlButtonHiddenFrame;
         [self rejiggerControlButtonLabel];
         [self rejiggerWindows];
     });
@@ -5257,8 +5293,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         case LIOLookIOManagerReconnectionFailedAlertViewTag:
         {
-            controlButton.currentMode = LIOControlButtonViewModeDefault;
-            [controlButton setNeedsLayout];
+            if (kLPControlButtonClassic == controlButtonType) {
+                controlButton.currentMode = LIOControlButtonViewModeDefault;
+                [controlButton setNeedsLayout];
+            }
+            if (kLPControlButtonSquare == controlButtonType) {
+                squareControlButton.currentMode = LIOControlButtonViewModeDefault;
+                [squareControlButton setNeedsLayout];
+            }
             [self rejiggerControlButtonFrame];
 
             [self reset];
@@ -5279,8 +5321,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             if (0 == buttonIndex && altChatViewController)
                 [altChatViewController performDismissalAnimation];
             
-            controlButton.currentMode = LIOControlButtonViewModeDefault;
-            [controlButton setNeedsLayout];
+            if (controlButtonType == kLPControlButtonClassic) {
+                controlButton.currentMode = LIOControlButtonViewModeDefault;
+                [controlButton setNeedsLayout];
+            }
+            if (controlButtonType == kLPControlButtonSquare) {
+                squareControlButton.currentMode = LIOControlButtonViewModeDefault;
+                [controlButton setNeedsLayout];
+            }
             [self rejiggerControlButtonFrame];
             
             break;
@@ -5300,8 +5348,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 [self connectSSESocket];
                 
-                controlButton.currentMode = LIOControlButtonViewModePending;
-                [controlButton layoutSubviews];
+                if (kLPControlButtonClassic == controlButtonType) {
+                    controlButton.currentMode = LIOControlButtonViewModePending;
+                    [controlButton layoutSubviews];
+                }
+                if (kLPControlButtonSquare == controlButtonType) {
+                    squareControlButton.currentMode = LIOControlButtonViewModePending;
+                    [squareControlButton layoutSubviews];
+                }
                 [self rejiggerControlButtonFrame];
                 [self applicationDidChangeStatusBarOrientation:nil]; // update tab to show "Reconnecting", etc
                 resumeMode = YES;
@@ -5584,7 +5638,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
 {
     rotationIsActuallyHappening = YES;
-    controlButton.hidden = YES;
+    if (kLPControlButtonClassic == controlButtonType)
+        controlButton.hidden = YES;
+    if (kLPControlButtonSquare == controlButtonType)
+        squareControlButton.hidden = YES;
     statusBarUnderlay.hidden = YES;
     statusBarUnderlayBlackout.hidden = YES;
     if (selectedChatTheme == kLPChatThemeFlat)
@@ -5596,14 +5653,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        controlButton.hidden = NO;
-        if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
-        {
-            [self rejiggerControlButtonFrame];
-            rotationIsActuallyHappening = NO;
-            controlButtonHidden = YES;
-            controlButton.frame = controlButtonHiddenFrame;
-            [self rejiggerControlButtonLabel];
+        if (kLPControlButtonClassic == controlButtonType)
+            controlButton.hidden = NO;
+        if (kLPControlButtonSquare == controlButtonType)
+            squareControlButton.hidden = NO;
+        
+        if (kLPControlButtonClassic == controlButtonType) {
+            if (NO == controlButtonHidden && (NO == CGRectEqualToRect(controlButton.frame, controlButtonShownFrame) || rotationIsActuallyHappening))
+            {
+                [self rejiggerControlButtonFrame];
+                rotationIsActuallyHappening = NO;
+                controlButtonHidden = YES;
+                controlButton.frame = controlButtonHiddenFrame;
+
+                [self rejiggerControlButtonLabel];
+            }
+        }
+        if (kLPControlButtonSquare == controlButtonType) {
+            if (NO == controlButtonHidden && rotationIsActuallyHappening)
+            {
+                [self rejiggerControlButtonFrame];
+                rotationIsActuallyHappening = NO;
+                controlButtonHidden = YES;
+                squareControlButton.frame = controlButtonHiddenFrame;
+                
+                [self rejiggerControlButtonLabel];
+            }
         }
         
         [self refreshControlButtonVisibility];
