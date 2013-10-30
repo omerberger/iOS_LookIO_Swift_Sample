@@ -1487,6 +1487,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)rejiggerSquareControlButtonFrame
 {
+    if (squareControlButton.isDragging)
+        return;
+    
     if (NO == [squareControlButton.superview isKindOfClass:[UIWindow class]])
         return;
     
@@ -1607,6 +1610,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     translatedPoint = CGPointMake(controlButtonPanX+translatedPoint.x, controlButtonPanY+translatedPoint.y);
     
     [[sender view] setCenter:translatedPoint];
+    CGRect smallerFrame = dragToDeleteView.frame;
+    smallerFrame.origin.x += buttonWindow.bounds.size.width/2 - dragToDeleteView.bounds.size.height/2;
+    smallerFrame.size.width = dragToDeleteView.bounds.size.height;
+    
     if (CGRectContainsPoint(dragToDeleteView.frame, translatedPoint)) {
         if (!dragToDeleteView.isZoomedIn)
             [dragToDeleteView zoomInOnDeleteArea];
@@ -1630,11 +1637,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }];
             
         } else {
+            squareControlButton.isDragging = NO;
+
             [dragToDeleteView dismissDeleteArea];
             [UIView animateWithDuration:0.2 animations:^{
                 [self rejiggerSquareControlButtonFrame];
             } completion:^(BOOL finished) {
-                squareControlButton.isDragging = NO;
             }];
         }
     }
@@ -4162,7 +4170,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 squareControlButton.textColor = color;
                 [squareControlButton updateButtonColor];
                 
-                if (!altChatViewController && !squareControlButton.isDragging)
+                if (!altChatViewController && !squareControlButton.isDragging && !controlButtonHidden)
                     [squareControlButton presentLabel];
             }
             

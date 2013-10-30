@@ -17,7 +17,7 @@
 }
 
 @property (nonatomic, assign) BOOL isZoomedIn;
-
+@property (nonatomic, readonly) UILabel *deleteLabel;
 - (void)presentDeleteArea;
 - (void)dismissDeleteArea;
 - (void)zoomInOnDeleteArea;

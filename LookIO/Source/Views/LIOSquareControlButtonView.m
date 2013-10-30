@@ -30,7 +30,7 @@
         labelText = @"Tap button for live chat";
         
         label = [[UILabel alloc] initWithFrame:self.bounds];
-        label.font = [UIFont systemFontOfSize:15.0];
+        label.font = [UIFont boldSystemFontOfSize:15.0];
         label.backgroundColor = [UIColor clearColor];
         label.textColor = textColor;
         label.text = labelText;
@@ -42,6 +42,8 @@
         label.layer.borderWidth = 1.0;
         label.frame = CGRectMake(0, 12, 0, 26.0);
         label.contentMode = UIViewContentModeCenter;
+        label.opaque = NO;
+        label.alpha = 0.7;
         [self addSubview:label];
         
         self.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -59,7 +61,7 @@
         backgroundView.layer.borderColor = borderColor.CGColor;
         backgroundView.layer.borderWidth = 1.0;
         backgroundView.layer.cornerRadius = 8.0;
-        backgroundView.alpha = 0.66;
+        backgroundView.alpha = 0.7;
         backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self addSubview:backgroundView];
         
@@ -168,7 +170,7 @@
         label.layer.shadowColor = shadowColor.CGColor;
         
         // The "fill color" is the color we actually paint inside the control button.
-        fillColor = [[UIColor alloc] initWithRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:0.66];
+        fillColor = [[UIColor alloc] initWithRed:rgba[0] green:rgba[1] blue:rgba[2] alpha:0.7];
         
         CGFloat lightness = (rgba[0] + rgba[1] + rgba[2])/3;
         
@@ -178,10 +180,16 @@
         CGFloat borderBlue = lightness < 0.5 ? (1.0 + rgba[2])/2 : (0.0 + rgba[2])/2;
         
         borderColor = [[UIColor alloc] initWithRed:borderRed green:borderGreen blue:borderBlue alpha:1.0];
+        
+        backgroundView.backgroundColor = fillColor;
+        backgroundView.layer.borderColor = borderColor.CGColor;
+        
+        label.backgroundColor = fillColor;
+        label.layer.borderColor = borderColor.CGColor;
     }
 }
 
-- (UIImage *)imageWithTintedColor:(UIImage *)image withTint:(UIColor *)color  {
+- (UIImage *)imageWithTintedColor:(UIImage *)image withTint:(UIColor *)color {
     UIGraphicsBeginImageContext(image.size);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
@@ -216,14 +224,14 @@
     labelVisible = YES;
     
     [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        CGSize expectedLabelSize = [label.text sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(300, 17.0) lineBreakMode:UILineBreakModeTailTruncation];
+        CGSize expectedLabelSize = [label.text sizeWithFont:[UIFont boldSystemFontOfSize:15.0] constrainedToSize:CGSizeMake(300, 17.0) lineBreakMode:UILineBreakModeTailTruncation];
         CGRect frame = label.frame;
         frame.origin.x = -expectedLabelSize.width - 14.0;
         frame.origin.y = (self.frame.size.height/2 - 26.0/2);
         frame.size.width = expectedLabelSize.width + 15.0;
         frame.size.height = 26.0;
         label.frame = frame;
-        label.alpha = 1.0;
+        label.alpha = 0.7;
     } completion:nil];
     
     timerProxy = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(dismissLabelTimerDidExpire)];
@@ -247,7 +255,7 @@
             label.frame = frame;
         }
         if (LIOSquareControlButtonViewAnimationFadeOut == animationType) {
-            label.alpha = 0.0;
+            label.alpha = 0.7;
         }
     } completion:^(BOOL finished) {
         CGRect frame = label.frame;
@@ -255,7 +263,7 @@
         frame.size.width = 1;
         label.frame = frame;
 
-        label.alpha = 0.0;
+        label.alpha = 0.7;
     }];
 }
 

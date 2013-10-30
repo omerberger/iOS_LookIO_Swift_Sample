@@ -10,7 +10,7 @@
 
 @implementation LIODragToDeleteView
 
-@synthesize isZoomedIn;
+@synthesize isZoomedIn, deleteLabel;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -43,6 +43,7 @@
         dragHereLabel.text = @"Drag here to hide";
         dragHereLabel.textAlignment = UITextAlignmentCenter;
         dragHereLabel.alpha = 0.0;
+        dragHereLabel.backgroundColor = [UIColor clearColor];
         dragHereLabel.font = [UIFont boldSystemFontOfSize:12.0];
         dragHereLabel.textColor = [UIColor whiteColor];
         dragHereLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
