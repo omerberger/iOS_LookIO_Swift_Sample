@@ -13,7 +13,7 @@
 
 @implementation LIOSquareControlButtonView
 
-@synthesize textColor, labelText, delegate, label, currentMode, spinner;
+@synthesize textColor, labelText, delegate, label, currentMode, spinner, bubbleImageView;
 @dynamic tintColor;
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -27,17 +27,21 @@
         self.textColor = [UIColor whiteColor];
         self.labelText = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
         
+        labelText = @"Tap button for live chat";
+        
         label = [[UILabel alloc] initWithFrame:self.bounds];
-        label.font = [UIFont systemFontOfSize:17.0];
+        label.font = [UIFont systemFontOfSize:15.0];
         label.backgroundColor = [UIColor clearColor];
         label.textColor = textColor;
         label.text = labelText;
         label.textAlignment = UITextAlignmentCenter;
-        label.layer.shadowColor = [UIColor blackColor].CGColor;
-        label.layer.shadowOpacity = 1.0;
-        label.layer.shadowOffset = CGSizeMake(1.5, 1.5);
-        label.layer.shadowRadius = 1.5;
         label.userInteractionEnabled = NO;
+        label.backgroundColor = fillColor;
+        label.layer.cornerRadius = 4.0;
+        label.layer.borderColor = borderColor.CGColor;
+        label.layer.borderWidth = 1.0;
+        label.frame = CGRectMake(0, 12, 0, 26.0);
+        label.contentMode = UIViewContentModeCenter;
         [self addSubview:label];
         
         self.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -49,22 +53,25 @@
         
         UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
         [self addGestureRecognizer:tapper];
-        
-        if ([UIScreen instancesRespondToSelector:@selector(scale)] && [[UIScreen mainScreen] scale] == 2.0)
-            innerShadow = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] lioTabInnerShadow2x]];
-        else
-            innerShadow = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] lioTabInnerShadow]];
-        
-        [self addSubview:innerShadow];
+
+        backgroundView = [[UIView alloc] initWithFrame:self.bounds];
+        backgroundView.backgroundColor = tintColor;
+        backgroundView.layer.borderColor = borderColor.CGColor;
+        backgroundView.layer.borderWidth = 1.0;
+        backgroundView.layer.cornerRadius = 8.0;
+        backgroundView.alpha = 0.66;
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self addSubview:backgroundView];
         
         spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
         [spinner startAnimating];
         [self addSubview:spinner];
         
         bubbleImageView = [[UIImageView alloc] initWithFrame:aFrame];
-        bubbleImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOControlButtonChatIcon"];
+        bubbleImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        bubbleImageView.image = [self imageWithTintedColor:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOControlButtonChatIcon"] withTint:textColor];
         [self addSubview:bubbleImageView];
-        
+
     }
     
     return self;
@@ -94,6 +101,10 @@
     [self setNeedsDisplay];
 }
 
+- (void)updateButtonColor {
+    bubbleImageView.image = [self imageWithTintedColor:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOControlButtonChatIcon"] withTint:textColor];
+}
+
 - (void)dealloc
 {
     [tintColor release];
@@ -111,26 +122,12 @@
 
 - (void)layoutSubviews
 {
-    if (LIOSquareControlButtonViewModePending == currentMode)
-    {
-        label.font = [UIFont systemFontOfSize:14.0];
-        label.text = [NSString stringWithFormat:@"     %@", LIOLocalizedString(@"LIOControlButtonView.ReconnectingText")];
-    }
-    else if (labelText)
-    {
-        label.font = [UIFont systemFontOfSize:17.0];
-        label.text = labelText;
-    }
-    else
-    {
-        label.font = [UIFont systemFontOfSize:17.0];
-        label.text = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
-    }
-    
-    if (textColor)
+    if (textColor) {
         label.textColor = textColor;
-    else
+    }
+    else {
         label.textColor = [UIColor whiteColor];
+    }
     
     spinner.hidden = currentMode != LIOSquareControlButtonViewModePending;
     CGRect spinnerFrame = CGRectZero;
@@ -175,54 +172,11 @@
     
     spinner.frame = spinnerFrame;
     
-    if (LIOSquareControlButtonViewModeDefault == currentMode)
-        label.alpha = 1.0;
-    else
-        label.alpha = 0.33;
-    
     bubbleImageView.frame = CGRectMake(12.5, 10, self.bounds.size.width - 25.0, self.bounds.size.width - 25.0);
 
 }
 
-- (void)drawRect:(CGRect)rect
-{
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    if (nil == tintColor)
-        tintColor = [UIColor blackColor];
-    
-    UIRectCorner corners = UIRectCornerAllCorners;
-    
-    CGContextClearRect(context, rect);
-    
-    CGRect smallerRect = CGRectMake(rect.origin.x + 0.5, rect.origin.y + 0.5, rect.size.width - 1.0, rect.size.height - 1.0);
-    
-    CGContextSetFillColorWithColor(context, fillColor.CGColor);
-    UIBezierPath *innerPath = [UIBezierPath bezierPathWithRoundedRect:smallerRect
-                                                    byRoundingCorners:corners
-                                                          cornerRadii:CGSizeMake(8.0, 8.0)];
-    [innerPath fill];
-        
-    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeClassic) {
-        CGContextSetStrokeColorWithColor(context, shadowColor.CGColor);
-        
-        UIBezierPath *outerPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height)
-                                                        byRoundingCorners:corners
-                                                              cornerRadii:CGSizeMake(13.0, 13.0)];
-        outerPath.lineWidth = 2.0;
-        [outerPath stroke];
-    } else {
-        CGContextSetStrokeColorWithColor(context, borderColor.CGColor);
-        
-        CGRect smallerRect2 = CGRectMake(rect.origin.x + 0.5, rect.origin.y + 0.5, rect.size.width - 1.0, rect.size.height - 1.0);
-        
-        UIBezierPath *innerPath = [UIBezierPath bezierPathWithRoundedRect:smallerRect2
-                                                        byRoundingCorners:corners
-                                                              cornerRadii:CGSizeMake(8.0, 8.0)];
-        innerPath.lineWidth = 1.0;
-        [innerPath stroke];
-    }
-}
+
 
 #pragma mark -
 #pragma mark Dynamic property accessors
@@ -263,9 +217,75 @@
     }
 }
 
+- (UIImage *)imageWithTintedColor:(UIImage *)image withTint:(UIColor *)color  {
+    UIGraphicsBeginImageContext(image.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    [color setFill];
+    
+    CGContextTranslateCTM(context, 0, image.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+    CGContextDrawImage(context, rect, image.CGImage);
+    
+    CGContextClipToMask(context, rect, image.CGImage);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    UIImage *coloredImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return coloredImage;
+}
+
 - (UIColor *)tintColor
 {
     return tintColor;
+}
+
+- (void)presentLabel {
+    if (labelVisible)
+        return;
+    
+    labelVisible = YES;
+    
+    [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        CGSize expectedLabelSize = [label.text sizeWithFont:[UIFont systemFontOfSize:15.0] constrainedToSize:CGSizeMake(300, 17.0) lineBreakMode:UILineBreakModeTailTruncation];
+        CGRect frame = label.frame;
+        frame.origin.x = -expectedLabelSize.width - 14.0;
+        frame.origin.y = (self.frame.size.height/2 - 26.0/2);
+        frame.size.width = expectedLabelSize.width + 15.0;
+        frame.size.height = 26.0;
+        label.frame = frame;
+        label.alpha = 1.0;
+    } completion:nil];
+    
+    timerProxy = [[LIOTimerProxy alloc] initWithTimeInterval:10.0 target:self selector:@selector(dismissLabel)];
+}
+
+- (void)dismissLabel {
+    if (!labelVisible)
+        return;
+    
+    labelVisible = NO;
+    
+    [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        label.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        CGRect frame = label.frame;
+        frame.origin.x = 0;
+        frame.size.width = 1;
+        label.frame = frame;
+    }];
+}
+
+- (void)toggleLabel {
+    if (labelVisible)
+        [self dismissLabel];
+    else
+        [self presentLabel];
 }
 
 #pragma mark -
@@ -273,6 +293,7 @@
 
 - (void)handleTap:(UITapGestureRecognizer *)tapper
 {
+    [self dismissLabel];
     [delegate controlButtonViewWasTapped:self];
 }
 

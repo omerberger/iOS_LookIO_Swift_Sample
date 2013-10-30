@@ -7,14 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOAltChatViewController.h"
 
 @interface LIODragToDeleteView : UIView {
     UILabel *deleteLabel;
+    UILabel *dragHereLabel;
     BOOL isZoomedIn;
+    LIOGradientLayer *vertGradient;
 }
 
 @property (nonatomic, assign) BOOL isZoomedIn;
 
+- (void)presentDeleteArea;
+- (void)dismissDeleteArea;
 - (void)zoomInOnDeleteArea;
 - (void)zoomOutOfDeleteArea;
 

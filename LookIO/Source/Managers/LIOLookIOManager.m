@@ -779,9 +779,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     if (controlButtonType == kLPControlButtonSquare) {
-        dragToDeleteView = [[LIODragToDeleteView alloc] initWithFrame:CGRectMake(0, keyWindow.bounds.size.height, keyWindow.bounds.size.width, 100)];
-        dragToDeleteView.alpha = 0.0;
-        dragToDeleteView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        dragToDeleteView = [[LIODragToDeleteView alloc] initWithFrame:CGRectMake(0, keyWindow.bounds.size.height, keyWindow.bounds.size.width, 110)];
+//        dragToDeleteView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
         [keyWindow addSubview:dragToDeleteView];
         
         squareControlButton = [[LIOSquareControlButtonView alloc] initWithFrame:CGRectZero];
@@ -838,7 +837,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [[NSScanner scannerWithString:textColorString] scanHexInt:&colorValue];
         UIColor *aColor = HEXCOLOR(colorValue);    
         lastKnownButtonTextColor = [aColor retain];
-        controlButton.textColor = lastKnownButtonTextColor;
+        
+        if (controlButtonType == kLPControlButtonClassic)
+            controlButton.textColor = lastKnownButtonTextColor;
+        
+        if (controlButtonType == kLPControlButtonSquare) {
+            squareControlButton.textColor = lastKnownButtonTextColor;
+            [squareControlButton updateButtonColor];
+        }
     }
     
     // Restore other settings.
@@ -1336,7 +1342,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     LIOLog(@"Reset. Key window: 0x%08X", (unsigned int)[[UIApplication sharedApplication] keyWindow]);
 }
 
-- (void)rejiggerControlButtonLabel
+- (void)rejiggerControlButtonLabel {
+    if (controlButtonType == kLPControlButtonClassic)
+        [self rejiggerClassicControlButtonLabel];
+    if (controlButtonType == kLPControlButtonSquare)
+        [self rejiggerSquareControlButtonLabel];
+}
+
+- (void)rejiggerClassicControlButtonLabel
 {
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
@@ -1360,6 +1373,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButton.label.transform = CGAffineTransformIdentity;//CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
         controlButton.label.frame = controlButton.bounds;
     }
+}
+
+- (void)rejiggerSquareControlButtonLabel
+{
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+
 }
 
 - (void)rejiggerControlButtonFrame {
@@ -1468,32 +1488,60 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     CGSize screenSize = [buttonWindow bounds].size;
     actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        squareControlButton.transform = CGAffineTransformIdentity;
+        dragToDeleteView.transform = CGAffineTransformIdentity;
+        
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    {
+        squareControlButton.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+        dragToDeleteView.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        squareControlButton.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+        dragToDeleteView.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+    }
+    else // Landscape, home button right
+    {
+        squareControlButton.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+        dragToDeleteView.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+    }
+    
     [squareControlButton layoutSubviews];
     
     CGFloat buttonHeight = LIOLookIOManagerSquareControlButtonSize;
     CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
     // Manually position the control button. Ugh.
     CGRect aFrame = squareControlButton.frame;
-    aFrame.size.width = buttonWidth + 4.0;
-    aFrame.size.height = buttonHeight;
 
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
         aFrame.origin.x = screenSize.width - buttonWidth + 2.0;
+        aFrame.size.width = buttonWidth + 4.0;
+        aFrame.size.height = buttonHeight;
         
         if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+        
+        dragToDeleteView.frame = CGRectMake(0, buttonWindow.bounds.size.height, buttonWindow.bounds.size.width, 110);
 
         controlButtonShownFrame = aFrame;
         aFrame.origin.x = screenSize.width + 10.0;
         controlButtonHiddenFrame = aFrame;
     }
-    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
-        aFrame.origin.y = -2.0;
+        aFrame.origin.y = 0;
         aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        aFrame.size.width = buttonWidth;
+        aFrame.size.height = buttonHeight + 4.0;
 
         if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+        
+        dragToDeleteView.frame = CGRectMake(buttonWindow.bounds.size.width, 0, 110, buttonWindow.bounds.size.height);
 
         controlButtonShownFrame = aFrame;
         aFrame.origin.y = -aFrame.size.height - 10.0;
@@ -1503,8 +1551,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
         aFrame.origin.x = -2.0;
+        aFrame.size.width = buttonWidth + 4.0;
+        aFrame.size.height = buttonHeight;
 
         if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+
+        dragToDeleteView.frame = CGRectMake(10, -110, buttonWindow.bounds.size.width, 110);
 
         controlButtonShownFrame = aFrame;
         aFrame.origin.x = -aFrame.size.width - 10.0;
@@ -1512,18 +1564,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else // Landscape, home button right
     {
-        aFrame.origin.y = screenSize.height - LIOLookIOManagerControlButtonMinWidth + 2.0;
+        aFrame.origin.y = screenSize.height - buttonHeight + 2.0;
         aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        aFrame.size.width = buttonWidth;
+        aFrame.size.height = buttonHeight + 4.0;
 
         if (NO == controlButtonVisibilityAnimating && NO == controlButtonHidden) squareControlButton.frame = aFrame;
+        
+        dragToDeleteView.frame = CGRectMake(-110, 0, 110, buttonWindow.bounds.size.height);
 
+        // Bigger X = Smaller Y
+        // Bigger Y = Smaller X
         controlButtonShownFrame = aFrame;
         aFrame.origin.y = screenSize.height + 10.0;
         controlButtonHiddenFrame = aFrame;
     }
 
-
     [squareControlButton setNeedsDisplay];
+    [dragToDeleteView setNeedsLayout];
 }
 
 - (void)dragSquareControlButton:(id)sender {
@@ -1536,13 +1594,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         controlButtonPanX = [[sender view] center].x;
         controlButtonPanY = [[sender view] center].y;
         
-        [UIView animateWithDuration:0.2 animations:^{
-            CGRect frame = dragToDeleteView.frame;
-            frame.origin.y -= 100;
-            dragToDeleteView.frame = frame;
-
-            dragToDeleteView.alpha = 1.0;
-        }];
+        [dragToDeleteView presentDeleteArea];
+        [squareControlButton dismissLabel];
     }
     
     translatedPoint = CGPointMake(controlButtonPanX+translatedPoint.x, controlButtonPanY+translatedPoint.y);
@@ -1567,25 +1620,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 squareControlButton.center = dragToDeleteView.center;
             } completion:^(BOOL finished) {
                 controlButtonHidden = YES;
-                [UIView animateWithDuration:0.2 animations:^{
-                    CGRect frame = dragToDeleteView.frame;
-                    frame.origin.y += 100;
-                    dragToDeleteView.frame = frame;
-                    
-                    dragToDeleteView.alpha = 0.0;
-                }];
+                [dragToDeleteView dismissDeleteArea];
             }];
             
         } else {
+            [dragToDeleteView dismissDeleteArea];
             [UIView animateWithDuration:0.2 animations:^{
                 [self rejiggerSquareControlButtonFrame];
-                [UIView animateWithDuration:0.2 animations:^{
-                    CGRect frame = dragToDeleteView.frame;
-                    frame.origin.y += 100;
-                    dragToDeleteView.frame = frame;
-                    
-                    dragToDeleteView.alpha = 0.0;
-                }];
             } completion:^(BOOL finished) {
             }];
         }
@@ -3721,6 +3762,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)refreshSquareControlButtonVisibility {
     [squareControlButton.layer removeAllAnimations];
+    squareControlButton.alpha = 1.0;
     
     // Trump card #-1: If the session is ending, button is hidden.
     if (sessionEnding)
@@ -4081,7 +4123,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
             UIColor *color = HEXCOLOR(colorValue);
             
-            controlButton.textColor = color;
+            if (controlButtonType == kLPControlButtonClassic)
+                controlButton.textColor = color;
+
+            if (controlButtonType == kLPControlButtonSquare) {
+                squareControlButton.textColor = color;
+                [squareControlButton updateButtonColor];
+                
+                [squareControlButton presentLabel];
+            }
             
             [lastKnownButtonTextColor release];
             lastKnownButtonTextColor = [color retain];
