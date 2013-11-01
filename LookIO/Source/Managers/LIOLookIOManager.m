@@ -68,6 +68,7 @@
 
 #define LIOLookIOManagerDefaultControlEndpoint      @"dispatch.look.io"
 #define LIOLookIOManagerDefaultControlEndpoint_Dev  @"dispatch.staging.look.io"
+#define LIOLookIOManagerDefaultControlEndpoint_QA   @"dispatch.qa.look.io"
 #define LIOLookIOManagerControlEndpointPort         8100
 #define LIOLookIOManagerControlEndpointPortTLS      9000
 
@@ -147,12 +148,20 @@ typedef enum
     LIOFunnelStateClicked,
 } LIOFunnelState;
 
+typedef enum
+{
+    LIOServerProduction = 0,
+    LIOServerStaging,
+    LIOServerQA
+} LIOServerMode;
+
 @interface LIOLookIOManager ()
     <LIOControlButtonViewDelegate, LIOAltChatViewControllerDataSource, LIOAltChatViewControllerDelegate, LIOInterstitialViewControllerDelegate, AsyncSocketDelegate_LIO, LPSSEManagerDelegate>
 {
     NSTimer *screenCaptureTimer;
     UIImage *touchImage;
-    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, developmentMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded, appForegrounded;
+    BOOL waitingForScreenshotAck, waitingForIntroAck, controlSocketConnecting, introduced, enqueued, resetAfterDisconnect, killConnectionAfterChatViewDismissal, resetAfterChatViewDismissal, sessionEnding, outroReceived, screenshotsAllowed, usesTLS, userWantsSessionTermination, appLaunchRequestIgnoringLocationHeader, firstChatMessageSent, resumeMode, unprovisioned, socketConnected, willAskUserToReconnect, realtimeExtrasWaitingForLocation, realtimeExtrasLastKnownCellNetworkInUse, cursorEnded, resetAfterNextForegrounding, controlButtonHidden, controlButtonVisibilityAnimating, rotationIsActuallyHappening, badInitialization, chatReceivedWhileAppBackgrounded, appForegrounded;
+    LIOServerMode serverMode;
     NSData *messageSeparatorData;
     unsigned long previousScreenshotHash;
     SBJsonParser_LIO *jsonParser;
@@ -365,6 +374,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         funnelRequestQueue = [[[NSMutableArray alloc] init] retain];
         funnelRequestIsActive = NO;
         callChatNotAnsweredAfterDismissal = NO;
+        serverMode = LIOServerProduction;
 
         UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
         
@@ -494,9 +504,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self updateAndReportFunnelState];
 }
 
-- (void)enableDevelopmentMode
+- (void)setStagingMode
 {
-    developmentMode = YES;
+    serverMode = LIOServerStaging;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_Dev;
 
     // Init the ChatAPIClient
@@ -510,9 +520,25 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
 }
 
-- (void)disableDevelopmentMode
+- (void)setQAMode
 {
-    developmentMode = NO;
+    serverMode = LIOServerQA;
+    controlEndpoint = LIOLookIOManagerDefaultControlEndpoint_QA;
+    
+    // Init the ChatAPIClient
+    LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
+    chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_QA]];
+    
+    LPMediaAPIClient* mediaClient = [LPMediaAPIClient sharedClient];
+    mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_QA]];
+    
+    LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
+    visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_QA]];
+}
+
+- (void)setProductionMode
+{
+    serverMode = LIOServerProduction;
     controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
     
     // Init the ChatAPIClient
@@ -1269,16 +1295,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     for (NSHTTPCookie *cookie in cookiesToDelete)
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
 
-    if (developmentMode) {
+    if (LIOServerStaging == serverMode) {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
-        
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_Dev]];
     }
-    else {
+    
+    if (LIOServerQA == serverMode) {
+        chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint_QA]];
+        mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint_QA]];
+    }
+
+    if (LIOServerProduction == serverMode) {
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
-
         mediaClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/media/", LIOLookIOManagerDefaultControlEndpoint]];
-
     }
     
     [userDefaults synchronize];
