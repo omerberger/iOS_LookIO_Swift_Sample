@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <Accelerate/Accelerate.h>
 #import <float.h>
+#import "LIOBundleManager.h"
 
 @interface LIOBlurImageView ()
 
@@ -44,8 +45,12 @@
 //    UIColor *tintColor = [UIColor colorWithWhite:0.8 alpha:0.4];
 ///    self.image = [imageToBlur applyBlurWithRadius:12 tintColor:tintColor saturationDeltaFactor:3.0 maskImage:nil];
 
-    UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
-    self.image = [self blurImage:imageToBlur withRadius:24 iterations:8 tintColor:tintColor saturationDeltaFactor:3.0];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0")) {
+        UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
+        self.image = [self blurImage:imageToBlur withRadius:24 iterations:8 tintColor:tintColor saturationDeltaFactor:3.0];
+    } else {
+        self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
+    }
 }
 
 - (UIImage *)blurImage:(UIImage*)image withRadius:(CGFloat)radius iterations:(NSUInteger)iterations tintColor:(UIColor *)tintColor saturationDeltaFactor:(CGFloat)saturationDeltaFactor
