@@ -13,7 +13,7 @@
 
 @implementation LIOSquareControlButtonView
 
-@synthesize textColor, labelText, delegate, label, currentMode, spinner, bubbleImageView;
+@synthesize textColor, labelText, delegate, label, currentMode, spinner, bubbleImageView, isDragging, position, isAttachedToRight;
 @dynamic tintColor;
 
 - (id)initWithFrame:(CGRect)aFrame

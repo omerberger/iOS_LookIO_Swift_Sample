@@ -43,16 +43,21 @@ typedef enum
     
     LIOTimerProxy *timerProxy;
     BOOL isDragging;
+    
+    CGPoint position;
+    BOOL isAttachedToRight;
 }
 
-@property(nonatomic, retain) UIColor *tintColor, *textColor;
-@property(nonatomic, retain) NSString *labelText;
-@property(nonatomic, readonly) UILabel *label;
-@property(nonatomic, readonly) UIImageView *bubbleImageView;
-@property(nonatomic, assign) LIOSquareControlButtonViewMode currentMode;
-@property(nonatomic, readonly) UIActivityIndicatorView *spinner;
-@property(nonatomic, assign) id<LIOSquareControlButtonViewDelegate> delegate;
-@property(nonatomic, assign) BOOL isDragging;
+@property (nonatomic, retain) UIColor *tintColor, *textColor;
+@property (nonatomic, retain) NSString *labelText;
+@property (nonatomic, readonly) UILabel *label;
+@property (nonatomic, readonly) UIImageView *bubbleImageView;
+@property (nonatomic, assign) LIOSquareControlButtonViewMode currentMode;
+@property (nonatomic, readonly) UIActivityIndicatorView *spinner;
+@property (nonatomic, assign) id<LIOSquareControlButtonViewDelegate> delegate;
+@property (nonatomic, assign) BOOL isDragging;
+@property (nonatomic, assign) CGPoint position;
+@property (nonatomic, assign) BOOL isAttachedToRight;
 
 - (void)dismissLabelWithAnimation:(LIOSquareControlButtonViewAnimationType)animationType;
 - (void)presentLabel;

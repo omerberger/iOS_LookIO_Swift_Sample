@@ -786,6 +786,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         squareControlButton.delegate = self;
         squareControlButton.accessibilityLabel = @"LIOLookIOManager.controlButton";
         [keyWindow addSubview:squareControlButton];
+        [self resetSquareControlButtonPosition];
         [self rejiggerControlButtonFrame];
         squareControlButton.frame = controlButtonHiddenFrame;
         
@@ -1392,6 +1393,40 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self rejiggerSquareControlButtonFrame];
 }
 
+- (void)resetSquareControlButtonPosition {
+    UIWindow *buttonWindow = (UIWindow *)squareControlButton.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    CGFloat buttonHeight = LIOLookIOManagerSquareControlButtonSize;
+    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+    CGPoint position = squareControlButton.position;
+    
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        position.x = screenSize.width - buttonWidth + 2.0;
+        position.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
+    }
+    if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
+    {
+        position.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        position.y = -6.0;
+    }
+    if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        position.x = -2.0;
+        position.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
+    }
+    if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
+    {
+        position.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        position.y = screenSize.height - buttonHeight + 2.0;
+    }
+    
+    squareControlButton.position = position;
+    squareControlButton.isAttachedToRight = YES;
+}
+
 - (void)rejiggerClassicControlButtonFrame
 {
     if (squareControlButton.isDragging)
@@ -1443,7 +1478,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         //[controlButton setNeedsLayout];
         
         controlButtonShownFrame = aFrame;
-        aFrame.origin.y = -aFrame.size.height - 10.0;
+        aFrame.origin.y = -aFrame.size.height - 15.0;
         controlButtonHiddenFrame = aFrame;
         
         [self rejiggerControlButtonLabel];
@@ -1528,8 +1563,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
-        aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
-        aFrame.origin.x = screenSize.width - buttonWidth + 2.0;
+        aFrame.origin.y = squareControlButton.position.y;
+        aFrame.origin.x = squareControlButton.position.x;
         aFrame.size.width = buttonWidth + 4.0;
         aFrame.size.height = buttonHeight;
         
@@ -1538,13 +1573,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dragToDeleteView.frame = CGRectMake(0, buttonWindow.bounds.size.height, buttonWindow.bounds.size.width, 110);
 
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = screenSize.width + 10.0;
+        if (squareControlButton.isAttachedToRight)
+            aFrame.origin.x = screenSize.width + 10.0;
+        else
+            aFrame.origin.x = -10.0 - buttonWidth;
         controlButtonHiddenFrame = aFrame;
     }
     else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
-        aFrame.origin.y = -4.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        aFrame.origin.y = squareControlButton.position.y;
+        aFrame.origin.x = squareControlButton.position.x;
         aFrame.size.width = buttonWidth;
         aFrame.size.height = buttonHeight + 4.0;
 
@@ -1553,13 +1591,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dragToDeleteView.frame = CGRectMake(buttonWindow.bounds.size.width, 0, 110, buttonWindow.bounds.size.height);
 
         controlButtonShownFrame = aFrame;
-        aFrame.origin.y = -aFrame.size.height - 10.0;
+        if (squareControlButton.isAttachedToRight)
+            aFrame.origin.y = -aFrame.size.height - 10.0;
+        else
+            aFrame.origin.y = screenSize.height + 10.0;
         controlButtonHiddenFrame = aFrame;
     }
     else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
-        aFrame.origin.y = (screenSize.height / 2.0) - (buttonHeight / 2.0);
-        aFrame.origin.x = -2.0;
+        aFrame.origin.y = squareControlButton.position.y;
+        aFrame.origin.x = squareControlButton.position.x;
         aFrame.size.width = buttonWidth + 4.0;
         aFrame.size.height = buttonHeight;
 
@@ -1568,13 +1609,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dragToDeleteView.frame = CGRectMake(10, -110, buttonWindow.bounds.size.width, 110);
 
         controlButtonShownFrame = aFrame;
-        aFrame.origin.x = -aFrame.size.width - 10.0;
+        if (squareControlButton.isAttachedToRight)
+            aFrame.origin.x = screenSize.width + 10.0;
+        else
+            aFrame.origin.x = -10 - buttonWidth;
+
         controlButtonHiddenFrame = aFrame;
     }
     else // Landscape, home button right
     {
-        aFrame.origin.y = screenSize.height - buttonHeight + 2.0;
-        aFrame.origin.x = (screenSize.width / 2.0) - (buttonHeight / 2.0);
+        aFrame.origin.y = squareControlButton.position.y;
+        aFrame.origin.x = squareControlButton.position.x;
         aFrame.size.width = buttonWidth;
         aFrame.size.height = buttonHeight + 4.0;
 
@@ -1583,7 +1628,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         dragToDeleteView.frame = CGRectMake(-110, 0, 110, buttonWindow.bounds.size.height);
 
         controlButtonShownFrame = aFrame;
-        aFrame.origin.y = screenSize.height + 10.0;
+        if (squareControlButton.isAttachedToRight)
+            aFrame.origin.y = screenSize.height + 10.0;
+        else
+            aFrame.origin.y = -aFrame.size.height - 10.0;
         controlButtonHiddenFrame = aFrame;
     }
 
@@ -1594,6 +1642,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)dragSquareControlButton:(id)sender {
     UIPanGestureRecognizer *panGestureRecognizer = (UIPanGestureRecognizer*)sender;
     UIWindow *buttonWindow = (UIWindow *)squareControlButton.superview;
+    actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     
     CGPoint translatedPoint = [panGestureRecognizer translationInView:buttonWindow];
     
@@ -1621,6 +1670,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (dragToDeleteView.isZoomedIn)
             [dragToDeleteView zoomOutOfDeleteArea];
     }
+
+    NSLog(@"Translated point is %f, %f", translatedPoint.x, translatedPoint.y);
     
     if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
         if (dragToDeleteView.isZoomedIn) {
@@ -1638,8 +1689,100 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         } else {
             squareControlButton.isDragging = NO;
-
             [dragToDeleteView dismissDeleteArea];
+            
+            if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
+                // Check to see if user has attached the button to the right side
+                if (translatedPoint.x > (buttonWindow.bounds.size.width - squareControlButton.frame.size.width - 10)) {
+                    CGPoint position = squareControlButton.position;
+                    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+                    position.x = buttonWindow.bounds.size.width - buttonWidth + 2.0;
+                    position.y = translatedPoint.y - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = YES;
+                }
+            
+                // Check to see if user has attached the button to the left side
+                if (translatedPoint.x < (squareControlButton.frame.size.width + 10)) {
+                    CGPoint position = squareControlButton.position;
+                    position.x = -4.0;
+                    position.y = translatedPoint.y - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = NO;
+                }
+            }
+            
+            if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown) {
+                // Check to see if user has attached the button to the right side
+                if (translatedPoint.x > (buttonWindow.bounds.size.width - squareControlButton.frame.size.width - 10)) {
+                    CGPoint position = squareControlButton.position;
+                    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+                    position.x = buttonWindow.bounds.size.width - buttonWidth + 2.0;
+                    position.y = translatedPoint.y - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = YES;
+                }
+                
+                // Check to see if user has attached the button to the left side
+                if (translatedPoint.x < (squareControlButton.frame.size.width + 10)) {
+                    CGPoint position = squareControlButton.position;
+                    position.x = -4.0;
+                    position.y = translatedPoint.y - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = NO;
+                }
+            }
+            
+            if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+                // Check to see if user has attached the button to the right side
+                if (translatedPoint.y > (buttonWindow.bounds.size.height - squareControlButton.frame.size.height - 10)) {
+                    CGPoint position = squareControlButton.position;
+                    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+                    position.y = buttonWindow.bounds.size.height - buttonWidth + 2.0;
+                    position.x = translatedPoint.x - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = YES;
+                }
+                
+                // Check to see if user has attached the button to the left side
+                if (translatedPoint.y < (squareControlButton.frame.size.width + 10)) {
+                    CGPoint position = squareControlButton.position;
+                    position.y = -6.0;
+                    position.x = translatedPoint.x - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = NO;
+                }
+            }
+            
+            if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+                // Check to see if user has attached the button to the right side
+                if (translatedPoint.y > (buttonWindow.bounds.size.height - squareControlButton.frame.size.height - 10)) {
+                    CGPoint position = squareControlButton.position;
+                    CGFloat buttonWidth = LIOLookIOManagerSquareControlButtonSize;
+                    position.y = buttonWindow.bounds.size.height - buttonWidth + 2.0;
+                    position.x = translatedPoint.x - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = NO;
+                }
+                
+                // Check to see if user has attached the button to the left side
+                if (translatedPoint.y < (squareControlButton.frame.size.width + 10)) {
+                    CGPoint position = squareControlButton.position;
+                    position.y = -6.0;
+                    position.x = translatedPoint.x - squareControlButton.bounds.size.height/2;
+                    squareControlButton.position = position;
+                    
+                    squareControlButton.isAttachedToRight = YES;
+                }
+            }
+
             [UIView animateWithDuration:0.2 animations:^{
                 [self rejiggerSquareControlButtonFrame];
             } completion:^(BOOL finished) {
@@ -5680,6 +5823,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (kLPControlButtonSquare == controlButtonType) {
             if (NO == controlButtonHidden && rotationIsActuallyHappening)
             {
+                [self resetSquareControlButtonPosition];                
                 [self rejiggerControlButtonFrame];
                 rotationIsActuallyHappening = NO;
                 controlButtonHidden = YES;
