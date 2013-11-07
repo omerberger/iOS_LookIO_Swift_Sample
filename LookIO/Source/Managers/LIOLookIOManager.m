@@ -41,6 +41,8 @@
 #import "LPSSEvent.h"
 #import "LPHTTPRequestOperation.h"
 
+#import <AdSupport/AdSupport.h>
+
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
                                      blue:((c)&0xFF)/255.0 \
@@ -499,7 +501,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)uploadLog:(NSString *)logBody
 {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"http%@://%@/%@", usesTLS ? @"s" : @"", controlEndpoint, LIOLookIOManagerLogUploadRequestURL]];
-    NSString *udid = uniqueIdentifier();
+    NSString *udid = @"";
+
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
+        udid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+    } else {
+        udid = uniqueIdentifier();
+    }
+    
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     
     NSMutableURLRequest *uploadLogRequest = [NSMutableURLRequest requestWithURL:url
@@ -3783,17 +3792,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *deviceType = [NSString stringWithCString:machine encoding:NSASCIIStringEncoding];
     free(machine);
     
-    
     NSString *bundleId = [self bundleId];
-    NSString *udid = uniqueIdentifier();
     NSMutableDictionary *introDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                      udid, @"device_id",
                                       deviceType, @"device_type",
                                       bundleId, @"app_id",
                                       @"Apple iOS", @"platform",
                                       [[UIDevice currentDevice] systemVersion], @"platform_version",
                                       LOOKIO_VERSION_STRING, @"sdk_version",
                                       nil];
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
+        NSString *udid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+        NSString *vendorDeviceId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        ASIdentifierManager *sharedIndentifierManager = [ASIdentifierManager sharedManager];
+        BOOL limitAdTracking = !sharedIndentifierManager.advertisingTrackingEnabled;
+
+        [introDict setObject:udid forKey:@"device_id"];
+        [introDict setObject:vendorDeviceId forKey:@"vendor_device_id"];
+        [introDict setObject:[NSNumber numberWithBool:limitAdTracking] forKey:@"limit_ad_tracking"];
+
+    } else {
+        NSString *udid = uniqueIdentifier();
+        
+        [introDict setObject:udid forKey:@"device_id"];
+    }
     
     if (includeEvents && [pendingEvents count])
         [introDict setObject:pendingEvents forKey:@"events"];
