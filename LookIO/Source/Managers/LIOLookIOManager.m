@@ -2977,6 +2977,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             introduced = YES;
             introPacketWasSent = YES;
             killConnectionAfterChatViewDismissal = NO;
+            firstChatMessageSent = YES;
             
             [LIOSurveyManager sharedSurveyManager].receivedEmptyPreSurvey = YES;
             
