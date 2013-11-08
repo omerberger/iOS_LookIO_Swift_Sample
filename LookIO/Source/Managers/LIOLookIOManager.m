@@ -3808,7 +3808,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         BOOL limitAdTracking = !sharedIndentifierManager.advertisingTrackingEnabled;
 
         [introDict setObject:udid forKey:@"device_id"];
-        [introDict setObject:vendorDeviceId forKey:@"vendor_device_id"];
+        [introDict setObject:vendorDeviceId forKey:@"alternate_device_id"];
         [introDict setObject:[NSNumber numberWithBool:limitAdTracking] forKey:@"limit_ad_tracking"];
 
     } else {
