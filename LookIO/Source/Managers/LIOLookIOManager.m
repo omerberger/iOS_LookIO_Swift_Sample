@@ -1228,24 +1228,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    if (mainWindow)
-    {
-        previousKeyWindow = nil;
-        
-        [lookioWindow removeFromSuperview];
-        [lookioWindow release];
-        lookioWindow = [[UIWindow alloc] initWithFrame:mainWindow.frame];
-        lookioWindow.hidden = YES;
-        lookioWindow.windowLevel = 0.1;
-        
-        [self refreshControlButtonVisibility];
-        
-        [mainWindow makeKeyWindow];
-    }
-    else {
-        [self rejiggerWindows];
-        [self refreshControlButtonVisibility];
-    }
+    [self rejiggerWindows];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
@@ -2658,7 +2641,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Wacky special case: server terminates session.
         else if (NO == userWantsSessionTermination && err == nil)
         {
-            [self dismissDismissibleAlertView];
+            [altChatViewController dismissExistingAlertView];
+
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                 message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                delegate:self

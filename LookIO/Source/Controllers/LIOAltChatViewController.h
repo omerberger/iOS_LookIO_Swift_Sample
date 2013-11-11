@@ -131,5 +131,6 @@
 - (void)noSurveyRecieved;
 - (void)engagementDidStart;
 - (void)hideChatUIForSurvey:(BOOL)animated;
+- (void)dismissExistingAlertView;
 
 @end

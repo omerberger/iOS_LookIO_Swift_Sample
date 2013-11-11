@@ -2968,4 +2968,12 @@
     }
 }
 
+- (void)dismissExistingAlertView {
+    if (alertView != nil) {
+        [alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        [alertView autorelease];
+        alertView = nil;
+    }
+}
+
 @end
