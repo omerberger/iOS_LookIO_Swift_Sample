@@ -1120,24 +1120,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    if (mainWindow)
-    {
-        previousKeyWindow = nil;
-        
-        [lookioWindow removeFromSuperview];
-        [lookioWindow release];
-        lookioWindow = [[UIWindow alloc] initWithFrame:mainWindow.frame];
-        lookioWindow.hidden = YES;
-        lookioWindow.windowLevel = 0.1;
-        
-        [self refreshControlButtonVisibility];
-        
-        [mainWindow makeKeyWindow];
-    }
-    else
-        [self rejiggerWindows];
-    
-    [self refreshControlButtonVisibility];
+    [self rejiggerWindows];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
