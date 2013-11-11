@@ -42,7 +42,6 @@
 #import "LPHTTPRequestOperation.h"
 
 #import <AdSupport/AdSupport.h>
-#import "DRNRealTimeBlurView.h"
 #import "LIOBlurImageView.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
