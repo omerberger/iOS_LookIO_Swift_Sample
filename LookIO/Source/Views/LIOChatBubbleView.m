@@ -175,13 +175,18 @@ static NSDataDetector *dataDetector = nil;
 {
     UILabel *newMessageView = [[UILabel alloc] initWithFrame:self.bounds];
     newMessageView.font = [UIFont systemFontOfSize:15.0];
-    newMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
-    newMessageView.layer.shadowRadius = 1.0;
-    newMessageView.layer.shadowOpacity = 1.0;
-    newMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     newMessageView.backgroundColor = [UIColor clearColor];
-    newMessageView.textColor = [UIColor whiteColor];
     newMessageView.numberOfLines = 0;
+    
+    if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        newMessageView.textColor = [UIColor colorWithWhite:56.0/255.0 alpha:1.0];
+    } else {
+        newMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
+        newMessageView.layer.shadowRadius = 1.0;
+        newMessageView.layer.shadowOpacity = 1.0;
+        newMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        newMessageView.textColor = [UIColor whiteColor];
+    }
     
     return newMessageView;
 }
