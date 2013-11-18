@@ -139,6 +139,8 @@
     
     innerShadow.frame = self.bounds;
     bubbleImageView.frame = CGRectMake(12.5, 10, self.bounds.size.width - 25.0, self.bounds.size.width - 25.0);
+    
+    
 
 }
 
@@ -226,7 +228,10 @@
     [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         CGSize expectedLabelSize = [label.text sizeWithFont:[UIFont boldSystemFontOfSize:15.0] constrainedToSize:CGSizeMake(300, 17.0) lineBreakMode:UILineBreakModeTailTruncation];
         CGRect frame = label.frame;
-        frame.origin.x = -expectedLabelSize.width - 14.0;
+        if (self.isAttachedToRight)
+            frame.origin.x = -expectedLabelSize.width - 14.0;
+        else
+            frame.origin.x = self.frame.size.width;
         frame.origin.y = (self.frame.size.height/2 - 26.0/2);
         frame.size.width = expectedLabelSize.width + 15.0;
         frame.size.height = 26.0;

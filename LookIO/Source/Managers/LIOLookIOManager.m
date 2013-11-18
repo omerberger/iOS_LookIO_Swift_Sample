@@ -1671,8 +1671,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [dragToDeleteView zoomOutOfDeleteArea];
     }
 
-    NSLog(@"Translated point is %f, %f", translatedPoint.x, translatedPoint.y);
-    
     if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
         if (dragToDeleteView.isZoomedIn) {
             [UIView animateWithDuration:0.2 animations:^{
