@@ -27,6 +27,12 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
+        self.tintLayer = [[[CALayer alloc] init] autorelease];
+        self.tintLayer.frame = self.bounds;
+        self.tintLayer.opacity = 0.4;
+        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+        
+        [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }
@@ -127,14 +133,5 @@
     free(buffer1.data);
     return resultImage;
 }
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    // Drawing code
-}
-*/
 
 @end
