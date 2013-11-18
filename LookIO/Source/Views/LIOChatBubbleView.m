@@ -506,7 +506,7 @@ static NSDataDetector *dataDetector = nil;
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            [delegate chatBubbleView:self didTapSupertypeLinkWithURL:aLinkURL link:aLink scheme:aScheme superType:aSupertype];
+            [delegate chatBubbleView:self didTapWebLinkWithURL:aLinkURL];
         }
         else
         {

@@ -17,12 +17,12 @@
 		A70B677117AC21420053A62E /* LIOChatModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676F17AC21420053A62E /* LIOChatModule.m */; };
 		A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B677217AC237A0053A62E /* LIOWebViewChatModule.h */; };
 		A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */; };
+		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
+		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; };
 		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
 		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
 		A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
 		A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */; };
-		A77A1EBB17B2F09700FEDD26 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB917B2F09600FEDD26 /* LIOKeyboardMenu.h */; };
-		A77A1EBC17B2F09700FEDD26 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EBA17B2F09600FEDD26 /* LIOKeyboardMenu.m */; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
@@ -159,12 +159,12 @@
 		A70B676F17AC21420053A62E /* LIOChatModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatModule.m; path = Source/Other/ChatModules/LIOChatModule.m; sourceTree = "<group>"; };
 		A70B677217AC237A0053A62E /* LIOWebViewChatModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOWebViewChatModule.h; path = Source/Other/ChatModules/LIOWebViewChatModule.h; sourceTree = "<group>"; };
 		A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOWebViewChatModule.m; path = Source/Other/ChatModules/LIOWebViewChatModule.m; sourceTree = "<group>"; };
+		A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenu.h; path = Source/Views/LIOKeyboardMenu.h; sourceTree = "<group>"; };
+		A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenu.m; path = Source/Views/LIOKeyboardMenu.m; sourceTree = "<group>"; };
 		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenuButton.h; path = Source/Views/LIOKeyboardMenuButton.h; sourceTree = "<group>"; };
 		A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenuButton.m; path = Source/Views/LIOKeyboardMenuButton.m; sourceTree = "<group>"; };
-		A77A1EB917B2F09600FEDD26 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenu.h; path = Source/Views/LIOKeyboardMenu.h; sourceTree = "<group>"; };
-		A77A1EBA17B2F09600FEDD26 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenu.m; path = Source/Views/LIOKeyboardMenu.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
 		A7C859371779E26B00493BF8 /* LPSSEManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSSEManager.h; path = Source/Networking/LPSSEManager.h; sourceTree = "<group>"; };
@@ -456,10 +456,8 @@
 				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
 				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,
 				A70B676617ABFA600053A62E /* LIOBlurImageView.m */,
-				A7BC8DAB17A2D84800D31068 /* LIOWebView.h */,
-				A7BC8DAC17A2D84800D31068 /* LIOWebView.m */,
-				A77A1EA617B0307300FEDD26 /* LIOKeyboardMenu.h */,
-				A77A1EA717B0307300FEDD26 /* LIOKeyboardMenu.m */,
+				A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */,
+				A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */,
 				A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */,
 				A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */,
 			);
@@ -543,7 +541,6 @@
 		D4ADC7D814F322C300713F29 /* 3rd Party */ = {
 			isa = PBXGroup;
 			children = (
-				A7BC8D9017A1E42F00D31068 /* UIImage+ImageEffects */,
 				D440D47B1541E8450045DBFF /* TTTAttributedLabel */,
 				D486D7141521303B007C9AF8 /* MiniZip */,
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
@@ -661,6 +658,7 @@
 				D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */,
 				D4137A10159148F30097E385 /* LIOSurveyPickerView.h in Headers */,
 				D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */,
+				A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */,
 				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
 				D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */,
 				D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */,
@@ -681,10 +679,8 @@
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
 				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
 				A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */,
-				A7BC8DAD17A2D84800D31068 /* LIOWebView.h in Headers */,
 				A70B677017AC21420053A62E /* LIOChatModule.h in Headers */,
 				A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */,
-				A77A1EA817B0307300FEDD26 /* LIOKeyboardMenu.h in Headers */,
 				A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -821,12 +817,11 @@
 				A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */,
 				A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */,
 				A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */,
+				A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */,
 				A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */,
 				A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */,
-				A7BC8DAE17A2D84800D31068 /* LIOWebView.m in Sources */,
 				A70B677117AC21420053A62E /* LIOChatModule.m in Sources */,
 				A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */,
-				A77A1EA917B0307300FEDD26 /* LIOKeyboardMenu.m in Sources */,
 				A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

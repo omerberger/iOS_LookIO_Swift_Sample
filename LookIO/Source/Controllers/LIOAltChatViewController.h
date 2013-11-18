@@ -63,7 +63,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
      LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
-    UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate, LIOKeyboardMenuDelegate>
+    UIAlertViewDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate, LIOKeyboardMenuDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;

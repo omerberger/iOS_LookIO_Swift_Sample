@@ -10,9 +10,6 @@
 
 @interface LIOBlurImageView : UIImageView
 
-<<<<<<< HEAD
 -(void)setImageAndBlur:(UIImage*)imageToBlur;
 
-=======
->>>>>>> Converted blur to use LIOBlurImageView and Apple's UIImage+ImageEffects
 @end
