@@ -1621,6 +1621,11 @@
                         failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
                         [aCell.contentView addSubview:failedMessageButton];
                     }
+                    
+                    if (LIOIsUIKitFlatMode()) {
+                        aCell.contentView.clipsToBounds = YES;
+                        aCell.contentView.superview.clipsToBounds = YES;
+                    }
                 }
             }
         }
@@ -1666,6 +1671,11 @@
             [failedMessageButton addTarget:self action:@selector(failedMessageButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
             failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
             [aCell.contentView addSubview:failedMessageButton];
+        }
+        
+        if (LIOIsUIKitFlatMode()) {
+            aCell.contentView.clipsToBounds = YES;
+            aCell.contentView.superview.clipsToBounds = YES;
         }
     }
     
