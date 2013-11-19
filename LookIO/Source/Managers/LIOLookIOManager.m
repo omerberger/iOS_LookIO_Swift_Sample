@@ -4353,6 +4353,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
 {
+    if (dismissibleAlertView) {
+        [dismissibleAlertView dismissWithClickedButtonIndex:-1 animated:NO];
+        dismissibleAlertView = nil;
+    }
+    
     if (chatClosingAsPartOfReset) {
         [self reset];
         return;
