@@ -1621,12 +1621,6 @@
                         failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
                         [aCell.contentView addSubview:failedMessageButton];
                     }
-                    
-                    // Fix for iOS 7.0 - allow Bubbles to bounce
-                    if (LIOIsUIKitFlatMode())
-                        for (UIView *subview in aCell.subviews)
-                            subview.clipsToBounds = NO;
-
                 }
             }
         }
@@ -1673,11 +1667,6 @@
             failedMessageButton.tag = LIOAltChatViewControllerTableViewCellFailedMessageButtonTag;
             [aCell.contentView addSubview:failedMessageButton];
         }
-
-        // Fix for iOS 7.0 - allow Bubbles to bounce
-        if (LIOIsUIKitFlatMode())
-            for (UIView *subview in aCell.subviews)
-                subview.clipsToBounds = NO;
     }
     
     return aCell;
