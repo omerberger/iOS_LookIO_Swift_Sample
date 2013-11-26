@@ -2595,7 +2595,6 @@
     }
     
     if (LIOSurveyManagerSurveyTypePost == aView.currentSurveyType) {
-        
         // For a post chat survey, let's check if the user has answered all the mandatory questions, and at least one question
         // If so we can submit the survey with whatever the user did answer
 
