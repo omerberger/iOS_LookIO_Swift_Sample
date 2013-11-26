@@ -3326,6 +3326,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (showAlert)
     {
         [self dismissDismissibleAlertView];
+
         dismissibleAlertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                           message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                          delegate:self
@@ -3371,6 +3372,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     // Call for session termination
     [self altChatViewControllerWantsSessionTermination:altChatViewController];
+    
 }
 
 - (BOOL)beginConnectingWithError:(NSError **)anError
@@ -5022,7 +5024,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             break;
         }
-            
             
         case LIOLookIOManagerDisconnectedByDeveloperAlertViewTag:
         {
