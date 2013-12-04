@@ -1939,7 +1939,7 @@
         }
         else
         {
-            if (LIOSurveyQuestionDisplayTypeMultiselect) {
+            if (LIOSurveyQuestionDisplayTypeMultiselect == currentQuestion.displayType) {
                 // If this is a checkbox (=multiselect), and the user hasn't checked anything, we should report an empty string
                 if (selectedIndices.count == 0)
                     [surveyManager registerAnswerObject:@"" forSurveyType:currentSurveyType withQuestionIndex:currentQuestionIndex];
@@ -1953,7 +1953,7 @@
                 }                
             }
             
-            if (LIOSurveyQuestionDisplayTypePicker) {
+            if (LIOSurveyQuestionDisplayTypePicker == currentQuestion.displayType) {
                 if (selectedIndices.count == 1) {
                     NSIndexPath* indexPath = (NSIndexPath*)[selectedIndices objectAtIndex:0];
                     LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
