@@ -689,13 +689,14 @@
     UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
     aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-    /*
-        aFrame.origin.x = referenceFrame.size.width - 80.0;
-        aFrame.origin.y = 15;
-    }
-     */
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+    {
+        CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+        aFrame.size.width = expectedButtonSize.width;
+        aFrame.origin.x = referenceFrame.size.width/2 + (referenceFrame.size.width/2 - expectedButtonSize.width)/2 - 30.0;
+    }
     nextButton.frame = aFrame;
     
     UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
@@ -704,6 +705,12 @@
     aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
     aFrame.size.width = 92.0;
     aFrame.size.height = 44.0;
+    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+    {
+        CGSize expectedButtonSize = [cancelButton.titleLabel.text sizeWithFont:cancelButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+        aFrame.size.width = expectedButtonSize.width;
+        aFrame.origin.x = referenceFrame.size.width/2 - expectedButtonSize.width - (referenceFrame.size.width/2 - expectedButtonSize.width)/2 + 30.0;
+    }
     cancelButton.frame = aFrame;
     
     if (padUI) {
@@ -1195,6 +1202,12 @@
                 aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
                 aFrame.size.width = 92.0;
                 aFrame.size.height = 44.0;
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                    CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+                    
+                    aFrame.size.width = expectedButtonSize.width;
+                    aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedButtonSize.width;
+                }
                 nextButton.frame = aFrame;
                         
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -1253,6 +1266,12 @@
                 aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
                 aFrame.size.width = 92.0;
                 aFrame.size.height = 44.0;
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                    CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+                    
+                    aFrame.size.width = expectedButtonSize.width;
+                    aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedButtonSize.width;
+                }
                 nextButton.frame = aFrame;
             
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -1315,25 +1334,35 @@
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
-        if (padUI)
+        if (padUI) {
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+            aFrame.size.width = 92.0;
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+
+                aFrame.size.width = expectedButtonSize.width;
+                aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - expectedButtonSize.width;
+            }
+        }
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+                aFrame.size.width = expectedButtonSize.width;
                 if (landscape) {
-                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
                     aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height - 5;
                 } else {
-                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
                     aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 25;
                 }
             } else {
                 aFrame.origin.y = starRatingView.frame.origin.y + starRatingView.frame.size.height + 60;
+                aFrame.size.width = 92.0;
             }
         }
-        aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
-        
         
         if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
             UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
@@ -1399,22 +1428,33 @@
         
         UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewButtonTag];
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
-        if (padUI)
+        if (padUI) {
             aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+            aFrame.size.width = 92.0;
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+                
+                aFrame.size.width = expectedButtonSize.width;
+                aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - expectedButtonSize.width;
+            }
+        }
         else {
             if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+                CGSize expectedButtonSize = [nextButton.titleLabel.text sizeWithFont:nextButton.titleLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width, self.bounds.size.height) lineBreakMode:NSLineBreakByClipping];
+                aFrame.size.width = expectedButtonSize.width;
                 if (landscape) {
-                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
                     aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height;
                 } else {
-                    aFrame.origin.x = referenceFrame.size.width - 95.0;
+                    aFrame.origin.x = referenceFrame.size.width - expectedButtonSize.width - 30.0;
                     aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 2;
                 }
             } else {
                 aFrame.origin.y = tableView.frame.origin.y + tableView.frame.size.height + 15;
+                aFrame.size.width = 92.0;
             }
         }
-        aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         nextButton.frame = aFrame;
         
