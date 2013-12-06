@@ -8,6 +8,10 @@
 
 #import "LPAPIClient.h"
 
+#define LIOLookIOManagerAppLaunchRequestURL         @"/api/v1/visit/launch"
+#define LIOLookIOManagerAppContinueRequestURL       @"/continue"
+#define LIOLookIOManagerVisitFunnelRequestURL       @"/funnel"
+
 @interface LPVisitAPIClient : LPAPIClient
 
 + (LPVisitAPIClient *)sharedClient;

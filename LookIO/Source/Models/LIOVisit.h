@@ -17,14 +17,23 @@ typedef enum
     LIOFunnelStateClicked,
 } LIOFunnelState;
 
+@class LIOVisit;
+
+@protocol LIOVisitDelegate <NSObject>
+
+- (void)skillMappingDidChange:(LIOVisit *)visit;
+
+@end
+
 @interface LIOVisit : NSObject
 
-@property (nonatomic, assign) LIOFunnelState funnelState;
+@property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
-@property (nonatomic, assign) BOOL customButtonChatAvailable;
-@property (nonatomic, assign) BOOL customButtonInvitationShown;
+- (void)launchVisit;
 
-- (void)startVisit;
-- (void)updateAndReportFunnelState;
+- (void)setChatAvailable;
+- (void)setChatUnavailable;
+- (void)setInvitationShown;
+- (void)setInvitationNotShown;
 
 @end

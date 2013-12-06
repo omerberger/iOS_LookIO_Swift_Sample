@@ -9,20 +9,19 @@
 #import "LIOManager.h"
 
 #import "LIOLogManager.h"
+#import "LIOStatusManager.h"
 #import "LIONetworkManager.h"
 
 #import "LIOVisit.h"
 #import "LIOChat.h"
-#import "LIOAppStatus.h"
 
-@interface LIOManager ()
+@interface LIOManager () <LIOVisitDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) BOOL initializationFailed;
 
 @property (nonatomic, strong) LIOVisit *visit;
 @property (nonatomic, strong) LIOChat *chat;
-@property (nonatomic, strong) LIOAppStatus *appStatus;
 
 @end
 
@@ -55,11 +54,8 @@ static LIOManager *sharedLookIOManager = nil;
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
 
-    self.appStatus = [[LIOAppStatus alloc] init];
-    self.appStatus.appForegrounded = YES;
-    
     self.delegate = aDelegate;
-    
+
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     self.initializationFailed = nil == keyWindow;
     
@@ -68,7 +64,11 @@ static LIOManager *sharedLookIOManager = nil;
     self.lookioWindow.windowLevel = 0.1;
     
     self.visit = [[LIOVisit alloc] init];
-    [self.visit startVisit];
+    self.visit.delegate = self;
+    [self.visit launchVisit];
+    
+    LIOStatusManager *statusManager = [LIOStatusManager statusManager];
+    statusManager.appForegrounded = YES;
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 
@@ -78,26 +78,22 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)setChatAvailable
 {
-    self.visit.customButtonChatAvailable = YES;
-    [self.visit updateAndReportFunnelState];
+    [self.visit setChatAvailable];
 }
 
 - (void)setChatUnavailable
 {
-    self.visit.customButtonChatAvailable = NO;
-    [self.visit updateAndReportFunnelState];
+    [self.visit setChatUnavailable];
 }
 
 - (void)setInvitationShown
 {
-    self.visit.customButtonInvitationShown = YES;
-    [self.visit updateAndReportFunnelState];
+    [self.visit setInvitationShown];
 }
 
 - (void)setInvitationNotShown
 {
-    self.visit.customButtonInvitationShown = NO;
-    [self.visit updateAndReportFunnelState];
+    [self.visit setInvitationNotShown];
 }
 
 #pragma mark Server usage methods
