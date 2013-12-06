@@ -53,7 +53,6 @@
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
 @property (nonatomic, assign) LIOFunnelState funnelState;
-@property (nonatomic, assign) BOOL introPacketWasSent;
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
 @property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
 
@@ -384,6 +383,9 @@
         // the lib to report "disabled" back to the host app.
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
+        
+        self.visitState = LIOVisitStateFailed;
+        LIOLog(@"<VISIT STATE> Failed");
     }
     
     // Save.
@@ -643,6 +645,9 @@
                     
                     [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
                     self.multiskillMapping = nil;
+                    
+                    self.visitState = LIOVisitStateFailed;
+                    LIOLog(@"<VISIT STATE> Failed");
                 }
             }
             
@@ -723,6 +728,15 @@
 
 #pragma mark Funnel Reporting Methods
 
+- (BOOL)engagementInProgress
+{
+    BOOL engagementInProgress = NO;
+    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatInProgress || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePostChatSurvey)
+        engagementInProgress = YES;
+    
+    return engagementInProgress;
+}
+
 - (void)updateAndReportFunnelState
 {
     // For visit state, let's see if we can upgrade to hotlead
@@ -789,7 +803,7 @@
     {
         // If a chat started before invitation state was reached, it will be reported here.
         // We can return from the call because it is the topmost state
-        if (self.introPacketWasSent)
+        if ([self engagementInProgress])
         {
             self.funnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
@@ -837,7 +851,7 @@
     // We can return from each condition because there the final state is set here
     if (self.funnelState == LIOFunnelStateClicked)
     {
-        if (!self.introPacketWasSent)
+        if (![self engagementInProgress])
         {
             // Case one - Tab is not visible, and the button is not being displayed, downgrade to a visit
             if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility intValue])
