@@ -71,7 +71,6 @@ static LIOManager *sharedLookIOManager = nil;
     statusManager.appForegrounded = YES;
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
-
 }
 
 #pragma mark Custom Button Methods
@@ -120,7 +119,8 @@ static LIOManager *sharedLookIOManager = nil;
     
 }
 
-- (void)chatEnabledDidUpdate:(LIOVisit *)visit {
+- (void)chatEnabledDidUpdate:(LIOVisit *)visit
+{
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
 }

@@ -27,6 +27,9 @@
                                      blue:((c)&0xFF)/255.0 \
                                     alpha:1.0]
 
+#define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
+#define LIOLookIOManagerMaxContinueFailures                3
+
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
 #define LIOLookIOManagerLastKnownButtonTextKey          @"LIOLookIOManagerLastKnownButtonTextKey"
@@ -60,6 +63,8 @@
 @property (nonatomic, copy) NSString *lastKnownVisitURL;
 @property (nonatomic, assign) NSTimeInterval nextTimeInterval;
 @property (nonatomic, strong) LIOTimerProxy *continuationTimer;
+@property (nonatomic, assign) BOOL continueCallInProgress;
+@property (nonatomic, assign) NSInteger failedContinueCount;
 
 @property (nonatomic, assign) BOOL lastKnownSurveysEnabled;
 @property (nonatomic, assign) BOOL disableSurveysOverride;
@@ -538,7 +543,102 @@
 
 - (void)continuationTimerDidFire
 {
+    [self.continuationTimer stopTimer];
+    self.continuationTimer = nil;
+
+    if (0.0 == self.nextTimeInterval)
+        self.nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
+    self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
+                                                             target:self
+                                                           selector:@selector(continuationTimerDidFire)];
+    
+    [self sendContinuationReport];
+}
+
+- (void)sendContinuationReport
+{
+    if (self.continueCallInProgress)
+        return;
+    
+    if (0 == [self.lastKnownVisitURL length])
+        return;
+    
+    self.continueCallInProgress = YES;
+    
+    NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES];
+    
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppContinueRequestURL parameters:continueDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            self.continueCallInProgress = NO;
+            self.failedContinueCount = 0;
+            
+            NSDictionary *responseDict = (NSDictionary *)responseObject;
+            LIOLog(@"<CONTINUE> Success. HTTP code: %d. Response: %@", operation.responseCode, responseDict);
+            
+            [self parseAndSaveSettingsPayload:responseDict fromContinue:YES];
+            
+            // Continue call succeeded! Purge the event queue.
+            [self.pendingEvents removeAllObjects];
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
+            
+            [self updateAndReportFunnelState];
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            self.continueCallInProgress = NO;
+            
+            LIOLog(@"<CONTINUE> Failed with response code: %d and error: %@", operation.responseCode, error);
+
+            if (operation.responseCode == 404)
+            {
+                // New launch
+                LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+
+                self.currentVisitId = nil;
+                self.lastKnownVisitURL = nil;
+                [self.continuationTimer stopTimer];
+                self.continuationTimer = nil;
+                
+                [self launchVisit];
+            }
+            else
+            {
+                // Retry logic.
+                
+                if (self.failedContinueCount < LIOLookIOManagerMaxContinueFailures)
+                {
+                    self.failedContinueCount += 1;
+                    LIOLog(@"<CONTINUE> Retry attempt %u of %u...", self.failedContinueCount, LIOLookIOManagerMaxContinueFailures);
+                    
+                    // The timer should automatically trigger the next continue call.
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Retries exhausted. Stopping future continue calls.");
+                    
+                    [self.continuationTimer stopTimer];
+                    self.continuationTimer = nil;
+                    
+                    // TODO Check why the visitor id is here..
+                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
+                    self.lastKnownVisitURL = nil;
+                    
+                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
+                    self.multiskillMapping = nil;
+                }
+            }
+            
+            if ([self.pendingEvents count])
+            {
+                // Oh crap, the continue call failed!
+                // Save all queued events to the user defaults store.
+                [[NSUserDefaults standardUserDefaults] setObject:self.pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
+            }
+        }];
+    }
+    
+    [self updateAndReportFunnelState];
 }
 
 #pragma mark Chat Status Methods
