@@ -14,8 +14,15 @@ typedef enum
     LIOFunnelStateVisit,
     LIOFunnelStateHotlead,
     LIOFunnelStateInvitation,
-    LIOFunnelStateClicked,
+    LIOFunnelStateClicked
 } LIOFunnelState;
+
+typedef enum
+{
+    LIOButtonVisibilityNever = 0,
+    LIOButtonVisibilityAlways = 1,
+    LIOButtonVisibilityInSession = 3
+} LIOButtonVisibility;
 
 @class LIOVisit;
 

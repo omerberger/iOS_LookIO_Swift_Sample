@@ -47,10 +47,13 @@
 @interface LIOVisit ()
 
 @property (nonatomic, copy) NSString *currentVisitId;
-@property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, copy) NSString *requiredSkill;
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
+@property (nonatomic, assign) LIOFunnelState funnelState;
+@property (nonatomic, assign) BOOL introPacketWasSent;
+
+@property (nonatomic, assign) BOOL controlButtonHidden;
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
 @property (nonatomic, assign) BOOL *previousControlButtonVisibilityValue;
@@ -706,9 +709,172 @@
 
 #pragma mark Funnel Reporting Methods
 
+- (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
+{
+    
+}
+
 - (void)updateAndReportFunnelState
 {
-
+    // For visit state, let's see if we can upgrade to hotlead
+    if (self.funnelState == LIOFunnelStateVisit)
+    {
+        // If the tab visibility is not always, let's first check that the devloper has set the chat to available.
+        // If not, it should stay a visit
+        if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility integerValue])
+        {
+            if (self.customButtonChatAvailable)
+            {
+                // If the tab visibility is not always, but chat is available, this is a hotlead
+                self.funnelState = LIOFunnelStateHotlead;
+                LIOLog(@"<FUNNEL STATE> Hotlead");
+                [self sendFunnelPacketForState:self.funnelState];
+            }
+        }
+        else
+        {
+            // Or, if the tab is supposed to be shown, whether or not it is actually shown, it's a hotlead
+            self.funnelState = LIOFunnelStateHotlead;
+            LIOLog(@"<FUNNEL STATE> Hotlead");
+            [self sendFunnelPacketForState:self.funnelState];
+        }
+    }
+    
+    // If we're at the hot lead state, let's check if we can upgrade to invitation, or downgrade to visit
+    if (self.funnelState == LIOFunnelStateHotlead)
+    {
+        // If the tab visibility is not always, let's first check that the developer has reported that the invitation has been shown
+        // If not, it should stay a hotlead
+        // If chat has been disabled, downgrade to a visit
+        if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility integerValue])
+        {
+            if (!self.customButtonChatAvailable)
+            {
+                self.funnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+                [self sendFunnelPacketForState:self.funnelState];
+            }
+            else
+            {
+                if (self.customButtonInvitationShown)
+                {
+                    self.funnelState = LIOFunnelStateInvitation;
+                    LIOLog(@"<FUNNEL STATE> Invitation");
+                    [self sendFunnelPacketForState:self.funnelState];
+                }
+            }
+        }
+        else
+        {
+            if (!self.controlButtonHidden)
+            {
+                self.funnelState = LIOFunnelStateInvitation;
+                LIOLog(@"<FUNNEL STATE> Invitation");
+                [self sendFunnelPacketForState:self.funnelState];
+            }
+        }
+    }
+    
+    // If we're at the invitation state, let's make sure we can maintain it
+    if (self.funnelState == LIOFunnelStateInvitation)
+    {
+        // If a chat started before invitation state was reached, it will be reported here.
+        // We can return from the call because it is the topmost state
+        if (self.introPacketWasSent)
+        {
+            self.funnelState = LIOFunnelStateClicked;
+            LIOLog(@"<FUNNEL STATE> Clicked");
+            [self sendFunnelPacketForState:self.funnelState];
+            return;
+        }
+        
+        // If the tab visibility is not always, let's check if the developer:
+        // Set chat to unavailable, making it a visit
+        // Set invitation to not shown, making it a hotlead
+        if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility intValue])
+        {
+            // If chat unavailable, it's a visit
+            if (!self.customButtonChatAvailable)
+            {
+                self.funnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+                [self sendFunnelPacketForState:self.funnelState];
+            }
+            else
+            {
+                // If chat available, but invitation not shown, it's a hotlead
+                // Otherwise, it stays an invitation
+                if (!self.customButtonInvitationShown)
+                {
+                    self.funnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                    [self sendFunnelPacketForState:self.funnelState];
+                }
+            }
+        }
+        else
+        {
+            // If tab availability is always, let's check if the tab is visible, otherwise downgrade to hotlead
+            if (self.controlButtonHidden)
+            {
+                self.funnelState = LIOFunnelStateHotlead;
+                LIOLog(@"<FUNNEL STATE> Hotlead");
+                [self sendFunnelPacketForState:self.funnelState];
+            }
+        }
+    }
+    
+    // If we're at the clicked lead state, and the chat has ended, let's downgrade it
+    // We can return from each condition because there the final state is set here
+    if (self.funnelState == LIOFunnelStateClicked)
+    {
+        if (!self.introPacketWasSent)
+        {
+            // Case one - Tab is not visible, and the button is not being displayed, downgrade to a visit
+            if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility intValue])
+            {
+                // If chat unavailable, it's a visit
+                if (!self.customButtonChatAvailable)
+                {
+                    self.funnelState = LIOFunnelStateVisit;
+                    LIOLog(@"<FUNNEL STATE> Visit");
+                    [self sendFunnelPacketForState:self.funnelState];
+                    return;
+                }
+                
+                // If chat available, but invitation not shown, it's a hotlead
+                if (!self.customButtonInvitationShown)
+                {
+                    self.funnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                    [self sendFunnelPacketForState:self.funnelState];
+                    return;
+                }
+                
+                // Otherwise it's an invitation
+                self.funnelState = LIOFunnelStateInvitation;
+                LIOLog(@"<FUNNEL STATE> Invitation");
+                [self sendFunnelPacketForState:self.funnelState];
+                return;
+                
+            } else {
+                // If tab is visible, it's an invitation, otherwise a hotlead
+                if (!self.controlButtonHidden)
+                {
+                    self.funnelState = LIOFunnelStateInvitation;
+                    LIOLog(@"<FUNNEL STATE> Invitation");
+                }
+                else
+                {
+                    self.funnelState = LIOFunnelStateHotlead;
+                    LIOLog(@"<FUNNEL STATE> Hotlead");
+                }
+                
+                [self sendFunnelPacketForState:self.funnelState];
+                return;
+            }
+        }
+    }
 }
 
 @end
