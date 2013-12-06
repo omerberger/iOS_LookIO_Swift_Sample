@@ -21,13 +21,18 @@ typedef enum
 
 @protocol LIOVisitDelegate <NSObject>
 
-- (void)skillMappingDidChange:(LIOVisit *)visit;
+- (void)visitSkillMappingDidChange:(LIOVisit *)visit;
+- (void)controlButtonVisibilityDidChange:(LIOVisit *)visit;
+- (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
+- (void)chatEnabledDidUpdate:(LIOVisit *)visit;
 
 @end
 
 @interface LIOVisit : NSObject
 
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
+
+- (BOOL)chatEnabled;
 
 - (void)launchVisit;
 

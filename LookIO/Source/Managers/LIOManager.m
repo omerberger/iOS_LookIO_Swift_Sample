@@ -113,6 +113,28 @@ static LIOManager *sharedLookIOManager = nil;
     [[LIONetworkManager networkManager] setQAMode];
 }
 
+#pragma mark Visit Interaction Methods
+
+- (void)visitSkillMappingDidChange:(LIOVisit *)visit
+{
+    
+}
+
+- (void)chatEnabledDidUpdate:(LIOVisit *)visit {
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
+        [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
+}
+
+- (void)controlButtonVisibilityDidChange:(LIOVisit *)visit
+{
+    
+}
+
+- (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
+{
+    
+}
+
 #pragma mark Chat Interaction Methods
 
 - (void)beginChat
