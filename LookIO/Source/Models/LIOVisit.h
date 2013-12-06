@@ -24,6 +24,24 @@ typedef enum
     LIOButtonVisibilityInSession = 3
 } LIOButtonVisibility;
 
+typedef enum
+{
+    LIOVisitStateInitialized = 0,
+    LIOVisitStateFailed,
+    LIOVisitStateQueued,
+    LIOVisitStateLaunching,
+    LIOVisitStateLaunched,
+    LIOVisitStateVisitInProgress,
+    LIOVisitStateButtonTapped,
+    LIOVisitStatePreChatSurvey,
+    LIOVisitStateChatRequested,
+    LIOVisitStateChatInProgress,
+    LIOVisitStatePostChatSurvey,
+    LIOVisitStateReconnectInProgress,
+    LIOVisitStateReconnectSuccessful,
+    LIOVisitStateReconnectFailed
+} LIOVisitState;
+
 @class LIOVisit;
 
 @protocol LIOVisitDelegate <NSObject>

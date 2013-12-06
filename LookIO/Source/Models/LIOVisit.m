@@ -47,11 +47,15 @@
 @interface LIOVisit ()
 
 @property (nonatomic, copy) NSString *currentVisitId;
+@property (nonatomic, assign) LIOVisitState visitState;
+
 @property (nonatomic, copy) NSString *requiredSkill;
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
 @property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, assign) BOOL introPacketWasSent;
+@property (nonatomic, assign) BOOL funnelRequestIsActive;
+@property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
 
 @property (nonatomic, assign) BOOL controlButtonHidden;
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
@@ -92,22 +96,20 @@
         self.funnelState = LIOFunnelStateInitialized;
         LIOLog(@"<FUNNEL STATE> Initialized");
         
+        self.visitState = LIOVisitStateInitialized;
+        LIOLog(@"<VISIT STATE> Initiazlied");
+        
         self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
         self.multiskillMapping = nil;
         self.pendingEvents = [[NSMutableArray alloc] init];
         
         self.customButtonChatAvailable = NO;
         self.customButtonInvitationShown = NO;
-
+        
+        self.funnelRequestQueue = [[NSMutableArray alloc] init];
     }
     return self;
 }
-
-//{"alternate_device_id":"928FA266-71CF-467B-88BF-AE28B128CFBC","device_type":"x86_64","locale":"en_US","app_id":"io.look.sample.yaron","limit_ad_tracking":false,"strings_hash":"93b814df622c7e4b95760b47d12be4ea","platform":"Apple iOS","skill":"mobile","sdk_version":"##UNKNOWN_VERSION##","device_id":"84E171F6-DCE0-4AA4-B28B-DE3F6BE69FAC","platform_version":"7.0.3","language":"he","app_foregrounded":true,"version":"1.1.0","extras":{"detected_settings":{"connection_type":"wifi","push":false,"jailbroken":false,"location_services":"enabled","distribution_type":"other","tz_offset":"-0500","app_bundle_version":"1.0"}}}//
-
-//{"sdk_version":"##UNKNOWN_VERSION##","platform_version":"7.0.3","language":"he","version":"1.1.0","extras":{"detected_settings":{"connection_type":"wifi","push":false,"jailbroken":false,"location_services":"enabled","distribution_type":"other","tz_offset":"-0500","app_bundle_version":"1.0"}},"device_id":"D3B8DD7F-273A-4823-AFF0-44F17EF47897","device_type":"x86_64","platform":"Apple iOS","alternate_device_id":"4840B0D2-B303-47FC-AEAE-A7CE4A7C4D39","locale":"en_US","app_foregrounded":false} #ios #debug
-
-
 
 #pragma mark Status Dictionary Methods
 
@@ -512,6 +514,9 @@
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
+        self.visitState = LIOVisitStateLaunching;
+        LIOLog(@"<VISIT STATE> Launching");
+        
         NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO];
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             LIOLog(@"<LAUNCH> Request successful with response: %@", responseObject);
@@ -519,8 +524,11 @@
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
  
-            LIOLog(@"<FUNNEL STATE> Visit");
             self.funnelState = LIOFunnelStateVisit;
+            LIOLog(@"<FUNNEL STATE> Visit");
+            
+            self.visitState = LIOVisitStateVisitInProgress;
+            LIOLog(@"<VISIT STATE> In Progress");
 
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             LIOLog(@"<LAUNCH> Request failed with response code %d and error: %d", operation.responseCode);
@@ -529,6 +537,9 @@
             {
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
             }
+            
+            self.visitState = LIOVisitStateFailed;
+            LIOLog(@"<VISIT STATE> Failed");
  
             self.multiskillMapping = nil;
             [self.delegate visitSkillMappingDidChange:self];
@@ -536,6 +547,9 @@
     }
     else
     {
+        self.visitState = LIOVisitStateQueued;
+        LIOLog(@"<VISIT STATE> Queued");
+        
         [self.queuedLaunchReportDates addObject:[NSDate date]];
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
@@ -709,11 +723,6 @@
 
 #pragma mark Funnel Reporting Methods
 
-- (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
-{
-    
-}
-
 - (void)updateAndReportFunnelState
 {
     // For visit state, let's see if we can upgrade to hotlead
@@ -875,6 +884,76 @@
             }
         }
     }
+}
+
+- (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
+{
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    
+    // Let's check if we are in the middle of a request, or disconnected,
+    // otherwise queue this request until network returns or a new state is updated
+    
+    if (self.funnelRequestIsActive || (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)) {
+        NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
+        [self.funnelRequestQueue addObject:nextFunnelRequest];
+        return;
+    }
+    
+    self.funnelRequestIsActive = YES;
+    
+    NSString *currentStateString = @"";
+    
+    switch (funnelState) {
+        case LIOFunnelStateVisit:
+            currentStateString = @"visit";
+            break;
+            
+        case LIOFunnelStateHotlead:
+            currentStateString = @"hotlead";
+            break;
+            
+        case LIOFunnelStateInvitation:
+            currentStateString = @"invitation";
+            break;
+            
+        case LIOFunnelStateClicked:
+            currentStateString = @"clicked";
+            break;
+            
+        default:
+            break;
+    }
+    
+    // If not one these four value, nothing to report
+    if ([currentStateString isEqualToString:@""])
+        return;
+    
+    NSDictionary* buttonFunnelDict = [NSDictionary dictionaryWithObject:currentStateString forKey:@"current_state"];
+    NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
+    
+    [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerVisitFunnelRequestURL parameters:funnelDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
+        else
+            LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
+        
+        self.funnelRequestIsActive = NO;
+        if (self.funnelRequestQueue.count > 0) {
+            NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
+            [self sendFunnelPacketForState:[nextFunnelState intValue]];
+            [self.funnelRequestQueue removeObjectAtIndex:0];
+        }
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        // TODO Rereport a failed funnel request?
+        LIOLog(@"<FUNNEL> with data:%@ failure: %@", funnelDict, error);
+        
+        self.funnelRequestIsActive = NO;
+        if (self.funnelRequestQueue.count > 0) {
+            NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
+            [self sendFunnelPacketForState:[nextFunnelState intValue]];
+            [self.funnelRequestQueue removeObjectAtIndex:0];
+        }
+    }];
 }
 
 @end
