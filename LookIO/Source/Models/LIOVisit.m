@@ -51,7 +51,6 @@
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
 @property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
 
-@property (nonatomic, assign) BOOL controlButtonHidden;
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
 @property (nonatomic, assign) BOOL *previousControlButtonVisibilityValue;
@@ -97,6 +96,8 @@
         
         self.customButtonChatAvailable = NO;
         self.customButtonInvitationShown = NO;
+        
+        self.controlButtonHidden = YES;
         
         self.funnelRequestQueue = [[NSMutableArray alloc] init];
     }
@@ -493,7 +494,7 @@
             self.lastKnownSurveysEnabled = NO;
         }
         
-        [self.delegate controlButtonVisibilityDidChange:self];
+        [self refreshControlButtonVisibility];
         [self.delegate controlButtonCharacteristsDidChange:self];
 //      [self applicationDidChangeStatusBarOrientation:nil];
     }
@@ -651,6 +652,88 @@
     }
     
     [self updateAndReportFunnelState];
+}
+
+- (void)refreshControlButtonVisibility
+{
+    // TODO: Trump card #-1: If the session is ending, button is hidden.
+    
+    // Trump card #0: If we have no visibility information, button is hidden.
+    if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
+        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerMultiskillMappingKey])
+    {
+        self.controlButtonHidden = YES;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        
+        return;
+    }
+    
+    // Trump card #1: Not in a session, and not "enabled" from server-side settings.
+    if (!self.chatEnabled)
+    {
+        self.controlButtonHidden = YES;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: [self enabled] == NO.");
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        return;
+    }
+    
+    BOOL willHide = NO, willShow = NO;
+    NSString *aReason;
+    
+    if (self.lastKnownButtonVisibility)
+    {
+        NSInteger buttonVisibilityValue = [self.lastKnownButtonVisibility integerValue];
+        if (LIOButtonVisibilityNever == buttonVisibilityValue) // Never
+        {
+            // Want to hide.
+            willHide = NO == self.controlButtonHidden;
+            aReason = @"lastKnownButtonVisibility == 0 (never)";
+        }
+        else if (LIOButtonVisibilityAlways == buttonVisibilityValue) // Always
+        {
+            // Want to show.
+            willShow = self.controlButtonHidden;
+            aReason = @"lastKnownButtonVisibility == 1 (always)";
+        }
+        else if (LIOButtonVisibilityInSession == buttonVisibilityValue) // In session
+        {
+            if (self.visitState == LIOVisitStateChatInProgress)
+            {
+                // Want to show.
+                willShow = self.controlButtonHidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only) && (LIOVisitStateChatInProgress)";
+            }
+            else
+            {
+                // Want to hide.
+                willHide = NO == self.controlButtonHidden;
+                aReason = @"lastKnownButtonVisibility == 3 (in-session only)";
+            }
+        }
+    }
+    else
+    {
+        willShow = self.controlButtonHidden;
+        aReason = @"no visibility setting";
+    }
+    
+    // TODO Trump card #2: If chat is up, button is always hidden.
+
+    if (willHide)
+    {
+        LIOLog(@"<<CONTROL>> Hiding. Reason: %@", aReason);
+        
+        self.controlButtonHidden = YES;
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+    }
+    else if (willShow)
+    {
+        LIOLog(@"<<CONTROL>> Showing. Reason: %@", aReason);
+        
+        self.controlButtonHidden = NO;
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+    }
 }
 
 #pragma mark Chat Status Methods

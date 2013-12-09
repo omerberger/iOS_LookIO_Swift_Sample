@@ -91,6 +91,7 @@ typedef enum
     unsigned int textColorValue;
     [[NSScanner scannerWithString:self.textColor] scanHexInt:&textColorValue];
     UIColor *translatedTextColor = HEXCOLOR(textColorValue);
+    translatedTextColor = [translatedTextColor colorWithAlphaComponent:0.9];
     
     switch (self.buttonMode) {
         case LIOButtonModeChat:
@@ -100,6 +101,64 @@ typedef enum
         default:
             break;
     }
+}
+
+- (void)setTransformForInterfaceOrienation:(UIInterfaceOrientation)orientation
+{
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            self.transform = CGAffineTransformIdentity;
+            break;
+            
+        case UIInterfaceOrientationLandscapeLeft:
+            self.transform = CGAffineTransformMakeRotation(-90.0 * (M_PI / 180.0));
+            break;
+            
+        case UIInterfaceOrientationPortraitUpsideDown:
+            self.transform = CGAffineTransformMakeRotation(-180.0 * (M_PI / 180.0));
+            break;
+            
+        case UIInterfaceOrientationLandscapeRight:
+            self.transform = CGAffineTransformMakeRotation(-270.0 * (M_PI / 180.0));
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)resetFrame {
+    if (NO == [self.superview isKindOfClass:[UIWindow class]])
+        return;
+    
+    CGRect frame = self.frame;
+    frame.size = CGSizeMake(50, 50);
+    
+    UIWindow *buttonWindow = (UIWindow *)self.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
+    
+    frame.origin.y = self.superview.bounds.size.height*0.25;
+    
+    if (self.isVisible)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
+        else
+            frame.origin.x = -3;
+    }
+    else
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = self.superview.bounds.size.width;
+        else
+            frame.origin.x = -self.frame.size.width;
+        self.frame = frame;
+    }
+    
+    self.frame = frame;
 }
 
 #pragma mark Tint Color Methods
@@ -127,61 +186,61 @@ typedef enum
     return coloredImage;
 }
 
-- (void)resetFrame {
-    CGRect frame = self.frame;
-    
-    frame.size = CGSizeMake(50, 50);
-    
-    frame.origin.y = self.superview.bounds.size.height*0.25;
-    
-    if (self.isVisible)
-    {
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
-        else
-            frame.origin.x = -3;
-    }
-    else
-    {
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width;
-        else
-            frame.origin.x = -self.frame.size.width;
-        self.frame = frame;
-    }
-    
-    self.frame = frame;
-}
+
 
 #pragma mark Visibility Methods
 
-- (void)show {
+- (void)setVisibleFrame
+{
+    CGRect frame = self.frame;
+    if (self.isAttachedToRight)
+        frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
+    else
+        frame.origin.x = -3;
+    self.frame = frame;
+}
+
+- (void)show:(BOOL)animated
+{
     self.isVisible = YES;
-    
-    [UIView animateWithDuration:0.3 animations:^{
-        CGRect frame = self.frame;
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
-        else
-            frame.origin.x = -3;
-        self.frame = frame;
-    }];
+ 
+    if (animated)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            [self setVisibleFrame];
+        }];
+    }
+    else
+    {
+        [self setVisibleFrame];
+    }
 }
 
-- (void)hide {
+- (void)setHiddenFrame
+{
+    CGRect frame = self.frame;
+    if (self.isAttachedToRight)
+        frame.origin.x = self.superview.bounds.size.width;
+    else
+        frame.origin.x = -self.frame.size.width;
+    self.frame = frame;
+}
+
+- (void)hide:(BOOL)animated
+{
     self.isVisible = NO;
-    
-    [UIView animateWithDuration:0.5 animations:^{
-        CGRect frame = self.frame;
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width;
-        else
-            frame.origin.x = -self.frame.size.width;
-        self.frame = frame;
-    }];
+ 
+    if (animated)
+    {
+        [UIView animateWithDuration:0.5 animations:^{
+            [self setHiddenFrame];
+        }];
+    }
+    else
+    {
+        [self setHiddenFrame];
+    }
 }
-
-
 
 #pragma mark UIControl Methods
 

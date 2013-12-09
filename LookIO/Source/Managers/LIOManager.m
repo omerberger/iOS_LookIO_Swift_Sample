@@ -25,6 +25,7 @@
 @property (nonatomic, strong) LIOChat *chat;
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
+@property (nonatomic, assign) BOOL isRotationActuallyHappening;
 
 @end
 
@@ -70,7 +71,6 @@ static LIOManager *sharedLookIOManager = nil;
     self.controlButton.delegate = self;
     [keyWindow addSubview:self.controlButton];
     [self.controlButton resetFrame];
-    [self.controlButton show];
     
     self.visit = [[LIOVisit alloc] init];
     self.visit.delegate = self;
@@ -79,7 +79,84 @@ static LIOManager *sharedLookIOManager = nil;
     LIOStatusManager *statusManager = [LIOStatusManager statusManager];
     statusManager.appForegrounded = YES;
     
+    [self addNotificationHandlers];
+    
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
+}
+
+#pragma mark Notification handlers
+
+- (void)addNotificationHandlers
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidEnterBackground:)
+                                                 name:UIApplicationDidEnterBackgroundNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillEnterForeground:)
+                                                 name:UIApplicationWillEnterForegroundNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillChangeStatusBarOrientation:)
+                                                 name:UIApplicationWillChangeStatusBarOrientationNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidChangeStatusBarOrientation:)
+                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
+    
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+}
+
+- (void)applicationDidEnterBackground:(NSNotification *)aNotification
+{
+    [LIOStatusManager statusManager].appForegrounded = NO;
+    
+    // TODO Dismiss any existing alertViews
+    
+    // TODO Created background task, monitor background time and send continue
+    
+    // TODO Send app_backgrounded advisory packet
+    
+    // TODO Dismiss chat if it's visible
+    
+    // TODO Rejigger windows if needed
+}
+
+- (void)applicationWillEnterForeground:(NSNotification *)aNotification
+{
+    [LIOStatusManager statusManager].appForegrounded = YES;
+    
+    // TODO End background task
+    
+    // TODO Check if 30 minutes have passed, if so, create a new visit
+    // TODO If not, send continue report
+    
+    // TODO Send app_foregrounded advisory packet
+    
+    // TODO Check if a message was recieved while background and show chat if needed
+}
+
+- (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
+{
+    self.isRotationActuallyHappening = YES;
+    self.controlButton.hidden = YES;
+    self.visit.controlButtonHidden = YES;
+    [self.controlButton hide:NO];
+}
+
+- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
+{
+    double delayInSeconds = 0.2;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        self.controlButton.hidden = NO;
+        
+        [self.visit refreshControlButtonVisibility];
+    });
 }
 
 #pragma mark Custom Button Methods
@@ -139,9 +216,12 @@ static LIOManager *sharedLookIOManager = nil;
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
 }
 
-- (void)controlButtonVisibilityDidChange:(LIOVisit *)visit
+- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden
 {
-    
+    if (isHidden)
+        [self.controlButton hide:YES];
+    else
+        [self.controlButton show:YES];
 }
 
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit

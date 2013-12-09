@@ -25,8 +25,8 @@
 @property (nonatomic, strong) NSString *fillColor;
 @property (nonatomic, strong) NSString *textColor;
 
-- (void)show;
-- (void)hide;
+- (void)show:(BOOL)animated;
+- (void)hide:(BOOL)animated;
 
 - (void)resetFrame;
 - (void)updateButtonColors;

@@ -47,7 +47,7 @@ typedef enum
 @protocol LIOVisitDelegate <NSObject>
 
 - (void)visitSkillMappingDidChange:(LIOVisit *)visit;
-- (void)controlButtonVisibilityDidChange:(LIOVisit *)visit;
+- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden;
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
 - (void)chatEnabledDidUpdate:(LIOVisit *)visit;
 
@@ -57,8 +57,12 @@ typedef enum
 
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
+@property (nonatomic, assign) BOOL controlButtonHidden;
+
 @property (nonatomic, copy) NSString *lastKnownButtonTintColor;
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
+
+- (void)refreshControlButtonVisibility;
 
 - (BOOL)chatEnabled;
 
