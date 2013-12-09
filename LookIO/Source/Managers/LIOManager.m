@@ -12,6 +12,8 @@
 #import "LIOStatusManager.h"
 #import "LIONetworkManager.h"
 
+#import "LIOContainerViewController.h"
+
 #import "LIOVisit.h"
 #import "LIOChat.h"
 
@@ -20,6 +22,8 @@
 @interface LIOManager () <LIOVisitDelegate, LIODraggableButtonDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
+@property (nonatomic, assign) UIWindow *previousKeyWindow;
+@property (nonatomic, strong) LIOContainerViewController *containerViewController;
 
 @property (nonatomic, strong) LIOVisit *visit;
 @property (nonatomic, strong) LIOChat *chat;
@@ -66,6 +70,9 @@ static LIOManager *sharedLookIOManager = nil;
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
     self.lookioWindow.windowLevel = 0.1;
+    
+    self.containerViewController = [[LIOContainerViewController alloc] init];
+    self.lookioWindow.rootViewController = self.containerViewController;
     
     self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
     self.controlButton.delegate = self;
@@ -250,14 +257,44 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)draggableButtonWasTapped:(LIODraggableButton *)draggableButton
 {
-    
+    [self beginChat];
 }
 
 #pragma mark Chat Interaction Methods
 
-- (void)beginChat
+- (void)presentLookIOWindow
+{
+    for (UIWindow *window in [[UIApplication sharedApplication] windows])
+        [window endEditing:YES];
+ 
+    self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+    self.mainWindow = self.previousKeyWindow;
+    
+    self.previousKeyWindow = self.mainWindow;
+    [self.lookioWindow makeKeyAndVisible];
+    
+    [self takeScreenshotAndSetBlurImageView];
+}
+
+- (void)dismissLookIOWindow
 {
     
+}
+
+- (void)takeScreenshotAndSetBlurImageView {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"Previous window is %@", self.previousKeyWindow);
+        UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
+        [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
+        UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        [self.containerViewController setBlurImage:viewImage];
+    });
+}
+
+- (void)beginChat
+{
+    [self presentLookIOWindow];
 }
 
 @end

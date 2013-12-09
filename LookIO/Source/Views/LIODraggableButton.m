@@ -19,7 +19,6 @@ typedef enum
 
 #define LIODraggleButtonSize 50.0
 
-
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                      green:((c>>8)&0xFF)/255.0 \
                      blue:((c)&0xFF)/255.0 \

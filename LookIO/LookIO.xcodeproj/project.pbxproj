@@ -31,6 +31,8 @@
 		A721D28B18513DFD0039395E /* LIOStatusManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D28918513DFD0039395E /* LIOStatusManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A73D4434185610240030FF44 /* LIODraggableButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A73D4432185610240030FF44 /* LIODraggableButton.h */; };
 		A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A73D4433185610240030FF44 /* LIODraggableButton.m */; };
+		A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A73D44361856776A0030FF44 /* LIOContainerViewController.h */; };
+		A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A73D44371856776A0030FF44 /* LIOContainerViewController.m */; };
 		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
 		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; };
 		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
@@ -187,6 +189,8 @@
 		A721D28918513DFD0039395E /* LIOStatusManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOStatusManager.m; sourceTree = "<group>"; };
 		A73D4432185610240030FF44 /* LIODraggableButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODraggableButton.h; path = Source/Views/LIODraggableButton.h; sourceTree = "<group>"; };
 		A73D4433185610240030FF44 /* LIODraggableButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIODraggableButton.m; path = Source/Views/LIODraggableButton.m; sourceTree = "<group>"; };
+		A73D44361856776A0030FF44 /* LIOContainerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOContainerViewController.h; path = Source/Controllers/LIOContainerViewController.h; sourceTree = "<group>"; };
+		A73D44371856776A0030FF44 /* LIOContainerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOContainerViewController.m; path = Source/Controllers/LIOContainerViewController.m; sourceTree = "<group>"; };
 		A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenu.h; path = Source/Views/LIOKeyboardMenu.h; sourceTree = "<group>"; };
 		A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenu.m; path = Source/Views/LIOKeyboardMenu.m; sourceTree = "<group>"; };
 		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
@@ -434,6 +438,8 @@
 		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				A73D44361856776A0030FF44 /* LIOContainerViewController.h */,
+				A73D44371856776A0030FF44 /* LIOContainerViewController.m */,
 				A721D2751851367D0039395E /* LIOChatViewController.h */,
 				A721D2761851367D0039395E /* LIOChatViewController.m */,
 				D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */,
@@ -686,6 +692,7 @@
 				D4ADC7F814F322C300713F29 /* SBJsonBase.h in Headers */,
 				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
+				A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
 				A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
@@ -827,6 +834,7 @@
 				D4ADC7BB14F3218300713F29 /* LIOTimerProxy.m in Sources */,
 				D4ADC7CD14F322B500713F29 /* LIOChatBubbleView.m in Sources */,
 				D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */,
+				A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */,
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
 				A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */,
 				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,

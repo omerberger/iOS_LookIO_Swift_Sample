@@ -1,18 +1,18 @@
 //
-//  LIOChatViewController.m
+//  LIOContainerViewController.m
 //  LookIO
 //
-//  Created by Yaron Karasik on 12/5/13.
+//  Created by Yaron Karasik on 12/9/13.
 //
 //
 
-#import "LIOChatViewController.h"
+#import "LIOContainerViewController.h"
 
-@interface LIOChatViewController ()
+@interface LIOContainerViewController ()
 
 @end
 
-@implementation LIOChatViewController
+@implementation LIOContainerViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -27,8 +27,6 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-    
-    self.view.backgroundColor = [UIColor blueColor];
 }
 
 - (void)didReceiveMemoryWarning
