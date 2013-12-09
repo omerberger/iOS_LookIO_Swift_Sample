@@ -336,13 +336,57 @@ typedef enum
     if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
         self.isDragging = NO;
         
-        if (self.frame.origin.x + self.frame.size.width > self.superview.bounds.size.width - 10) {
-            self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);
-            self.isAttachedToRight = YES;
+        UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
+            if (self.frame.origin.x + self.frame.size.width > self.superview.bounds.size.width - 10)
+            {
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);
+                self.isAttachedToRight = YES;
+            }
+            if (self.frame.origin.x < 10)
+            {
+                self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
+                self.isAttachedToRight = NO;
+            }
         }
-        if (self.frame.origin.x < 10) {
-            self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
-            self.isAttachedToRight = NO;
+        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
+        {
+            if (self.frame.origin.y + self.frame.size.height > self.superview.bounds.size.height - 10)
+            {
+                self.preDragPosition = CGPointMake(self.frame.origin.x, self.superview.bounds.size.height - self.bounds.size.height + 3);
+                self.isAttachedToRight = NO;
+            }
+            if (self.frame.origin.y < 10)
+            {
+                self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
+                self.isAttachedToRight = YES;
+            }
+        }
+        if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
+        {
+            if (self.frame.origin.x + self.frame.size.width > self.superview.bounds.size.width - 10)
+            {
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);
+                self.isAttachedToRight = NO;
+            }
+            if (self.frame.origin.x < 10)
+            {
+                self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
+                self.isAttachedToRight = YES;
+            }
+        }
+        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
+        {
+            if (self.frame.origin.y + self.frame.size.height > self.superview.bounds.size.height - 10)
+            {
+                self.preDragPosition = CGPointMake(self.frame.origin.x, self.superview.bounds.size.height - self.bounds.size.height + 3);
+                self.isAttachedToRight = YES;
+            }
+            if (self.frame.origin.y < 10)
+            {
+                self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
+                self.isAttachedToRight = NO;
+            }
         }
         
         [UIView animateWithDuration:0.3 animations:^{
