@@ -143,19 +143,22 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
 {
     self.isRotationActuallyHappening = YES;
-    self.controlButton.hidden = YES;
-    self.visit.controlButtonHidden = YES;
     [self.controlButton hide:NO];
+    self.controlButton.hidden = YES;
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
 {
+    // After rotation, we should reset the control button frame
+
     double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        // Let's reveal the control button after the rotation
+
+        [self.controlButton resetFrame];
         self.controlButton.hidden = NO;
-        
-        [self.visit refreshControlButtonVisibility];
+        [self.controlButton show:YES];
     });
 }
 

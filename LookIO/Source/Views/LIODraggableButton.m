@@ -17,6 +17,8 @@ typedef enum
     LIOButtonModeSurvey
 } LIOButtonMode;
 
+#define LIODraggleButtonSize 50.0
+
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                      green:((c>>8)&0xFF)/255.0 \
@@ -127,38 +129,122 @@ typedef enum
     }
 }
 
+- (void)setVisibleFrame
+{
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    UIWindow *buttonWindow = (UIWindow *)self.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
+
+    CGRect frame = self.frame;
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = screenSize.width - frame.size.width + 3.0;
+        else
+            frame.origin.x = -3;
+    }
+    if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
+    {
+        if (self.isAttachedToRight)
+            frame.origin.y = -3.0;
+        else
+            frame.origin.y = screenSize.height - frame.size.height + 3.0;
+    }
+    if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = -3.0;
+        else
+            frame.origin.x = screenSize.width - frame.size.width + 3.0;
+    }
+    if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.y = screenSize.height - frame.size.height + 3.0;
+        else
+            frame.origin.y = -3.0;
+    }
+
+    self.frame = frame;
+}
+
+- (void)setHiddenFrame
+{
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    UIWindow *buttonWindow = (UIWindow *)self.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
+    
+    CGRect frame = self.frame;
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = screenSize.width;
+        else
+            frame.origin.x = -frame.size.width;
+    }
+    if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
+    {
+        if (self.isAttachedToRight)
+            frame.origin.y = -frame.size.height;
+        else
+            frame.origin.y = screenSize.height;
+    }
+    if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.x = -frame.size.width;
+        else
+            frame.origin.x = screenSize.width;
+    }
+    if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+            frame.origin.y = screenSize.height;
+        else
+            frame.origin.y = -frame.size.height;
+    }
+    
+    self.frame = frame;
+}
+
 - (void)resetFrame {
     if (NO == [self.superview isKindOfClass:[UIWindow class]])
         return;
     
     CGRect frame = self.frame;
-    frame.size = CGSizeMake(50, 50);
+    frame.size = CGSizeMake(LIODraggleButtonSize, LIODraggleButtonSize);
     
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
+    
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    
     [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
-    
-    frame.origin.y = self.superview.bounds.size.height*0.25;
-    
-    if (self.isVisible)
+
+    CGPoint position = frame.origin;
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
-        else
-            frame.origin.x = -3;
+        position.y = (screenSize.height / 2.0) - (frame.size.height / 2.0);
     }
-    else
+    if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
-        if (self.isAttachedToRight)
-            frame.origin.x = self.superview.bounds.size.width;
-        else
-            frame.origin.x = -self.frame.size.width;
-        self.frame = frame;
+        position.x = (screenSize.width / 2.0) - (frame.size.width / 2.0);
     }
+    if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        position.y = (screenSize.height / 2.0) - (frame.size.height / 2.0);
+    }
+    if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
+    {
+        position.x = (screenSize.width / 2.0) - (frame.size.width / 2.0);
+    }
+    frame.origin = position;
     
     self.frame = frame;
+
+    if (self.isVisible)
+        [self setVisibleFrame];
+    else
+        [self setHiddenFrame];
 }
 
 #pragma mark Tint Color Methods
@@ -190,16 +276,6 @@ typedef enum
 
 #pragma mark Visibility Methods
 
-- (void)setVisibleFrame
-{
-    CGRect frame = self.frame;
-    if (self.isAttachedToRight)
-        frame.origin.x = self.superview.bounds.size.width - self.frame.size.width + 3;
-    else
-        frame.origin.x = -3;
-    self.frame = frame;
-}
-
 - (void)show:(BOOL)animated
 {
     self.isVisible = YES;
@@ -214,16 +290,6 @@ typedef enum
     {
         [self setVisibleFrame];
     }
-}
-
-- (void)setHiddenFrame
-{
-    CGRect frame = self.frame;
-    if (self.isAttachedToRight)
-        frame.origin.x = self.superview.bounds.size.width;
-    else
-        frame.origin.x = -self.frame.size.width;
-    self.frame = frame;
 }
 
 - (void)hide:(BOOL)animated
