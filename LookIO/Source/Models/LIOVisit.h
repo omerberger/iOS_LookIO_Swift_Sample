@@ -57,6 +57,9 @@ typedef enum
 
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
+@property (nonatomic, copy) NSString *lastKnownButtonTintColor;
+@property (nonatomic, copy) NSString *lastKnownButtonTextColor;
+
 - (BOOL)chatEnabled;
 
 - (void)launchVisit;

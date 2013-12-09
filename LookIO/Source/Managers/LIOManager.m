@@ -15,13 +15,16 @@
 #import "LIOVisit.h"
 #import "LIOChat.h"
 
-@interface LIOManager () <LIOVisitDelegate>
+#import "LIODraggableButton.h"
+
+@interface LIOManager () <LIOVisitDelegate, LIODraggableButtonDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
-@property (nonatomic, assign) BOOL initializationFailed;
 
 @property (nonatomic, strong) LIOVisit *visit;
 @property (nonatomic, strong) LIOChat *chat;
+
+@property (nonatomic, strong) LIODraggableButton *controlButton;
 
 @end
 
@@ -57,11 +60,17 @@ static LIOManager *sharedLookIOManager = nil;
     self.delegate = aDelegate;
 
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    self.initializationFailed = nil == keyWindow;
+    [LIOStatusManager statusManager].badInitialization = nil == keyWindow;
     
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
     self.lookioWindow.windowLevel = 0.1;
+    
+    self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
+    self.controlButton.delegate = self;
+    [keyWindow addSubview:self.controlButton];
+    [self.controlButton resetFrame];
+    [self.controlButton show];
     
     self.visit = [[LIOVisit alloc] init];
     self.visit.delegate = self;
@@ -119,6 +128,11 @@ static LIOManager *sharedLookIOManager = nil;
     
 }
 
+- (BOOL)enabled
+{
+    return self.visit.chatEnabled;
+}
+
 - (void)chatEnabledDidUpdate:(LIOVisit *)visit
 {
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
@@ -131,6 +145,27 @@ static LIOManager *sharedLookIOManager = nil;
 }
 
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
+{
+    self.controlButton.fillColor = self.visit.lastKnownButtonTintColor;
+    self.controlButton.textColor = self.visit.lastKnownButtonTextColor;
+
+    [self.controlButton updateButtonColors];
+    [self.controlButton updateButtonIcon];
+}
+
+#pragma mark DraggableButtonDelegate Methods
+
+- (void)draggableButtonDidBeginDragging:(LIODraggableButton *)draggableButton
+{
+    
+}
+
+- (void)draggableButtonDidEndDragging:(LIODraggableButton *)draggableButton
+{
+    
+}
+
+- (void)draggableButtonWasTapped:(LIODraggableButton *)draggableButton
 {
     
 }
