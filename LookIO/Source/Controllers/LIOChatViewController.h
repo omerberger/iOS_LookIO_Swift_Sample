@@ -8,6 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
+@class LIOChatViewController;
+
+@protocol LIOChatViewControllerDelegate <NSObject>
+
+- (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController;
+
+@end
+
 @interface LIOChatViewController : UIViewController
+
+@property (nonatomic, assign) id <LIOChatViewControllerDelegate> delegate;
 
 @end

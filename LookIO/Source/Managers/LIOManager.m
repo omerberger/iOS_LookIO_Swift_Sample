@@ -19,7 +19,7 @@
 
 #import "LIODraggableButton.h"
 
-@interface LIOManager () <LIOVisitDelegate, LIODraggableButtonDelegate>
+@interface LIOManager () <LIOVisitDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
@@ -72,6 +72,7 @@ static LIOManager *sharedLookIOManager = nil;
     self.lookioWindow.windowLevel = 0.1;
     
     self.containerViewController = [[LIOContainerViewController alloc] init];
+    self.containerViewController.delegate = self;
     self.lookioWindow.rootViewController = self.containerViewController;
     
     self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
@@ -150,8 +151,13 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
 {
     self.isRotationActuallyHappening = YES;
-    [self.controlButton hide:NO];
-    self.controlButton.hidden = YES;
+    
+    // If control button is visible, let's temporarily hide it
+    if (!self.visit.controlButtonHidden)
+    {
+        [self.controlButton hide:NO];
+        self.controlButton.hidden = YES;
+    }
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -161,11 +167,15 @@ static LIOManager *sharedLookIOManager = nil;
     double delayInSeconds = 0.2;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        // Let's reveal the control button after the rotation
-
         [self.controlButton resetFrame];
-        self.controlButton.hidden = NO;
-        [self.controlButton show:YES];
+        
+        // If control button is visibler, let's reveal the control button after the rotation
+        
+        if (!self.visit.controlButtonHidden)
+        {
+            self.controlButton.hidden = NO;
+            [self.controlButton show:YES];
+        }
     });
 }
 
@@ -260,6 +270,13 @@ static LIOManager *sharedLookIOManager = nil;
     [self beginChat];
 }
 
+#pragma mark Container View Controller Delegate Methods
+
+- (void)containerViewControllerDidDismiss:(LIOContainerViewController *)containerViewController
+{
+    [self dismissLookIOWindow];
+}
+
 #pragma mark Chat Interaction Methods
 
 - (void)presentLookIOWindow
@@ -270,15 +287,26 @@ static LIOManager *sharedLookIOManager = nil;
     self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
     self.mainWindow = self.previousKeyWindow;
     
-    self.previousKeyWindow = self.mainWindow;
     [self.lookioWindow makeKeyAndVisible];
+
+    if (!self.visit.controlButtonHidden)
+    {
+        [self.controlButton hide:YES];
+    }
     
     [self takeScreenshotAndSetBlurImageView];
 }
 
 - (void)dismissLookIOWindow
 {
+    self.lookioWindow.hidden = YES;
+    [self.previousKeyWindow makeKeyAndVisible];
+    self.previousKeyWindow = nil;
     
+    if (!self.visit.controlButtonHidden)
+    {
+        [self.controlButton show:YES];
+    }
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
