@@ -102,6 +102,7 @@
 #define LIOLookIOManagerReconnectionFailedAlertViewTag      10
 #define LIOLookIOManagerDisconnectOutroAlertViewTag         11
 #define LIOLookIOManagerSSEConnectionFailedAlertViewTag     12
+#define LIOLookIOManagerDisconnectedByDeveloperAlertViewTag 13
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -3174,6 +3175,60 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self beginSession];
 }
 
+- (void)endChatAndShowAlert:(BOOL)showAlert {
+    // If chat not in progress, abort
+    if (![self chatInProgress])
+        return;
+    
+    if (showAlert)
+    {
+        dismissibleAlertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                          message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                         delegate:self
+                                                cancelButtonTitle:nil                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+        dismissibleAlertView.tag = LIOLookIOManagerDisconnectedByDeveloperAlertViewTag;
+        [dismissibleAlertView show];
+        [dismissibleAlertView autorelease];
+    }
+    else
+    {
+        [self endChat];
+    }
+}
+
+- (void)endChat
+{
+    // Let's see if there's a post chat survey to display
+    LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
+        // Let's check to see if the chat view controller is visible. If not, present it before
+        // killing the session or presenting the survey
+
+        if (altChatViewController)
+            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+        else {
+            [self showChatAnimated:YES];
+
+            BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+            
+            if (!padUI) {
+                [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+            } else {
+                [altChatViewController hideChatUIForSurvey:NO];
+                double delayInSeconds = 1.0;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                });
+            }
+        }
+        return;
+    }
+
+    // Call for session termination
+    [self altChatViewControllerWantsSessionTermination:altChatViewController];
+}
+
 - (BOOL)beginConnectingWithError:(NSError **)anError
 {
     return NO;
@@ -4775,35 +4830,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (1 == buttonIndex) // "Yes"
             {
-                LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
-                if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
-                    // Let's check to see if the chat view controller is visible. If not, present it before
-                    // killing the session or presenting the survey
-                    
-                    if (altChatViewController)
-                        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                    else {
-                        [self showChatAnimated:YES];
-                        
-                        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
-                        if (!padUI) {
-                            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                        } else {
-                            [altChatViewController hideChatUIForSurvey:NO];
-                            double delayInSeconds = 1.0;
-                            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
-                            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                                [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                            });
-                        }
-                    }
-                    return;
-                }
-                
-                [self altChatViewControllerWantsSessionTermination:altChatViewController];
-                return;
+                [self endChat];
             }
+            
+            break;
+        }
+            
+            
+        case LIOLookIOManagerDisconnectedByDeveloperAlertViewTag:
+        {
+            dismissibleAlertView = nil;
+            [self endChat];
             
             break;
         }
