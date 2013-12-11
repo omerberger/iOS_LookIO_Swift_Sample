@@ -332,7 +332,7 @@
     }
     else
     {
-        aFrame.size.width = 280.0;
+        aFrame.size.width = 220.0;
         aFrame.size.height = 32.0;
         aFrame.origin.x = (tableView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
         aFrame.origin.y = 10.0;
