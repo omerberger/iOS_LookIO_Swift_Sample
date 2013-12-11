@@ -2517,6 +2517,20 @@
     }
     
     if (LIOSurveyManagerSurveyTypePost == aView.currentSurveyType) {
+        
+        // For a post chat survey, let's check if the user has answered all the mandatory questions, and at least one question
+        // If so we can submit the survey with whatever the user did answer
+
+        LIOSurveyManager *surveyManager = [LIOSurveyManager sharedSurveyManager];
+        if (![surveyManager responsesRequiredForSurveyType:aView.currentSurveyType])
+        {
+            NSDictionary* surveyDict = [[LIOSurveyManager sharedSurveyManager] responseDictForSurveyType:aView.currentSurveyType];
+            NSArray *questionsArray = [surveyDict objectForKey:@"questions"];
+            if (questionsArray)
+                if (questionsArray.count > 0)
+                    [delegate altChatViewController:self didFinishPostSurveyWithResponses:surveyDict];
+        }
+        
         [self.view endEditing:YES];
         
         if (padUI) {

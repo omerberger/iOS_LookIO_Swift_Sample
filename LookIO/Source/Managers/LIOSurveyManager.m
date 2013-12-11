@@ -189,18 +189,25 @@ static LIOSurveyManager *sharedSurveyManager = nil;
     if (LIOSurveyManagerSurveyTypeOffline == surveyType)
         aSurvey = offlineTemplate;
     
-    int unansweredMandatoryQuestions = 0;
-    if (aSurvey != nil) {
+    int unansweredMandatoryAndVisibleQuestions = 0;
+    if (aSurvey != nil)
+    {
         for (int i=0; i<[aSurvey.questions count]; i++)
         {
             LIOSurveyQuestion *aQuestion = (LIOSurveyQuestion *)[aSurvey.questions objectAtIndex:i];
-            id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
-            if (aQuestion.mandatory && nil == anAnswer)
-                unansweredMandatoryQuestions++;
+            // Let's check if this question is visible according to current logic, and is mandatory
+            if ([self shouldShowQuestion:i surveyType:surveyType] && aQuestion.mandatory)
+            {
+                id anAnswer = [self answerObjectForSurveyType:surveyType withQuestionIndex:i];
+
+                // Let's check if it's unanswered
+                if (nil == anAnswer)
+                    unansweredMandatoryAndVisibleQuestions += 1;
+            }
         }
     }
     
-    return unansweredMandatoryQuestions;
+    return (unansweredMandatoryAndVisibleQuestions > 0);
 }
 
 - (int)nextQuestionWithResponseRequiredForSurveyType:(LIOSurveyManagerSurveyType)surveyType
