@@ -1169,7 +1169,7 @@
 
         CGFloat tableViewContentHeight = [self heightForTableView:tableView];
         
-        CGFloat maxHeight = referenceFrame.size.height - 53.0 - questionLabel.bounds.size.height - 50.0 - (landscape && !padUI ? 0 : 60.0);
+        CGFloat maxHeight = referenceFrame.size.height - 53.0 - questionLabel.bounds.size.height - 50.0 - (landscape && !padUI ? 0 : 80.0);
         
         if (tableViewContentHeight > maxHeight) {
             tableView.scrollEnabled = YES;
