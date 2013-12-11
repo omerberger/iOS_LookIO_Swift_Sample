@@ -280,27 +280,34 @@
     UIImage *grayStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonGray"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     UIImage *redStretchableButtonImage = [[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableRecessedButtonRed"] stretchableImageWithLeftCapWidth:13 topCapHeight:13];
     
-    emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
-    [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
-    emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-    emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
-    emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
-    emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
-    emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-    emailConvoButton.titleLabel.minimumFontSize = 6.0;
-    [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
-    emailConvoButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
-    [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-    CGRect aFrame = emailConvoButton.frame;
-    aFrame.size.width = 120.0;
-    aFrame.size.height = 32.0;
-    aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
+    BOOL shouldHideEmailChat = [delegate altChatViewControllerShouldHideEmailChat:self];
+
+    CGRect aFrame;
+    
+    if (!shouldHideEmailChat)
+    {
+        emailConvoButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+        emailConvoButton.accessibilityLabel = @"LIOAltChatViewController.emailConvoButton";
+        [emailConvoButton setBackgroundImage:grayStretchableButtonImage forState:UIControlStateNormal];
+        emailConvoButton.titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
+        emailConvoButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
+        emailConvoButton.titleLabel.layer.shadowOpacity = 0.8;
+        emailConvoButton.titleLabel.layer.shadowOffset = CGSizeMake(0.0, -1.0);
+        emailConvoButton.titleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
+        emailConvoButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+        emailConvoButton.titleLabel.minimumFontSize = 6.0;
+        [emailConvoButton setTitle:LIOLocalizedString(@"LIOAltChatViewController.EmailChatButton") forState:UIControlStateNormal];
+        emailConvoButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
+        [emailConvoButton addTarget:self action:@selector(emailConvoButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
+        aFrame = emailConvoButton.frame;
+        aFrame.size.width = 120.0;
+        aFrame.size.height = 32.0;
+        aFrame.origin.x = (tableView.bounds.size.width / 4.0) - (aFrame.size.width / 2.0);
         aFrame.origin.y = 10.0;
-    emailConvoButton.frame = aFrame;
-    if (NO == padUI)
-        emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        emailConvoButton.frame = aFrame;
+        if (NO == padUI)
+            emailConvoButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+    }
 
     UIButton *endSessionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     endSessionButton.accessibilityLabel = @"LIOAltChatViewController.endSessionButton";
@@ -316,10 +323,21 @@
     endSessionButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 4.0, 0.0, 4.0);
     [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
     aFrame = endSessionButton.frame;
-    aFrame.size.width = 120.0;
-    aFrame.size.height = 32.0;
-    aFrame.origin.x = (tableView.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
+    if (!shouldHideEmailChat)
+    {
+        aFrame.size.width = 120.0;
+        aFrame.size.height = 32.0;
+        aFrame.origin.x = (tableView.bounds.size.width * 0.75) - (aFrame.size.width / 2.0);
         aFrame.origin.y = 10.0;
+    }
+    else
+    {
+        aFrame.size.width = 280.0;
+        aFrame.size.height = 32.0;
+        aFrame.origin.x = (tableView.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = 10.0;
+    }
+    
     endSessionButton.frame = aFrame;
     if (NO == padUI)
         endSessionButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;

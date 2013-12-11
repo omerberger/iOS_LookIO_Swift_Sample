@@ -116,6 +116,7 @@
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 #define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
 #define LIOLookIOManagerLastKnownSurveysEnabled         @"LIOLookIOManagerLastKnownSurveysEnabled"
+#define LIOLookIOManagerLastKnownHideEmailChat          @"LIOLookIOManagerLastKnownHideEmailChat"
 
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
@@ -176,7 +177,8 @@ typedef enum
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
-    BOOL *lastKnownSurveysEnabled;
+    BOOL lastKnownSurveysEnabled;
+    BOOL lastKnownHideEmailChat;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
@@ -733,12 +735,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (0.0 == nextTimeInterval)
         nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
-    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled]) {
-        NSNumber* surveysEnabled = (NSNumber*)[userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled];
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled])
+    {
+        NSNumber* surveysEnabled = (NSNumber *)[userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled];
         lastKnownSurveysEnabled = [surveysEnabled boolValue];
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         surveyManager.surveysEnabled = lastKnownSurveysEnabled;
-        
+    }
+    
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat])
+    {
+        NSNumber *hideEmailChat = (NSNumber *)[userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat];
+        lastKnownHideEmailChat = [hideEmailChat boolValue];
     }
     
     continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
@@ -3453,6 +3461,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (surveysEnabledNumber)
         [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
     
+    NSNumber *hideEmailChatNumber = [params objectForKey:@"hide_email_chat"];
+    if (hideEmailChatNumber)
+        [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
 
     return resolvedSettings;
 }
@@ -3606,7 +3617,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
             surveyManager.surveysEnabled = lastKnownSurveysEnabled;
         }
-                
+        
+        NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
+        if (hideEmailChat)
+        {
+            [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
+            lastKnownHideEmailChat = [hideEmailChat boolValue];
+        }
+            
         [self refreshControlButtonVisibility];
         [self applicationDidChangeStatusBarOrientation:nil];
     }
@@ -4579,15 +4597,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 }
 
-- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController {
+- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController
+{
     shouldLockOrientation = YES;
 }
 
-- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController {
+- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController
+{
     shouldLockOrientation = NO;
 }
 
-- (BOOL)shouldLockInterfaceOrientation {
+- (BOOL)altChatViewControllerShouldHideEmailChat:(LIOAltChatViewController *)aController
+{
+    return lastKnownHideEmailChat;
+}
+
+
+- (BOOL)shouldLockInterfaceOrientation
+{
     if (altChatViewController && shouldLockOrientation)
         return shouldLockOrientation;
     
