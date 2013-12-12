@@ -419,7 +419,8 @@
     }
     
     functionHeaderChat.backgroundColor = [UIColor clearColor];
-    [functionHeaderChat.contentView addSubview:emailConvoButton];
+    if (!shouldHideEmailChat)
+        [functionHeaderChat.contentView addSubview:emailConvoButton];
     [functionHeaderChat.contentView addSubview:endSessionButton];
     
     reconnectionOverlay = [[UIView alloc] initWithFrame:self.view.bounds];
