@@ -1925,7 +1925,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 outroReceived = YES;
                 [self reset];
             }
-                
+            
+            [self dismissDismissibleAlertView];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                     message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                    delegate:self
@@ -2467,6 +2468,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     if (sseConnectionRetryAfter != -1)
                         return;
                     else {
+
+                        [self dismissDismissibleAlertView];
                         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                        delegate:self
@@ -2501,6 +2504,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Wacky special case: server terminates session.
         else if (NO == userWantsSessionTermination && err == nil)
         {
+            [self dismissDismissibleAlertView];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                 message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                delegate:self
@@ -3182,6 +3186,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (showAlert)
     {
+        [self dismissDismissibleAlertView];
         dismissibleAlertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                           message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                          delegate:self
@@ -4063,6 +4068,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     resetAfterDisconnect = YES;
     [self killConnection];
     
+    [self dismissDismissibleAlertView];
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                        delegate:self
@@ -4886,6 +4892,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 #pragma mark -
 #pragma mark Notification handlers
+
+- (void)dismissDismissibleAlertView
+{
+    if (dismissibleAlertView) {
+        [dismissibleAlertView dismissWithClickedButtonIndex:-1 animated:NO];
+        dismissibleAlertView = nil;
+    }
+}
 
 - (void)applicationDidEnterBackground:(NSNotification *)aNotification
 {
