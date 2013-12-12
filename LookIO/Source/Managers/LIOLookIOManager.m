@@ -1929,7 +1929,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self dismissDismissibleAlertView];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                     message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                                   delegate:self
+                                                                   delegate:nil
                                                           cancelButtonTitle:nil
                                                           otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
             [alertView show];
@@ -2468,7 +2468,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     if (sseConnectionRetryAfter != -1)
                         return;
                     else {
-
                         [self dismissDismissibleAlertView];
                         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
@@ -2480,7 +2479,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                         [alertView autorelease];
                     }
                 }
-                
 
                 resetAfterDisconnect = NO;
                 
@@ -4071,7 +4069,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self dismissDismissibleAlertView];
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                       delegate:self
+                                                       delegate:nil
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
     [alertView show];
