@@ -624,6 +624,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
     
     appForegrounded = YES;
+    controlButtonHidden = YES;
     
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     badInitialization = nil == keyWindow;
