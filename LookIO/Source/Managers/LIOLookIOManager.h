@@ -213,6 +213,8 @@ extern NSString *const kLPEventAddedToCart;
  you should implement this delegate method and return a value of YES
  
  @return A boolean value indicating if you are compiling your application with a depreceated version of Xcode.
+ 
+*/
 
 - (BOOL)supportDepreceatedXcodeVersions;
 
