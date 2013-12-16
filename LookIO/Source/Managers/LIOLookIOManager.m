@@ -1933,8 +1933,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                                    delegate:nil
                                                           cancelButtonTitle:nil
                                                           otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-            [alertView show];
-            [alertView autorelease];
+            double delayInSeconds = 1.0;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [alertView show];
+                [alertView autorelease];
+            });
         } else {
             aMessage.sendingFailed = YES;
             if (altChatViewController)
@@ -2476,8 +2480,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                               cancelButtonTitle:nil
                                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
                         alertView.tag = LIOLookIOManagerSSEConnectionFailedAlertViewTag;
-                        [alertView show];
-                        [alertView autorelease];
+                        
+                        double delayInSeconds = 1.0;
+                        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                            [alertView show];
+                            [alertView autorelease];
+                        });
                     }
                 }
 
@@ -4214,6 +4223,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (BOOL)customBrandingAvailable
 {
     return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
+}
+
+- (BOOL)supportDepreceatedXcodeVersions
+{
+    BOOL supportDepreceatedXcodeVersions = NO;
+    if ([(NSObject *)delegate respondsToSelector:@selector(supportDepreceatedXcodeVersions)])
+        supportDepreceatedXcodeVersions = [delegate supportDepreceatedXcodeVersions];
+    
+    
+    return supportDepreceatedXcodeVersions;
 }
 
 - (id)brandingViewWithDimensions:(CGSize)aSize
