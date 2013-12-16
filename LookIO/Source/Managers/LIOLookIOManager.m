@@ -4225,6 +4225,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
 }
 
+- (BOOL)supportDepreceatedXcodeVersions
+{
+    BOOL supportDepreceatedXcodeVersions = NO;
+    if ([(NSObject *)delegate respondsToSelector:@selector(supportDepreceatedXcodeVersions)])
+        supportDepreceatedXcodeVersions = [delegate supportDepreceatedXcodeVersions];
+    
+    
+    return supportDepreceatedXcodeVersions;
+}
+
 - (id)brandingViewWithDimensions:(CGSize)aSize
 {
     if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)])

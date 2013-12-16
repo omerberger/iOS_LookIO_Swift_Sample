@@ -206,6 +206,16 @@ extern NSString *const kLPEventAddedToCart;
  */
 - (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOLookIOManager *)aManager;
 
+/*! 
+ 
+ The LIOLookIOManager class is set up to support the latest version of iOS and be compiled with versions 
+ of Xcode containing the last SDK. If you are compiling your application with a depreceated version of Xcode (< 5.0),
+ you should implement this delegate method and return a value of YES
+ 
+ @return A boolean value indicating if you are compiling your application with a depreceated version of Xcode.
+
+- (BOOL)supportDepreceatedXcodeVersions;
+
 @end
 
 @interface LIOLookIOManager : NSObject
