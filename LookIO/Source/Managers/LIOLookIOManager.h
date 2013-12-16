@@ -209,14 +209,14 @@ extern NSString *const kLPEventAddedToCart;
 /*! 
  
  The LIOLookIOManager class is set up to support the latest version of iOS and be compiled with versions 
- of Xcode containing the last SDK. If you are compiling your application with a depreceated version of Xcode (< 5.0),
+ of Xcode containing the last SDK. If you are compiling your application with a deprecated version of Xcode (< 5.0),
  you should implement this delegate method and return a value of YES
  
- @return A boolean value indicating if you are compiling your application with a depreceated version of Xcode.
+ @return A boolean value indicating if you are compiling your application with a deprecated version of Xcode.
  
 */
 
-- (BOOL)supportDepreceatedXcodeVersions;
+- (BOOL)supportDeprecatedXcodeVersions;
 
 @end
 
