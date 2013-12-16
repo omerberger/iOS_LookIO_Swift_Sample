@@ -44,9 +44,9 @@ BOOL LIOIsUIKitFlatMode(void) {
         // Let's check to see if the developer specifically indicated they are using an Xcode version older than 5.
         // If they are, we should use the classic method to identify if they have flat UI.
         
-        BOOL supportDepreceatedXcodeVersions = [[LIOLookIOManager sharedLookIOManager] supportDepreceatedXcodeVersions];
+        BOOL supportDeprecatedXcodeVersions = [[LIOLookIOManager sharedLookIOManager] supportDeprecatedXcodeVersions];
         
-        if (supportDepreceatedXcodeVersions)
+        if (supportDeprecatedXcodeVersions)
         {
             if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
                 
