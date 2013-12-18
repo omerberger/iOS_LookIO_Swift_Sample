@@ -249,6 +249,9 @@ typedef enum
 #pragma mark Tint Color Methods
 
 - (UIImage *)imageWithTintedColor:(UIImage *)image withTint:(UIColor *)color {
+    if (image.size.width == 0 || image.size.height == 0)
+        return image;
+    
     UIGraphicsBeginImageContext(image.size);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
