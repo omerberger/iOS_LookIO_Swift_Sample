@@ -39,6 +39,7 @@
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPreSurveyWithResponses:(NSDictionary *)aResponseDict;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishOfflineSurveyWithResponses:(NSDictionary*)aResponseDict;
 - (void)altChatViewController:(LIOAltChatViewController *)aController didFinishPostSurveyWithResponses:(NSDictionary*)aResponseDict;
+- (BOOL)altChatViewControllerShouldHideEmailChat:(LIOAltChatViewController *)aController;
 
 @optional
 - (void)altChatViewControllerDidStartDismissalAnimation:(LIOAltChatViewController *)aController;

@@ -102,6 +102,7 @@
 #define LIOLookIOManagerReconnectionFailedAlertViewTag      10
 #define LIOLookIOManagerDisconnectOutroAlertViewTag         11
 #define LIOLookIOManagerSSEConnectionFailedAlertViewTag     12
+#define LIOLookIOManagerDisconnectedByDeveloperAlertViewTag 13
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -116,6 +117,7 @@
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 #define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
 #define LIOLookIOManagerLastKnownSurveysEnabled         @"LIOLookIOManagerLastKnownSurveysEnabled"
+#define LIOLookIOManagerLastKnownHideEmailChat          @"LIOLookIOManagerLastKnownHideEmailChat"
 
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownChatSSEUrlStringKey    @"LIOLookIOManagerLastKnownChatSSEUrlStringKey"
@@ -176,7 +178,8 @@ typedef enum
     NSString *lastKnownButtonText;
     UIColor *lastKnownButtonTintColor, *lastKnownButtonTextColor;
     NSString *lastKnownWelcomeMessage;
-    BOOL *lastKnownSurveysEnabled;
+    BOOL lastKnownSurveysEnabled;
+    BOOL lastKnownHideEmailChat;
     NSArray *supportedOrientations;
     NSString *pendingChatText;
     NSDate *screenSharingStartedDate;
@@ -621,6 +624,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
     
     appForegrounded = YES;
+    controlButtonHidden = YES;
     
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     badInitialization = nil == keyWindow;
@@ -733,12 +737,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (0.0 == nextTimeInterval)
         nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
-    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled]) {
-        NSNumber* surveysEnabled = (NSNumber*)[userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled];
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled])
+    {
+        NSNumber* surveysEnabled = (NSNumber *)[userDefaults objectForKey:LIOLookIOManagerLastKnownSurveysEnabled];
         lastKnownSurveysEnabled = [surveysEnabled boolValue];
         LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
         surveyManager.surveysEnabled = lastKnownSurveysEnabled;
-        
+    }
+    
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat])
+    {
+        NSNumber *hideEmailChat = (NSNumber *)[userDefaults objectForKey:LIOLookIOManagerLastKnownHideEmailChat];
+        lastKnownHideEmailChat = [hideEmailChat boolValue];
     }
     
     continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:nextTimeInterval
@@ -1120,24 +1130,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
         [[UIApplication sharedApplication] setStatusBarStyle:originalStatusBarStyle];
     
-    if (mainWindow)
-    {
-        previousKeyWindow = nil;
-        
-        [lookioWindow removeFromSuperview];
-        [lookioWindow release];
-        lookioWindow = [[UIWindow alloc] initWithFrame:mainWindow.frame];
-        lookioWindow.hidden = YES;
-        lookioWindow.windowLevel = 0.1;
-        
-        [self refreshControlButtonVisibility];
-        
-        [mainWindow makeKeyWindow];
-    }
-    else
-        [self rejiggerWindows];
-    
-    [self refreshControlButtonVisibility];
+    [self rejiggerWindows];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults removeObjectForKey:LIOLookIOManagerLastActivityDateKey];
@@ -1933,14 +1926,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 outroReceived = YES;
                 [self reset];
             }
-                
+            
+            [self dismissDismissibleAlertView];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                     message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                                   delegate:self
+                                                                   delegate:nil
                                                           cancelButtonTitle:nil
                                                           otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-            [alertView show];
-            [alertView autorelease];
+            double delayInSeconds = 1.0;
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [alertView show];
+                [alertView autorelease];
+            });
         } else {
             aMessage.sendingFailed = YES;
             if (altChatViewController)
@@ -2475,17 +2473,22 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                     if (sseConnectionRetryAfter != -1)
                         return;
                     else {
+                        [self dismissDismissibleAlertView];
                         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                        delegate:self
                                                               cancelButtonTitle:nil
                                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
                         alertView.tag = LIOLookIOManagerSSEConnectionFailedAlertViewTag;
-                        [alertView show];
-                        [alertView autorelease];
+                        
+                        double delayInSeconds = 1.0;
+                        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+                        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                            [alertView show];
+                            [alertView autorelease];
+                        });
                     }
                 }
-                
 
                 resetAfterDisconnect = NO;
                 
@@ -2509,6 +2512,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         // Wacky special case: server terminates session.
         else if (NO == userWantsSessionTermination && err == nil)
         {
+            [self dismissDismissibleAlertView];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                                 message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                                delegate:self
@@ -3183,6 +3187,61 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self beginSession];
 }
 
+- (void)endChatAndShowAlert:(BOOL)showAlert {
+    // If chat not in progress, abort
+    if (![self chatInProgress])
+        return;
+    
+    if (showAlert)
+    {
+        [self dismissDismissibleAlertView];
+        dismissibleAlertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                          message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                         delegate:self
+                                                cancelButtonTitle:nil                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+        dismissibleAlertView.tag = LIOLookIOManagerDisconnectedByDeveloperAlertViewTag;
+        [dismissibleAlertView show];
+        [dismissibleAlertView autorelease];
+    }
+    else
+    {
+        [self endChat];
+    }
+}
+
+- (void)endChat
+{
+    // Let's see if there's a post chat survey to display
+    LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
+    if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
+        // Let's check to see if the chat view controller is visible. If not, present it before
+        // killing the session or presenting the survey
+
+        if (altChatViewController)
+            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+        else {
+            [self showChatAnimated:YES];
+
+            BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+            
+            if (!padUI) {
+                [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+            } else {
+                [altChatViewController hideChatUIForSurvey:NO];
+                double delayInSeconds = 1.0;
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
+                });
+            }
+        }
+        return;
+    }
+
+    // Call for session termination
+    [self altChatViewControllerWantsSessionTermination:altChatViewController];
+}
+
 - (BOOL)beginConnectingWithError:(NSError **)anError
 {
     return NO;
@@ -3470,6 +3529,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (surveysEnabledNumber)
         [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
     
+    NSNumber *hideEmailChatNumber = [params objectForKey:@"hide_email_chat"];
+    if (hideEmailChatNumber)
+        [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
 
     return resolvedSettings;
 }
@@ -3623,7 +3685,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
             surveyManager.surveysEnabled = lastKnownSurveysEnabled;
         }
-                
+        
+        NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
+        if (hideEmailChat)
+        {
+            [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
+            lastKnownHideEmailChat = [hideEmailChat boolValue];
+        }
+            
         [self refreshControlButtonVisibility];
         [self applicationDidChangeStatusBarOrientation:nil];
     }
@@ -4007,9 +4076,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     resetAfterDisconnect = YES;
     [self killConnection];
     
+    [self dismissDismissibleAlertView];
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                       delegate:self
+                                                       delegate:nil
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
     [alertView show];
@@ -4153,6 +4223,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (BOOL)customBrandingAvailable
 {
     return [(NSObject *)delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
+}
+
+- (BOOL)supportDeprecatedXcodeVersions
+{
+    BOOL supportDeprecatedXcodeVersions = NO;
+    if ([(NSObject *)delegate respondsToSelector:@selector(supportDeprecatedXcodeVersions)])
+        supportDeprecatedXcodeVersions = [delegate supportDeprecatedXcodeVersions];
+    
+    
+    return supportDeprecatedXcodeVersions;
 }
 
 - (id)brandingViewWithDimensions:(CGSize)aSize
@@ -4370,6 +4450,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)altChatViewControllerDidFinishDismissalAnimation:(LIOAltChatViewController *)aController
 {
+    if (dismissibleAlertView) {
+        [dismissibleAlertView dismissWithClickedButtonIndex:-1 animated:NO];
+        dismissibleAlertView = nil;
+    }
+    
     if (chatClosingAsPartOfReset) {
         [self reset];
         return;
@@ -4591,15 +4676,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 }
 
-- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController {
+- (void)altChatViewControllerWillPresentImagePicker:(LIOAltChatViewController *)aController
+{
     shouldLockOrientation = YES;
 }
 
-- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController {
+- (void)altChatViewControllerWillDismissImagePicker:(LIOAltChatViewController *)aController
+{
     shouldLockOrientation = NO;
 }
 
-- (BOOL)shouldLockInterfaceOrientation {
+- (BOOL)altChatViewControllerShouldHideEmailChat:(LIOAltChatViewController *)aController
+{
+    return lastKnownHideEmailChat;
+}
+
+
+- (BOOL)shouldLockInterfaceOrientation
+{
     if (altChatViewController && shouldLockOrientation)
         return shouldLockOrientation;
     
@@ -4760,35 +4854,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (1 == buttonIndex) // "Yes"
             {
-                LIOSurveyManager* surveryManager = [LIOSurveyManager sharedSurveyManager];
-                if (surveryManager.postChatTemplate && surveryManager.surveysEnabled) {
-                    // Let's check to see if the chat view controller is visible. If not, present it before
-                    // killing the session or presenting the survey
-                    
-                    if (altChatViewController)
-                        [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                    else {
-                        [self showChatAnimated:YES];
-                        
-                        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
-                        if (!padUI) {
-                            [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                        } else {
-                            [altChatViewController hideChatUIForSurvey:NO];
-                            double delayInSeconds = 1.0;
-                            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (delayInSeconds * NSEC_PER_SEC));
-                            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                                [altChatViewController showSurveyViewForType:LIOSurveyManagerSurveyTypePost];
-                            });
-                        }
-                    }
-                    return;
-                }
-                
-                [self altChatViewControllerWantsSessionTermination:altChatViewController];
-                return;
+                [self endChat];
             }
+            
+            break;
+        }
+            
+            
+        case LIOLookIOManagerDisconnectedByDeveloperAlertViewTag:
+        {
+            dismissibleAlertView = nil;
+            [self endChat];
             
             break;
         }
@@ -4834,6 +4910,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 #pragma mark -
 #pragma mark Notification handlers
+
+- (void)dismissDismissibleAlertView
+{
+    if (dismissibleAlertView) {
+        [dismissibleAlertView dismissWithClickedButtonIndex:-1 animated:NO];
+        dismissibleAlertView = nil;
+    }
+}
 
 - (void)applicationDidEnterBackground:(NSNotification *)aNotification
 {

@@ -37,17 +37,33 @@ BOOL LIOIsUIKitFlatMode(void) {
     static BOOL LIOUIKitFlatMode = NO;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
-            
-            // If your app is running in legacy mode, tintColor will be nil - else it must be set to some color.
-            if (UIApplication.sharedApplication.keyWindow) {
-                LIOUIKitFlatMode = [UIApplication.sharedApplication.delegate.window performSelector:@selector(tintColor)] != nil;
-            }else {
-                // Possible that we're called early on (e.g. when used in a Storyboard). Adapt and use a temporary window.
-                LIOUIKitFlatMode = [[UIWindow new] performSelector:@selector(tintColor)] != nil;
+        // By default, let's just check to see the version of the device
+        
+        LIOUIKitFlatMode = LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0");
+        
+        // Let's check to see if the developer specifically indicated they are using an Xcode version older than 5.
+        // If they are, we should use the classic method to identify if they have flat UI.
+        
+        BOOL supportDeprecatedXcodeVersions = [[LIOLookIOManager sharedLookIOManager] supportDeprecatedXcodeVersions];
+        
+        if (supportDeprecatedXcodeVersions)
+        {
+            if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
+                
+                // If your app is running in legacy mode, tintColor will be nil - else it must be set to some color.
+                if (UIApplication.sharedApplication.keyWindow)
+                {
+                    LIOUIKitFlatMode = [UIApplication.sharedApplication.delegate.window performSelector:@selector(tintColor)] != nil;
+                }
+                else
+                {
+                    // Possible that we're called early on (e.g. when used in a Storyboard). Adapt and use a temporary window.
+                    LIOUIKitFlatMode = [[UIWindow new] performSelector:@selector(tintColor)] != nil;
+                }
             }
         }
     });
+    
     return LIOUIKitFlatMode;
 }
 

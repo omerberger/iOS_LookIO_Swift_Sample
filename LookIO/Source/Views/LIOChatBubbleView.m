@@ -417,6 +417,13 @@ static NSDataDetector *dataDetector = nil;
 
 - (void)performBounceAnimation
 {
+    // Fix for iOS 7.0 - allow Bubbles to bounce
+    if (LIOIsUIKitFlatMode()) {
+        UIView *contentView = [self superview];
+        contentView.clipsToBounds = NO;
+        contentView.superview.clipsToBounds = NO;
+    }
+    
     [UIView animateWithDuration:0.15
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
@@ -438,6 +445,11 @@ static NSDataDetector *dataDetector = nil;
                                                                    self.transform = CGAffineTransformIdentity;
                                                                }
                                                                completion:^(BOOL finished) {
+                                                                   if (LIOIsUIKitFlatMode()) {
+                                                                       UIView *contentView = [self superview];
+                                                                       contentView.clipsToBounds = YES;
+                                                                       contentView.superview.clipsToBounds = YES;
+                                                                   }
                                                                }];
                                           }];
                      }];

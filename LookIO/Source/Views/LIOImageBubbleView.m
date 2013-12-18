@@ -8,6 +8,7 @@
 
 #import "LIOImageBubbleView.h"
 #import "LIOMediaManager.h"
+#import "LIOBundleManager.h"
 
 @implementation LIOImageBubbleView
 
@@ -26,6 +27,12 @@
 }
 
 - (void)performBounceAnimation {
+    // Fix for iOS 7.0 - allow Bubbles to bounce
+    if (LIOIsUIKitFlatMode()) {
+        UIView *contentView = [self superview];
+        contentView.clipsToBounds = NO;
+        contentView.superview.clipsToBounds = NO;
+    }
     
     [UIView animateWithDuration:0.15
                           delay:0.0
@@ -49,6 +56,12 @@
                                                                }
                                                                completion:^(BOOL finished) {
                                                                    isBouncing = NO;
+                                                                   
+                                                                   if (LIOIsUIKitFlatMode()) {
+                                                                       UIView *contentView = [self superview];
+                                                                       contentView.clipsToBounds = YES;
+                                                                       contentView.superview.clipsToBounds = YES;
+                                                                   }
                                                                }];
                                           }];
                      }];
