@@ -17,6 +17,8 @@
 @property (nonatomic, retain) NSURL *baseURL;
 
 + (LPAPIClient *)sharedClient;
+- (void)clearCookies;
+
 - (void)postPath:(NSString *)path
       parameters:(NSDictionary *)parameters
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success

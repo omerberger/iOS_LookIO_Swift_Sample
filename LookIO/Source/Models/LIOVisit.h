@@ -30,16 +30,16 @@ typedef enum
     LIOVisitStateFailed,
     LIOVisitStateQueued,
     LIOVisitStateLaunching,
-    LIOVisitStateLaunched,
     LIOVisitStateVisitInProgress,
-    LIOVisitStateButtonTapped,
-    LIOVisitStatePreChatSurvey,
+    LIOVisitStateAppBackgrounded,
     LIOVisitStateChatRequested,
-    LIOVisitStateChatInProgress,
-    LIOVisitStatePostChatSurvey,
-    LIOVisitStateReconnectInProgress,
-    LIOVisitStateReconnectSuccessful,
-    LIOVisitStateReconnectFailed
+    LIOVisitStateChatOpened,
+    LIOVisitStatePreChatSurvey,
+    LIOVisitStateChatStarted,
+    LIOVisitStateOfflineSurvey,
+    LIOVisitStateChatActive,
+    LIOVisitStateChatActiveBackgrounded,
+    LIOVisitStatePostChatSurvey
 } LIOVisitState;
 
 @class LIOVisit;
@@ -57,6 +57,7 @@ typedef enum
 
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
+@property (nonatomic, assign) LIOVisitState visitState;
 @property (nonatomic, assign) BOOL controlButtonHidden;
 
 @property (nonatomic, copy) NSString *lastKnownButtonTintColor;
@@ -65,6 +66,7 @@ typedef enum
 - (void)refreshControlButtonVisibility;
 
 - (BOOL)chatEnabled;
+- (BOOL)surveysEnabled;
 
 - (void)launchVisit;
 
@@ -72,5 +74,7 @@ typedef enum
 - (void)setChatUnavailable;
 - (void)setInvitationShown;
 - (void)setInvitationNotShown;
+
+- (NSDictionary *)introDictionary;
 
 @end

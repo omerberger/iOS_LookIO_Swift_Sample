@@ -15,18 +15,18 @@
 #import "LIOContainerViewController.h"
 
 #import "LIOVisit.h"
-#import "LIOChat.h"
+#import "LIOEngagement.h"
 
 #import "LIODraggableButton.h"
 
-@interface LIOManager () <LIOVisitDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate>
+@interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
 @property (nonatomic, strong) LIOContainerViewController *containerViewController;
 
 @property (nonatomic, strong) LIOVisit *visit;
-@property (nonatomic, strong) LIOChat *chat;
+@property (nonatomic, strong) LIOEngagement *engagement;
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
 @property (nonatomic, assign) BOOL isRotationActuallyHappening;
@@ -319,6 +319,29 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)beginChat
 {
     [self presentLookIOWindow];
+    
+    switch (self.visit.visitState) {
+        case LIOVisitStateVisitInProgress:
+            self.engagement = [[LIOEngagement alloc] init];
+            self.engagement.delegate = self;
+            self.visit.visitState = LIOVisitStateChatRequested;
+            [self.engagement startEngagementWithIntroDictionary:[self.visit introDictionary]];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)engagementDidStart:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        if ([self.visit surveysEnabled])
+            self.visit.visitState = LIOVisitStateChatOpened;
+        else
+            self.visit.visitState = LIOVisitStatePreChatSurvey;
+    }
 }
 
 @end

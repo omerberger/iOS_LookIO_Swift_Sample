@@ -23,8 +23,8 @@
 		A721D2781851367D0039395E /* LIOChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D2761851367D0039395E /* LIOChatViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A721D27E18513A6F0039395E /* LIOVisit.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D27C18513A6F0039395E /* LIOVisit.h */; };
 		A721D27F18513A6F0039395E /* LIOVisit.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D27D18513A6F0039395E /* LIOVisit.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		A721D28218513A8A0039395E /* LIOChat.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D28018513A8A0039395E /* LIOChat.h */; };
-		A721D28318513A8A0039395E /* LIOChat.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D28118513A8A0039395E /* LIOChat.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A721D28218513A8A0039395E /* LIOEngagement.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D28018513A8A0039395E /* LIOEngagement.h */; };
+		A721D28318513A8A0039395E /* LIOEngagement.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D28118513A8A0039395E /* LIOEngagement.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A721D28618513D860039395E /* LIONetworkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D28418513D860039395E /* LIONetworkManager.h */; };
 		A721D28718513D860039395E /* LIONetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D28518513D860039395E /* LIONetworkManager.m */; };
 		A721D28A18513DFD0039395E /* LIOStatusManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D28818513DFD0039395E /* LIOStatusManager.h */; };
@@ -183,8 +183,8 @@
 		A721D2761851367D0039395E /* LIOChatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatViewController.m; path = Source/Controllers/LIOChatViewController.m; sourceTree = "<group>"; };
 		A721D27C18513A6F0039395E /* LIOVisit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOVisit.h; path = Source/Models/LIOVisit.h; sourceTree = "<group>"; };
 		A721D27D18513A6F0039395E /* LIOVisit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOVisit.m; path = Source/Models/LIOVisit.m; sourceTree = "<group>"; };
-		A721D28018513A8A0039395E /* LIOChat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChat.h; path = Source/Models/LIOChat.h; sourceTree = "<group>"; };
-		A721D28118513A8A0039395E /* LIOChat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChat.m; path = Source/Models/LIOChat.m; sourceTree = "<group>"; };
+		A721D28018513A8A0039395E /* LIOEngagement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEngagement.h; path = Source/Models/LIOEngagement.h; sourceTree = "<group>"; };
+		A721D28118513A8A0039395E /* LIOEngagement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEngagement.m; path = Source/Models/LIOEngagement.m; sourceTree = "<group>"; };
 		A721D28418513D860039395E /* LIONetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONetworkManager.h; path = Source/Managers/LIONetworkManager.h; sourceTree = "<group>"; };
 		A721D28518513D860039395E /* LIONetworkManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONetworkManager.m; path = Source/Managers/LIONetworkManager.m; sourceTree = "<group>"; };
 		A721D28818513DFD0039395E /* LIOStatusManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOStatusManager.h; sourceTree = "<group>"; };
@@ -373,8 +373,8 @@
 			children = (
 				A721D27C18513A6F0039395E /* LIOVisit.h */,
 				A721D27D18513A6F0039395E /* LIOVisit.m */,
-				A721D28018513A8A0039395E /* LIOChat.h */,
-				A721D28118513A8A0039395E /* LIOChat.m */,
+				A721D28018513A8A0039395E /* LIOEngagement.h */,
+				A721D28118513A8A0039395E /* LIOEngagement.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -758,7 +758,7 @@
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
 				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
 				A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */,
-				A721D28218513A8A0039395E /* LIOChat.h in Headers */,
+				A721D28218513A8A0039395E /* LIOEngagement.h in Headers */,
 				A721D2771851367D0039395E /* LIOChatViewController.h in Headers */,
 				A70B677017AC21420053A62E /* LIOChatModule.h in Headers */,
 				A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */,
@@ -899,7 +899,7 @@
 				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,
 				A7C85944177B3F1900493BF8 /* LPAPIClient.m in Sources */,
 				A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */,
-				A721D28318513A8A0039395E /* LIOChat.m in Sources */,
+				A721D28318513A8A0039395E /* LIOEngagement.m in Sources */,
 				A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */,
 				A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */,
 				A7D4E846177498AB0037E47B /* LIOStarRatingView.m in Sources */,

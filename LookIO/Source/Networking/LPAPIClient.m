@@ -53,6 +53,15 @@ static LPAPIClient *sharedClient = nil;
     [super dealloc];
 }
 
+- (void)clearCookies
+{
+    NSMutableArray *cookiesToDelete = [[NSMutableArray alloc] init];
+    [cookiesToDelete addObjectsFromArray:[[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:self.baseURL]];
+    for (NSHTTPCookie *cookie in cookiesToDelete)
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
+
+}
+
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                       path:(NSString *)path
                                 parameters:(NSDictionary *)parameters

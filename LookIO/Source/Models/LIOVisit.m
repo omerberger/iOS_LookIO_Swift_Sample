@@ -42,7 +42,6 @@
 @interface LIOVisit ()
 
 @property (nonatomic, copy) NSString *currentVisitId;
-@property (nonatomic, assign) LIOVisitState visitState;
 
 @property (nonatomic, copy) NSString *requiredSkill;
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
@@ -500,6 +499,13 @@
     }
 }
 
+- (NSDictionary *)introDictionary
+{
+    NSDictionary *introDictionary = [self statusDictionaryIncludingExtras:YES includingType:YES includingEvents:YES];
+    
+    return introDictionary;
+}
+
 #pragma mark Launch Visit Methods
 
 - (void)launchVisit
@@ -698,7 +704,7 @@
         }
         else if (LIOButtonVisibilityInSession == buttonVisibilityValue) // In session
         {
-            if (self.visitState == LIOVisitStateChatInProgress)
+            if (self.visitState == LIOVisitStateChatActive || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStateChatStarted)
             {
                 // Want to show.
                 willShow = self.controlButtonHidden;
@@ -734,6 +740,13 @@
         self.controlButtonHidden = NO;
         [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
     }
+}
+
+#pragma mark Visit Status Methods
+
+- (BOOL)surveysEnabled
+{
+    return self.lastKnownSurveysEnabled;
 }
 
 #pragma mark Chat Status Methods
@@ -804,7 +817,7 @@
 - (BOOL)engagementInProgress
 {
     BOOL engagementInProgress = NO;
-    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatInProgress || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePostChatSurvey)
+    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatActive || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePostChatSurvey)
         engagementInProgress = YES;
     
     return engagementInProgress;

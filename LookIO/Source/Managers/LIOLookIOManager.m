@@ -2803,7 +2803,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSData *cookieData = [NSKeyedArchiver archivedDataWithRootObject:chatCookies];
     [userDefaults setObject:cookieData forKey:LIOLookIOManagerLastKnownChatCookiesKey];
     [userDefaults synchronize];
-
 }
 
 -(void)parseAndSaveEngagementInfoPayload:(NSDictionary*)params {
