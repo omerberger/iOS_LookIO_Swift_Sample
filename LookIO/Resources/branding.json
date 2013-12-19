@@ -1,0 +1,280 @@
+{
+    "engagement" : {
+        "font" : {
+            "family" : "HelveticaNeue-Light"
+        },
+        "logo" : {
+            "image" : ""
+        },
+        "loading_screen" : {
+            "spin_image" : "1",
+            "font" : {
+                "color" : "#FFFFFF"
+            },
+            "background" : {
+                "color" : "#000000"
+            },
+            "image" : ""
+        },
+        "chat_background" : {
+            "background" : {
+                "color" : "#d8d8d8",
+                "alpha" : "0.4"
+            },
+            "blur" : {
+                "radius" : "24.0",
+                "iterations" : "8",
+                "saturation_factor" : "3.0"
+            }
+        },
+        "branding_bar" : {
+            "background" : {
+                "color" : "#ffffff",
+                "alpha" : "0.0",
+                "linear-gradient" : ""
+            },
+            "notifications" : {
+                "font" : {
+                    "color" : "#555555",
+                    "size" : "12.0"
+                }
+            }
+        },
+        "chat_bubbles" : {
+            "agent" : {
+                "background" : {
+                    "color" : "#47a1ff",
+                    "radial-gradient" : ""
+                },
+                "size" : {
+                    "width": "0.625"
+                },
+                "font" : {
+                    "color" : "#4f4f4f",
+                    "size" : "15.0"
+                },
+                "avatar" : {
+                    "show" : "0",
+                    "image_url" : ""
+                },
+                "links" : {
+                    "background" : {
+                        "color" : "#ffffff"
+                    },
+                    "border" : {
+                        "color" : "#019fde"
+                    },
+                    "font" : {
+                        "color" : "#555555",
+                        "size" : "15.0"
+                    }
+                }
+            },
+            "visitor" : {
+                "background" : {
+                    "color" : "#e1e1e7",
+                    "linear-gradient" : ""
+                },
+                "size" : {
+                    "width" : "0.625"
+                },
+                "font" : {
+                    "color" : "#4f4f4f",
+                    "size" : "15.0"
+                },
+                "avatar" : {
+                    "show" : "0",
+                    "image_url" : ""
+                },
+                "links" : {
+                    "background" : {
+                        "color" : "#ffffff"
+                    },
+                    "border" : {
+                        "color" : "#019fde"
+                    },
+                    "font" : {
+                        "color" : "#555555",
+                        "size" : "15.0"
+                    }
+                }
+            }
+        },
+        "system_message" : {
+            "background" : {
+                "color" : "#47a1ff",
+                "linear-gradient" : ""
+            },
+            "size" : {
+                "width" : "0.625"
+            },
+            "font" : {
+                "color" : "#4f4f4f",
+                "size" : "15.0"
+            },
+            "bubble_alignment" : "left"
+        },
+        "send_bar" : {
+            "background" : {
+                "color" : "#666666",
+                "alpha" : "0.5",
+                "linear-gradient" : "{ start : \"#333333\", stop : \"#000000\"}"
+            },
+            "plus_button" : {
+                "color" : "#ffffff"
+            },
+            "text_field" : {
+                "background" : {
+                    "color" : "#ffffff",
+                    "linear-gradient" : ""
+                },
+                "font" : {
+                    "color" : "#a9a9a9",
+                    "size" : "14.0"
+                },
+                "border" : {
+                    "color" : "#5e5e5e"
+                }
+            },
+            "send_button" : {
+                "background" : {
+                    "color" : "",
+                    "linear-gradient" : "{ start : \"#555555\", stop : \"#000000\"}"
+                },
+                "font" : {
+                    "color" : "#ffffff",
+                    "size" : "16.0"
+                },
+                "border" : {
+                    "color" : "#ffffff"
+                }
+            }
+        },
+        "hide_bar" : {
+            "background" : {
+                "color" : "#ffffff",
+                "linear-gradient" : "",
+                "alpha" : "0.0"
+            },
+            "label" : {
+                "font" : {
+                    "color" : "#ffffff",
+                    "size" : "14.0",
+                    "shadow" : ""
+                }
+            },
+            "keyboard_menu" : {
+                "background" : {
+                    "color" : "#4c4c4c",
+                    "alpha" : "0.55"
+                },
+                "font" : {
+                    "color" : "b6b2ae",
+                    "size" : "13.0"
+                },
+                "icon" : {
+                    "color" : "#b6b2ae"
+                }
+            }
+        }
+    },
+    "surveys" : {
+        "page_control" : {
+            "color" : "#ffffff"
+        },
+        "survey_card" : {
+            "background" : {
+                "color" : "#ffffff",
+                "alpha" : "0.9"
+            },
+            "title" : {
+                "font" : {
+                    "color" : "#555555",
+                    "size" : "15.0"
+                }
+            },
+            "next_button" : {
+                "font" : {
+                    "color" : "#007df5",
+                    "size" : "15.0"
+                },
+                "background" : {
+                    "linear-gradient" : ""
+                }
+            },
+            "cancel" : {
+                "font" : {
+                    "color" : "#007df5",
+                    "size" : "15.0"
+                },
+                "background" : {
+                    "linear-gradient" : ""
+                }
+            }
+        },
+        "text_field" : {
+            "background" : {
+                "color" : "#ffffff"
+            },
+            "font" : {
+                "color" : "#555555",
+                "size" : "17.0"
+            },
+            "border" : {
+                "color" : "#b7b7b7"
+            }
+        },
+        "list" : {
+            "background" : {
+                "color" : "#ffffff"
+            },
+            "font" : {
+                "color" : "#555555",
+                "size" : "17.0"
+            },
+            "border" : {
+                "color" : "#b7b7b7"
+            }
+        },
+        "stars" : {
+            "border" : {
+                "color" : "#fafafa"
+            },
+            "unselected" : {
+                "background" : {
+                    "color": "#9b9b9b"
+                }
+            },
+            "selected" : {
+                "background" : {
+                    "color" : "#f7a300"
+                }
+            }
+        },
+        "validation_alert" : {
+            "background" : {
+                "color" : "#ff3737"
+            },
+            "font" : {
+                "color" : "#ffffff",
+                "size" : "15.0"
+            }
+        }
+    },
+    "visit" : {
+        "control_button" : {
+            "alpha" : "0.9",
+            "icon" : "",
+            "background": {
+                "color" : "#666666"
+            },
+            "content" : {
+                "color" : "#ffffff"
+            },
+            "position" : {
+                "horizontal" : "right",
+                "vertical" : "0.5"
+            }
+        }
+    }
+}

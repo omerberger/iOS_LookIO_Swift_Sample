@@ -7,8 +7,8 @@
 //
 
 #import "LIODraggableButton.h"
-
 #import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
 typedef enum
 {
@@ -44,16 +44,11 @@ typedef enum
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.textColor = @"000000";
-        self.fillColor = @"ffffff";
-
         self.buttonMode = LIOButtonModeChat;
-        [self updateButtonIcon];
+        [self updateButtonBranding];
         
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 1.0;
-        self.backgroundColor = [UIColor whiteColor];
-        self.layer.borderColor = [UIColor colorWithWhite:0.75 alpha:1.0].CGColor;
         
         [self addTarget:self action:@selector(draggableButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -70,33 +65,19 @@ typedef enum
 
 #pragma mark Setup Methods
 
-- (void)updateButtonColors
+- (void)updateButtonBranding
 {
-    unsigned int fillColorValue;
-    [[NSScanner scannerWithString:self.fillColor] scanHexInt:&fillColorValue];
-    UIColor *translatedFillColor = HEXCOLOR(fillColorValue);
+    self.alpha = [[LIOBrandingManager brandingManager] alphaForElement:LIOBrandingElementControlButton];
     
-    self.backgroundColor = [translatedFillColor colorWithAlphaComponent:0.7];
+    self.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButton];
     
-    const CGFloat *rgba = CGColorGetComponents(translatedFillColor.CGColor);
-    CGFloat lightness = (rgba[0] + rgba[1] + rgba[2])/3;
-    CGFloat borderRed = lightness < 0.5 ? (1.0 + rgba[0])/2 : (0.0 + rgba[0])/2;
-    CGFloat borderGreen = lightness < 0.5 ? (1.0 + rgba[1])/2 : (0.0 + rgba[1])/2;
-    CGFloat borderBlue = lightness < 0.5 ? (1.0 + rgba[2])/2 : (0.0 + rgba[2])/2;
+    self.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
     
-    self.layer.borderColor = [[UIColor alloc] initWithRed:borderRed green:borderGreen blue:borderBlue alpha:1.0].CGColor;
-}
-
-- (void)updateButtonIcon
-{
-    unsigned int textColorValue;
-    [[NSScanner scannerWithString:self.textColor] scanHexInt:&textColorValue];
-    UIColor *translatedTextColor = HEXCOLOR(textColorValue);
-    translatedTextColor = [translatedTextColor colorWithAlphaComponent:0.9];
+    UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
     
     switch (self.buttonMode) {
         case LIOButtonModeChat:
-            [self setImage:[self imageWithTintedColor:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble"] withTint:translatedTextColor] forState:UIControlStateNormal];
+            [self setImage:[self imageWithTintedColor:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble"] withTint:contentColor] forState:UIControlStateNormal];
             break;
             
         default:

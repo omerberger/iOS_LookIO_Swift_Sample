@@ -13,6 +13,13 @@
                                      blue:((c)&0xFF)/255.0 \
                                     alpha:1.0]
 
+@interface LIOBrandingManager ()
+
+@property (nonatomic, strong) NSMutableDictionary *brandingDictionary;
+
+@end
+
+
 @implementation LIOBrandingManager
 
 static LIOBrandingManager *brandingManager = nil;
@@ -33,66 +40,88 @@ static LIOBrandingManager *brandingManager = nil;
     
     if (self)
     {
-        [self setDefaults];
+        [self loadDefaults];
     }
     
     return self;
 }
 
+- (void)loadDefaults
+{
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"branding" ofType:@"json"];
+    NSData *data = [NSData dataWithContentsOfFile:filePath];
+    self.brandingDictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+}
+
+#pragma mark Helper Methods
+
 - (UIColor *)colorForHexString:(NSString *)string
 {
     unsigned int colorValue;
-    [[NSScanner scannerWithString:string] scanHexInt:&colorValue];
-
+    [[NSScanner scannerWithString:[string stringByReplacingOccurrencesOfString:@"#" withString:@""]] scanHexInt:&colorValue];
+    
     return HEXCOLOR(colorValue);
 }
 
-- (void)setDefaults
-{
-    // Control Button
-    self.controlButtonIconUrl = nil;
-    self.controlButtonBackgroundColor = [self colorForHexString:@"373737"];
-    self.controlButtonBorderColor = [self colorForHexString:@"666666"];
-    self.controlButtonContentColor = [self colorForHexString:@"ffffff"];
-    self.controlButtonAttachedToRight = YES;
-    self.controlButtonVerticalPosition = 0.5;
-    
-    self.chatBackgroundColor = [self colorForHexString:@"d8d8d8"];
-    self.chatBackgroundAlpha = 0.4;
-    self.chatBackgroundBlurRadius = 24.0;
-    self.chatBackgroundBlurIterations = 8;
-    self.chatBackgroundSaturationFactor = 3.0;
-    
-    self.fontName = @"HelveticaNeue-Light";
+#pragma mark Branding Methods
 
-    self.logoUrl = nil;
+- (NSDictionary *)brandingDictionaryForElement:(LIOBrandingElement)element
+{
+    NSDictionary *dictionary = nil;
     
-    self.brandingBarBackgroundColor = [self colorForHexString:@"ffffff"];
-    self.brandingBarBackgroundAlpha = 0.0;
-    self.brandingbarNotificationsTextColor = [self colorForHexString:@"555555"];
-    self.brandingBarNotificationsFontSize = 12.0;
+    if (LIOBrandingElementControlButton == element)
+    {
+        NSDictionary *visitDictionary = [self.brandingDictionary objectForKey:@"visit"];
+        if (visitDictionary)
+            dictionary = [visitDictionary objectForKey:@"control_button"];
+
+        return dictionary;
+    }
+}
+
+- (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
+{
+    UIColor *backgroundColor = nil;
     
-    self.agentBubbleBackgroundColor = [self colorForHexString:@"47a1ff"];
-    self.agentBubbleTextColor = [self colorForHexString:@"4f4f4f"];
-    self.agentBubbleWidth = 0.625;
-    self.agentBubbleFontSize = 15.0;
-    self.agentBubbleShowAvatar = NO;
-    self.agentAvatarImageUrl = nil;
-    self.agentLinkBackgroundColor = [self colorForHexString:@"ffffff"];
-    self.agentLinkBorderColor = [self colorForHexString:@"019fde"];
-    self.agentLinkTextColor = [self colorForHexString:@"555555"];
-    self.agentLinkFontSize = 15.0;
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *parentDictionary = nil;
+        
+        if (LIOBrandingColorBackground == colorType)
+            parentDictionary = [elementDictionary objectForKey:@"background"];
+        if (LIOBrandingColorText == colorType)
+            parentDictionary = [elementDictionary objectForKey:@"font"];
+        if (LIOBrandingColorBorder == colorType)
+            parentDictionary = [elementDictionary objectForKey:@"border"];
+        if (LIOBrandingColorContent == colorType)
+            parentDictionary = [elementDictionary objectForKey:@"content"];
+        
+        if (parentDictionary)
+        {
+            NSString *colorString = [parentDictionary objectForKey:@"color"];
+            if (colorString)
+            {
+                backgroundColor = [self colorForHexString:colorString];
+            }
+        }
+    }
     
-    self.visitorBubbleBackgroundColor = [self colorForHexString:@"e1e1e7"];
-    self.visitorBubbleTextColor = [self colorForHexString:@"ffffff"];
-    self.visitorBubbleWidth = 0.625;
-    self.visitorBubbleFontSize = 15.0;
-    self.visitorBubbleShowAvatar = NO;
-    self.visitorAvatarImageUrl = nil;
-    self.visitorLinkBackgroundColor = [self colorForHexString:@"ffffff"];
-    self.visitorLinkBorderColor = [self colorForHexString:@"019fde"];
-    self.visitorLinkTextColor = [self colorForHexString:@"555555"];
-    self.visitorLinkFontSize = 15.0;    
+    return backgroundColor;
+}
+
+- (CGFloat)alphaForElement:(LIOBrandingElement)element
+{
+    CGFloat alpha = 1.0;
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+
+    if (elementDictionary) {
+        NSNumber *alphaObject = [elementDictionary objectForKey:@"alpha"];
+        if (alphaObject)
+            alpha = [alphaObject floatValue];
+    }
+    
+    return alpha;
 }
 
 

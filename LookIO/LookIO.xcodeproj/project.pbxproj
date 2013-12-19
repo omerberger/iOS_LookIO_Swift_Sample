@@ -219,6 +219,7 @@
 		A7D8D8641799784F005989FD /* LPMediaAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPMediaAPIClient.m; path = Source/Networking/LPMediaAPIClient.m; sourceTree = "<group>"; };
 		A7DB82131860EFA400473483 /* LIOBrandingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBrandingManager.h; path = Source/Managers/LIOBrandingManager.h; sourceTree = "<group>"; };
 		A7DB82141860EFA400473483 /* LIOBrandingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBrandingManager.m; path = Source/Managers/LIOBrandingManager.m; sourceTree = "<group>"; };
+		A7DB821C186397BB00473483 /* branding.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = branding.json; path = Resources/branding.json; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
 		D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOInterstitialViewController.m; path = Source/Controllers/LIOInterstitialViewController.m; sourceTree = "<group>"; };
 		D403F7B615335CC100101941 /* LIOLogManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLogManager.h; path = Source/Managers/LIOLogManager.h; sourceTree = "<group>"; };
@@ -354,6 +355,7 @@
 		A721D27A185138980039395E /* New Managers */ = {
 			isa = PBXGroup;
 			children = (
+				A7DB821C186397BB00473483 /* branding.json */,
 				A721D271185136580039395E /* LIOManager.h */,
 				A721D272185136580039395E /* LIOManager.m */,
 				A721D28818513DFD0039395E /* LIOStatusManager.h */,

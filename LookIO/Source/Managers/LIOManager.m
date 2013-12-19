@@ -246,11 +246,7 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
 {
-    self.controlButton.fillColor = self.visit.lastKnownButtonTintColor;
-    self.controlButton.textColor = self.visit.lastKnownButtonTextColor;
-
-    [self.controlButton updateButtonColors];
-    [self.controlButton updateButtonIcon];
+    [self.controlButton updateButtonBranding];
 }
 
 #pragma mark DraggableButtonDelegate Methods

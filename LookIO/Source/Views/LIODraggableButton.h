@@ -22,14 +22,10 @@
 
 @property (nonatomic, assign) id <LIODraggableButtonDelegate> delegate;
 
-@property (nonatomic, strong) NSString *fillColor;
-@property (nonatomic, strong) NSString *textColor;
-
 - (void)show:(BOOL)animated;
 - (void)hide:(BOOL)animated;
 
 - (void)resetFrame;
-- (void)updateButtonColors;
-- (void)updateButtonIcon;
+- (void)updateButtonBranding;
 
 @end
