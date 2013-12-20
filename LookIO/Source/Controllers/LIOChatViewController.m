@@ -7,12 +7,34 @@
 //
 
 #import "LIOChatViewController.h"
+#import "LIOEngagement.h"
 
-@interface LIOChatViewController ()
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource>
+
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) LIOEngagement *engagement;
 
 @end
 
 @implementation LIOChatViewController
+
+#pragma mark UITableView Methods
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.engagement.messages.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+}
+
 
 - (void)dismissChat:(id)sender
 {
@@ -24,10 +46,20 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
-    self.view.backgroundColor = [UIColor clearColor];
+    self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:self.tableView];
+    
+    
+    
+
     
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     [self.view addGestureRecognizer:tapGestureRecognizer];
+    
+    
 }
 
 - (void)didReceiveMemoryWarning

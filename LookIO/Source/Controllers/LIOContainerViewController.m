@@ -15,6 +15,10 @@
 @interface LIOContainerViewController () <LIOChatViewControllerDelegate>
 
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
+@property (nonatomic, strong) UIViewController *loadingViewController;
+@property (nonatomic, strong) UIViewController *currentViewController;
+
+@property (nonatomic, strong) LIOEngagement *engagement;
 
 @property (nonatomic, strong) LIOBlurImageView *blurImageView;
 
@@ -28,7 +32,6 @@
     [UIView animateWithDuration:0.3 animations:^{
         self.blurImageView.alpha = 1.0;
     } completion:^(BOOL finished) {
-        [self presentChatViewController];
     }];
 }
 
@@ -40,12 +43,66 @@
         self.blurImageView.alpha = 0.0;
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
+        [self swapCurrentControllerWith:self.loadingViewController animated:NO];
     }];
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
 
+- (void)presentChatForEngagement:(LIOEngagement *)anEngagement
+{
+    self.engagement = anEngagement;
+    [self presentChatViewController:YES];
+}
+
+
+- (void)chatViewController:(LIOChatViewController *)didDismissChat
+{
+    
+}
+
+- (void)presentChatViewController:(BOOL)animated
+{
+    [self swapCurrentControllerWith:self.chatViewController animated:animated];
+}
+
+#pragma mark Container View Controller Methods
+
+- (void)swapCurrentControllerWith:(UIViewController*)viewController animated:(BOOL)animated
+{
+    [self.currentViewController willMoveToParentViewController:nil];
+    [self addChildViewController:viewController];
+    
+    if (animated)
+    {
+        CGRect frame = viewController.view.frame;
+        frame.origin.y = -frame.size.height;
+        viewController.view.frame = frame;
+        
+        [self transitionFromViewController:self.currentViewController toViewController:viewController
+                                  duration:0.3 options:nil
+                                animations:^{
+                                    viewController.view.frame = self.view.bounds;
+                                    
+                                    CGRect frame = self.currentViewController.view.frame;
+                                    frame.origin.y = frame.size.height;
+                                    self.currentViewController.view.frame = frame;
+                                } completion:^(BOOL finished) {
+                                    //Remove the old view controller
+                                    [self.currentViewController removeFromParentViewController];
+                                    
+                                    //Set the new view controller as current
+                                    self.currentViewController = viewController;
+                                    [self.currentViewController didMoveToParentViewController:self];
+                                }];
+    }
+    else
+    {
+        viewController.view.frame = self.view.bounds;
+        [self.currentViewController removeFromParentViewController];
+        
+        self.currentViewController = viewController;
+        [self.currentViewController didMoveToParentViewController:self];
+    }
 }
 
 - (void)viewDidLoad
@@ -56,24 +113,23 @@
     self.blurImageView = [[LIOBlurImageView alloc] initWithFrame:self.view.bounds];
     self.blurImageView.alpha = 0.0;
     [self.view addSubview:self.blurImageView];
-}
-
-#pragma mark ChatViewController Delegate Methods
-
-- (void)chatViewController:(LIOChatViewController *)didDismissChat
-{
     
-}
-
-- (void)presentChatViewController
-{
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;
-    [self addChildViewController:self.chatViewController];
-    self.chatViewController.view.frame = self.view.bounds;
-    [self.view addSubview:self.chatViewController.view];
-    [self.chatViewController didMoveToParentViewController:self];    
+    self.chatViewController.view.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.5];
+    
+    self.loadingViewController = [[UIViewController alloc] init];
+    self.loadingViewController.view.backgroundColor = [UIColor redColor];
+    [self addChildViewController:self.loadingViewController];
+    self.loadingViewController.view.frame = self.view.bounds;
+    [self.view addSubview:self.loadingViewController.view];
+    self.currentViewController = self.loadingViewController;
+    [self.loadingViewController didMoveToParentViewController:self];
 }
+
+
+
+#pragma mark ChatViewController Delegate Methods
 
 - (void)didReceiveMemoryWarning
 {

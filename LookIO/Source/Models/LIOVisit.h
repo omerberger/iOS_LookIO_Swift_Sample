@@ -76,5 +76,6 @@ typedef enum
 - (void)setInvitationNotShown;
 
 - (NSDictionary *)introDictionary;
+- (NSString *)welcomeText;
 
 @end

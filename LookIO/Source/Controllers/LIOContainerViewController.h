@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOEngagement.h";
 
 @class LIOContainerViewController;
 
@@ -21,5 +22,6 @@
 @property (nonatomic, assign) id <LIOContainerViewControllerDelegate> delegate;
 
 - (void)setBlurImage:(UIImage *)image;
+- (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
 
 @end

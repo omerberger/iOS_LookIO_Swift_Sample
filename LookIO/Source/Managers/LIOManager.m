@@ -11,6 +11,7 @@
 #import "LIOLogManager.h"
 #import "LIOStatusManager.h"
 #import "LIONetworkManager.h"
+#import "LIOBundleManager.h"
 
 #import "LIOContainerViewController.h"
 
@@ -19,7 +20,9 @@
 
 #import "LIODraggableButton.h"
 
-@interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate>
+#define LIOAlertViewNextStepDismissLookIOWindow 2001
+
+@interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
@@ -30,6 +33,8 @@
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
 @property (nonatomic, assign) BOOL isRotationActuallyHappening;
+
+@property (nonatomic, strong) UIAlertView *alertView;
 
 @end
 
@@ -73,6 +78,7 @@ static LIOManager *sharedLookIOManager = nil;
     
     self.containerViewController = [[LIOContainerViewController alloc] init];
     self.containerViewController.delegate = self;
+    self.containerViewController.view.alpha = 0.0;
     self.lookioWindow.rootViewController = self.containerViewController;
     
     self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
@@ -266,6 +272,16 @@ static LIOManager *sharedLookIOManager = nil;
     [self beginChat];
 }
 
+#pragma mark AlertView Delegate Methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (LIOAlertViewNextStepDismissLookIOWindow == alertView.tag)
+    {
+        [self dismissLookIOWindow];
+    }
+}
+
 #pragma mark Container View Controller Delegate Methods
 
 - (void)containerViewControllerDidDismiss:(LIOContainerViewController *)containerViewController
@@ -291,18 +307,36 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     [self takeScreenshotAndSetBlurImageView];
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        self.containerViewController.view.alpha = 1.0;
+    }];
 }
 
 - (void)dismissLookIOWindow
 {
-    self.lookioWindow.hidden = YES;
-    [self.previousKeyWindow makeKeyAndVisible];
-    self.previousKeyWindow = nil;
-    
-    if (!self.visit.controlButtonHidden)
-    {
-        [self.controlButton show:YES];
-    }
+    [UIView animateWithDuration:0.3 animations:^{
+        self.containerViewController.view.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        self.lookioWindow.hidden = YES;
+        [self.previousKeyWindow makeKeyAndVisible];
+        self.previousKeyWindow = nil;
+        
+        if (!self.visit.controlButtonHidden)
+        {
+            [self.controlButton show:YES];
+        }
+        
+        switch (self.visit.visitState) {
+            case LIOVisitStateChatOpened:
+                self.visit.visitState = LIOVisitStateVisitInProgress;
+                [self.engagement cancelEngagement];
+                break;
+                
+            default:
+                break;
+        }
+    }];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -322,10 +356,10 @@ static LIOManager *sharedLookIOManager = nil;
     
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
-            self.engagement = [[LIOEngagement alloc] init];
+            self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit];
             self.engagement.delegate = self;
             self.visit.visitState = LIOVisitStateChatRequested;
-            [self.engagement startEngagementWithIntroDictionary:[self.visit introDictionary]];
+            [self.engagement startEngagement];
             break;
             
         default:
@@ -338,10 +372,32 @@ static LIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatRequested == self.visit.visitState)
     {
         if ([self.visit surveysEnabled])
-            self.visit.visitState = LIOVisitStateChatOpened;
-        else
             self.visit.visitState = LIOVisitStatePreChatSurvey;
+        else
+        {
+            self.visit.visitState = LIOVisitStateChatOpened;
+            [self.containerViewController presentChatForEngagement:self.engagement];
+            
+        }
     }
+}
+
+- (void)engagementDidCancel:(LIOEngagement *)engagement
+{
+    self.engagement = nil;
+}
+
+- (void)engagementDidFailToStart:(LIOEngagement *)engagement
+{
+    self.visit.visitState = LIOVisitStateVisitInProgress;
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
+    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    [alertView show];
 }
 
 @end

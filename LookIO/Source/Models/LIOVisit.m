@@ -84,10 +84,8 @@
     self = [super init];
     if (self) {
         self.funnelState = LIOFunnelStateInitialized;
-        LIOLog(@"<FUNNEL STATE> Initialized");
         
         self.visitState = LIOVisitStateInitialized;
-        LIOLog(@"<VISIT STATE> Initialized");
         
         self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
         self.multiskillMapping = nil;
@@ -378,7 +376,6 @@
         [self.delegate visitSkillMappingDidChange:self];
         
         self.visitState = LIOVisitStateFailed;
-        LIOLog(@"<VISIT STATE> Failed");
     }
     
     // Save.
@@ -514,7 +511,6 @@
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         self.visitState = LIOVisitStateLaunching;
-        LIOLog(@"<VISIT STATE> Launching");
         
         NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO];
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -527,7 +523,6 @@
             LIOLog(@"<FUNNEL STATE> Visit");
             
             self.visitState = LIOVisitStateVisitInProgress;
-            LIOLog(@"<VISIT STATE> In Progress");
 
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             LIOLog(@"<LAUNCH> Request failed with response code %d and error: %d", operation.responseCode);
@@ -538,7 +533,6 @@
             }
             
             self.visitState = LIOVisitStateFailed;
-            LIOLog(@"<VISIT STATE> Failed");
  
             self.multiskillMapping = nil;
             [self.delegate visitSkillMappingDidChange:self];
@@ -547,7 +541,6 @@
     else
     {
         self.visitState = LIOVisitStateQueued;
-        LIOLog(@"<VISIT STATE> Queued");
         
         [self.queuedLaunchReportDates addObject:[NSDate date]];
         self.multiskillMapping = nil;
@@ -644,7 +637,6 @@
                     self.multiskillMapping = nil;
                     
                     self.visitState = LIOVisitStateFailed;
-                    LIOLog(@"<VISIT STATE> Failed");
                 }
             }
             
@@ -747,6 +739,15 @@
 - (BOOL)surveysEnabled
 {
     return self.lastKnownSurveysEnabled;
+}
+
+- (void)setVisitState:(LIOVisitState)visitState
+{
+    _visitState = visitState;
+
+    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey"];
+    
+    LIOLog(@"<VISIT STATE> %@", [stateNames objectAtIndex:self.visitState]);
 }
 
 #pragma mark Chat Status Methods
@@ -1055,5 +1056,21 @@
         }
     }];
 }
+
+#pragma mark Access Methods to Visit Properties
+
+- (NSString *)welcomeText
+{
+    NSString *welcomeText = @"";
+    
+    if (self.welcomeText)
+        welcomeText = self.welcomeText;
+    else
+        welcomeText = LIOLocalizedString(@"LIOLookIOManager.DefaultWelcomeMessage");
+    
+    return welcomeText;
+}
+
+
 
 @end

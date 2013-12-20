@@ -7,12 +7,23 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "LIOVisit.h"
+
+typedef enum
+{
+    LIOSSEChannelStateInitialized = 0,
+    LIOSSEChannelStateConnecting,
+    LIOSSEChannelStateConnected,
+    LIOSSEChannelStateCancelling
+} LIOSSEChannelState;
 
 @class LIOEngagement;
 
 @protocol LIOEngagementDelegate <NSObject>
 
 - (void)engagementDidStart:(LIOEngagement *)engagement;
+- (void)engagementDidFailToStart:(LIOEngagement *)engagement;
+- (void)engagementDidCancel:(LIOEngagement *)engagement;
 
 @end
 
@@ -23,6 +34,10 @@
 @property (nonatomic, assign) NSInteger lastClientLineId;
 @property (nonatomic, strong) NSMutableArray *messages;
 
-- (void)startEngagementWithIntroDictionary:(NSDictionary *)introDictionary;
+- (id)initWithVisit:(LIOVisit *)aVisit;
+
+- (void)startEngagement;
+- (void)cancelEngagement;
+- (void)endEngagement;
 
 @end
