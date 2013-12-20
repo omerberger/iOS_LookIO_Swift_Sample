@@ -36,6 +36,9 @@ typedef enum
 + (LIOBrandingManager *)brandingManager;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element;
 - (CGFloat)alphaForElement:(LIOBrandingElement)element;
+- (CGFloat)widthForElement:(LIOBrandingElement)element;
+- (NSString *)fontNameForElement:(LIOBrandingElement)element;
+- (CGFloat)fontSizeForElement:(LIOBrandingElement)element;
 
 @end
 

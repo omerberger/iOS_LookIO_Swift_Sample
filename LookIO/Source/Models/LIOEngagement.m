@@ -49,6 +49,8 @@
         self.visit = aVisit;
         
         self.messages = [[NSMutableArray alloc] init];
+        [self populateFirstChatMessage];
+        
         self.lastClientLineId = 0;
 
         self.chatCookies = [[NSMutableArray alloc] init];
@@ -66,9 +68,8 @@
         firstMessage.kind = LIOChatMessageKindRemote;
         firstMessage.date = [NSDate date];
         firstMessage.lineId = nil;
+        firstMessage.text = [self.visit welcomeText];
         [self.messages addObject:firstMessage];
-        
-
     }
 }
 

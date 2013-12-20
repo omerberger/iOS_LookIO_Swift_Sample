@@ -77,6 +77,47 @@ static LIOBrandingManager *brandingManager = nil;
 
         return dictionary;
     }
+    
+    if (LIOBrandingElementFont == element)
+    {
+        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
+        return engagementDictionary;
+    }
+    
+    if (LIOBrandingElementAgentChatBubble == element)
+    {
+        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
+        if (engagementDictionary)
+        {
+            NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+            if (chatBubblesDictionary)
+            {
+                NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"agent"];
+                if (agentDictionary)
+                    dictionary = agentDictionary;
+            }
+        }
+        
+        return dictionary;
+    }
+    
+    if (LIOBrandingElementVisitorChatBubble == element)
+    {
+        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
+        if (engagementDictionary)
+        {
+            NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+            if (chatBubblesDictionary)
+            {
+                NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
+                if (agentDictionary)
+                    dictionary = agentDictionary;
+            }
+        }
+        
+        return dictionary;
+    }
+
 }
 
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
@@ -123,6 +164,60 @@ static LIOBrandingManager *brandingManager = nil;
     
     return alpha;
 }
+
+- (CGFloat)widthForElement:(LIOBrandingElement)element {
+    CGFloat width = 1.0;
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    
+    if (elementDictionary) {
+        NSDictionary *sizeDictionary = [elementDictionary objectForKey:@"size"];
+        if (sizeDictionary)
+        {
+            NSNumber *widthObject = [sizeDictionary objectForKey:@"width"];
+            if (widthObject)
+                width = [widthObject floatValue];
+        }
+    }
+    
+    return width;
+}
+
+
+- (NSString *)fontNameForElement:(LIOBrandingElement)element
+{
+    NSString *fontName = @"HelveticaNeue-Light";
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
+        if (fontDictionary)
+        {
+            NSString *fontNameString = [fontDictionary objectForKey:@"family"];
+            if (fontNameString)
+                fontName = fontNameString;
+        }
+    }
+    return fontName;
+}
+
+- (CGFloat)fontSizeForElement:(LIOBrandingElement)element
+{
+    CGFloat fontSize = 15.0;
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
+        if (fontDictionary)
+        {
+            NSString *fontSizeObject = [fontDictionary objectForKey:@"size"];
+            if (fontSizeObject)
+                fontSize = [fontSizeObject floatValue];
+        }
+    }
+    return fontSize;
+}
+
 
 
 @end

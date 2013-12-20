@@ -12,5 +12,6 @@
 @interface LIOChatTableViewCell : UITableViewCell
 
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage;
++ (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size;
 
 @end

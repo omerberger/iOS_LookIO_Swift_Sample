@@ -31,6 +31,7 @@
     [self.blurImageView setImageAndBlur:image];
     [UIView animateWithDuration:0.3 animations:^{
         self.blurImageView.alpha = 1.0;
+        self.view.alpha = 1.0;
     } completion:^(BOOL finished) {
     }];
 }
@@ -41,6 +42,7 @@
 {
     [UIView animateWithDuration:0.3 animations:^{
         self.blurImageView.alpha = 0.0;
+        self.view.alpha = 0.0;
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
@@ -62,6 +64,7 @@
 
 - (void)presentChatViewController:(BOOL)animated
 {
+    [self.chatViewController setEngagement:self.engagement];
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
 }
 
@@ -100,6 +103,8 @@
         viewController.view.frame = self.view.bounds;
         [self.currentViewController removeFromParentViewController];
         
+        [self.view addSubview:viewController.view];
+
         self.currentViewController = viewController;
         [self.currentViewController didMoveToParentViewController:self];
     }
@@ -116,10 +121,10 @@
     
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;
-    self.chatViewController.view.backgroundColor = [UIColor colorWithWhite:0.5 alpha:0.5];
     
     self.loadingViewController = [[UIViewController alloc] init];
     self.loadingViewController.view.backgroundColor = [UIColor redColor];
+
     [self addChildViewController:self.loadingViewController];
     self.loadingViewController.view.frame = self.view.bounds;
     [self.view addSubview:self.loadingViewController.view];

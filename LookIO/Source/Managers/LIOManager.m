@@ -307,36 +307,28 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     [self takeScreenshotAndSetBlurImageView];
-    
-    [UIView animateWithDuration:0.3 animations:^{
-        self.containerViewController.view.alpha = 1.0;
-    }];
 }
 
 - (void)dismissLookIOWindow
 {
-    [UIView animateWithDuration:0.3 animations:^{
-        self.containerViewController.view.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        self.lookioWindow.hidden = YES;
-        [self.previousKeyWindow makeKeyAndVisible];
-        self.previousKeyWindow = nil;
-        
-        if (!self.visit.controlButtonHidden)
-        {
-            [self.controlButton show:YES];
-        }
-        
-        switch (self.visit.visitState) {
-            case LIOVisitStateChatOpened:
-                self.visit.visitState = LIOVisitStateVisitInProgress;
-                [self.engagement cancelEngagement];
-                break;
-                
-            default:
-                break;
-        }
-    }];
+    self.lookioWindow.hidden = YES;
+    [self.previousKeyWindow makeKeyAndVisible];
+    self.previousKeyWindow = nil;
+    
+    if (!self.visit.controlButtonHidden)
+    {
+        [self.controlButton show:YES];
+    }
+    
+    switch (self.visit.visitState) {
+        case LIOVisitStateChatOpened:
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+            [self.engagement cancelEngagement];
+            break;
+            
+        default:
+            break;
+    }
 }
 
 - (void)takeScreenshotAndSetBlurImageView {

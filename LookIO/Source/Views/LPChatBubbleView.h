@@ -8,9 +8,10 @@
 
 #import <UIKit/UIKit.h>
 #import "LIOChatMessage.h"
+#import "TTTAttributedLabel.h"
 
 @interface LPChatBubbleView : UIView
 
-- (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage;
+@property (nonatomic, strong) TTTAttributedLabel_LIO *messageLabel;
 
 @end

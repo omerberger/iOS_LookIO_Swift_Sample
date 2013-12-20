@@ -1063,8 +1063,8 @@
 {
     NSString *welcomeText = @"";
     
-    if (self.welcomeText)
-        welcomeText = self.welcomeText;
+    if (self.lastKnownWelcomeText)
+        welcomeText = self.lastKnownWelcomeText;
     else
         welcomeText = LIOLocalizedString(@"LIOLookIOManager.DefaultWelcomeMessage");
     

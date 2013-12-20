@@ -7,7 +7,11 @@
 //
 
 #import "LIOChatTableViewCell.h"
+
+#import "LIOBrandingManager.h"
+
 #import "LPChatBubbleView.h"
+
 
 @interface LIOChatTableViewCell ()
 
@@ -24,76 +28,82 @@
         self.backgroundColor = [UIColor clearColor];
         
         self.chatBubbleView = [[LPChatBubbleView alloc] initWithFrame:CGRectMake(8, 10, 100, 40)];
-        [self addSubview:self.chatBubbleView];
+        [self.contentView addSubview:self.chatBubbleView];
     }
     return self;
 }
 
++ (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
+{
+    LIOBrandingElement brandingElement;
+    // Set up background color
+    switch (chatMessage.kind) {
+        case LIOChatMessageKindLocal:
+            brandingElement = LIOBrandingElementVisitorChatBubble;
+            break;
+            
+        case LIOChatMessageKindRemote:
+            brandingElement = LIOBrandingElementAgentChatBubble;
+            break;
+            
+        default:
+            break;
+    }
+    
+    UIFont *font = [UIFont fontWithName:[[LIOBrandingManager brandingManager] fontNameForElement:LIOBrandingElementFont] size:[[LIOBrandingManager brandingManager] fontSizeForElement:brandingElement]];
+    CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
+    CGFloat maxSize = size.width * bubbleWidthFactor;
+    
+    CGSize expectedTextSize = [chatMessage.text sizeWithFont:font constrainedToSize:CGSizeMake(maxSize, size.height) lineBreakMode:UILineBreakModeWordWrap];
+
+    return CGSizeMake(expectedTextSize.width + 31.0, expectedTextSize.height + 35.0);
+}
+
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage
 {
-    [self.chatBubbleView layoutSubviewsForChatMessage:chatMessage];
-    /*
-    CGFloat maxSize = self.contentView.bounds.size.width * 0.625;
+    LIOBrandingElement brandingElement;
     
-    CGRect expectedTextSize = [chatMessage.text boundingRectWithSize:CGSizeMake(maxSize, 9999)
-                                                             options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-                                                          attributes:@{NSFontAttributeName:self.messageLabel.font}
-                                                             context:nil];
+    // Set up background color
+    switch (chatMessage.kind) {
+        case LIOChatMessageKindLocal:
+            brandingElement = LIOBrandingElementVisitorChatBubble;
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+            break;
+            
+        case LIOChatMessageKindRemote:
+            brandingElement = LIOBrandingElementAgentChatBubble;
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+            break;
+            
+        default:
+            break;
+    }
     
-    CGRect aFrame = self.backgroundImageView.frame;
-    aFrame.origin.x = chatMessage.messageType == HKBChatMessageTypeVisitorMessage ? 8 : self.contentView.bounds.size.width - expectedTextSize.size.width - 30;
+    self.chatBubbleView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:brandingElement];
+    self.chatBubbleView.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];
+    CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
+    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor;
+    
+    CGSize expectedTextSize = [chatMessage.text sizeWithFont:self.chatBubbleView.messageLabel.font constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    
+    CGRect aFrame = self.chatBubbleView.frame;
+    aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
     aFrame.origin.y = 10;
-    aFrame.size.width = expectedTextSize.size.width + 23;
-    aFrame.size.height = expectedTextSize.size.height + 20;
-    self.backgroundImageView.frame = aFrame;
+    aFrame.size.width = expectedTextSize.width + 23;
+    aFrame.size.height = expectedTextSize.height + 20;
+    self.chatBubbleView.frame = aFrame;
     
-    if (chatMessage.messageType == HKBChatMessageTypeVisitorMessage)
-        self.backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
-    else
-        self.backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    self.chatBubbleView.messageLabel.numberOfLines = 0;
+    [self.chatBubbleView.messageLabel sizeToFit];
     
-    self.messageLabel.numberOfLines = 0;
-    [self.messageLabel sizeToFit];
+    self.chatBubbleView.messageLabel.text = chatMessage.text;
     
-    self.messageLabel.text = chatMessage.text;
-    
-    aFrame = self.messageLabel.frame;
+    aFrame = self.chatBubbleView.messageLabel.frame;
     aFrame.origin.x = 10;
     aFrame.origin.y = 10;
-    aFrame.size = expectedTextSize.size;
-    self.messageLabel.frame = aFrame;
+    aFrame.size = expectedTextSize;
+    self.chatBubbleView.messageLabel.frame = aFrame;
     
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:@"hh:mm a"];
-    
-    self.nameAndDateLabel.text = [NSString stringWithFormat:@"%@ %@", (chatMessage.messageType == HKBChatMessageTypeAgentMessage ? @"Me" :  chatMessage.senderName), [[dateFormatter stringFromDate:chatMessage.date] lowercaseString]];
-    
-    expectedTextSize = [self.nameAndDateLabel.text boundingRectWithSize:CGSizeMake(maxSize, 9999)
-                                                                options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-                                                             attributes:@{NSFontAttributeName:self.nameAndDateLabel.font}
-                                                                context:nil];
-    
-    self.nameAndDateLabel.numberOfLines = 1;
-    [self.nameAndDateLabel sizeToFit];
-    
-    aFrame = self.nameAndDateLabel.frame;
-    aFrame.origin.x = chatMessage.messageType ? 9 : self.bounds.size.width - expectedTextSize.size.width - 9;
-    aFrame.origin.y = self.backgroundImageView.frame.origin.y + self.backgroundImageView.frame.size.height + 5;
-    self.nameAndDateLabel.frame = aFrame;
-    
-    if (chatMessage.messageType == HKBChatMessageTypeVisitorMessage) {
-        self.nameAndDateLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
-        
-        self.backgroundImageView.backgroundColor = [UIColor colorWithRed:225.0/255.0 green:225.0/255.0 blue:231.0/255.0 alpha:1.0];
-        self.messageLabel.textColor = [UIColor darkGrayColor];
-    }
-    else {
-        self.nameAndDateLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-        
-        self.backgroundImageView.backgroundColor = [UIColor colorWithRed:71.0/255.0 green:161.0/255.0 blue:1.0 alpha:1.0];
-        self.messageLabel.textColor = [UIColor whiteColor];
-    }
-     */
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated

@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "LIOEngagement.h"
+
 @class LIOChatViewController;
 
 @protocol LIOChatViewControllerDelegate <NSObject>
@@ -19,5 +21,7 @@
 @interface LIOChatViewController : UIViewController
 
 @property (nonatomic, assign) id <LIOChatViewControllerDelegate> delegate;
+
+- (void)setEngagement:(LIOEngagement *)engagement;
 
 @end
