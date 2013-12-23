@@ -27,6 +27,10 @@
     if (self) {
         // Initialization code
         
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSendBar];
+        CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementSendBar];
+        self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
+        
         self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(0, (self.frame.size.height - 50)/2, 50, 50)];
         [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"InputBarPlusButton"] forState:UIControlStateNormal];
         self.plusButton.imageView.clipsToBounds = NO;
@@ -37,14 +41,18 @@
         [self addSubview:self.plusButton];
         
         self.textViewBackgroundView = [[UIView alloc] initWithFrame:CGRectMake(50, 5, self.bounds.size.width - 115, self.frame.size.height - 10)];
+        self.textViewBackgroundView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSendBarTextField];
+        self.textViewBackgroundView.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBarTextField].CGColor;
+        self.textViewBackgroundView.layer.cornerRadius = 5.0;
+        self.textViewBackgroundView.layer.borderWidth = 1.0;
         self.textViewBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.textViewBackgroundView];
         
         self.textView = [[UITextView alloc] initWithFrame:self.textViewBackgroundView.bounds];
-        self.textView.keyboardAppearance = UIKeyboardAppearanceAlert;
+        self.textView.keyboardAppearance = UIKeyboardAppearanceDefault;
         self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.textView.font = [UIFont systemFontOfSize:16.0];
-        self.textView.textColor = [UIColor darkGrayColor];
+        self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarTextField];
+        self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarTextField];
         self.textView.backgroundColor = [UIColor clearColor];
         self.textView.returnKeyType = UIReturnKeySend;
         self.textView.delegate = self;
@@ -52,22 +60,27 @@
         self.textView.contentInset = UIEdgeInsetsMake(2, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];
         
-        self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 64, (self.frame.size.height - 30)/2, 60, 30)];
+        self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 62, (self.frame.size.height - 30)/2, 60, 30)];
         [self.sendButton setTitle:@"Send" forState:UIControlStateNormal];
-        [self.sendButton setTitleColor: [UIColor colorWithRed:0.0/255.0 green:122.0/255.0 blue:255.0/255.0 alpha:1.0] forState:UIControlStateNormal];
-        [self.sendButton setTitleColor: [UIColor colorWithRed:0.0/255.0 green:122.0/255.0 blue:255.0/255.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
+        [self.sendButton.titleLabel setFont:[[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarSendButton]];
+        UIColor *sendButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarSendButton];
+        [self.sendButton setTitleColor:sendButtonColor forState:UIControlStateNormal];
+        [self.sendButton setTitleColor:[sendButtonColor colorWithAlphaComponent:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
         [self.sendButton addTarget:self action:@selector(sendButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.sendButton.showsTouchWhenHighlighted = YES;
         self.sendButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:self.sendButton];
         
-        self.backgroundColor = [UIColor colorWithWhite:245.0/255.0 alpha:0.8];
     }
     return self;
 }
 
 - (void)layoutSubviews {
-    CGSize expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
+    CGSize expectedSize;
+    if (self.textView.text.length > 0)
+        expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
+    else
+        expectedSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
     
     [self.delegate inputBar:self wantsNewHeight:expectedSize.height + 30];
 }
@@ -75,12 +88,10 @@
 -(void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    UIColor *lineColor = [UIColor colorWithRed:180.0/255.0 green:184.0/255 blue:190.0/255.0 alpha:1.0];
-    UIColor *shadowColor = [UIColor colorWithRed:232.0/255.0 green:232.0/255 blue:232.0/255.0 alpha:1.0];
+    UIColor *lineColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBar];
     
     CGContextSaveGState(context);
     CGContextSetStrokeColorWithColor(context, lineColor.CGColor);
-    CGContextSetShadowWithColor(context, CGSizeMake(1.0, 1.0), 0.0, shadowColor.CGColor);
     CGContextSetLineWidth(context, 1.0);
     CGContextMoveToPoint(context, 0, 0);
     CGContextAddLineToPoint(context, self.bounds.size.width, 0);

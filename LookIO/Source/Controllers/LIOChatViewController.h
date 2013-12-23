@@ -10,6 +10,12 @@
 
 #import "LIOEngagement.h"
 
+typedef enum {
+    LIOKeyboardStateKeyboard = 0,
+    LIOKeyboardStateHidden,
+    LIOKeyboardStateMenu
+} LIOKeyboardState;
+
 @class LIOChatViewController;
 
 @protocol LIOChatViewControllerDelegate <NSObject>

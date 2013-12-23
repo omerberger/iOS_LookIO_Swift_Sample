@@ -1,7 +1,7 @@
 {
     "engagement" : {
         "font" : {
-            "family" : "HelveticaNeue-Light"
+            "family" : "HelveticaNeue"
         },
         "logo" : {
             "image" : ""
@@ -129,8 +129,8 @@
                     "linear-gradient" : ""
                 },
                 "font" : {
-                    "color" : "#a9a9a9",
-                    "size" : "14.0"
+                    "color" : "#333333",
+                    "size" : "16.0"
                 },
                 "border" : {
                     "color" : "#5e5e5e"
@@ -143,7 +143,7 @@
                 },
                 "font" : {
                     "color" : "#ffffff",
-                    "size" : "16.0"
+                    "size" : "18.0"
                 },
                 "border" : {
                     "color" : "#ffffff"

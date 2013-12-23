@@ -20,7 +20,11 @@ typedef enum
     LIOBrandingElementAgentChatBubble,
     LIOBrandingElementAgentChatBubbleLink,
     LIOBrandingElementVisitorChatBubble,
-    LIOBrandingElementVisitorChatBubbleLink
+    LIOBrandingElementVisitorChatBubbleLink,
+    LIOBrandingElementSendBar,
+    LIOBrandingElementSendBarTextField,
+    LIOBrandingElementSendBarPlusButton,
+    LIOBrandingElementSendBarSendButton
 } LIOBrandingElement;
 
 typedef enum
@@ -36,8 +40,10 @@ typedef enum
 + (LIOBrandingManager *)brandingManager;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element;
 - (CGFloat)alphaForElement:(LIOBrandingElement)element;
+- (CGFloat)backgroundAlphaForElement:(LIOBrandingElement)element;
 - (CGFloat)widthForElement:(LIOBrandingElement)element;
 - (NSString *)fontNameForElement:(LIOBrandingElement)element;
+- (UIFont *)fontForElement:(LIOBrandingElement)element;
 - (CGFloat)fontSizeForElement:(LIOBrandingElement)element;
 
 @end

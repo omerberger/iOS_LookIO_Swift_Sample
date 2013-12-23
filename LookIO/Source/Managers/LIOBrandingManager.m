@@ -68,25 +68,22 @@ static LIOBrandingManager *brandingManager = nil;
 - (NSDictionary *)brandingDictionaryForElement:(LIOBrandingElement)element
 {
     NSDictionary *dictionary = nil;
-    
+    NSDictionary *visitDictionary = [self.brandingDictionary objectForKey:@"visit"];
+    NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
+
     if (LIOBrandingElementControlButton == element)
     {
-        NSDictionary *visitDictionary = [self.brandingDictionary objectForKey:@"visit"];
         if (visitDictionary)
             dictionary = [visitDictionary objectForKey:@"control_button"];
-
-        return dictionary;
     }
     
     if (LIOBrandingElementFont == element)
     {
-        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
         return engagementDictionary;
     }
     
     if (LIOBrandingElementAgentChatBubble == element)
     {
-        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
         if (engagementDictionary)
         {
             NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
@@ -97,13 +94,10 @@ static LIOBrandingManager *brandingManager = nil;
                     dictionary = agentDictionary;
             }
         }
-        
-        return dictionary;
     }
     
     if (LIOBrandingElementVisitorChatBubble == element)
     {
-        NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
         if (engagementDictionary)
         {
             NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
@@ -114,10 +108,50 @@ static LIOBrandingManager *brandingManager = nil;
                     dictionary = agentDictionary;
             }
         }
-        
-        return dictionary;
+    }
+    
+    if (LIOBrandingElementSendBar == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+            if (sendBarDictionary)
+            {
+                dictionary = sendBarDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementSendBarTextField == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+            if (sendBarDictionary)
+            {
+                NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"text_field"];
+                if (textFieldDictionary)
+                    dictionary = textFieldDictionary;
+            }
+        }
     }
 
+    if (LIOBrandingElementSendBarSendButton == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+            if (sendBarDictionary)
+            {
+                NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"send_button"];
+                if (textFieldDictionary)
+                    dictionary = textFieldDictionary;
+            }
+        }
+    }
+    
+
+    return dictionary;
 }
 
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
@@ -160,6 +194,24 @@ static LIOBrandingManager *brandingManager = nil;
         NSNumber *alphaObject = [elementDictionary objectForKey:@"alpha"];
         if (alphaObject)
             alpha = [alphaObject floatValue];
+    }
+    
+    return alpha;
+}
+
+- (CGFloat)backgroundAlphaForElement:(LIOBrandingElement)element
+{
+    CGFloat alpha = 1.0;
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    
+    if (elementDictionary) {
+        NSDictionary *backgroundDictionary = [elementDictionary objectForKey:@"background"];
+        if (backgroundDictionary)
+        {
+            NSNumber *alphaObject = [backgroundDictionary objectForKey:@"alpha"];
+            if (alphaObject)
+                alpha = [alphaObject floatValue];
+        }
     }
     
     return alpha;
@@ -217,6 +269,22 @@ static LIOBrandingManager *brandingManager = nil;
     }
     return fontSize;
 }
+
+- (UIFont *)fontForElement:(LIOBrandingElement)element
+{
+    UIFont *font;
+    CGFloat size = [self fontSizeForElement:element];
+    
+    if ([self fontNameForElement:LIOBrandingElementFont])
+        font = [UIFont fontWithName:[self fontNameForElement:LIOBrandingElementFont] size:size];
+    else
+        font = [UIFont systemFontOfSize:size];
+    
+    return font;
+}
+
+
+
 
 
 

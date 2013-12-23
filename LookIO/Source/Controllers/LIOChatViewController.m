@@ -10,6 +10,7 @@
 
 #import "LIOChatTableViewCell.h"
 #import "LPInputBarView.h"
+#import "LIOKeyboardMenu.h"
 
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
 
@@ -18,7 +19,14 @@
 @property (nonatomic, strong) LIOEngagement *engagement;
 
 @property (nonatomic, strong) UITableView *tableView;
+
 @property (nonatomic, strong) LPInputBarView *inputBarView;
+@property (nonatomic, assign) CGFloat inputBarViewDesiredHeight;
+
+@property (nonatomic, strong) LIOKeyboardMenu *keyboardMenu;
+
+@property (nonatomic, assign) LIOKeyboardState keyboardState;
+@property (nonatomic, assign) CGFloat lastKeyboardHeight;
 
 @end
 
@@ -63,6 +71,53 @@
 - (void)dismissChat:(id)sender
 {
     [self.delegate chatViewControllerDidDismissChat:self];
+    if ([self.inputBarView.textView isFirstResponder])
+        [self.inputBarView.textView resignFirstResponder];
+}
+
+#pragma mark InputBarViewDelegate Methods
+
+- (void)inputBarViewSendButtonWasTapped:(LPInputBarView *)inputBarView
+{
+    
+}
+
+- (void)inputBarViewPlusButtonWasTapped:(LPInputBarView *)inputBarView
+{
+    
+}
+
+- (void)inputBarViewKeyboardSendButtonWasTapped:(LPInputBarView *)inputBarView
+{
+    
+}
+
+- (void)inputBarTextFieldDidBeginEditing:(LPInputBarView *)inputBarView
+{
+    
+}
+
+- (void)inputBarTextFieldDidEndEditing:(LPInputBarView *)inputBarView
+{
+    
+}
+
+- (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
+{
+    self.inputBarViewDesiredHeight = height;
+    [UIView animateWithDuration:0.2 animations:^{
+        [self updateSubviewFrames];
+    }];
+}
+
+- (void)inputBarStartedTyping:(LPInputBarView *)inputBar
+{
+    
+}
+
+- (void)inputBarEndedTyping:(LPInputBarView *)inputBar
+{
+    
 }
 
 #pragma mark View Lifecycle Methods
@@ -71,7 +126,7 @@
 {
     [super viewDidAppear:animated];
     [self.tableView reloadData];
-//    [self.inputBarView.textView becomeFirstResponder];
+    [self.inputBarView.textView becomeFirstResponder];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -93,6 +148,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+    
     // Unregister for keyboard notifications while not visible.
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIKeyboardWillShowNotification
@@ -120,17 +176,94 @@
     self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 50, self.view.bounds.size.width, 50)];
     self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
-//    self.inputBarView.delegate = self;
+    self.inputBarView.delegate = self;
     [self.view addSubview:self.inputBarView];
     
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     [self.view addGestureRecognizer:tapGestureRecognizer];
 }
 
-- (void)didReceiveMemoryWarning
+
+#pragma mark Subview Update Methods
+
+- (void)updateSubviewFrames
 {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    // Input bar frame
+    CGRect inputBarViewFrame = self.inputBarView.frame;
+    switch (self.keyboardState) {
+        case LIOKeyboardStateKeyboard:
+            inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - self.lastKeyboardHeight;
+            break;
+            
+        case LIOKeyboardStateHidden:
+            inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height;
+            break;
+            
+        case LIOKeyboardStateMenu:
+            inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - self.keyboardMenu.bounds.size.height;
+            break;
+            
+            
+        default:
+            break;
+    }
+    self.inputBarView.frame = inputBarViewFrame;
+    
+
+    
+}
+
+#pragma mark Keyboard Methods
+
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+    // Acquire keyboard info
+    NSDictionary *info = [notification userInfo];
+    
+    UIViewAnimationCurve curve;
+    [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&curve];
+    
+    NSTimeInterval duration;
+    [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&duration];
+    
+    CGRect keyboardRect;
+    [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
+    
+    // Set new keyboard state and size
+    self.keyboardState = LIOKeyboardStateKeyboard;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
+        [self updateSubviewFrames];
+    } completion:^(BOOL finished) {
+    }];
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+    // Acquire keyboard info
+    NSDictionary *info = [notification userInfo];
+    
+    UIViewAnimationCurve curve;
+    [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&curve];
+    
+    NSTimeInterval duration;
+    [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&duration];
+    
+    CGRect keyboardRect;
+    [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
+    
+    // Set new keyboard state and size
+    self.keyboardState = LIOKeyboardStateHidden;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
+        [self updateSubviewFrames];
+    } completion:^(BOOL finished) {
+    }];
 }
 
 @end

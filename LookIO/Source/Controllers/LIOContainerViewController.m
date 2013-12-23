@@ -92,6 +92,7 @@
                                 } completion:^(BOOL finished) {
                                     //Remove the old view controller
                                     [self.currentViewController removeFromParentViewController];
+                                    [self.currentViewController.view removeFromSuperview];
                                     
                                     //Set the new view controller as current
                                     self.currentViewController = viewController;
@@ -102,6 +103,7 @@
     {
         viewController.view.frame = self.view.bounds;
         [self.currentViewController removeFromParentViewController];
+        [self.currentViewController.view removeFromSuperview];
         
         [self.view addSubview:viewController.view];
 
