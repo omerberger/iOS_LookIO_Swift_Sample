@@ -17,7 +17,7 @@
     if (self) {
         // Initialization code
         
-        self.layer.cornerRadius = 5.0;
+        self.layer.cornerRadius = 10.0;
         
         self.messageLabel = [[TTTAttributedLabel_LIO alloc] initWithFrame:CGRectMake(10, 0, self.bounds.size.width, self.bounds.size.height)];
         self.messageLabel.lineBreakMode = UILineBreakModeWordWrap;

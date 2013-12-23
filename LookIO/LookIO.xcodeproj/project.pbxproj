@@ -400,6 +400,10 @@
 				A739FA8F1864C92500CA35C4 /* LPChatBubbleView.m */,
 				A739FA921864FE9100CA35C4 /* LPInputBarView.h */,
 				A739FA931864FE9100CA35C4 /* LPInputBarView.m */,
+				A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */,
+				A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */,
+				A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */,
+				A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -551,10 +555,6 @@
 				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
 				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,
 				A70B676617ABFA600053A62E /* LIOBlurImageView.m */,
-				A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */,
-				A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */,
-				A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */,
-				A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";

@@ -50,11 +50,11 @@
             break;
     }
     
-    UIFont *font = [UIFont fontWithName:[[LIOBrandingManager brandingManager] fontNameForElement:LIOBrandingElementFont] size:[[LIOBrandingManager brandingManager] fontSizeForElement:brandingElement]];
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
-    CGFloat maxSize = size.width * bubbleWidthFactor;
+    CGFloat maxSize = size.width * bubbleWidthFactor - 16;
     
-    CGSize expectedTextSize = [chatMessage.text sizeWithFont:font constrainedToSize:CGSizeMake(maxSize, size.height) lineBreakMode:UILineBreakModeWordWrap];
+    CGSize expectedTextSize = [chatMessage.text sizeWithFont:font constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
 
     return CGSizeMake(expectedTextSize.width + 31.0, expectedTextSize.height + 35.0);
 }
@@ -82,7 +82,7 @@
     self.chatBubbleView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:brandingElement];
     self.chatBubbleView.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
-    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor;
+    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor - 16;
     
     CGSize expectedTextSize = [chatMessage.text sizeWithFont:self.chatBubbleView.messageLabel.font constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
     

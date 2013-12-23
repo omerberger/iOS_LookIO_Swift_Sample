@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOKeyboardMenuButton.h"
 
 @class LIOKeyboardMenu;
 
@@ -14,11 +15,7 @@
 
 @optional
 
--(void)keyboardMenuAttachButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
--(void)keyboardMenuEmailChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
--(void)keyboardMenuHideChatButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
--(void)keyboardMenuEndSessionButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
--(void)keyboardMenuShowKeyboardButtonWasTapped:(LIOKeyboardMenu*)keyboardMenu;
+- (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu buttonWasTapped:(LIOKeyboardMenuButton *)button;
 
 @end
 

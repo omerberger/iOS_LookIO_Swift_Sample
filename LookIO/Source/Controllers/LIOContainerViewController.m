@@ -123,6 +123,7 @@
 	// Do any additional setup after loading the view.
     
     self.blurImageView = [[LIOBlurImageView alloc] initWithFrame:self.view.bounds];
+    self.blurImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.blurImageView.alpha = 0.0;
     [self.view addSubview:self.blurImageView];
     

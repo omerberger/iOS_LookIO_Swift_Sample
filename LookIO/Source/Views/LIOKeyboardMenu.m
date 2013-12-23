@@ -32,7 +32,6 @@
             [attachButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto") uppercaseString]];
             [attachButton addTarget:self action:@selector(attachButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
             [buttonsArray addObject:attachButton];
-            [attachButton release];
         }
         
         LIOKeyboardMenuButton* faqsButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
@@ -41,7 +40,6 @@
         [faqsButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs") uppercaseString]];
         [faqsButton addTarget:self action:@selector(faqsButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:faqsButton];
-        [faqsButton release];
         
         LIOKeyboardMenuButton* emailChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [emailChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOEnvelopeIconLarge"] forState:UIControlStateNormal];
@@ -49,7 +47,6 @@
         [emailChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat") uppercaseString]];
         [emailChatButton addTarget:self action:@selector(emailChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:emailChatButton];
-        [emailChatButton release];
         
         LIOKeyboardMenuButton* hideChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [hideChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORoadSignIcon"] forState:UIControlStateNormal];
@@ -57,7 +54,6 @@
         [hideChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonHideChat") uppercaseString]];
         [hideChatButton addTarget:self action:@selector(hideChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:hideChatButton];
-        [hideChatButton release];
         
         LIOKeyboardMenuButton* endSessionButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [endSessionButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSkullIcon"] forState:UIControlStateNormal];
@@ -65,7 +61,6 @@
         [endSessionButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEndSession") uppercaseString]];
         [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:endSessionButton];
-        [endSessionButton release];
         
         LIOKeyboardMenuButton* keyboardButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
         [keyboardButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOArrowUpIconLarge"] forState:UIControlStateNormal];
@@ -73,8 +68,6 @@
         [keyboardButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard") uppercaseString]];
         [keyboardButton addTarget:self action:@selector(showKeyboardButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:keyboardButton];
-        [keyboardButton release];
-        
     }
     return self;
 }
@@ -115,34 +108,31 @@
     CGContextStrokePath(context);
     
     
-    CGContextRestoreGState(context);
-    
-    
-
+    CGContextRestoreGState(context);    
 }
 
 -(void)hideChatButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenuHideChatButtonWasTapped:self];
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 -(void)emailChatButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenuEmailChatButtonWasTapped:self];
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 -(void)endSessionButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenuEndSessionButtonWasTapped:self];
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 -(void)showKeyboardButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenuShowKeyboardButtonWasTapped:self];
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 -(void)attachButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenuAttachButtonWasTapped:self];
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 -(void)faqsButtonWasTapped:(id)sender {
-    //
+    [self.delegate keyboardMenu:self buttonWasTapped:sender];
 }
 
 @end

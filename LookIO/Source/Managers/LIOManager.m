@@ -192,10 +192,11 @@ static LIOManager *sharedLookIOManager = nil;
         
         // If control button is visible, and lookIO window is hidden, let's reveal the control button after the rotation
         
-        if (!self.visit.controlButtonHidden && self.lookIOWindowState == LIOLookIOWindowStateHidden)
+        if (!self.visit.controlButtonHidden)
         {
             self.controlButton.hidden = NO;
-            [self.controlButton show:YES];
+            if (self.lookIOWindowState == LIOLookIOWindowStateHidden)
+                [self.controlButton show:YES];
         }
     });
 }

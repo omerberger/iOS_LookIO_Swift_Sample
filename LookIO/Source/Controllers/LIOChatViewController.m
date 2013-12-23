@@ -14,7 +14,7 @@
 
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, LPInputBarViewDelegte>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, LPInputBarViewDelegte, LIOKeyboardMenuDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -107,9 +107,17 @@
     }
 }
 
-- (void)inputBarViewPlusButtonWasTapped:(LPInputBarView *)inputBarView
-{
-    
+- (void)inputBarViewPlusButtonWasTapped:(LPInputBarView *)inputBarView {
+    if (LIOKeyboardStateMenu == self.keyboardState) {
+        self.keyboardState = LIOKeyboardStateKeyboard;
+        [self.inputBarView.textView becomeFirstResponder];
+    } else {
+        self.keyboardState = LIOKeyboardStateMenu;
+        if (self.inputBarView.textView.isFirstResponder)
+            [self.inputBarView.textView resignFirstResponder];
+        else
+            [self presentKeyboardMenu];
+    }
 }
 
 - (void)inputBarViewKeyboardSendButtonWasTapped:(LPInputBarView *)inputBarView
@@ -143,6 +151,27 @@
 - (void)inputBarEndedTyping:(LPInputBarView *)inputBar
 {
     
+}
+
+#pragma mark Keyboard Menu Methods
+
+- (void)presentKeyboardMenu
+{
+    if (self.lastKeyboardHeight == 0.0)
+    {
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+        
+        if (padUI) {
+            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 264.0 : 352.0;
+        } else {
+            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 216.0 : 162.0;
+        }
+    }
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        [self updateSubviewFrames];
+    }];
 }
 
 #pragma mark View Lifecycle Methods
@@ -208,6 +237,11 @@
     self.tableFooterView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.tableView.tableFooterView = self.tableFooterView;
     
+    self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
+    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.keyboardMenu.delegate = self;
+    [self.view addSubview:self.keyboardMenu];
+    
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     [self.view addGestureRecognizer:tapGestureRecognizer];
 }
@@ -220,8 +254,10 @@
     CGRect tableViewFrame = self.tableView.frame;
     CGRect inputBarViewFrame = self.inputBarView.frame;
     CGRect tableFooterViewFrame = self.tableFooterView.frame;
+    CGRect keyboardMenuFrame = self.keyboardMenu.frame;
     
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
+    keyboardMenuFrame.size.height = self.lastKeyboardHeight;
 
     switch (self.keyboardState) {
         case LIOKeyboardStateKeyboard:
@@ -233,14 +269,14 @@
             break;
             
         case LIOKeyboardStateMenu:
-            inputBarViewFrame.origin.y = self.view.bounds.size.height - self.keyboardMenu.bounds.size.height;
-            
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - keyboardMenuFrame.size.height;
             break;
             
         default:
             break;
     }
 
+    keyboardMenuFrame.origin.y = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = inputBarViewFrame.size.height + 5.0;
     tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
 
@@ -248,6 +284,7 @@
     self.tableView.frame = tableViewFrame;
     self.tableFooterView.frame = tableFooterViewFrame;
     self.tableView.tableFooterView = self.tableFooterView;
+    self.keyboardMenu.frame = keyboardMenuFrame;
 }
 
 #pragma mark Keyboard Methods
@@ -268,7 +305,8 @@
     
     // Set new keyboard state and size
     self.keyboardState = LIOKeyboardStateKeyboard;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
@@ -291,8 +329,11 @@
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
     
     // Set new keyboard state and size
-    self.keyboardState = LIOKeyboardStateHidden;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    if (LIOKeyboardStateKeyboard == self.keyboardState)
+        self.keyboardState = LIOKeyboardStateHidden;
+    
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
@@ -301,6 +342,20 @@
 }
 
 #pragma mark Rotation Methods
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    if (LIOKeyboardStateMenu == self.keyboardState)
+    {
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+        if (padUI) {
+            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(toInterfaceOrientation) ? 264.0 : 352.0;
+        } else {
+            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(toInterfaceOrientation) ? 216.0 : 162.0;
+        }
+    }
+}
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
