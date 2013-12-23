@@ -21,6 +21,7 @@ typedef enum {
 @protocol LIOChatViewControllerDelegate <NSObject>
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController;
+- (void)chatViewControllerVisitorDidSendLine:(NSString *)line;
 
 @end
 
@@ -29,5 +30,6 @@ typedef enum {
 @property (nonatomic, assign) id <LIOChatViewControllerDelegate> delegate;
 
 - (void)setEngagement:(LIOEngagement *)engagement;
+- (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 
 @end

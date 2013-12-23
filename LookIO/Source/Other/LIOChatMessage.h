@@ -17,19 +17,21 @@ typedef enum
     LIOChatMessageKindPhoneNumber
 } LIOChatMessageKind;
 
-@interface LIOChatMessage : NSObject
+typedef enum
 {
-    LIOChatMessageKind kind;
-    NSString *text;
-    NSDate *date;
-    NSString *senderName;
-    NSString *attachmentId;
-    BOOL sendingFailed;
-    NSString *lineId;
-    NSString *clientLineId;
-}
+    LIOChatMessageStatusInitialized,
+    LIOChatMessageStatusSending,
+    LIOChatMessageStatusSent,
+    LIOChatMessageStatusFailed,
+    LIOChatMessageStatusReceived,
+    LIOChatMessageStatusCreatedLocally
+} LIOChatMessageStatus;
+
+@interface LIOChatMessage : NSObject
 
 @property (nonatomic, assign) LIOChatMessageKind kind;
+@property (nonatomic, assign) LIOChatMessageStatus status;
+
 @property (nonatomic, retain) NSString *text;
 @property (nonatomic, retain) NSDate *date;
 @property (nonatomic, retain) NSString *senderName;
@@ -37,7 +39,5 @@ typedef enum
 @property (nonatomic, assign) BOOL sendingFailed;
 @property (nonatomic, copy) NSString *lineId;
 @property (nonatomic, copy) NSString *clientLineId;
-
-+ (LIOChatMessage *)chatMessage;
 
 @end

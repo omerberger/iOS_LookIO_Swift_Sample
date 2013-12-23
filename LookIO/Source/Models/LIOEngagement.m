@@ -11,17 +11,22 @@
 #import "LIOAnalyticsManager.h"
 #import "LPChatAPIClient.h"
 #import "LPMediaAPIClient.h"
+#import "LPHTTPRequestOperation.h"
+
 #import "LIOLogManager.h"
+
 #import "LPSSEManager.h"
+#import "LPSSEvent.h"
 
-#import "LIOChatMessage.h"
-
-#define LIOLookIOManagerLastKnownChatCookiesKey  @"LIOLookIOManagerLastKnownChatCookiesKey"
-#define LIOLookIOManagerLastKnownEngagementIdKey @"LIOLookIOManagerLastKnownEngagementIdKey"
-#define LIOLookIOManagerLastKnownSSEUrlStringKey @"LIOLookIOManagerLastKnownSSEUrlStringKey"
-#define LIOLookIOManagerLastKnownPostUrlString   @"LIOLookIOManagerLastKnownPostUrlString"
-#define LIOLookIOManagerLastKnownMediaUrlString  @"LIOLookIOManagerLastKnownMediaUrlString"
-#define LIOLookIOManagerLastSSEventIdString      @"LIOLookIOManagerLastSSEventIdString"
+#define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
+#define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
+#define LIOLookIOManagerLastKnownSSEUrlStringKey        @"LIOLookIOManagerLastKnownSSEUrlStringKey"
+#define LIOLookIOManagerLastKnownPostUrlString          @"LIOLookIOManagerLastKnownPostUrlString"
+#define LIOLookIOManagerLastKnownMediaUrlString         @"LIOLookIOManagerLastKnownMediaUrlString"
+#define LIOLookIOManagerLastSSEventIdString             @"LIOLookIOManagerLastSSEventIdString"
+#define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
+#define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
+#define LIOLookIOManagerLastKnownChatHistoryKey         @"LIOLookIOManagerLastKnownChatHistoryKey"
 
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
@@ -64,7 +69,8 @@
 {
     if (self.messages.count == 0)
     {
-        LIOChatMessage *firstMessage = [LIOChatMessage chatMessage];
+        LIOChatMessage *firstMessage = [[LIOChatMessage alloc] init];
+        firstMessage.status = LIOChatMessageStatusCreatedLocally;
         firstMessage.kind = LIOChatMessageKindRemote;
         firstMessage.date = [NSDate date];
         firstMessage.lineId = nil;
@@ -262,7 +268,7 @@
     
     if (LIOVisitStateChatRequested)
     {
-        [self.delegate engagementDidStart:self];
+        [self.delegate engagementDidConnect:self];
     }
 }
 
@@ -286,7 +292,238 @@
 
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent
 {
+    NSError *error = nil;
+    NSDictionary *aPacket = [NSJSONSerialization JSONObjectWithData:[anEvent.data dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&error];
+
+    if (error || nil == aPacket)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid JSON received from server: \"%@\"", anEvent.data];
+        return;
+    }
     
+    if (anEvent.eventId)
+        if (![anEvent.eventId isEqualToString:@""])
+            self.lastSSEventId = anEvent.eventId;
+    
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:self.lastSSEventId forKey:LIOLookIOManagerLastKnownChatLastEventIdString];
+    [userDefaults synchronize];
+    
+    LIOLog(@"<LPSSEManager> Dispatch event with data:\n%@\n", aPacket);
+    
+    NSString *type = [aPacket objectForKey:@"type"];
+
+    // Received line
+    if ([type isEqualToString:@"line"])
+    {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
+        [userDefaults synchronize];
+            
+        NSString *text = [aPacket objectForKey:@"text"];
+        NSString *senderName = [aPacket objectForKey:@"sender_name"];
+        NSString *lineId = [aPacket objectForKey:@"line_id"];
+        NSString *clientLineId = nil;
+        if ([aPacket objectForKey:@"client_line_id"])
+            clientLineId = [aPacket objectForKey:@"client_line_id"];
+            
+        LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
+        newMessage.text = text;
+        newMessage.senderName = senderName;
+        newMessage.kind = LIOChatMessageKindRemote;
+        newMessage.status = LIOChatMessageStatusReceived;
+        newMessage.date = [NSDate date];
+        newMessage.lineId = lineId;
+        newMessage.clientLineId = clientLineId;
+            
+        BOOL shouldAddMessage = YES;
+        // Don't add messages which originated from the visitor and are echoed back to the client
+        // but add their line_id by matching their client_line_id
+        if ([aPacket objectForKey:@"source"]) {
+            NSString *source = [aPacket objectForKey:@"source"];
+            if ([source isEqualToString:@"visitor"])
+            {
+                shouldAddMessage = NO;
+                    
+                NSPredicate *clientLineIdPredicate = [NSPredicate predicateWithFormat:@"clientLineId = %@", newMessage.clientLineId];
+                NSArray *messagesWithClientLineId = [self.messages filteredArrayUsingPredicate:clientLineIdPredicate];
+                if (messagesWithClientLineId.count > 0)
+                {
+                    LIOChatMessage *matchedClientLineIdMessage = [messagesWithClientLineId objectAtIndex:0];
+                    if (matchedClientLineIdMessage.lineId == nil)
+                        matchedClientLineIdMessage.lineId = newMessage.lineId;
+                }
+            }
+        
+            // Don't add messages if the lineId is identical to one we already have
+            if (newMessage.lineId)
+            {
+                NSPredicate *lineIdPredicate = [NSPredicate predicateWithFormat:@"lineId = %@", newMessage.lineId];
+                NSArray *messagesWithLineId = [self.messages filteredArrayUsingPredicate:lineIdPredicate];
+                if (messagesWithLineId.count > 0)
+                    shouldAddMessage = NO;
+            }
+            
+            if (shouldAddMessage)
+            {
+                [self.messages addObject:newMessage];
+
+                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:self.messages];
+                [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
+                [userDefaults synchronize];
+
+                [self.delegate engagement:self didReceiveMessage:newMessage];
+            }
+        }
+    }
+    
+    // Received Advisory
+    if ([type isEqualToString:@"advisory"])
+    {
+        NSString *action = [aPacket objectForKey:@"action"];
+    
+        if ([action isEqualToString:@"notification"])
+        {
+            NSDictionary *data = [aPacket objectForKey:@"data"];
+            NSString *message = [data objectForKey:@"message"];
+
+            // TODO Send Notification
+        }
+        if ([action isEqualToString:@"send_logs"])
+        {
+            // TODO Send Longs
+            // [[LIOLogManager sharedLogManager] uploadLog];
+        }
+        if ([action isEqualToString:@"typing_start"])
+        {
+            // TODO Set agent typing
+        }
+        if ([action isEqualToString:@"typing_stop"])
+        {
+            // TODO Set agent not typing
+        }
+        if ([action isEqualToString:@"connected"])
+        {
+            // TODO Notify "agent is ready to chat with you"
+            LIOLog(@"We're live!");
+        
+            /*
+            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+            {
+                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            
+                [self showChatAnimated:NO];
+            }
+            */
+        }
+        if ([action isEqualToString:@"unprovisioned"])
+        {
+            // TODO Handle unprovisioed
+            /*
+            unprovisioned = YES;
+        
+            [[[UIApplication sharedApplication] keyWindow] endEditing:YES];
+        
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertBody")
+                                                        delegate:self
+                                                cancelButtonTitle:nil
+                                                otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.UnprovisionedAlertButton"), nil];
+            alertView.tag = LIOLookIOManagerUnprovisionedAlertViewTag;
+            [alertView show];
+            [alertView autorelease];
+             */
+        }
+        if ([action isEqualToString:@"leave_message"])
+        {
+            // By default, we're not calling the custom chat not answered method.
+            // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
+            // we do want to use this method
+        
+            // TODO Handle leave message
+            /*
+             callChatNotAnsweredAfterDismissal = NO;
+        
+                if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerShouldUseCustomActionForChatNotAnswered:)])
+                    if ([(NSObject *)delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
+                        callChatNotAnsweredAfterDismissal = [delegate lookIOManagerShouldUseCustomActionForChatNotAnswered:self];
+        
+                if (callChatNotAnsweredAfterDismissal) {
+                    [self altChatViewControllerWantsSessionTermination:altChatViewController];
+                } else {
+                    LIOSurveyManager* surveyManager = [LIOSurveyManager sharedSurveyManager];
+                    surveyManager.offlineSurveyIsDefault = YES;
+            
+                    NSString *lastSentMessageText = nil;
+                    if (altChatViewController)
+                        lastSentMessageText = altChatViewController.lastSentMessageText;
+            
+                    [[LIOSurveyManager sharedSurveyManager] populateDefaultOfflineSurveyWithResponse:lastSentMessageText];
+            
+                    [altChatViewController forceLeaveMessageScreen];
+                 }
+                 */
+        }
+        if ([action isEqualToString:@"engagement_started"])
+        {
+            [self.delegate engagementDidStart:self];
+        }
+    }
 }
+
+#pragma mark Chat API Methods
+
+- (void)sendLineWithMessage:(LIOChatMessage *)message
+{
+    // TO DO - Check that engagement is active
+    NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", message.text, @"text", message.clientLineId, @"client_line_id", nil];
+    NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, self.engagementId];
+    
+    [[LPChatAPIClient sharedClient] postPath:lineRequestUrl parameters:lineDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<LINE> response: %@", responseObject);
+        else
+            LIOLog(@"<LINE> success");
+        
+        message.status = LIOChatMessageStatusSent;
+        
+        // Report message success to refresh table view if needed
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<LINE> failure: %@", error);
+        
+        // If we get a 404, let's terminate the engagement
+        if (operation.responseCode == 404) {
+            // TO DO - End engagement and alert
+        } else {
+            message.status = LIOChatMessageStatusFailed;
+            // TO DO - Refresh table view and notify user if needed
+        }
+    }];
+}
+
+#pragma mark Action Methods
+
+- (void)sendVisitorLineWithText:(NSString *)text
+{
+    LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
+    newMessage.status = LIOChatMessageStatusInitialized;
+    newMessage.kind = LIOChatMessageKindLocal;
+    newMessage.date = [NSDate date];
+    newMessage.lineId = nil;
+    newMessage.text = text;
+    newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
+    self.lastClientLineId += 1;
+    [self.messages addObject:newMessage];
+    
+    [self sendLineWithMessage:newMessage];
+    [self.delegate engagement:self didSendMessage:newMessage];
+}
+
 
 @end

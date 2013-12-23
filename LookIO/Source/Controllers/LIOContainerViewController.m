@@ -57,6 +57,11 @@
 }
 
 
+- (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
+{
+    [self.chatViewController engagement:self didReceiveMessage:message];
+}
+
 - (void)chatViewController:(LIOChatViewController *)didDismissChat
 {
     

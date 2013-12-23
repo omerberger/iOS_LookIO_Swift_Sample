@@ -18,31 +18,14 @@
 #define LIOChatMessageSendingFailedKey  @"LIOChatMessageSendingFailedKey"
 #define LIOChatMessageLineIdKey         @"LIOChatMessageLineIdKey"
 
-@synthesize kind, text, date, senderName, attachmentId, sendingFailed, lineId ,clientLineId;
-
-+ (LIOChatMessage *)chatMessage
-{
-    return [[[LIOChatMessage alloc] init] autorelease];
-}
-
-- (void)dealloc
-{
-    [attachmentId release];
-    [text release];
-    [date release];
-    [senderName release];
-    
-    [super dealloc];
-}
-
 - (void) encodeWithCoder:(NSCoder *)encoder {
-    [encoder encodeObject:[NSNumber numberWithInteger:kind] forKey:LIOChatMessageKindKey];
-    [encoder encodeObject:text forKey:LIOChatMessageTextKey];
-    [encoder encodeObject:date forKey:LIOChatMessageDateKey];
-    [encoder encodeObject:senderName forKey:LIOChatMessageSenderNameKey];
-    [encoder encodeObject:attachmentId forKey:LIOChatMessageAttachmentIdKey];
-    [encoder encodeObject:[NSNumber numberWithBool:sendingFailed] forKey:LIOChatMessageSendingFailedKey];
-    [encoder encodeObject:lineId forKey:LIOChatMessageLineIdKey];
+    [encoder encodeObject:[NSNumber numberWithInteger:self.kind] forKey:LIOChatMessageKindKey];
+    [encoder encodeObject:self.text forKey:LIOChatMessageTextKey];
+    [encoder encodeObject:self.date forKey:LIOChatMessageDateKey];
+    [encoder encodeObject:self.senderName forKey:LIOChatMessageSenderNameKey];
+    [encoder encodeObject:self.attachmentId forKey:LIOChatMessageAttachmentIdKey];
+    [encoder encodeObject:[NSNumber numberWithBool:self.sendingFailed] forKey:LIOChatMessageSendingFailedKey];
+    [encoder encodeObject:self.lineId forKey:LIOChatMessageLineIdKey];
 }
 
 - (id)initWithCoder:(NSCoder *)decoder {
@@ -56,7 +39,7 @@
         self.attachmentId = [decoder decodeObjectForKey:LIOChatMessageAttachmentIdKey];
         NSNumber *sendingFailedNumber = [decoder decodeObjectForKey:LIOChatMessageSendingFailedKey];
         self.sendingFailed = [sendingFailedNumber boolValue];
-        self.lineId = [decoder decodeObjectForKey:lineId];
+        self.lineId = [decoder decodeObjectForKey:LIOChatMessageLineIdKey];
     }
     
     return self;

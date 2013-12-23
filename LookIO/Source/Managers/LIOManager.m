@@ -22,14 +22,25 @@
 
 #define LIOAlertViewNextStepDismissLookIOWindow 2001
 
+typedef enum
+{
+    LIOLookIOWindowStateHidden = 0,
+    LIOLookIOWindowStatePresenting,
+    LIOLookIOWindowStateVisible,
+    LIOLookIOWindowStateDismissing
+} LIOLookIOWindowState;
+
 @interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
+@property (nonatomic, assign) LIOLookIOWindowState lookIOWindowState;
+
 @property (nonatomic, strong) LIOContainerViewController *containerViewController;
 
 @property (nonatomic, strong) LIOVisit *visit;
 @property (nonatomic, strong) LIOEngagement *engagement;
+@property (nonatomic, assign) BOOL chatReceivedWhileAppBackgrounded;
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
 @property (nonatomic, assign) BOOL isRotationActuallyHappening;
@@ -75,6 +86,8 @@ static LIOManager *sharedLookIOManager = nil;
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
     self.lookioWindow.windowLevel = 0.1;
+    
+    self.lookIOWindowState = LIOLookIOWindowStateHidden;
     
     self.containerViewController = [[LIOContainerViewController alloc] init];
     self.containerViewController.delegate = self;
@@ -289,10 +302,12 @@ static LIOManager *sharedLookIOManager = nil;
     [self dismissLookIOWindow];
 }
 
-#pragma mark Chat Interaction Methods
+#pragma mark Engagement Interaction Methods
 
 - (void)presentLookIOWindow
 {
+    self.lookIOWindowState = LIOLookIOWindowStatePresenting;
+    
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
  
@@ -307,10 +322,14 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     [self takeScreenshotAndSetBlurImageView];
+    
+    self.lookIOWindowState = LIOLookIOWindowStateVisible;
 }
 
 - (void)dismissLookIOWindow
 {
+    self.lookIOWindowState = LIOLookIOWindowStateDismissing;
+    
     self.lookioWindow.hidden = YES;
     [self.previousKeyWindow makeKeyAndVisible];
     self.previousKeyWindow = nil;
@@ -329,6 +348,8 @@ static LIOManager *sharedLookIOManager = nil;
         default:
             break;
     }
+    
+    self.lookIOWindowState = LIOLookIOWindowStateHidden;
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -354,12 +375,22 @@ static LIOManager *sharedLookIOManager = nil;
             [self.engagement startEngagement];
             break;
             
+        case LIOVisitStateChatStarted:
+            [self.containerViewController presentChatForEngagement:self.engagement];
+            break;
+            
+        case LIOVisitStateChatActive:
+            [self.containerViewController presentChatForEngagement:self.engagement];
+            break;
+            
         default:
             break;
     }
 }
 
-- (void)engagementDidStart:(LIOEngagement *)engagement
+#pragma mark EngagementDelegate Methods
+
+- (void)engagementDidConnect:(LIOEngagement *)engagement
 {
     if (LIOVisitStateChatRequested == self.visit.visitState)
     {
@@ -370,6 +401,21 @@ static LIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateChatOpened;
             [self.containerViewController presentChatForEngagement:self.engagement];
             
+        }
+    }
+}
+
+- (void)engagementDidStart:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatStarted == self.visit.visitState)
+    {
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        {
+            self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
+        }
+        else
+        {
+            self.visit.visitState = LIOVisitStateChatActive;
         }
     }
 }
@@ -390,6 +436,44 @@ static LIOManager *sharedLookIOManager = nil;
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
     alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
     [alertView show];
+}
+
+- (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
+{
+    // If chat was open and user sent a first message, visit states goes to started
+    if (LIOVisitStateChatOpened == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateChatStarted;
+    }
+}
+
+- (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message
+{
+    if (LIOVisitStateChatActive == self.visit.visitState)
+    {
+        [self.containerViewController engagement:engagement didReceiveMessage:message];
+        
+        
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
+        {
+            [self beginChat];
+        }
+    }
+    
+    if (LIOVisitStateAppBackgrounded == self.visit.visitState)
+    {
+        
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        {
+            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+            localNotification.soundName = @"LookIODing.caf";
+            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
+            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            
+            self.chatReceivedWhileAppBackgrounded = YES;
+        }
+    }
 }
 
 @end

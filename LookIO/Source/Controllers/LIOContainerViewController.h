@@ -23,5 +23,6 @@
 
 - (void)setBlurImage:(UIImage *)image;
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
+- (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 
 @end

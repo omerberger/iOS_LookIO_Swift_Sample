@@ -138,7 +138,7 @@
 		D4ADC7B214F3215A00713F29 /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */; };
 		D4ADC7B314F3215A00713F29 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */; };
 		D4ADC7B814F3218300713F29 /* LIOChatMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7B414F3218300713F29 /* LIOChatMessage.h */; };
-		D4ADC7B914F3218300713F29 /* LIOChatMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7B514F3218300713F29 /* LIOChatMessage.m */; };
+		D4ADC7B914F3218300713F29 /* LIOChatMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7B514F3218300713F29 /* LIOChatMessage.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D4ADC7BA14F3218300713F29 /* LIOTimerProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */; };
 		D4ADC7BB14F3218300713F29 /* LIOTimerProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */; };
 		D4ADC7CC14F322B500713F29 /* LIOChatBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7BE14F322B500713F29 /* LIOChatBubbleView.h */; };
