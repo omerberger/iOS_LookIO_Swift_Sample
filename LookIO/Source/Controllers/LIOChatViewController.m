@@ -88,6 +88,11 @@
     [self.tableView reloadData];
 }
 
+- (void)presentEndChatAlertView
+{
+    
+}
+
 #pragma mark InputBarViewDelegate Methods
 
 - (void)inputBarViewSendButtonWasTapped:(LPInputBarView *)inputBarView
@@ -173,6 +178,19 @@
         [self updateSubviewFrames];
     }];
 }
+
+- (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item
+{
+    switch (item.type) {
+        case LIOKeyboardMenuItemEndChat:
+            [self presentEndChatAlertView];
+            break;
+            
+        default:
+            break;
+    }
+}
+
 
 #pragma mark View Lifecycle Methods
 

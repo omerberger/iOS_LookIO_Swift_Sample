@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "LIOKeyboardMenuButton.h"
+#import "LIOKeyboardMenuItem.h"
 
 @class LIOKeyboardMenu;
 
@@ -15,17 +15,12 @@
 
 @optional
 
-- (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu buttonWasTapped:(LIOKeyboardMenuButton *)button;
+- (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item;
 
 @end
 
-@interface LIOKeyboardMenu : UIView {
-    NSMutableArray *buttonsArray;
-    id <LIOKeyboardMenuDelegate> delegate;
-
-}
+@interface LIOKeyboardMenu : UIView
 
 @property (nonatomic, assign) id <LIOKeyboardMenuDelegate> delegate;
-@property (nonatomic, retain) NSMutableArray *buttonsArray;
 
 @end

@@ -9,11 +9,17 @@
 #import "LIOKeyboardMenu.h"
 #import "LIOBundleManager.h"
 #import "LIOKeyboardMenuButton.h"
-#import "LIOLookIOManager.h"
+#import "LIOKeyboardMenuItem.h"
+
+@interface LIOKeyboardMenu ()
+
+#define LIOKeyboardMenuButtonTagBase 2000
+
+@property (nonatomic, strong) NSMutableArray *items;
+
+@end
 
 @implementation LIOKeyboardMenu
-
-@synthesize buttonsArray, delegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -21,7 +27,21 @@
     if (self) {
         self.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.55];
         
-        buttonsArray = [[NSMutableArray alloc] init];
+        self.items = [[NSMutableArray alloc] init];
+        [self setDefaultButtonItems];
+        
+        for (int i=0; i<self.items.count; i++)
+        {
+            LIOKeyboardMenuItem *item = [self.items objectAtIndex:i];
+            LIOKeyboardMenuButton *button = [[LIOKeyboardMenuButton alloc] init];
+            button.tag = LIOKeyboardMenuButtonTagBase + i;
+            [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName] forState:UIControlStateNormal];
+            [button setBottomLabelText:[item.title uppercaseString]];
+            [button addTarget:self action:@selector(keyboardMenuButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [self addSubview:button];
+        }
+        
+        /*
         
         BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
 
@@ -68,13 +88,25 @@
         [keyboardButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard") uppercaseString]];
         [keyboardButton addTarget:self action:@selector(showKeyboardButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         [buttonsArray addObject:keyboardButton];
+         */
     }
+    
     return self;
 }
 
+- (void)setDefaultButtonItems
+{
+    LIOKeyboardMenuItem *item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemEndChat;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEndSession");
+    item.iconName = @"LIOSkullIcon";
+    
+    [self.items addObject:item];
+}
+
 -(void)layoutSubviews {
-    for (int i=0; i<buttonsArray.count; i++) {
-        LIOKeyboardMenuButton* button = (LIOKeyboardMenuButton*)[buttonsArray objectAtIndex:i];
+    for (int i=0; i<self.items.count; i++) {
+        LIOKeyboardMenuButton* button = (LIOKeyboardMenuButton*)[self viewWithTag:(i + LIOKeyboardMenuButtonTagBase)];
 
         int buttonRow = i/3;
         int buttonColumn = i % 3;
@@ -111,28 +143,12 @@
     CGContextRestoreGState(context);    
 }
 
--(void)hideChatButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
-}
-
--(void)emailChatButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
-}
-
--(void)endSessionButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
-}
-
--(void)showKeyboardButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
-}
-
--(void)attachButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
-}
-
--(void)faqsButtonWasTapped:(id)sender {
-    [self.delegate keyboardMenu:self buttonWasTapped:sender];
+- (void)keyboardMenuButtonWasTapped:(id)sender
+{
+    LIOKeyboardMenuButton *button = (LIOKeyboardMenuButton *)sender;
+    LIOKeyboardMenuItem *item = [self.items objectAtIndex:(button.tag - LIOKeyboardMenuButtonTagBase)];
+    
+    [self.delegate keyboardMenu:self itemWasTapped:item];
 }
 
 @end
