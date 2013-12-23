@@ -300,4 +300,11 @@
     }];
 }
 
+#pragma mark Rotation Methods
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    [self.tableView reloadData];
+}
+
 @end

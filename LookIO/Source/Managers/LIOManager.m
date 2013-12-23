@@ -177,6 +177,8 @@ static LIOManager *sharedLookIOManager = nil;
         [self.controlButton hide:NO];
         self.controlButton.hidden = YES;
     }
+    
+    [self takeScreenshotAndSetBlurImageView];
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -188,9 +190,9 @@ static LIOManager *sharedLookIOManager = nil;
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [self.controlButton resetFrame];
         
-        // If control button is visibler, let's reveal the control button after the rotation
+        // If control button is visible, and lookIO window is hidden, let's reveal the control button after the rotation
         
-        if (!self.visit.controlButtonHidden)
+        if (!self.visit.controlButtonHidden && self.lookIOWindowState == LIOLookIOWindowStateHidden)
         {
             self.controlButton.hidden = NO;
             [self.controlButton show:YES];

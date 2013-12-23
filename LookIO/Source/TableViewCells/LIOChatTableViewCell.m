@@ -67,12 +67,12 @@
     switch (chatMessage.kind) {
         case LIOChatMessageKindLocal:
             brandingElement = LIOBrandingElementVisitorChatBubble;
-            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
             break;
             
         case LIOChatMessageKindRemote:
             brandingElement = LIOBrandingElementAgentChatBubble;
-            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
             break;
             
         default:
