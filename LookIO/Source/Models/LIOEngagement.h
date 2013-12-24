@@ -26,6 +26,7 @@ typedef enum
 - (void)engagementDidConnect:(LIOEngagement *)engagement;
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement;
 - (void)engagementDidCancel:(LIOEngagement *)engagement;
+- (void)engagementDidEnd:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 

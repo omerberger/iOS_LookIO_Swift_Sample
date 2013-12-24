@@ -11,10 +11,13 @@
 #import "LIOChatTableViewCell.h"
 #import "LPInputBarView.h"
 #import "LIOKeyboardMenu.h"
+#import "LIOBundleManager.h"
 
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, LPInputBarViewDelegte, LIOKeyboardMenuDelegate>
+#define LIOChatViewControllerEndChatAlertViewTag 1001
+
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -28,6 +31,8 @@
 
 @property (nonatomic, assign) LIOKeyboardState keyboardState;
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
+
+@property (nonatomic, strong) UIAlertView *alertView;
 
 @end
 
@@ -90,7 +95,29 @@
 
 - (void)presentEndChatAlertView
 {
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertTitle")
+                                                      message:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertBody")
+                                                     delegate:self
+                                            cancelButtonTitle:nil
+                                            otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonNo"), LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertButtonYes"), nil];
+    self.alertView.tag = LIOChatViewControllerEndChatAlertViewTag;
     
+    [self.alertView show];
+}
+
+#pragma mark AlertView Delegate Methods
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    switch (alertView.tag) {
+        case LIOChatViewControllerEndChatAlertViewTag:
+            if (buttonIndex == 1)
+                [self.engagement endEngagement];
+            break;
+            
+        default:
+            break;
+    }
 }
 
 #pragma mark InputBarViewDelegate Methods

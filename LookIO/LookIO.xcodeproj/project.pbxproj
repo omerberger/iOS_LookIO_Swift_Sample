@@ -368,6 +368,17 @@
 			name = ChatModules;
 			sourceTree = "<group>";
 		};
+		A71187311869064B0070C22C /* New View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				A73D44361856776A0030FF44 /* LIOContainerViewController.h */,
+				A73D44371856776A0030FF44 /* LIOContainerViewController.m */,
+				A721D2751851367D0039395E /* LIOChatViewController.h */,
+				A721D2761851367D0039395E /* LIOChatViewController.m */,
+			);
+			name = "New View Controllers";
+			sourceTree = "<group>";
+		};
 		A721D27A185138980039395E /* New Managers */ = {
 			isa = PBXGroup;
 			children = (
@@ -481,10 +492,6 @@
 		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				A73D44361856776A0030FF44 /* LIOContainerViewController.h */,
-				A73D44371856776A0030FF44 /* LIOContainerViewController.m */,
-				A721D2751851367D0039395E /* LIOChatViewController.h */,
-				A721D2761851367D0039395E /* LIOChatViewController.m */,
 				D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */,
 				D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */,
 				D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */,
@@ -630,6 +637,7 @@
 		D48ABF2D14046E4B00835205 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				A71187311869064B0070C22C /* New View Controllers */,
 				A739FA891864C6CC00CA35C4 /* New Views */,
 				A721D27B18513A090039395E /* Models */,
 				A721D27A185138980039395E /* New Managers */,

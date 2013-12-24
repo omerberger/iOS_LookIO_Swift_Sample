@@ -91,6 +91,11 @@
     [self.sseManager disconnect];
 }
 
+- (void)endEngagement
+{
+    [self sendOutroPacket];
+}
+
 #pragma Engagement Payload methods
 
 - (void)saveChatCookies {
@@ -504,6 +509,34 @@
             message.status = LIOChatMessageStatusFailed;
             // TO DO - Refresh table view and notify user if needed
         }
+    }];
+}
+
+-(void)sendOutroPacket
+{
+    // TODO Check if engagement id exists
+
+    NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
+    NSString* outroRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatOutroRequestURL, self.engagementId];
+    
+    [[LPChatAPIClient sharedClient] postPath:outroRequestUrl parameters:outroDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<OUTRO> response: %@", responseObject);
+        else
+            LIOLog(@"<OUTRO> success");
+        
+        if (self.sseManager)
+            [self.sseManager disconnect];
+        
+        [self.delegate engagementDidEnd:self];
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<OUTRO> failure: %@", error);
+        if (self.sseManager)
+            [self.sseManager disconnect];
+        
+        [self.delegate engagementDidEnd:self];
+
     }];
 }
 

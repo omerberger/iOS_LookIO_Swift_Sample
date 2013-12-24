@@ -423,6 +423,14 @@ static LIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)engagementDidEnd:(LIOEngagement *)engagement
+{
+    self.engagement = nil;
+    self.visit.visitState = LIOVisitStateVisitInProgress;
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        [self dismissLookIOWindow];
+}
+
 - (void)engagementDidCancel:(LIOEngagement *)engagement
 {
     self.engagement = nil;
