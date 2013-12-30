@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-#define LIOHeaderBarViewDefaultHeight 40.0
+#define LIOHeaderBarViewDefaultHeight 32.0
 
 @class LIOHeaderBarView, LIOTimerProxy, LIONotificationArea;
 
@@ -23,6 +23,7 @@
 @property (nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
 @property (nonatomic, readonly) LIONotificationArea* notificationArea;
 
+- (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 - (void)rejiggerSubviews;
 

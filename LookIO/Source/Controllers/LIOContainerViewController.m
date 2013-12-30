@@ -49,12 +49,12 @@
 - (void)presentHeaderBarView:(BOOL)animated
 {
     CGRect headerBarFrame = self.headerBarView.frame;
-    headerBarFrame.origin.y = self.statusBarInset;
+    headerBarFrame.origin.y = 0;
     
     CGRect contentViewFrame = self.contentView.frame;
     contentViewFrame.origin.x = 0;
-    contentViewFrame.origin.y = LIOHeaderBarViewDefaultHeight + self.statusBarInset;
-    contentViewFrame.size.height = self.view.bounds.size.height - LIOHeaderBarViewDefaultHeight - self.statusBarInset;
+    contentViewFrame.origin.y = headerBarFrame.size.height;
+    contentViewFrame.size.height = self.view.bounds.size.height - headerBarFrame.size.height;
     
     self.headerBarState = LIOHeaderBarStateVisible;
     if (animated)
@@ -74,7 +74,7 @@
 - (void)dismissHeaderBarView:(BOOL)animated
 {
     CGRect headerBarFrame = self.headerBarView.frame;
-    headerBarFrame.origin.y = -LIOHeaderBarViewDefaultHeight;
+    headerBarFrame.origin.y = -headerBarFrame.size.height;
     
     CGRect contentViewFrame = self.contentView.frame;
     contentViewFrame.origin.x = 0;
@@ -220,7 +220,7 @@
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.contentView];
     
-    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -LIOHeaderBarViewDefaultHeight, self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight)];
+    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -LIOHeaderBarViewDefaultHeight, self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
     self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.headerBarState = LIOHeaderBarStateHidden;
     [self.view addSubview:self.headerBarView];

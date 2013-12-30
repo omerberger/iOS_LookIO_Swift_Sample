@@ -16,6 +16,9 @@
 @interface LIOHeaderBarView ()
 
 @property (nonatomic, strong) LIONotificationArea* notificationArea;
+
+@property (nonatomic, assign) CGFloat statusBarInset;
+
 @property (nonatomic, strong) UIView *tappableBackground;
 @property (nonatomic, strong) UIView *separator;
 
@@ -23,12 +26,13 @@
 
 @implementation LIOHeaderBarView
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset
 {
     self = [super initWithFrame:frame];
     
     if (self)
     {
+        self.statusBarInset = anInset;
         self.clipsToBounds = YES;
         
         self.separator = [[UIView alloc] init];
@@ -42,7 +46,7 @@
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
         
-        self.notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
+        self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
         self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.notificationArea];
         
@@ -63,8 +67,7 @@
     aFrame.origin.y = self.bounds.size.height - 1.0;
     self.separator.frame = aFrame;
     
-    aFrame = self.bounds;
-    self.notificationArea.frame = aFrame;
+    self.notificationArea.frame = CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset);
 }
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent
