@@ -82,6 +82,16 @@
         [self.inputBarView.textView resignFirstResponder];
 }
 
+- (void)sendPhoto
+{
+    
+}
+
+- (void)emailChat
+{
+    
+}
+
 - (void)sendLineWithText:(NSString *)text
 {
     [self.engagement sendVisitorLineWithText:text];
@@ -245,6 +255,21 @@
         case LIOKeyboardMenuItemEndChat:
             [self presentEndChatAlertView];
             break;
+            
+        case LIOKeyboardMenuItemShowKeyboard:
+            [self.inputBarView.textView becomeFirstResponder];
+            break;
+            
+        case LIOKeyboardMenuItemHideChat:
+            [self dismissChat:self];
+            break;
+            
+        case LIOKeyboardMenuItemSendPhoto:
+            [self sendPhoto];
+            break;
+            
+        case LIOKeyboardMenuItemEmailChat:
+            [self emailChat];
             
         default:
             break;

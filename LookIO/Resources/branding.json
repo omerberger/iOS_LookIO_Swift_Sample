@@ -170,11 +170,11 @@
                     "alpha" : "0.55"
                 },
                 "font" : {
-                    "color" : "b6b2ae",
+                    "color" : "#ffffff",
                     "size" : "13.0"
                 },
                 "icon" : {
-                    "color" : "#b6b2ae"
+                    "color" : "#ffffff"
                 }
             }
         },

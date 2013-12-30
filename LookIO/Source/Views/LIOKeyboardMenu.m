@@ -105,9 +105,44 @@
 - (void)setDefaultButtonItems
 {
     LIOKeyboardMenuItem *item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemSendPhoto;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto");
+    item.iconName = @"LIOCameraIconLarge";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs");
+    item.iconName = @"LIONewspaperIcon";
+    
+    [self.items addObject:item];
+
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemEmailChat;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat");
+    item.iconName = @"LIOEnvelopeIconLarge";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemHideChat;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonHideChat");
+    item.iconName = @"LIORoadSignIcon";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
     item.type = LIOKeyboardMenuItemEndChat;
     item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEndSession");
     item.iconName = @"LIOSkullIcon";
+
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemShowKeyboard;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard");
+    item.iconName = @"LIOArrowUpIconLarge";
     
     [self.items addObject:item];
 }
