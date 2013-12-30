@@ -391,9 +391,9 @@
         if ([action isEqualToString:@"notification"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
-            NSString *message = [data objectForKey:@"message"];
-
-            // TODO Send Notification
+            NSString *notification = [data objectForKey:@"message"];
+            
+            [self.delegate engagement:self didReceiveNotification:notification];
         }
         if ([action isEqualToString:@"send_logs"])
         {

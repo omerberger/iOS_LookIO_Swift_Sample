@@ -9,10 +9,17 @@
 #import "LIOContainerViewController.h"
 
 #import "LIOChatViewController.h"
+#import "LIOHeaderBarView.h"
 
 #import "LIOBlurImageView.h"
 
 @interface LIOContainerViewController () <LIOChatViewControllerDelegate>
+
+@property (nonatomic, strong) UIView *contentView;
+
+@property (nonatomic, strong) LIOHeaderBarView *headerBarView;
+@property (nonatomic, assign) LIOHeaderBarState headerBarState;
+@property (nonatomic, assign) CGFloat statusBarInset;
 
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
 @property (nonatomic, strong) UIViewController *loadingViewController;
@@ -36,6 +43,65 @@
     }];
 }
 
+#pragma mark -
+#pragma mark HeaderBarView Methods
+
+- (void)presentHeaderBarView:(BOOL)animated
+{
+    CGRect headerBarFrame = self.headerBarView.frame;
+    headerBarFrame.origin.y = self.statusBarInset;
+    
+    CGRect contentViewFrame = self.contentView.frame;
+    contentViewFrame.origin.x = 0;
+    contentViewFrame.origin.y = LIOHeaderBarViewDefaultHeight + self.statusBarInset;
+    contentViewFrame.size.height = self.view.bounds.size.height - LIOHeaderBarViewDefaultHeight - self.statusBarInset;
+    
+    self.headerBarState = LIOHeaderBarStateVisible;
+    if (animated)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            self.headerBarView.frame = headerBarFrame;
+            self.contentView.frame = contentViewFrame;
+        }];
+    }
+    else
+    {
+        self.headerBarView.frame = headerBarFrame;
+        self.contentView.frame = contentViewFrame;
+    }
+}
+
+- (void)dismissHeaderBarView:(BOOL)animated
+{
+    CGRect headerBarFrame = self.headerBarView.frame;
+    headerBarFrame.origin.y = -LIOHeaderBarViewDefaultHeight;
+    
+    CGRect contentViewFrame = self.contentView.frame;
+    contentViewFrame.origin.x = 0;
+    contentViewFrame.origin.y = self.statusBarInset;
+    contentViewFrame.size.height = self.view.bounds.size.height - self.statusBarInset;
+    
+    self.headerBarState = LIOHeaderBarStateHidden;
+    if (animated)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            self.headerBarView.frame = headerBarFrame;
+            self.contentView.frame = contentViewFrame;
+        }];
+    }
+    else
+    {
+        self.headerBarView.frame = headerBarFrame;
+        self.contentView.frame = contentViewFrame;
+    }
+}
+
+- (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
+{
+    [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
+}
+
+#pragma mark -
 #pragma mark ChatViewController Delegate Methods
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController
@@ -46,6 +112,7 @@
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
+        [self dismissHeaderBarView:NO];
     }];
 }
 
@@ -53,6 +120,7 @@
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
 {
     self.engagement = anEngagement;
+    [self presentHeaderBarView:YES];
     [self presentChatViewController:YES];
 }
 
@@ -62,17 +130,13 @@
     [self.chatViewController engagement:self didReceiveMessage:message];
 }
 
-- (void)chatViewController:(LIOChatViewController *)didDismissChat
-{
-    
-}
-
 - (void)presentChatViewController:(BOOL)animated
 {
     [self.chatViewController setEngagement:self.engagement];
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
 }
 
+#pragma mark -
 #pragma mark Container View Controller Methods
 
 - (void)swapCurrentControllerWith:(UIViewController*)viewController animated:(BOOL)animated
@@ -89,7 +153,7 @@
         [self transitionFromViewController:self.currentViewController toViewController:viewController
                                   duration:0.3 options:nil
                                 animations:^{
-                                    viewController.view.frame = self.view.bounds;
+                                    viewController.view.frame = self.contentView.bounds;
                                     
                                     CGRect frame = self.currentViewController.view.frame;
                                     frame.origin.y = frame.size.height;
@@ -106,26 +170,60 @@
     }
     else
     {
-        viewController.view.frame = self.view.bounds;
+        viewController.view.frame = self.contentView.bounds;
         [self.currentViewController removeFromParentViewController];
         [self.currentViewController.view removeFromSuperview];
         
-        [self.view addSubview:viewController.view];
+        [self.contentView addSubview:viewController.view];
 
         self.currentViewController = viewController;
         [self.currentViewController didMoveToParentViewController:self];
     }
 }
 
+#pragma mark -
+#pragma mark Status Bar Inset Methods
+
+- (void)setupStatusBarInset
+{
+    self.statusBarInset = 20.0;
+}
+
+#pragma mark -
+#pragma mark Rotation Methods
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
+        [self dismissHeaderBarView:NO];
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation))
+        [self presentHeaderBarView:NO];
+}
+
+
+#pragma mark -
+#pragma mark View Controller Lifecycle Methods
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
     
+    [self setupStatusBarInset];
+    
+	// Do any additional setup after loading the view.
     self.blurImageView = [[LIOBlurImageView alloc] initWithFrame:self.view.bounds];
     self.blurImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.blurImageView.alpha = 0.0;
     [self.view addSubview:self.blurImageView];
+    
+    self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.view.bounds.size.width, self.view.bounds.size.height - self.statusBarInset)];
+    self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:self.contentView];
+    
+    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -LIOHeaderBarViewDefaultHeight, self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight)];
+    self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.headerBarState = LIOHeaderBarStateHidden;
+    [self.view addSubview:self.headerBarView];
     
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;
@@ -134,20 +232,10 @@
     self.loadingViewController.view.backgroundColor = [UIColor redColor];
 
     [self addChildViewController:self.loadingViewController];
-    self.loadingViewController.view.frame = self.view.bounds;
-    [self.view addSubview:self.loadingViewController.view];
+    self.loadingViewController.view.frame = self.contentView.bounds;
+    [self.contentView addSubview:self.loadingViewController.view];
     self.currentViewController = self.loadingViewController;
     [self.loadingViewController didMoveToParentViewController:self];
-}
-
-
-
-#pragma mark ChatViewController Delegate Methods
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

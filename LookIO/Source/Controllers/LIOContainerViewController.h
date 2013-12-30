@@ -9,6 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "LIOEngagement.h";
 
+typedef enum {
+    LIOHeaderBarStateHidden = 0,
+    LIOHeaderBarStateVisible
+} LIOHeaderBarState;
+
 @class LIOContainerViewController;
 
 @protocol LIOContainerViewControllerDelegate <NSObject>
@@ -24,5 +29,6 @@
 - (void)setBlurImage:(UIImage *)image;
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
+- (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
 
 @end

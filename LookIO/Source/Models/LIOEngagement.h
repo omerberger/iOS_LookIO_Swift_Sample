@@ -29,6 +29,7 @@ typedef enum
 - (void)engagementDidEnd:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
+- (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
 
 @end
 

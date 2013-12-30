@@ -487,4 +487,9 @@ static LIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
+{
+    [self.containerViewController engagement:engagement didReceiveNotification:notification];
+}
+
 @end

@@ -423,6 +423,10 @@
 				A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */,
 				A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */,
 				A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */,
+				D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */,
+				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
+				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
+				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -544,16 +548,12 @@
 				A7B32B941820603A00273A6C /* LIODragToDeleteView.m */,
 				D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */,
 				D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */,
-				D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */,
-				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D4ADC7C414F322B500713F29 /* LIOInputBarView.h */,
 				D4ADC7C514F322B500713F29 /* LIOInputBarView.m */,
 				D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */,
 				D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */,
 				D462795915B9E98E00AEDE2D /* LIONavigationBar.h */,
 				D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */,
-				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
-				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
 				D4137A0E159148F30097E385 /* LIOSurveyPickerView.h */,
 				D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */,
 				D4137A121592948E0097E385 /* LIOSurveyValidationView.h */,
