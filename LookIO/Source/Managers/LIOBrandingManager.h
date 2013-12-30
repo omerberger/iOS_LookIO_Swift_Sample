@@ -24,7 +24,8 @@ typedef enum
     LIOBrandingElementSendBar,
     LIOBrandingElementSendBarTextField,
     LIOBrandingElementSendBarPlusButton,
-    LIOBrandingElementSendBarSendButton
+    LIOBrandingElementSendBarSendButton,
+    LIOBrandingElementKeyboardMenu
 } LIOBrandingElement;
 
 typedef enum
@@ -33,6 +34,7 @@ typedef enum
     LIOBrandingColorText,
     LIOBrandingColorBorder,
     LIOBrandingColorContent,
+    LIOBrandingColorIcon,
     LIOBrandingColorColor
 } LIOBrandingColor;
 

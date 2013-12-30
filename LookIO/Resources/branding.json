@@ -162,8 +162,9 @@
                     "size" : "14.0",
                     "shadow" : ""
                 }
-            },
-            "keyboard_menu" : {
+            }
+				},
+        "keyboard_menu" : {
                 "background" : {
                     "color" : "#4c4c4c",
                     "alpha" : "0.55"
@@ -176,8 +177,7 @@
                     "color" : "#b6b2ae"
                 }
             }
-        }
-    },
+        },
     "surveys" : {
         "page_control" : {
             "color" : "#ffffff"

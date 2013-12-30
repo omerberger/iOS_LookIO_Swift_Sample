@@ -8,10 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface LIOKeyboardMenuButton : UIButton {
-    UILabel* bottomLabel;
-}
+@interface LIOKeyboardMenuButton : UIButton
 
--(void)setBottomLabelText:(NSString*)text;
+- (void)setBottomLabelText:(NSString*)text;
 
 @end

@@ -163,6 +163,16 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
     }
+    
+    if (LIOBrandingElementKeyboardMenu == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *keyboardMenuDictionary = [engagementDictionary objectForKey:@"keyboard_menu"];
+            if (keyboardMenuDictionary)
+                dictionary = keyboardMenuDictionary;
+        }
+    }
 
     return dictionary;
 }
@@ -191,6 +201,8 @@ static LIOBrandingManager *brandingManager = nil;
                 parentDictionary = [elementDictionary objectForKey:@"border"];
             if (LIOBrandingColorContent == colorType)
                 parentDictionary = [elementDictionary objectForKey:@"content"];
+            if (LIOBrandingColorIcon == colorType)
+                parentDictionary = [elementDictionary objectForKey:@"icon"];
             
             if (parentDictionary)
             {

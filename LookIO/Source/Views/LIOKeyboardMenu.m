@@ -7,7 +7,10 @@
 //
 
 #import "LIOKeyboardMenu.h"
+
 #import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
+
 #import "LIOKeyboardMenuButton.h"
 #import "LIOKeyboardMenuItem.h"
 
@@ -25,17 +28,22 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.55];
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementKeyboardMenu];
+        CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementKeyboardMenu];
+        
+        self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.items = [[NSMutableArray alloc] init];
         [self setDefaultButtonItems];
+        
+        UIColor *iconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementKeyboardMenu];
         
         for (int i=0; i<self.items.count; i++)
         {
             LIOKeyboardMenuItem *item = [self.items objectAtIndex:i];
             LIOKeyboardMenuButton *button = [[LIOKeyboardMenuButton alloc] init];
             button.tag = LIOKeyboardMenuButtonTagBase + i;
-            [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName] forState:UIControlStateNormal];
+            [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName withTint:iconColor] forState:UIControlStateNormal];
             [button setBottomLabelText:[item.title uppercaseString]];
             [button addTarget:self action:@selector(keyboardMenuButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
             [self addSubview:button];
@@ -120,7 +128,10 @@
     }    
 }
 
+/*
 -(void)drawRect:(CGRect)rect {
+    [super drawRect:rect];
+    
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     UIColor *lineColor = [UIColor colorWithRed:81.0/255.0 green:81.0/255 blue:81.0/255.0 alpha:1.0];
@@ -142,6 +153,7 @@
     
     CGContextRestoreGState(context);    
 }
+*/
 
 - (void)keyboardMenuButtonWasTapped:(id)sender
 {
