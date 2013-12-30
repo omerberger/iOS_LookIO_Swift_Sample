@@ -28,4 +28,7 @@
 @property (nonatomic, assign) id <LPInputBarViewDelegte> delegate;
 @property (nonatomic, strong) UITextView *textView;
 
+- (void)rotatePlusButton;
+- (void)unrotatePlusButton;
+
 @end

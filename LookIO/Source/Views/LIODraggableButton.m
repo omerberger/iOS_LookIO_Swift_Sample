@@ -77,7 +77,7 @@ typedef enum
     
     switch (self.buttonMode) {
         case LIOButtonModeChat:
-            [self setImage:[self imageWithTintedColor:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble"] withTint:contentColor] forState:UIControlStateNormal];
+            [self setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor] forState:UIControlStateNormal];
             break;
             
         default:
@@ -227,33 +227,7 @@ typedef enum
         [self setHiddenFrame];
 }
 
-#pragma mark Tint Color Methods
 
-- (UIImage *)imageWithTintedColor:(UIImage *)image withTint:(UIColor *)color {
-    if (image.size.width == 0 || image.size.height == 0)
-        return image;
-    
-    UIGraphicsBeginImageContext(image.size);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    [color setFill];
-    
-    CGContextTranslateCTM(context, 0, image.size.height);
-    CGContextScaleCTM(context, 1.0, -1.0);
-    
-    CGContextSetBlendMode(context, kCGBlendModeNormal);
-    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
-    CGContextDrawImage(context, rect, image.CGImage);
-    
-    CGContextClipToMask(context, rect, image.CGImage);
-    CGContextAddRect(context, rect);
-    CGContextDrawPath(context,kCGPathFill);
-    
-    UIImage *coloredImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return coloredImage;
-}
 
 
 

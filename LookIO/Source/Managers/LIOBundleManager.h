@@ -48,6 +48,7 @@ BOOL LIOIsUIKitFlatMode(void);
 + (LIOBundleManager *)sharedBundleManager;
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
+- (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color;
 - (BOOL)isAvailable;
 - (void)pruneImageCache;
 - (NSString *)localizedStringWithKey:(NSString *)aKey;

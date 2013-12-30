@@ -32,11 +32,11 @@
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(0, (self.frame.size.height - 50)/2, 50, 50)];
-        [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"InputBarPlusButton"] forState:UIControlStateNormal];
+        UIColor *buttonTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSendBarPlusButton];
+        [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIcon" withTint:buttonTintColor] forState:UIControlStateNormal];
         self.plusButton.imageView.clipsToBounds = NO;
         self.plusButton.imageView.contentMode = UIViewContentModeCenter;
         [self.plusButton addTarget:self action:@selector(plusButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        self.plusButton.imageView.transform = CGAffineTransformMakeRotation(M_PI * -45 / 180.0);
         self.plusButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [self addSubview:self.plusButton];
         
@@ -118,6 +118,18 @@
         return NO;
     }
     return YES;
+}
+
+#pragma mark Plus button methods
+
+- (void)rotatePlusButton
+{
+    self.plusButton.imageView.transform = CGAffineTransformMakeRotation(M_PI * -45 / 180.0);
+}
+
+- (void)unrotatePlusButton
+{
+    self.plusButton.imageView.transform = CGAffineTransformIdentity;
 }
 
 #pragma mark Action methods

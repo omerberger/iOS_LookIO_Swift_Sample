@@ -411,6 +411,8 @@
 		A739FA891864C6CC00CA35C4 /* New Views */ = {
 			isa = PBXGroup;
 			children = (
+				A73D4432185610240030FF44 /* LIODraggableButton.h */,
+				A73D4433185610240030FF44 /* LIODraggableButton.m */,
 				A739FA8A1864C77600CA35C4 /* LIOChatTableViewCell.h */,
 				A739FA8B1864C77600CA35C4 /* LIOChatTableViewCell.m */,
 				A739FA8E1864C92500CA35C4 /* LPChatBubbleView.h */,
@@ -528,8 +530,6 @@
 		D47C98EC14C9F01000E1223F /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A73D4432185610240030FF44 /* LIODraggableButton.h */,
-				A73D4433185610240030FF44 /* LIODraggableButton.m */,
 				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
 				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
 				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,

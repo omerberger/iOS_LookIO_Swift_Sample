@@ -287,6 +287,39 @@ BOOL LIOIsUIKitFlatMode(void) {
     }
 }
 
+#pragma mark Tint Color Methods
+
+- (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color {
+    UIImage *image = [self imageNamed:aString];
+    
+    if (!image)
+        return nil;
+    
+    if (image.size.width == 0 || image.size.height == 0)
+        return image;
+    
+    UIGraphicsBeginImageContext(image.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    [color setFill];
+    
+    CGContextTranslateCTM(context, 0, image.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+    CGContextDrawImage(context, rect, image.CGImage);
+    
+    CGContextClipToMask(context, rect, image.CGImage);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    UIImage *coloredImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return coloredImage;
+}
+
 - (UIImage *)imageNamed:(NSString *)aString
 {
     if (nil == lioBundle)

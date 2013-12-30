@@ -124,18 +124,34 @@
 
 - (void)inputBarViewSendButtonWasTapped:(LPInputBarView *)inputBarView
 {
-    if (self.inputBarView.textView.text.length == 0)
-    {
-        [self.inputBarView.textView resignFirstResponder];
-    }
-    else
-    {
-        [self sendLineWithText:self.inputBarView.textView.text];
-
-        self.inputBarView.textView.text = @"";
-        [self updateSubviewFrames];
-        
-        [self.inputBarView.textView resignFirstResponder];
+    switch (self.keyboardState) {
+        case LIOKeyboardStateHidden:
+            // Do nothing
+            break;
+            
+        case LIOKeyboardStateMenu:
+            [self dismissKeyboardMenu];
+            break;
+            
+        case LIOKeyboardStateKeyboard:
+            if (self.inputBarView.textView.text.length == 0)
+            {
+                [self.inputBarView.textView resignFirstResponder];
+            }
+            else
+            {
+                [self sendLineWithText:self.inputBarView.textView.text];
+                
+                self.inputBarView.textView.text = @"";
+                [self updateSubviewFrames];
+                
+                [self.inputBarView.textView resignFirstResponder];
+            }
+            
+            break;
+            
+        default:
+            break;
     }
 }
 
@@ -144,11 +160,7 @@
         self.keyboardState = LIOKeyboardStateKeyboard;
         [self.inputBarView.textView becomeFirstResponder];
     } else {
-        self.keyboardState = LIOKeyboardStateMenu;
-        if (self.inputBarView.textView.isFirstResponder)
-            [self.inputBarView.textView resignFirstResponder];
-        else
-            [self presentKeyboardMenu];
+        [self presentKeyboardMenu];
     }
 }
 
@@ -189,17 +201,38 @@
 
 - (void)presentKeyboardMenu
 {
-    if (self.lastKeyboardHeight == 0.0)
+    self.keyboardState = LIOKeyboardStateMenu;
+
+    // If keyboard is visible, resigning the textview as first responder will update the view
+    if (self.inputBarView.textView.isFirstResponder)
     {
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-        
-        if (padUI) {
-            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 264.0 : 352.0;
-        } else {
-            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 216.0 : 162.0;
-        }
+        [self.inputBarView.textView resignFirstResponder];
     }
+    // If keyboard is not visible, display the keyboard menu
+    else
+    {
+        
+        if (self.lastKeyboardHeight == 0.0)
+        {
+            BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+            UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+            
+            if (padUI) {
+                self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 264.0 : 352.0;
+            } else {
+                self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 216.0 : 162.0;
+            }
+        }
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            [self updateSubviewFrames];
+        }];
+    }
+}
+
+- (void)dismissKeyboardMenu
+{
+    self.keyboardState = LIOKeyboardStateHidden;
     
     [UIView animateWithDuration:0.3 animations:^{
         [self updateSubviewFrames];
@@ -307,14 +340,17 @@
     switch (self.keyboardState) {
         case LIOKeyboardStateKeyboard:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - self.lastKeyboardHeight;
+            [self.inputBarView unrotatePlusButton];
             break;
             
         case LIOKeyboardStateHidden:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height;
+            [self.inputBarView unrotatePlusButton];
             break;
             
         case LIOKeyboardStateMenu:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - keyboardMenuFrame.size.height;
+            [self.inputBarView rotatePlusButton];
             break;
             
         default:

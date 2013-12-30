@@ -32,7 +32,8 @@ typedef enum
     LIOBrandingColorBackground = 0,
     LIOBrandingColorText,
     LIOBrandingColorBorder,
-    LIOBrandingColorContent
+    LIOBrandingColorContent,
+    LIOBrandingColorColor
 } LIOBrandingColor;
 
 @interface LIOBrandingManager : NSObject

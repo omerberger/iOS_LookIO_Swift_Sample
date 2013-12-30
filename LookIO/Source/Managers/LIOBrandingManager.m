@@ -143,13 +143,26 @@ static LIOBrandingManager *brandingManager = nil;
             NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
             if (sendBarDictionary)
             {
-                NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"send_button"];
-                if (textFieldDictionary)
-                    dictionary = textFieldDictionary;
+                NSDictionary *sendButtonDictionary = [sendBarDictionary objectForKey:@"send_button"];
+                if (sendButtonDictionary)
+                    dictionary = sendButtonDictionary;
             }
         }
     }
     
+    if (LIOBrandingElementSendBarPlusButton == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+            if (sendBarDictionary)
+            {
+                NSDictionary *plusButtonDictionary = [sendBarDictionary objectForKey:@"plus_button"];
+                if (plusButtonDictionary)
+                    dictionary = plusButtonDictionary;
+            }
+        }
+    }
 
     return dictionary;
 }
@@ -163,21 +176,29 @@ static LIOBrandingManager *brandingManager = nil;
     {
         NSDictionary *parentDictionary = nil;
         
-        if (LIOBrandingColorBackground == colorType)
-            parentDictionary = [elementDictionary objectForKey:@"background"];
-        if (LIOBrandingColorText == colorType)
-            parentDictionary = [elementDictionary objectForKey:@"font"];
-        if (LIOBrandingColorBorder == colorType)
-            parentDictionary = [elementDictionary objectForKey:@"border"];
-        if (LIOBrandingColorContent == colorType)
-            parentDictionary = [elementDictionary objectForKey:@"content"];
-        
-        if (parentDictionary)
+        if (LIOBrandingColorColor == colorType)
         {
-            NSString *colorString = [parentDictionary objectForKey:@"color"];
+            NSString *colorString = [elementDictionary objectForKey:@"color"];
             if (colorString)
-            {
                 backgroundColor = [self colorForHexString:colorString];
+        }
+        else {
+            if (LIOBrandingColorBackground == colorType)
+                parentDictionary = [elementDictionary objectForKey:@"background"];
+            if (LIOBrandingColorText == colorType)
+                parentDictionary = [elementDictionary objectForKey:@"font"];
+            if (LIOBrandingColorBorder == colorType)
+                parentDictionary = [elementDictionary objectForKey:@"border"];
+            if (LIOBrandingColorContent == colorType)
+                parentDictionary = [elementDictionary objectForKey:@"content"];
+            
+            if (parentDictionary)
+            {
+                NSString *colorString = [parentDictionary objectForKey:@"color"];
+                if (colorString)
+                {
+                    backgroundColor = [self colorForHexString:colorString];
+                }
             }
         }
     }
