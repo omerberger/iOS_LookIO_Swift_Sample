@@ -29,8 +29,8 @@
         },
         "branding_bar" : {
             "background" : {
-                "color" : "#ffffff",
-                "alpha" : "0.0",
+                "color" : "#dddddd",
+                "alpha" : "0.5",
                 "linear-gradient" : ""
             },
             "notifications" : {

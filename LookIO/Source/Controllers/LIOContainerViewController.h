@@ -11,7 +11,8 @@
 
 typedef enum {
     LIOHeaderBarStateHidden = 0,
-    LIOHeaderBarStateVisible
+    LIOHeaderBarStateVisible,
+    LIOHeaderBarStateLandscapeHidden
 } LIOHeaderBarState;
 
 @class LIOContainerViewController;

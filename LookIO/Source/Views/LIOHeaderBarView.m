@@ -6,12 +6,16 @@
 //  Copyright (c) 2012 LivePerson, Inc. All rights reserved.
 //
 
-#import <QuartzCore/QuartzCore.h>
 #import "LIOHeaderBarView.h"
-#import "LIOLookIOManager.h"
-#import "LIOBundleManager.h"
-#import "LIOTimerProxy.h"
+
+#import <QuartzCore/QuartzCore.h>
+
 #import "LIONotificationArea.h"
+
+#import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
+
+#import "LIOTimerProxy.h"
 
 @interface LIOHeaderBarView ()
 
@@ -34,6 +38,10 @@
     {
         self.statusBarInset = anInset;
         self.clipsToBounds = YES;
+
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementBrandingBar];
+        CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementBrandingBar];
+        self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.separator = [[UIView alloc] init];
         self.separator.backgroundColor = [UIColor lightGrayColor];

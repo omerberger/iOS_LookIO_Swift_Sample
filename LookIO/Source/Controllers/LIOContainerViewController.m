@@ -71,7 +71,7 @@
     }
 }
 
-- (void)dismissHeaderBarView:(BOOL)animated
+- (void)dismissHeaderBarView:(BOOL)animated withState:(LIOHeaderBarState)state
 {
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = -headerBarFrame.size.height;
@@ -81,7 +81,7 @@
     contentViewFrame.origin.y = self.statusBarInset;
     contentViewFrame.size.height = self.view.bounds.size.height - self.statusBarInset;
     
-    self.headerBarState = LIOHeaderBarStateHidden;
+    self.headerBarState = state;
     if (animated)
     {
         [UIView animateWithDuration:0.3 animations:^{
@@ -112,7 +112,7 @@
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
-        [self dismissHeaderBarView:NO];
+        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];   
     }];
 }
 
@@ -194,9 +194,9 @@
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
-        [self dismissHeaderBarView:NO];
-    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation))
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
+        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
         [self presentHeaderBarView:NO];
 }
 

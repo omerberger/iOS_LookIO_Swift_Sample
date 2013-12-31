@@ -492,4 +492,34 @@ static LIOManager *sharedLookIOManager = nil;
     [self.containerViewController engagement:engagement didReceiveNotification:notification];
 }
 
+#pragma mark Custom Branding Methods
+
+- (BOOL)customBrandingAvailable
+{
+    return [(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
+}
+
+- (id)brandingViewWithDimensions:(NSValue *)aValue
+{
+    CGSize aSize = [aValue CGSizeValue];
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)])
+    {
+        id aView = [self.delegate lookIOManager:self brandingImageForDimensions:aSize];
+        if (aView)
+        {
+            if ([aView isKindOfClass:[UIImage class]])
+            {
+                UIImage *anImage = (UIImage *)aView;
+                return anImage;
+            }
+            else
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Expected a UIImage from \"brandingImageForDimensions\". Got: \"%@\". Falling back to default branding!", NSStringFromClass([aView class])];
+            }
+        }
+    }
+    
+    return nil;
+}
+
 @end

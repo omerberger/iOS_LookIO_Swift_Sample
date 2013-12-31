@@ -7,15 +7,30 @@
 //
 
 #import "LIONotificationArea.h"
-#import "LIOBundleManager.h"
-#import "LIOTimerProxy.h"
-#import "LIOAnimatedKeyboardIcon.h"
-#import "LIOLookIOManager.h"
+
 #import <QuartzCore/QuartzCore.h>
 
-@implementation LIONotificationArea
+#import "LIOManager.h"
+#import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
-@synthesize keyboardIconVisible, hasCustomBranding;
+#import "LIOTimerProxy.h"
+#import "LIOAnimatedKeyboardIcon.h"
+
+@interface LIONotificationArea ()
+
+@property (nonatomic, strong) UIView *defaultNotification;
+@property (nonatomic, strong) UIView *activeNotification;
+@property (nonatomic, strong) LIOTimerProxy *notificationTimer;
+@property (nonatomic, strong) LIOTimerProxy *animatedEllipsisTimer;
+@property (nonatomic, strong) LIOTimerProxy *startAnimatedLongTextTimer;
+@property (nonatomic, strong) LIOTimerProxy *moveAnimatedLongTextTimer;
+@property (nonatomic, strong) LIOAnimatedKeyboardIcon *keyboardIcon;
+@property (nonatomic, assign) BOOL animatingLongText;
+
+@end
+
+@implementation LIONotificationArea
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -26,31 +41,31 @@
         
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
-        defaultNotification = [[UIView alloc] initWithFrame:self.bounds];
-        CGRect aFrame = defaultNotification.frame;
+        self.defaultNotification = [[UIView alloc] initWithFrame:self.bounds];
+        CGRect aFrame = self.defaultNotification.frame;
         aFrame.size.height = 32.0;
-        defaultNotification.frame = aFrame;
-        defaultNotification.backgroundColor = [UIColor clearColor];
-        defaultNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:defaultNotification];
+        self.defaultNotification.frame = aFrame;
+        self.defaultNotification.backgroundColor = [UIColor clearColor];
+        self.defaultNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:self.defaultNotification];
         
-        hasCustomBranding = NO;
+        self.hasCustomBranding = NO;
         if (padUI)
         {
             UIView *finalBrandingView = nil;
             
             CGSize brandingSize = CGSizeMake(130.0, 44.0);
-            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] brandingViewWithDimensions:brandingSize];
+            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])
                 {
                     UIImage *anImage = (UIImage *)aBrandingView;
-                    finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
+                    finalBrandingView = [[UIImageView alloc] initWithImage:anImage];
                     finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
                     finalBrandingView.frame = CGRectMake(0.0, 0.0, 130.0, 44.0);
                     
-                    hasCustomBranding = YES;
+                    self.hasCustomBranding = YES;
                 }
                 else
                     finalBrandingView = nil;
@@ -58,7 +73,7 @@
             
             if (nil == finalBrandingView)
             {
-                finalBrandingView = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]] autorelease];
+                finalBrandingView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]];
                 finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
                 aFrame = finalBrandingView.frame;
                 aFrame.size.width = 130.0;
@@ -78,24 +93,24 @@
             UIView *finalBrandingView = nil;
             
             CGSize brandingSize = CGSizeMake(240.0, 17.0);
-            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] brandingViewWithDimensions:brandingSize];
+            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])
                 {
                     UIImage *anImage = (UIImage *)aBrandingView;
-                    finalBrandingView = [[[UIImageView alloc] initWithImage:anImage] autorelease];
+                    finalBrandingView = [[UIImageView alloc] initWithImage:anImage];
                     finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
                     finalBrandingView.frame = CGRectMake(0.0, 0.0, 240.0, 17.0);
                     
                     finalBrandingView.userInteractionEnabled = NO;
                     aFrame = finalBrandingView.frame;
                     aFrame.origin.y = 8.0;
-                    aFrame.origin.x = (defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+                    aFrame.origin.x = (self.defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
                     finalBrandingView.frame = aFrame;
                     finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
 
-                    hasCustomBranding = YES;
+                    self.hasCustomBranding = YES;
                 }
                 else
                     finalBrandingView = nil;
@@ -104,7 +119,7 @@
             
             if (nil == finalBrandingView)
             {
-                finalBrandingView = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
+                finalBrandingView = [[UIView alloc] initWithFrame:self.bounds];
                 finalBrandingView.backgroundColor = [UIColor clearColor];
                 //            aFrame = lolcontainer.frame;
                 //            aFrame.size.height = 32.0;
@@ -112,7 +127,7 @@
                 //            lolcontainer.frame = aFrame;
                 finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
                                 
-                UIImageView *tinyLogo = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]] autorelease];
+                UIImageView *tinyLogo = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]];
                 aFrame = tinyLogo.frame;
                 aFrame.origin.y = 8.0;
                 aFrame.origin.x = 0.0;
@@ -141,11 +156,11 @@
                 [finalBrandingView addSubview:plusButton];
             }
             
-            [defaultNotification addSubview:finalBrandingView];
+            [self.defaultNotification addSubview:finalBrandingView];
         }
         
-        keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
-        keyboardIcon.backgroundColor = [UIColor clearColor];
+        self.keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
+        self.keyboardIcon.backgroundColor = [UIColor clearColor];
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didChangeStatusBarOrientation:)
@@ -160,29 +175,6 @@
     
 }
 
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [notificationTimer stopTimer];
-    [notificationTimer release];
-    
-    [animatedEllipsisTimer stopTimer];
-    [animatedEllipsisTimer release];
-    
-    [startAnimatedLongTextTimer stopTimer];
-    [startAnimatedLongTextTimer release];
-
-    [moveAnimatedLongTextTimer stopTimer];
-    [moveAnimatedLongTextTimer release];
-    
-    [defaultNotification release];
-    [activeNotification release];
-    [keyboardIcon release];
-    
-    [super dealloc];
-}
-
 - (UIView *)createNotificationViewWithString:(NSString *)aString
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -191,14 +183,11 @@
     newNotification.backgroundColor = [UIColor clearColor];
     newNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
-    UILabel *aLabel = [[[UILabel alloc] init] autorelease];
+    UILabel *aLabel = [[UILabel alloc] init];
     aLabel.tag = LIONotificationAreaNotificationLabelTag;
     aLabel.backgroundColor = [UIColor clearColor];
-    aLabel.font = [UIFont boldSystemFontOfSize:12.0];
-    if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
-        aLabel.textColor = [UIColor whiteColor];
-    else
-        aLabel.textColor = [UIColor darkGrayColor];
+    aLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarNotifications];
+    aLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
     aLabel.text = aString;
     [newNotification addSubview:aLabel];        
 
@@ -227,11 +216,11 @@
         if (expectedSize.width > self.frame.size.width) {
             aFrame.origin.x = 8.0;
             
-            startAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
+            self.startAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
                                                                      target:self
                                                                    selector:@selector(startAnimatedLongText)];
             
-            animatingLongText = YES;
+            self.animatingLongText = YES;
         }
 
         aLabel.frame = aFrame;
@@ -242,18 +231,18 @@
 
 - (void)revealDefaultNotification
 {
-    if (activeNotification)
+    if (self.activeNotification)
         return;
     
-    keyboardIconVisible = NO;
-    [keyboardIcon removeFromSuperview];
+    self.keyboardIconVisible = NO;
+    [self.keyboardIcon removeFromSuperview];
     
-    CGRect startFrame = defaultNotification.frame;
+    CGRect startFrame = self.defaultNotification.frame;
     startFrame.origin.x = -startFrame.size.width;
-    defaultNotification.frame = startFrame;
-    defaultNotification.hidden = NO;
+    self.defaultNotification.frame = startFrame;
+    self.defaultNotification.hidden = NO;
     
-    CGRect targetFrameOne = defaultNotification.frame;
+    CGRect targetFrameOne = self.defaultNotification.frame;
     targetFrameOne.origin.x = 10.0; // overshot
     
     CGRect targetFrameTwo = targetFrameOne;
@@ -263,14 +252,14 @@
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         defaultNotification.frame = targetFrameOne;
+                         self.defaultNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
                          [UIView animateWithDuration:0.05
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseIn
                                           animations:^{
-                                              defaultNotification.frame = targetFrameTwo;
+                                              self.defaultNotification.frame = targetFrameTwo;
                                           }
                                           completion:^(BOOL finished) {
                                           }];
@@ -279,22 +268,22 @@
 
 - (void)dismissDefaultNotification
 {
-    CGRect startFrame = defaultNotification.frame;
+    CGRect startFrame = self.defaultNotification.frame;
     startFrame.origin.x = 0.0;
-    defaultNotification.frame = startFrame;
-    defaultNotification.hidden = NO;
+    self.defaultNotification.frame = startFrame;
+    self.defaultNotification.hidden = NO;
     
-    CGRect targetFrame = defaultNotification.frame;
+    CGRect targetFrame = self.defaultNotification.frame;
     targetFrame.origin.x = startFrame.size.width;
     
     [UIView animateWithDuration:0.3
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         defaultNotification.frame = targetFrame;
+                         self.defaultNotification.frame = targetFrame;
                      }
                      completion:^(BOOL finished) {
-                         defaultNotification.hidden = YES;
+                         self.defaultNotification.hidden = YES;
                      }];
 }
 
@@ -304,18 +293,15 @@
     
     if (nil == aString)
     {
-        [notificationTimer stopTimer];
-        [notificationTimer release];
-        notificationTimer = nil;
+        [self.notificationTimer stopTimer];
+        self.notificationTimer = nil;
         
-        if (animatingLongText) {
-            [startAnimatedLongTextTimer stopTimer];
-            [startAnimatedLongTextTimer release];
-            startAnimatedLongTextTimer = nil;
+        if (self.animatingLongText) {
+            [self.startAnimatedLongTextTimer stopTimer];
+            self.startAnimatedLongTextTimer = nil;
             
-            [moveAnimatedLongTextTimer stopTimer];
-            [moveAnimatedLongTextTimer release];
-            moveAnimatedLongTextTimer = nil;
+            [self.moveAnimatedLongTextTimer stopTimer];
+            self.moveAnimatedLongTextTimer = nil;
         }
         
         [self dismissActiveNotification];
@@ -325,20 +311,17 @@
         return;
     }
     
-    if (activeNotification)
+    if (self.activeNotification)
     {
-        [notificationTimer stopTimer];
-        [notificationTimer release];
-        notificationTimer = nil;
+        [self.notificationTimer stopTimer];
+        self.notificationTimer = nil;
         
-        if (animatingLongText) {
-            [startAnimatedLongTextTimer stopTimer];
-            [startAnimatedLongTextTimer release];
-            startAnimatedLongTextTimer = nil;
+        if (self.animatingLongText) {
+            [self.startAnimatedLongTextTimer stopTimer];
+            self.startAnimatedLongTextTimer = nil;
             
-            [moveAnimatedLongTextTimer stopTimer];
-            [moveAnimatedLongTextTimer release];
-            moveAnimatedLongTextTimer = nil;
+            [self.moveAnimatedLongTextTimer stopTimer];
+            self.moveAnimatedLongTextTimer = nil;
         }
         
         [self dismissActiveNotification];
@@ -350,15 +333,15 @@
     
     BOOL animated = [aString hasSuffix:@"..."];
     
-    activeNotification = [self createNotificationViewWithString:aString];
-    [self addSubview:activeNotification];
+    self.activeNotification = [self createNotificationViewWithString:aString];
+    [self addSubview:self.activeNotification];
     
-    CGRect startFrame = activeNotification.frame;
+    CGRect startFrame = self.activeNotification.frame;
     startFrame.origin.x = -startFrame.size.width;
-    activeNotification.frame = startFrame;
-    activeNotification.hidden = NO;
+    self.activeNotification.frame = startFrame;
+    self.activeNotification.hidden = NO;
     
-    CGRect targetFrameOne = activeNotification.frame;
+    CGRect targetFrameOne = self.activeNotification.frame;
     targetFrameOne.origin.x = 10.0; // overshot
     
     CGRect targetFrameTwo = targetFrameOne;
@@ -368,47 +351,40 @@
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
-                         activeNotification.frame = targetFrameOne;
+                         self.activeNotification.frame = targetFrameOne;
                      }
                      completion:^(BOOL finished) {
                          [UIView animateWithDuration:0.05
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseIn
                                           animations:^{
-                                              activeNotification.frame = targetFrameTwo;
+                                              self.activeNotification.frame = targetFrameTwo;
                                           }
                                           completion:^(BOOL finished) {
-                                              // Let's check to see if the message's width is longer than frame width; If so, we should align it to the left and animate it
-                                              // We also need to refresh this for rotation
-
-
-                                              
-
                                           }];
                      }];
     
-    if (NO == permanent && NO == animatingLongText)
+    if (NO == permanent && NO == self.animatingLongText)
     {
-        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaDefaultNotificationDuration
+        self.notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaDefaultNotificationDuration
                                                                  target:self
                                                                selector:@selector(notificationTimerDidFire)];
     }
     
-    [animatedEllipsisTimer stopTimer];
-    [animatedEllipsisTimer release];
-    animatedEllipsisTimer = nil;
+    [self.animatedEllipsisTimer stopTimer];
+    self.animatedEllipsisTimer = nil;
     
     if (animated)
-        animatedEllipsisTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.5 target:self selector:@selector(animatedEllipsisTimerDidFire)];
+        self.animatedEllipsisTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.5 target:self selector:@selector(animatedEllipsisTimerDidFire)];
 
-    if (keyboardIconVisible)
+    if (self.keyboardIconVisible)
     {
-        UILabel *notificationLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+        UILabel *notificationLabel = (UILabel *)[self.activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
         
-        CGRect aFrame = keyboardIcon.frame;
+        CGRect aFrame = self.keyboardIcon.frame;
         if (padUI)
         {
-            aFrame.origin.y = (activeNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 3.0;
+            aFrame.origin.y = (self.activeNotification.frame.size.height / 2.0) - (aFrame.size.height / 2.0) + 3.0;
             aFrame.origin.x = notificationLabel.frame.origin.x - 5.0;
         }
         else
@@ -416,30 +392,30 @@
             aFrame.origin.y = 9.0;
             aFrame.origin.x = notificationLabel.frame.origin.x - 7.0;
         }
-        keyboardIcon.frame = aFrame;
-        keyboardIcon.animating = YES;
-        [self addSubview:keyboardIcon];
+        self.keyboardIcon.frame = aFrame;
+        self.keyboardIcon.animating = YES;
+        [self addSubview:self.keyboardIcon];
         
         aFrame = notificationLabel.frame;
-        aFrame.origin.x += keyboardIcon.frame.size.width + 5.0;
+        aFrame.origin.x += self.keyboardIcon.frame.size.width + 5.0;
         notificationLabel.frame = aFrame;
         
-        [activeNotification addSubview:keyboardIcon];
+        [self.activeNotification addSubview:self.keyboardIcon];
     }
     else
     {
-        [keyboardIcon removeFromSuperview];
-        keyboardIcon.animating = NO;
+        [self.keyboardIcon removeFromSuperview];
+        self.keyboardIcon.animating = NO;
     }
 }
 
 - (void)dismissActiveNotification
 {
-    if (nil == activeNotification)
+    if (nil == self.activeNotification)
         return;
     
-    UIView *notificationToDismiss = activeNotification;
-    activeNotification = nil;
+    UIView *notificationToDismiss = self.activeNotification;
+    self.activeNotification = nil;
     
     CGRect targetFrame = notificationToDismiss.frame;
     targetFrame.origin.y = -self.bounds.size.height;
@@ -453,17 +429,15 @@
                      }
                      completion:^(BOOL finished) {
                          [notificationToDismiss removeFromSuperview];
-                         [notificationToDismiss autorelease];
                      }];
 }
 
 - (void)notificationTimerDidFire
 {
-    [notificationTimer stopTimer];
-    [notificationTimer release];
-    notificationTimer = nil;
+    [self.notificationTimer stopTimer];
+    self.notificationTimer = nil;
     
-    if (!animatingLongText) {
+    if (!self.animatingLongText) {
         [self dismissActiveNotification];
         [self revealDefaultNotification];
     }
@@ -471,10 +445,10 @@
 
 - (void)animatedEllipsisTimerDidFire
 {
-    if (nil == activeNotification)
+    if (nil == self.activeNotification)
         return;
     
-    UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+    UILabel *aLabel = (UILabel *)[self.activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
     if ([aLabel.text hasSuffix:@"..."])
         aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 3, 3) withString:@"."];
     else if ([aLabel.text hasSuffix:@".."])
@@ -486,30 +460,28 @@
 }
 
 -(void)startAnimatedLongText {
-    [startAnimatedLongTextTimer stopTimer];
-    [startAnimatedLongTextTimer release];
-    startAnimatedLongTextTimer = nil;
+    [self.startAnimatedLongTextTimer stopTimer];
+    self.startAnimatedLongTextTimer = nil;
 
-    moveAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.05
+    self.moveAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.05
                                                                  target:self
                                                                selector:@selector(animatedLongTextTimerDidFire)];
 
 }
 
 - (void)animatedLongTextTimerDidFire {
-    if (activeNotification) {
-        UILabel *aLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+    if (self.activeNotification) {
+        UILabel *aLabel = (UILabel *)[self.activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
         
         if (aLabel) {
             CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
             if (aLabel.frame.origin.x < (self.frame.size.width - expectedSize.width - 8.0)) {
-                [moveAnimatedLongTextTimer stopTimer];
-                [moveAnimatedLongTextTimer release];
-                moveAnimatedLongTextTimer = nil;
+                [self.moveAnimatedLongTextTimer stopTimer];
+                self.moveAnimatedLongTextTimer = nil;
                 
-                animatingLongText = NO;
+                self.animatingLongText = NO;
                 
-                notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
+                self.notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
                                                                          target:self
                                                                        selector:@selector(notificationTimerDidFire)];
                 
@@ -530,29 +502,29 @@
     double delayInSeconds = 0.1;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        if (activeNotification)
+        if (self.activeNotification)
         {
-            UILabel *notificationLabel = (UILabel *)[activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+            UILabel *notificationLabel = (UILabel *)[self.activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
             
             // Let's check if this label is too wide. If so, and it is still animating, reset it to position 0.
             // If not, we should just center it
             
             CGRect aFrame = notificationLabel.frame;
             
-            if (animatingLongText) {
+            if (self.animatingLongText) {
                 aFrame.origin.x = 8.0;
             } else {
                 aFrame.origin.x = (self.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
             }
             notificationLabel.frame = aFrame;
             
-            aFrame = keyboardIcon.frame;
+            aFrame = self.keyboardIcon.frame;
             aFrame.origin.x = notificationLabel.frame.origin.x - aFrame.size.width - 10.0;
             aFrame.origin.y = 9.0;
             
-            keyboardIcon.frame = aFrame;
+            self.keyboardIcon.frame = aFrame;
         } else {
-            defaultNotification.frame = self.bounds;
+            self.defaultNotification.frame = self.bounds;
         }
     });
 }

@@ -174,6 +174,30 @@ static LIOBrandingManager *brandingManager = nil;
         }
     }
 
+    if (LIOBrandingElementBrandingBar == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+            if (brandingBarDictionary)
+                dictionary = brandingBarDictionary;
+        }
+    }
+    
+    if (LIOBrandingElementBrandingBarNotifications == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+            if (brandingBarDictionary)
+            {
+                NSDictionary *notificationsDictionary = [brandingBarDictionary objectForKey:@"notifications"];
+                if (notificationsDictionary)
+                    dictionary = notificationsDictionary;
+            }
+        }
+    }
+    
     return dictionary;
 }
 
