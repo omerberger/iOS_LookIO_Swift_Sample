@@ -391,15 +391,14 @@ static LIOManager *sharedLookIOManager = nil;
     }
 }
 
+#pragma mark -
 #pragma mark EngagementDelegate Methods
 
 - (void)engagementDidConnect:(LIOEngagement *)engagement
 {
     if (LIOVisitStateChatRequested == self.visit.visitState)
     {
-        if ([self.visit surveysEnabled])
-            self.visit.visitState = LIOVisitStatePreChatSurvey;
-        else
+        if (![self.visit surveysEnabled])
         {
             self.visit.visitState = LIOVisitStateChatOpened;
             [self.containerViewController presentChatForEngagement:self.engagement];
@@ -422,6 +421,26 @@ static LIOManager *sharedLookIOManager = nil;
         }
     }
 }
+
+- (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement
+{
+    // If surveys aren't enabled, ignore this survey
+    if (!self.visit.surveysEnabled)
+        return;
+    
+    if (LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStatePreChatSurvey;
+        [self.containerViewController presentPrechatSurveyForEngagement:engagement];
+    }
+}
+
+
+- (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
+{
+    
+}
+
 
 - (void)engagementDidEnd:(LIOEngagement *)engagement
 {

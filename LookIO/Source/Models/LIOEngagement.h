@@ -7,8 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+
 #import "LIOVisit.h"
 #import "LIOChatMessage.h"
+#import "LIOSurvey.h"
 
 typedef enum
 {
@@ -30,6 +32,8 @@ typedef enum
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
+- (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 
 @end
 
@@ -39,6 +43,10 @@ typedef enum
 
 @property (nonatomic, assign) NSInteger lastClientLineId;
 @property (nonatomic, strong) NSMutableArray *messages;
+
+@property (nonatomic, strong) LIOSurvey *prechatSurvey;
+@property (nonatomic, strong) LIOSurvey *postchatSurvey;
+@property (nonatomic, strong) LIOSurvey *offlineSurvey;
 
 - (id)initWithVisit:(LIOVisit *)aVisit;
 

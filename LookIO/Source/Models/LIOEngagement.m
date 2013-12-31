@@ -18,6 +18,7 @@
 #import "LPSSEManager.h"
 #import "LPSSEvent.h"
 
+
 #define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
 #define LIOLookIOManagerLastKnownSSEUrlStringKey        @"LIOLookIOManagerLastKnownSSEUrlStringKey"
@@ -379,6 +380,48 @@
                 [userDefaults synchronize];
 
                 [self.delegate engagement:self didReceiveMessage:newMessage];
+            }
+        }
+    }
+    
+    // Received Survey
+    else if ([type isEqualToString:@"survey"]) {
+
+        // Check if this is an offline survey
+        if ([aPacket objectForKey:@"offline"]) {
+            // By default, we're not calling the custom chat not answered method.
+            // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
+            // we do want to use this method
+            
+            NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
+            if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                self.offlineSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:offlineSurveyDict];
+            } else {
+                // TODO Handle lastSentMessageText
+                // lastSentMessageText = altChatViewController.lastSentMessageText;
+                
+                NSString *lastSentMessageText = @"TODO Put message here";
+                
+                self.offlineSurvey = [[LIOSurvey alloc] initWithDefaultOfflineSurveyWithResponse:lastSentMessageText];
+            }
+        }
+        
+        // Check if this is a postchat survey
+        if ([aPacket objectForKey:@"postchat"]) {
+            NSDictionary *postSurveyDict = [aPacket objectForKey:@"postchat"];
+            if (postSurveyDict && [postSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                self.postchatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:postSurveyDict];
+            }
+        }
+        
+        if ([aPacket objectForKey:@"prechat"]) {
+            NSDictionary *preSurveyDict = [aPacket objectForKey:@"prechat"];
+            if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
+            {
+                self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict];
+                [self.delegate engagementDidReceivePrechatSurvey:self];
             }
         }
     }

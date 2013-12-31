@@ -8,10 +8,11 @@
 
 #import "LIOContainerViewController.h"
 
-#import "LIOChatViewController.h"
 #import "LIOHeaderBarView.h"
-
 #import "LIOBlurImageView.h"
+
+#import "LIOChatViewController.h"
+#import "LPSurveyViewController.h"
 
 @interface LIOContainerViewController () <LIOChatViewControllerDelegate>
 
@@ -21,9 +22,10 @@
 @property (nonatomic, assign) LIOHeaderBarState headerBarState;
 @property (nonatomic, assign) CGFloat statusBarInset;
 
+@property (nonatomic, strong) UIViewController *currentViewController;
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
 @property (nonatomic, strong) UIViewController *loadingViewController;
-@property (nonatomic, strong) UIViewController *currentViewController;
+@property (nonatomic, strong) LPSurveyViewController *surveyViewController;
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -124,16 +126,33 @@
     [self presentChatViewController:YES];
 }
 
+- (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement
+{
+    [self presentHeaderBarView:YES];
+    [self presentSurveyViewControllerWithSurvey:self.engagement.prechatSurvey animated:YES];
+}
+
+- (void)presentOfflineSurveyForEngagement:(LIOEngagement *)anEngagement
+{
+    [self presentHeaderBarView:YES];
+    [self presentSurveyViewControllerWithSurvey:self.engagement.offlineSurvey animated:YES];
+}
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 {
-    [self.chatViewController engagement:self didReceiveMessage:message];
+    [self.chatViewController engagement:self.engagement didReceiveMessage:message];
 }
 
 - (void)presentChatViewController:(BOOL)animated
 {
     [self.chatViewController setEngagement:self.engagement];
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
+}
+
+- (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
+{
+    self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
+    [self swapCurrentControllerWith:self.surveyViewController animated:animated];
 }
 
 #pragma mark -
@@ -220,7 +239,7 @@
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.contentView];
     
-    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -LIOHeaderBarViewDefaultHeight, self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
+    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
     self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.headerBarState = LIOHeaderBarStateHidden;
     [self.view addSubview:self.headerBarView];
