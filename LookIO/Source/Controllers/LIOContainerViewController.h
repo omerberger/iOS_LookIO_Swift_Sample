@@ -7,13 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "LIOEngagement.h";
+#import "LIOEngagement.h"
+#import "LPSurveyViewController.h"
+#import "LIOChatViewController.h"
 
 typedef enum {
     LIOHeaderBarStateHidden = 0,
     LIOHeaderBarStateVisible,
     LIOHeaderBarStateLandscapeHidden
 } LIOHeaderBarState;
+
+typedef enum {
+    LIOContainerViewStateLoading = 0,
+    LIOContainerViewStateChat,
+    LIOContainerViewStateSurvey
+} LIOContainerViewState;
 
 @class LIOContainerViewController;
 
@@ -23,7 +31,7 @@ typedef enum {
 
 @end
 
-@interface LIOContainerViewController : UIViewController
+@interface LIOContainerViewController : UIViewController <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate>
 
 @property (nonatomic, assign) id <LIOContainerViewControllerDelegate> delegate;
 

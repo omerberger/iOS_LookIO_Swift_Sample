@@ -52,8 +52,8 @@
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
 		A7AE31FE18732922002D9F23 /* LIOSurvey.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE31FC18732922002D9F23 /* LIOSurvey.h */; };
 		A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE31FD18732922002D9F23 /* LIOSurvey.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		A7AE3202187343A0002D9F23 /* LPSurveyViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */; };
 		A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */; };
+		A7AE320818735EDC002D9F23 /* LPSurveyViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */; };
 		A7B32B9118203EE300273A6C /* LIOSquareControlButtonView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */; };
 		A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */; };
 		A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B931820603A00273A6C /* LIODragToDeleteView.h */; };
@@ -229,6 +229,8 @@
 		A7AE31FD18732922002D9F23 /* LIOSurvey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurvey.m; path = Source/Models/LIOSurvey.m; sourceTree = "<group>"; };
 		A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSurveyViewController.h; path = Source/Controllers/LPSurveyViewController.h; sourceTree = "<group>"; };
 		A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPSurveyViewController.m; path = Source/Controllers/LPSurveyViewController.m; sourceTree = "<group>"; };
+		A7AE320418735E11002D9F23 /* LIOSurveyQuestionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyQuestionView.h; path = Source/Views/LIOSurveyQuestionView.h; sourceTree = "<group>"; };
+		A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyQuestionView.m; path = Source/Views/LIOSurveyQuestionView.m; sourceTree = "<group>"; };
 		A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSquareControlButtonView.h; path = Source/Views/LIOSquareControlButtonView.h; sourceTree = "<group>"; };
 		A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSquareControlButtonView.m; path = Source/Views/LIOSquareControlButtonView.m; sourceTree = "<group>"; };
 		A7B32B931820603A00273A6C /* LIODragToDeleteView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIODragToDeleteView.h; path = Source/Views/LIODragToDeleteView.h; sourceTree = "<group>"; };
@@ -447,6 +449,8 @@
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
+				A7AE320418735E11002D9F23 /* LIOSurveyQuestionView.h */,
+				A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -554,6 +558,8 @@
 		D47C98EC14C9F01000E1223F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A7C96CAF1757D40B0028F39C /* LIOSurveyView.h */,
+				A7C96CB01757D40B0028F39C /* LIOSurveyView.m */,
 				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
 				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
 				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,
@@ -580,8 +586,6 @@
 				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
-				A7C96CAF1757D40B0028F39C /* LIOSurveyView.h */,
-				A7C96CB01757D40B0028F39C /* LIOSurveyView.m */,
 				A7D4E843177498AB0037E47B /* LIOStarRatingView.h */,
 				A7D4E844177498AB0037E47B /* LIOStarRatingView.m */,
 				A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */,
@@ -771,7 +775,7 @@
 				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
 				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
 				D486D72D1521303B007C9AF8 /* unzip.h in Headers */,
-				A7AE3202187343A0002D9F23 /* LPSurveyViewController.h in Headers */,
+				A7AE320818735EDC002D9F23 /* LPSurveyViewController.h in Headers */,
 				D486D72F1521303B007C9AF8 /* zip.h in Headers */,
 				D486D7301521303B007C9AF8 /* FileInZipInfo.h in Headers */,
 				D486D7321521303B007C9AF8 /* ZipException.h in Headers */,

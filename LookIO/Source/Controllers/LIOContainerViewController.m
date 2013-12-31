@@ -22,6 +22,7 @@
 @property (nonatomic, assign) LIOHeaderBarState headerBarState;
 @property (nonatomic, assign) CGFloat statusBarInset;
 
+@property (nonatomic, assign) LIOContainerViewState containerViewState;
 @property (nonatomic, strong) UIViewController *currentViewController;
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
 @property (nonatomic, strong) UIViewController *loadingViewController;
@@ -100,7 +101,10 @@
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
-    [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
+    if (LIOContainerViewStateChat == self.containerViewState)
+    {
+        [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
+    }
 }
 
 #pragma mark -
@@ -113,11 +117,11 @@
         self.view.alpha = 0.0;
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
+        self.containerViewState = LIOContainerViewStateLoading;
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
-        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];   
+        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
     }];
 }
-
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
 {
@@ -146,12 +150,14 @@
 - (void)presentChatViewController:(BOOL)animated
 {
     [self.chatViewController setEngagement:self.engagement];
+    self.containerViewState = LIOContainerViewStateChat;
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
 }
 
 - (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
 {
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
+    self.containerViewState = LIOContainerViewStateSurvey;
     [self swapCurrentControllerWith:self.surveyViewController animated:animated];
 }
 
@@ -250,6 +256,7 @@
     self.loadingViewController = [[UIViewController alloc] init];
     self.loadingViewController.view.backgroundColor = [UIColor redColor];
 
+    self.containerViewState = LIOContainerViewStateLoading;
     [self addChildViewController:self.loadingViewController];
     self.loadingViewController.view.frame = self.contentView.bounds;
     [self.contentView addSubview:self.loadingViewController.view];

@@ -9,7 +9,18 @@
 #import <UIKit/UIKit.h>
 #import "LIOSurvey.h"
 
+@class LPSurveyViewController;
+
+@protocol LPSurveyViewControllerDelegate
+
+- (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey;
+- (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCancelSurvey:(LIOSurvey *)survey;
+
+@end
+
 @interface LPSurveyViewController : UIViewController
+
+@property (nonatomic, assign) id <LPSurveyViewControllerDelegate> delegate;
 
 - (id)initWithSurvey:(LIOSurvey *)aSurvey;
 
