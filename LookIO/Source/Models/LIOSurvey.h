@@ -14,6 +14,9 @@
 
 @property (nonatomic, strong) NSArray *questions;
 
+@property (nonatomic, assign) NSInteger lastCompletedQuestionIndex;
+@property (nonatomic, assign) NSInteger lastSeenQuestionIndex;
+
 - (id)initWithSurveyDictionary:(NSDictionary *)aDictionary;
 - (id)initWithDefaultOfflineSurveyWithResponse:(NSString *)response;
 

@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LIOSurvey.h"
+#import "LIOSurveyQuestionView.h"
 
 @class LPSurveyViewController;
 
@@ -18,7 +19,7 @@
 
 @end
 
-@interface LPSurveyViewController : UIViewController
+@interface LPSurveyViewController : UIViewController <LIOSurveyQuestionViewDelegate>
 
 @property (nonatomic, assign) id <LPSurveyViewControllerDelegate> delegate;
 

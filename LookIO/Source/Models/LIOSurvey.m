@@ -18,8 +18,6 @@
 
 @property (nonatomic, copy) NSString *header;
 @property (nonatomic, strong) NSMutableDictionary *responses;
-@property (nonatomic, assign) NSInteger lastCompletedQuestionIndex;
-@property (nonatomic, assign) NSInteger lastSeenQuestionIndex;
 @property (nonatomic, assign) BOOL wasSubmitted;
 @property (nonatomic, strong) NSNumber *surveyId;
 @property (nonatomic, strong) NSDictionary *logicDictionary;

@@ -14,8 +14,9 @@
 
 @protocol LIOSurveyQuestionViewDelegate
 
-- (void)surveyQuestionViewDidTapCancelButton:(LIOSurveyQuestionView *)surveyQuestionView;
+- (void)surveyQuestionViewAnswerDidChange:(LIOSurveyQuestionView *)surveyQuestionView;
 - (void)surveyQuestionViewDidTapNextButton:(LIOSurveyQuestionView *)surveyQuestionView;
+- (void)surveyQuestionViewDidTapCancelButton:(LIOSurveyQuestionView *)surveyQuestionView;
 
 @end
 
@@ -24,5 +25,10 @@
 - (void)setupViewWithQuestion:(LIOSurveyQuestion *)question existingResponse:(id)existingResponse isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate;
 
 @property (nonatomic, assign) id <LIOSurveyQuestionViewDelegate> delegate;
+
+@property (nonatomic, strong) UITextField *textField;
+@property (nonatomic, strong) UITextView *textView;
+
+- (void)becomeFirstResponder;
 
 @end

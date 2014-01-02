@@ -34,13 +34,11 @@
 
 #define LIOIndexForSurveyIntroPage  -1
 
-@interface LIOSurveyQuestionView ()
+@interface LIOSurveyQuestionView () <UITextFieldDelegate, UITextViewDelegate, LIOStarRatingViewDelegate>
 
 @property (nonatomic, strong) UIView *backgroundView;
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UIView *textFieldBackground;
-@property (nonatomic, strong) UITextField *textField;
-@property (nonatomic, strong) UITextView *textView;
 @property (nonatomic, strong) LIOStarRatingView *starRatingView;
 
 @property (nonatomic, strong) UILabel *titleLabel;
@@ -48,6 +46,8 @@
 
 @property (nonatomic, strong) UIButton *nextButton;
 @property (nonatomic, strong) UIButton *previousButton;
+
+@property (nonatomic, strong) LIOSurveyQuestion *question;
 
 @end
 
@@ -73,7 +73,9 @@
         self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.backgroundView.backgroundColor = [UIColor whiteColor];
-        self.backgroundView.layer.cornerRadius = 10.0;
+        self.backgroundView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+        self.backgroundView.layer.borderWidth = 1.0;
+        self.backgroundView.layer.cornerRadius = 5.0;
         [self addSubview:self.backgroundView];
         
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -128,7 +130,10 @@
         [self addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-        self.tableView.backgroundColor = [UIColor clearColor];
+        self.tableView.backgroundColor = [UIColor whiteColor];
+        self.tableView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+        self.tableView.layer.borderWidth = 1.0;
+        self.tableView.layer.cornerRadius = 5.0;
         self.tableView.backgroundView = nil;
         self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -136,7 +141,7 @@
         [self addSubview:self.tableView];
         
         self.nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        [self.nextButton addTarget:self action:@selector(handleLeftSwipeGesture:) forControlEvents:UIControlEventTouchUpInside];
+        [self.nextButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
         [self.nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
         [self.nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
@@ -159,6 +164,9 @@
 
 - (void)setupViewWithQuestion:(LIOSurveyQuestion *)question existingResponse:(id)existingResponse isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate
 {
+    self.delegate = delegate;
+    self.question = question;
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     self.titleLabel.text = question.label;
@@ -312,6 +320,14 @@
             self.tableView.dataSource = delegate;
         }
     }
+}
+
+- (void)becomeFirstResponder
+{
+    if (LIOSurveyQuestionDisplayTypeTextField == self.question.displayType)
+        [self.textField becomeFirstResponder];
+    if (LIOSurveyQuestionDisplayTypeTextArea == self.question.displayType)
+        [self.textView becomeFirstResponder];
 }
 
 /*
@@ -682,7 +698,7 @@ aFrame.size.width = 92.0;
         
         CGFloat tableViewContentHeight = [self heightForTableView:self.tableView];
         
-        CGFloat maxHeight = referenceFrame.size.height - 53.0 - self.titleLabel.bounds.size.height - 50.0 - (landscape && !padUI ? 0 : 80.0);
+        CGFloat maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (!padUI ? 130.0 : 130.0) ;
         
         if (tableViewContentHeight > maxHeight)
         {
@@ -704,7 +720,7 @@ aFrame.size.width = 92.0;
             }
         }
         
-        self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 10.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
+        self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
         
         if (!padUI)
         {
@@ -715,34 +731,33 @@ aFrame.size.width = 92.0;
         }
         
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
-        if (padUI)
+        if (landscape) {
+            aFrame.origin.x = referenceFrame.size.width - 95.0;
+            aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height;
+        } else {
+            aFrame.origin.x = referenceFrame.size.width - 95.0;
+            aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height + 2;
+        }
+        aFrame.size.width = 92.0;
+        aFrame.size.height = 44.0;
+        self.nextButton.frame = aFrame;
+        
+        if (!padUI)
         {
-            if (landscape) {
-                aFrame.origin.x = referenceFrame.size.width - 95.0;
-                aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height;
-            } else {
-                aFrame.origin.x = referenceFrame.size.width - 95.0;
-                aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height + 2;
+            CGRect frame = self.backgroundView.frame;
+            if (!landscape) {
+                frame.origin.x = 10;
+                frame.size.width = self.bounds.size.width - 20;
+                frame.size.height = self.tableView.frame.origin.y + tableViewContentHeight - 20 + 50;
+                frame.origin.y = 25;
             }
-            aFrame.size.width = 92.0;
-            aFrame.size.height = 44.0;
-            self.nextButton.frame = aFrame;
-            
-            if (!padUI)
-            {
-                CGRect frame = self.backgroundView.frame;
-                if (!landscape) {
-                    frame.origin.x = 10;
-                    frame.size.width = self.bounds.size.width - 20;
-                    frame.origin.y = 65;
-                }
-                else {
-                    frame.origin.x = 10;
-                    frame.size.width = self.bounds.size.width - 20;
-                    frame.origin.y = 25;
-                }
-                self.backgroundView.frame = frame;
+            else {
+                frame.origin.x = 10;
+                frame.size.width = self.bounds.size.width - 20;
+                frame.size.height = self.tableView.frame.origin.y + tableViewContentHeight - 20 + 45;
+                frame.origin.y = 25;
             }
+            self.backgroundView.frame = frame;
         }
     }
 }
@@ -771,6 +786,45 @@ aFrame.size.width = 92.0;
     [self.delegate surveyQuestionViewDidTapNextButton:self];
 }
 
+#pragma mark
+#pragma mark UITextField/UITextView delegate methods
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [self.delegate surveyQuestionViewDidTapNextButton:self];
+    
+    return NO;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    [self.delegate surveyQuestionViewAnswerDidChange:self];
+    return YES;
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+	if ([text isEqualToString:@"\n"])
+    {
+        [self.delegate surveyQuestionViewDidTapNextButton:self];
+        return NO;
+    }
+    
+    [self.delegate surveyQuestionViewAnswerDidChange:self];
+    
+    return YES;
+}
+
+/*
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if ([touch.view isDescendantOfView:currentScrollView]) {
+        return NO; // ignore the touch
+    }
+    
+    return YES; // handle the touch
+}
+ */
 
 
 @end
