@@ -43,6 +43,7 @@
 		A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A73D44371856776A0030FF44 /* LIOContainerViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
 		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */; };
 		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
 		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
 		A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
@@ -433,6 +434,8 @@
 		A739FA891864C6CC00CA35C4 /* New Views */ = {
 			isa = PBXGroup;
 			children = (
+				A7AE320418735E11002D9F23 /* LIOSurveyQuestionView.h */,
+				A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */,
 				A73D4432185610240030FF44 /* LIODraggableButton.h */,
 				A73D4433185610240030FF44 /* LIODraggableButton.m */,
 				A739FA8A1864C77600CA35C4 /* LIOChatTableViewCell.h */,
@@ -449,8 +452,6 @@
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
-				A7AE320418735E11002D9F23 /* LIOSurveyQuestionView.h */,
-				A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -927,6 +928,7 @@
 				D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */,
 				A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */,
 				A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */,
+				A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */,
 				D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */,
 				A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */,
 				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,

@@ -7,9 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "LIOSurveyTemplate.h"
+
+#import "LIOSurveyQuestion.h"
 
 @interface LIOSurvey : NSObject
+
+@property (nonatomic, strong) NSArray *questions;
 
 - (id)initWithSurveyDictionary:(NSDictionary *)aDictionary;
 - (id)initWithDefaultOfflineSurveyWithResponse:(NSString *)response;

@@ -22,7 +22,6 @@
 @property (nonatomic, assign) NSInteger lastSeenQuestionIndex;
 @property (nonatomic, assign) BOOL wasSubmitted;
 @property (nonatomic, strong) NSNumber *surveyId;
-@property (nonatomic, strong) NSArray *questions;
 @property (nonatomic, strong) NSDictionary *logicDictionary;
 
 @end

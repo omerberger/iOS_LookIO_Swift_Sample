@@ -132,6 +132,7 @@
 
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement
 {
+    self.engagement = anEngagement;
     [self presentHeaderBarView:YES];
     [self presentSurveyViewControllerWithSurvey:self.engagement.prechatSurvey animated:YES];
 }

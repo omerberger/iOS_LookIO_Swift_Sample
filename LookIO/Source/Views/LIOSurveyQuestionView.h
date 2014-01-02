@@ -10,10 +10,19 @@
 #import "LIOSurveyManager.h"
 #import "LIOSurveyQuestion.h"
 
-@protocol LIOSurveyValidationViewDelegate, LIOStarRatingViewDelegate;
+@class LIOSurveyQuestionView;
+
+@protocol LIOSurveyQuestionViewDelegate
+
+- (void)surveyQuestionViewDidTapCancelButton:(LIOSurveyQuestionView *)surveyQuestionView;
+- (void)surveyQuestionViewDidTapNextButton:(LIOSurveyQuestionView *)surveyQuestionView;
+
+@end
 
 @interface LIOSurveyQuestionView : UIScrollView
 
-- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question;
+- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question existingResponse:(id)existingResponse isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate;
+
+@property (nonatomic, assign) id <LIOSurveyQuestionViewDelegate> delegate;
 
 @end
