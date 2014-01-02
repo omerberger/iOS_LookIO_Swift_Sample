@@ -80,17 +80,18 @@
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.pagingEnabled = YES;
     self.scrollView.delegate = self;
+    self.scrollView.scrollEnabled = NO;
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.scrollView];
     
     self.selectedIndices = [[NSMutableArray alloc] init];
     
-    self.currentQuestionIndex = 0;
-    LIOSurveyQuestion *firstQuestion = [self.survey.questions objectAtIndex:self.currentQuestionIndex];
+    self.currentQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
+    LIOSurveyQuestion *introQuestion = [self.survey questionForIntroView];
     
     self.currentQuestionView = [[LIOSurveyQuestionView alloc] initWithFrame:self.scrollView.bounds];
     self.currentQuestionView.tag = self.currentQuestionIndex;
-    [self.currentQuestionView setupViewWithQuestion:firstQuestion existingResponse:nil isLastQuestion:NO delegate:self];
+    [self.currentQuestionView setupViewWithQuestion:introQuestion existingResponse:nil isLastQuestion:NO delegate:self];
     [self.scrollView addSubview:self.currentQuestionView];
     [self.currentQuestionView becomeFirstResponder];
     
@@ -540,6 +541,7 @@
 - (void)switchToNextQuestion
 {
     [self.currentQuestionView endEditing:YES];
+    [self.nextQuestionView setNeedsLayout];
     [self.nextQuestionView becomeFirstResponder];
     
     [UIView animateWithDuration:0.3 animations:^{

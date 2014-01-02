@@ -84,6 +84,7 @@
         self.titleLabel.font = [UIFont boldSystemFontOfSize:17.0];
         self.titleLabel.textColor = [UIColor darkGrayColor];
         self.titleLabel.textAlignment = UITextAlignmentCenter;
+        self.titleLabel.lineBreakMode = UILineBreakModeWordWrap;
         self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self addSubview:self.titleLabel];
         
@@ -133,10 +134,10 @@
         self.tableView.backgroundColor = [UIColor whiteColor];
         self.tableView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
         self.tableView.layer.borderWidth = 1.0;
+        self.tableView.separatorColor = [UIColor lightGrayColor];
         self.tableView.layer.cornerRadius = 5.0;
         self.tableView.backgroundView = nil;
         self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         self.tableView.showsVerticalScrollIndicator = NO;
         [self addSubview:self.tableView];
         
@@ -172,6 +173,17 @@
     self.titleLabel.text = question.label;
     if (question.mandatory)
         self.titleLabel.text = [NSString stringWithFormat:@"%@ *", self.titleLabel.text];
+    
+    self.subtitleLabel.hidden = YES;
+    self.nextButton.hidden = YES;
+    self.previousButton.hidden = YES;
+
+    if (LIOSurveyQuestionDisplayTypeIntro == question.displayType)
+    {
+        self.subtitleLabel.hidden = NO;
+        self.nextButton.hidden = NO;
+        self.previousButton.hidden = NO;
+    }
     
     self.textFieldBackground.hidden = YES;
     self.textField.hidden = YES;
@@ -290,8 +302,6 @@
         }
     }
 
-    // Add next button for all iPad views, and relevant iPhone views
-    self.nextButton.hidden = YES;
     if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI)
     {
         self.nextButton.hidden = NO;
@@ -329,129 +339,6 @@
     if (LIOSurveyQuestionDisplayTypeTextArea == self.question.displayType)
         [self.textView becomeFirstResponder];
 }
-
-/*
-
-- (void)rejiggerIntroScrollView:(UIScrollView*)scrollView
-{
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
-    
-    CGRect referenceFrame = self.bounds;
-    if (padUI)
-        referenceFrame = scrollView.bounds;
-    
-    CGRect aFrame;
-    
-    UILabel* headerLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroHeaderLabel];
-    
-    aFrame.origin.x = padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin;
-    aFrame.origin.y = (landscape && !padUI) ? LIOSurveyViewTopMarginLandscape : LIOSurveyViewTopMarginPortrait;
-    aFrame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin)*2;
-    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
-        aFrame.origin.x = LIOSurveyViewSideMargin * 4;
-        if (landscape)
-            aFrame.origin.y = LIOSurveyViewTopMarginLandscape + 10;
-        aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
-    }
-    CGSize expectedLabelSize = [headerLabel.text sizeWithFont:headerLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-    aFrame.size.height = expectedLabelSize.height;
-    
-    // iOS 7.0: Add another 20px on top for the status bar
-    if (LIOIsUIKitFlatMode())
-        if (![[UIApplication sharedApplication] isStatusBarHidden] && !padUI)
-            aFrame.origin.y += 20.0;
-    
-    headerLabel.frame = aFrame;
-    
-    UILabel* requiredLabel = (UILabel*)[scrollView viewWithTag:LIOSurveyViewIntroRequiredLabel];
-    
-    aFrame.origin.x = LIOSurveyViewSideMargin;
-    aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
-    aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
-    if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat && !padUI) {
-        aFrame.origin.x = LIOSurveyViewSideMargin * 4;
-        aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
-    }
-    expectedLabelSize = [requiredLabel.text sizeWithFont:requiredLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
-    aFrame.size.height = expectedLabelSize.height;
-    requiredLabel.frame = aFrame;
-    
-    UIButton* nextButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroNextButton];
-    aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
-    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-    /*
-     aFrame.origin.x = referenceFrame.size.width - 80.0;
-     aFrame.origin.y = 15;
-     }
-     */
-
-/*
-aFrame.size.width = 92.0;
-    aFrame.size.height = 44.0;
-    nextButton.frame = aFrame;
-    
-    UIButton* cancelButton = (UIButton*)[scrollView viewWithTag:LIOSurveyViewIntroCancelButton];
-    
-    aFrame.origin.x = referenceFrame.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
-    aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-    aFrame.size.width = 92.0;
-    aFrame.size.height = 44.0;
-    cancelButton.frame = aFrame;
-    
-    if (padUI) {
-        CGFloat contentHeight = nextButton.frame.origin.y + nextButton.frame.size.height;
-        CGFloat startPoint = scrollView.bounds.size.height/2 - contentHeight/2 + 25;
-        
-        aFrame = headerLabel.frame;
-        aFrame.origin.y = startPoint;
-        headerLabel.frame = aFrame;
-        
-        aFrame = requiredLabel.frame;
-        aFrame.origin.y = headerLabel.frame.origin.y + headerLabel.frame.size.height + 15.0;
-        requiredLabel.frame = aFrame;
-        
-        aFrame = nextButton.frame;
-        aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-        nextButton.frame = aFrame;
-        
-        aFrame = cancelButton.frame;
-        aFrame.origin.y = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 25;
-        cancelButton.frame = aFrame;
-    }
-    
-    if (!padUI && kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
-        UIImageView *backgroundImageView = (UIImageView*)[scrollView viewWithTag:LIOSurveyViewBackgroundViewTag];
-        if (backgroundImageView) {
-            CGRect frame = backgroundImageView.frame;
-            if (!landscape) {
-                frame.origin.x = 10;
-                frame.size.width = scrollView.bounds.size.width - 20;
-                frame.origin.y = 65;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.origin.y -= 20;
-                frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 30;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.size.height += 20;
-            }
-            else {
-                frame.origin.x = 10;
-                frame.size.width = scrollView.bounds.size.width - 20;
-                frame.origin.y = 25;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.origin.y -= 20;
-                frame.size.height = requiredLabel.frame.origin.y + requiredLabel.frame.size.height + 60;
-                if ([[UIApplication sharedApplication] isStatusBarHidden] || !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-                    frame.size.height += 20;
-            }
-            backgroundImageView.frame = frame;
-        }
-    }
-}
- 
-*/
 
 #pragma mark
 #pragma mark Question view setup methods
@@ -494,8 +381,43 @@ aFrame.size.width = 92.0;
         }
         CGSize expectedLabelSize = [self.titleLabel.text sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
         aFrame.size.height = expectedLabelSize.height;
-        
         self.titleLabel.frame = aFrame;
+        
+        self.titleLabel.numberOfLines = 0;
+        [self.titleLabel sizeThatFits:expectedLabelSize];
+    }
+    
+    if (!self.subtitleLabel.hidden)
+    {
+        aFrame.origin.x = LIOSurveyViewSideMargin;
+        // TODO Base origin here on the actual text which can be localized
+        aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height - (landscape ? -15.0 : 10.0);
+        aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
+        if (!padUI)
+        {
+            aFrame.origin.x = LIOSurveyViewSideMargin * 4;
+            aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
+        }
+        self.subtitleLabel.frame = aFrame;
+        
+        self.nextButton.hidden = NO;
+        aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
+        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height - (landscape ? 0 : 20.0);
+        aFrame.size.width = 92.0;
+        aFrame.size.height = 44.0;
+        self.nextButton.frame = aFrame;
+        
+        self.previousButton.hidden = NO;
+        aFrame.origin.x = referenceFrame.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
+        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height - (landscape ? 0 : 20.0);
+        aFrame.size.width = 92.0;
+        aFrame.size.height = 44.0;
+        self.previousButton.frame = aFrame;
+        
+        CGSize aSize;
+        aSize.width = self.frame.size.width;
+        aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + (landscape ? 8.0 : 45.0);
+        self.contentSize = aSize;
     }
     
     if (!self.textField.hidden)

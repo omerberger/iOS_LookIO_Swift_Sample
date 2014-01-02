@@ -396,7 +396,7 @@
             NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
             if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
             {
-                self.offlineSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:offlineSurveyDict];
+                self.offlineSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:offlineSurveyDict surveyType:LIOSurveyTypeOffline];
             } else {
                 // TODO Handle lastSentMessageText
                 // lastSentMessageText = altChatViewController.lastSentMessageText;
@@ -412,7 +412,7 @@
             NSDictionary *postSurveyDict = [aPacket objectForKey:@"postchat"];
             if (postSurveyDict && [postSurveyDict isKindOfClass:[NSDictionary class]])
             {
-                self.postchatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:postSurveyDict];
+                self.postchatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:postSurveyDict surveyType:LIOSurveyTypePostchat];
             }
         }
         
@@ -420,7 +420,7 @@
             NSDictionary *preSurveyDict = [aPacket objectForKey:@"prechat"];
             if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
             {
-                self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict];
+                self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict surveyType:LIOSurveyTypePrechat];
                 [self.delegate engagementDidReceivePrechatSurvey:self];
             }
         }
@@ -583,6 +583,7 @@
     }];
 }
 
+
 #pragma mark Action Methods
 
 - (void)sendVisitorLineWithText:(NSString *)text
@@ -599,6 +600,48 @@
     
     [self sendLineWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
+}
+
+- (void)submitSurvey:(LIOSurvey *)survey
+{
+    // TODO Check if engagement id exists
+
+    NSString *surveyTypeString;
+    switch (survey.surveyType) {
+        case LIOSurveyTypePrechat:
+            surveyTypeString = @"prechat";
+            [self.delegate engagementDidSubmitPrechatSurvey:self];
+            
+            break;
+            
+        case LIOSurveyTypeOffline:
+            surveyTypeString = @"offline";
+            break;
+            
+        case LIOSurveyTypePostchat:
+            surveyTypeString = @"postchat";
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+    NSString* surveyRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatSurveyRequestURL, self.engagementId];
+    NSDictionary *params = [NSDictionary dictionaryWithObject:[survey responseDict] forKey:surveyTypeString];
+    
+    [[LPChatAPIClient sharedClient] postPath:surveyRequestUrl parameters:params success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<SURVEY> with data:%@ response: %@", params, responseObject);
+        else
+            LIOLog(@"<SURVEY> success");
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<SURVEY> failure: %@", error);
+        
+        // If submitting the survey fails, and it's a pre chat survey, it's better to start the chat without the survey than ending the session
+        // TODO
+    }];
 }
 
 

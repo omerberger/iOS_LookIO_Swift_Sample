@@ -40,12 +40,14 @@
     return self;
 }
 
-- (id)initWithSurveyDictionary:(NSDictionary *)aDictionary
+- (id)initWithSurveyDictionary:(NSDictionary *)aDictionary surveyType:(LIOSurveyType)surveyType
 {
     self = [super init];
     
     if (self)
     {
+        self.surveyType = surveyType;
+        
         self.responses = [[NSMutableDictionary alloc] init];
         self.lastCompletedQuestionIndex = -1;
         self.lastSeenQuestionIndex = -1;
@@ -414,5 +416,15 @@
     self.questions = questions;
     self.logicDictionary = logicDictionary;
 }
+
+- (LIOSurveyQuestion *)questionForIntroView
+{
+    LIOSurveyQuestion *question = [[LIOSurveyQuestion alloc] init];
+    question.displayType = LIOSurveyQuestionDisplayTypeIntro;
+    question.label = self.header;
+    
+    return question;    
+}
+
 
 @end

@@ -34,6 +34,7 @@ typedef enum
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
 
 @end
 
@@ -55,5 +56,7 @@ typedef enum
 - (void)endEngagement;
 
 - (void)sendVisitorLineWithText:(NSString *)text;
+
+- (void)submitSurvey:(LIOSurvey *)survey;
 
 @end

@@ -10,6 +10,7 @@
 
 typedef enum
 {
+    LIOSurveyQuestionDisplayTypeIntro = 0,
     LIOSurveyQuestionDisplayTypeTextField,
     LIOSurveyQuestionDisplayTypePicker,
     LIOSurveyQuestionDisplayTypeMultiselect,

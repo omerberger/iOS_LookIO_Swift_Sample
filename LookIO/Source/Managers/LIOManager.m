@@ -306,6 +306,7 @@ static LIOManager *sharedLookIOManager = nil;
     [self dismissLookIOWindow];
 }
 
+
 #pragma mark Engagement Interaction Methods
 
 - (void)presentLookIOWindow
@@ -419,6 +420,7 @@ static LIOManager *sharedLookIOManager = nil;
         else
         {
             self.visit.visitState = LIOVisitStateChatActive;
+            [self.containerViewController presentChatForEngagement:engagement];
         }
     }
 }
@@ -436,6 +438,13 @@ static LIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement
+{
+    if (LIOVisitStatePreChatSurvey == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateChatStarted;
+    }
+}
 
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
 {
@@ -511,6 +520,7 @@ static LIOManager *sharedLookIOManager = nil;
 {
     [self.containerViewController engagement:engagement didReceiveNotification:notification];
 }
+
 
 #pragma mark Custom Branding Methods
 

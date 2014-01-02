@@ -14,7 +14,7 @@
 #import "LIOChatViewController.h"
 #import "LPSurveyViewController.h"
 
-@interface LIOContainerViewController () <LIOChatViewControllerDelegate>
+@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate>
 
 @property (nonatomic, strong) UIView *contentView;
 
@@ -148,6 +148,12 @@
     [self.chatViewController engagement:self.engagement didReceiveMessage:message];
 }
 
+- (void)presentLoadingViewController
+{
+    self.containerViewState = LIOContainerViewStateLoading;
+    [self swapCurrentControllerWith:self.loadingViewController animated:YES];
+}
+
 - (void)presentChatViewController:(BOOL)animated
 {
     [self.chatViewController setEngagement:self.engagement];
@@ -158,8 +164,23 @@
 - (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
 {
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
+    self.surveyViewController.delegate = self;
     self.containerViewState = LIOContainerViewStateSurvey;
     [self swapCurrentControllerWith:self.surveyViewController animated:animated];
+}
+
+#pragma mark -
+#pragma mark SurveyViewControllerDelegate Methods
+
+- (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCancelSurvey:(LIOSurvey *)survey
+{
+    
+}
+
+- (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
+{
+    [self presentLoadingViewController];
+    [self.engagement submitSurvey:survey];
 }
 
 #pragma mark -
