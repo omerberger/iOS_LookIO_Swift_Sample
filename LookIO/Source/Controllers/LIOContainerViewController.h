@@ -31,7 +31,7 @@ typedef enum {
 
 @end
 
-@interface LIOContainerViewController : UIViewController <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate>
+@interface LIOContainerViewController : UIViewController
 
 @property (nonatomic, assign) id <LIOContainerViewControllerDelegate> delegate;
 

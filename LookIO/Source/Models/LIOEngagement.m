@@ -102,7 +102,7 @@
 #pragma Engagement Payload methods
 
 - (void)saveChatCookies {
-    [self.chatCookies removeAllObjects];
+    [self.chatCookies removeAllObjects];    
     
     NSArray *all = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:[LPChatAPIClient sharedClient].baseURL];
     for (NSHTTPCookie *cookie in all) {

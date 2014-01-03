@@ -977,13 +977,7 @@
     loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [bezelView addSubview:loadingImageView];
     [loadingImageView release];
-    
-    CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-    loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
-    loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
-    loadingAnimation.duration = 1.0f;
-    loadingAnimation.repeatCount = HUGE_VAL;
-    [loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
+
     
     UILabel* loadingLabel = [[UILabel alloc] initWithFrame:waitingForSurveyView.bounds];
     loadingLabel.backgroundColor = [UIColor clearColor];

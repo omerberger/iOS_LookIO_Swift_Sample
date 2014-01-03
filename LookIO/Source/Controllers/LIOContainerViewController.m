@@ -13,8 +13,9 @@
 
 #import "LIOChatViewController.h"
 #import "LPSurveyViewController.h"
+#import "LIOLoadingViewController.h"
 
-@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate>
+@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate>
 
 @property (nonatomic, strong) UIView *contentView;
 
@@ -288,8 +289,7 @@
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;
     
-    self.loadingViewController = [[UIViewController alloc] init];
-    self.loadingViewController.view.backgroundColor = [UIColor redColor];
+    self.loadingViewController = [[LIOLoadingViewController alloc] init];
 
     self.containerViewState = LIOContainerViewStateLoading;
     [self addChildViewController:self.loadingViewController];

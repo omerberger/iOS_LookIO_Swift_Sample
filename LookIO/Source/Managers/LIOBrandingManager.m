@@ -82,6 +82,16 @@ static LIOBrandingManager *brandingManager = nil;
         return engagementDictionary;
     }
     
+    if (LIOBrandingElementLoadingScreen == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *loadingDictionary = [ engagementDictionary objectForKey:@"loading_screen"];
+            if (loadingDictionary)
+                dictionary = loadingDictionary;
+        }
+    }
+    
     if (LIOBrandingElementAgentChatBubble == element)
     {
         if (engagementDictionary)
@@ -340,7 +350,22 @@ static LIOBrandingManager *brandingManager = nil;
     return font;
 }
 
+- (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element
+{
+    BOOL value = NO;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSNumber *boolValueNumber = [elementDictionary objectForKey:field];
+        if (boolValueNumber)
+        {
+            value = [boolValueNumber boolValue];
+        }
+    }
 
+    return value;    
+}
 
 
 

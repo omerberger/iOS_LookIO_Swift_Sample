@@ -9,10 +9,11 @@
         "loading_screen" : {
             "spin_image" : "1",
             "font" : {
-                "color" : "#FFFFFF"
+                "color" : "#666666"
             },
             "background" : {
-                "color" : "#000000"
+                "color" : "#cccccc",
+                "alpha" : "0.8"
             },
             "image" : ""
         },

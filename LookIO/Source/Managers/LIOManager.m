@@ -445,6 +445,7 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement
 {
+    return;
     // If surveys aren't enabled, ignore this survey
     if (!self.visit.surveysEnabled)
         return;
