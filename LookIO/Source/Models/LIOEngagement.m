@@ -95,7 +95,7 @@
 
 - (void)endEngagement
 {
-    self.sseChannelState = LIOSSeChannelStateEnding;
+    self.sseChannelState = LIOSSEChannelStateEnding;
     [self sendOutroPacket];
 }
 
@@ -282,23 +282,35 @@
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
-    if (LIOVisitStateChatRequested == self.visit.visitState && LIOSSEChannelStateConnecting == self.sseChannelState)
-    {
-        self.sseChannelState = LIOSSEChannelStateInitialized;
-        [self.delegate engagementDidFailToStart:self];
-    }
-    
-    if (LIOSSEChannelStateCancelling == self.sseChannelState)
-    {
-        self.sseChannelState = LIOSSEChannelStateInitialized;
-        [self.delegate engagementDidCancel:self];
-    }
+    switch (self.sseChannelState) {
+        // If we are attempting to connect initially, this means we failed to start
+        case LIOSSEChannelStateConnecting:
+            if (LIOVisitStateChatRequested == self.visit.visitState)
+                [self.delegate engagementDidFailToStart:self];
+            break;
 
-    if (LIOSSeChannelStateEnding == self.sseChannelState)
-    {
-        self.sseChannelState = LIOSSEChannelStateInitialized;
+        // If we're cancelling, this means cancelling succeeded
+        case LIOSSEChannelStateCancelling:
+            [self.delegate engagementDidCancel:self];
+            break;
+           
+        // If we're ending, this means ending succeeded
+        case LIOSSEChannelStateEnding:
+            [self.delegate engagementDidEnd:self];
+            break;
+            
+        // If we didn't expect this, it's a disconnection
+        case LIOSSEChannelStateConnected:
+            // TODO: Add reconnect logic
+            [self.delegate engagementDidDisconnect:self];
+            break;
+            
+            
+        default:
+            break;
     }
     
+    self.sseChannelState = LIOSSEChannelStateInitialized;
 }
 
 - (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError *)err

@@ -122,9 +122,12 @@
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
 {
-    self.engagement = anEngagement;
-    [self presentHeaderBarView:YES];
-    [self presentChatViewController:YES];
+    if (self.containerViewState != LIOContainerViewStateChat)
+    {
+        self.engagement = anEngagement;
+        [self presentHeaderBarView:YES];
+        [self presentChatViewController:YES];
+    }
 }
 
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement

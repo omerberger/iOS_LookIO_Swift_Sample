@@ -436,7 +436,7 @@ static LIOManager *sharedLookIOManager = nil;
     
     // If surveys are enabled, and no survey is available, an empty survey will be returned
     // In this case, chat should just be displayed as if it was opened normally
-    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState )
+    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatOpened;
         [self.containerViewController presentChatForEngagement:engagement];
@@ -469,13 +469,26 @@ static LIOManager *sharedLookIOManager = nil;
     
 }
 
-
 - (void)engagementDidEnd:(LIOEngagement *)engagement
 {
     self.engagement = nil;
     self.visit.visitState = LIOVisitStateVisitInProgress;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self dismissLookIOWindow];
+}
+
+- (void)engagementDidDisconnect:(LIOEngagement *)engagement
+{
+    self.engagement = nil;
+    self.visit.visitState = LIOVisitStateVisitInProgress;
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    [alertView show];
 }
 
 - (void)engagementDidCancel:(LIOEngagement *)engagement

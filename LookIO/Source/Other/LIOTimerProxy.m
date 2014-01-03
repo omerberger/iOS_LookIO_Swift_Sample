@@ -51,7 +51,6 @@
 
 - (void)theTimerDidFire:(NSTimer *)aTimer
 {
-    return;
     if (selectorTakesArgument)
         [theTarget performSelector:theSelector withObject:self];
     else

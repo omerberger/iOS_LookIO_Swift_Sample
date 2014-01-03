@@ -18,7 +18,7 @@ typedef enum
     LIOSSEChannelStateConnecting,
     LIOSSEChannelStateConnected,
     LIOSSEChannelStateCancelling,
-    LIOSSeChannelStateEnding
+    LIOSSEChannelStateEnding
 } LIOSSEChannelState;
 
 @class LIOEngagement;
@@ -30,6 +30,7 @@ typedef enum
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement;
 - (void)engagementDidCancel:(LIOEngagement *)engagement;
 - (void)engagementDidEnd:(LIOEngagement *)engagement;
+- (void)engagementDidDisconnect:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
