@@ -34,7 +34,7 @@
 
 #define LIOIndexForSurveyIntroPage  -1
 
-@interface LIOSurveyQuestionView () <UITextFieldDelegate, UITextViewDelegate, LIOStarRatingViewDelegate>
+@interface LIOSurveyQuestionView () <UITextFieldDelegate, UITextViewDelegate, LIOStarRatingViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UIView *backgroundView;
 @property (nonatomic, strong) UITableView *tableView;
@@ -45,7 +45,7 @@
 @property (nonatomic, strong) UILabel *subtitleLabel;
 
 @property (nonatomic, strong) UIButton *nextButton;
-@property (nonatomic, strong) UIButton *previousButton;
+@property (nonatomic, strong) UIButton *cancelButton;
 
 @property (nonatomic, strong) LIOSurveyQuestion *question;
 
@@ -150,14 +150,18 @@
         [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
         [self addSubview:self.nextButton];
         
-        self.previousButton = [[UIButton alloc] initWithFrame:CGRectZero];
-        [self.previousButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        self.previousButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        [self.previousButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [self.previousButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
-        self.previousButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [self.previousButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
-        [self addSubview:self.previousButton];
+        self.cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
+        [self.cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+        self.cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
+        [self.cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+        [self.cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+        self.cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        [self.cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
+        [self addSubview:self.cancelButton];
+        
+        UIGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapBackground:)];
+        tapGestureRecognizer.delegate = self;
+        [self addGestureRecognizer:tapGestureRecognizer];
     }
     
     return self;
@@ -176,13 +180,13 @@
     
     self.subtitleLabel.hidden = YES;
     self.nextButton.hidden = YES;
-    self.previousButton.hidden = YES;
+    self.cancelButton.hidden = YES;
 
     if (LIOSurveyQuestionDisplayTypeIntro == question.displayType)
     {
         self.subtitleLabel.hidden = NO;
         self.nextButton.hidden = NO;
-        self.previousButton.hidden = NO;
+        self.cancelButton.hidden = NO;
     }
     
     self.textFieldBackground.hidden = YES;
@@ -407,12 +411,12 @@
         aFrame.size.height = 44.0;
         self.nextButton.frame = aFrame;
         
-        self.previousButton.hidden = NO;
+        self.cancelButton.hidden = NO;
         aFrame.origin.x = referenceFrame.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
         aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height - (landscape ? 0 : 20.0);
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
-        self.previousButton.frame = aFrame;
+        self.cancelButton.frame = aFrame;
         
         CGSize aSize;
         aSize.width = self.frame.size.width;
@@ -708,7 +712,7 @@
     [self.delegate surveyQuestionViewDidTapNextButton:self];
 }
 
-#pragma mark
+#pragma mark -
 #pragma mark UITextField/UITextView delegate methods
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
@@ -737,16 +741,20 @@
     return YES;
 }
 
-/*
+#pragma mark -
+#pragma mark UIGestureRecognizer Methods
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if ([touch.view isDescendantOfView:currentScrollView]) {
-        return NO; // ignore the touch
-    }
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+    if (touch.view == self)
+        return YES;
     
-    return YES; // handle the touch
+    return NO;
 }
- */
 
+- (void)didTapBackground:(id)sender
+{
+    [self.delegate surveyQuestionViewDidTapCancelButton:self];
+}
 
 @end

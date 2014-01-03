@@ -38,7 +38,7 @@ typedef enum
 - (int)numberOfQuestionsWithLogic;
 - (BOOL)shouldShowQuestion:(NSInteger)index;
 - (NSDictionary*)responseDict;
-
 - (LIOSurveyQuestion *)questionForIntroView;
+- (BOOL)anyQuestionsAnswered;
 
 @end

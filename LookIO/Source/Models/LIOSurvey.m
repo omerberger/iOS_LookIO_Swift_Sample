@@ -426,5 +426,14 @@
     return question;    
 }
 
+- (BOOL)anyQuestionsAnswered
+{
+    NSDictionary* surveyDict = [self responseDict];
+    NSDictionary* questionsArray = [surveyDict objectForKey:@"questions"];
+    if (!questionsArray || questionsArray.count == 0)
+        return NO;
+
+    return YES;
+}
 
 @end

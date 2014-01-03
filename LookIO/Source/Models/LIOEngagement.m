@@ -89,11 +89,13 @@
 
 - (void)cancelEngagement
 {
+    self.sseChannelState = LIOSSEChannelStateCancelling;
     [self.sseManager disconnect];
 }
 
 - (void)endEngagement
 {
+    self.sseChannelState = LIOSSeChannelStateEnding;
     [self sendOutroPacket];
 }
 
@@ -282,12 +284,19 @@
 {
     if (LIOVisitStateChatRequested == self.visit.visitState && LIOSSEChannelStateConnecting == self.sseChannelState)
     {
+        self.sseChannelState = LIOSSEChannelStateInitialized;
         [self.delegate engagementDidFailToStart:self];
     }
     
     if (LIOSSEChannelStateCancelling == self.sseChannelState)
     {
+        self.sseChannelState = LIOSSEChannelStateInitialized;
         [self.delegate engagementDidCancel:self];
+    }
+
+    if (LIOSSeChannelStateEnding == self.sseChannelState)
+    {
+        self.sseChannelState = LIOSSEChannelStateInitialized;
     }
     
 }
@@ -420,8 +429,16 @@
             NSDictionary *preSurveyDict = [aPacket objectForKey:@"prechat"];
             if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
             {
-                self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict surveyType:LIOSurveyTypePrechat];
-                [self.delegate engagementDidReceivePrechatSurvey:self];
+                // If the dictionary is empty, just start the engagement
+                if ([preSurveyDict.allKeys count] == 0)
+                {
+                    [self.delegate engagementDidStart:self];
+                }
+                else
+                {
+                    self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict surveyType:LIOSurveyTypePrechat];
+                    [self.delegate engagementDidReceivePrechatSurvey:self];
+                }
             }
         }
     }

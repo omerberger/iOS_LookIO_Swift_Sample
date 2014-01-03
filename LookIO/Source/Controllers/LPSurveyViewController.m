@@ -200,7 +200,17 @@
 
 - (void)surveyQuestionViewDidTapCancelButton:(LIOSurveyQuestionView *)surveyQuestionView
 {
+    [self.view endEditing:YES];
     
+    // For a prechat survey, we allow just tapping off
+    if (LIOSurveyTypePrechat == self.survey.surveyType)
+    {
+        [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+    }
+    else
+    {
+        // TODO: Show an alertview for dismissing the survey for postchat or offline
+    }
 }
 
 /*
@@ -274,76 +284,80 @@
  }
  }
  
- -(void)bounceViewLeft {
- isAnimatingTransition = YES;
- 
- BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
- 
- if (!padUI) {
- [UIView animateWithDuration:0.1 animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x += 30;
- currentScrollView.frame = aFrame;
- } completion:^(BOOL finished) {
- [UIView animateWithDuration:0.1 animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x -= 40;
- currentScrollView.frame = aFrame;
- } completion:^(BOOL finished) {
- [UIView animateWithDuration:0.1 animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x += 30;
- currentScrollView.frame = aFrame;
- } completion:^(BOOL finished) {
- [UIView animateWithDuration:0.1 animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x -= 20;
- currentScrollView.frame = aFrame;
- } completion:^(BOOL finished) {
- isAnimatingTransition = NO;
- }];
- }];
- }];
- }];
- } else {
- [UIView animateWithDuration:0.15 animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x += 70;
- currentScrollView.frame = aFrame;
- if (nextQuestionImageView) {
- CGRect aFrame = nextQuestionImageView.frame;
- aFrame.origin.x += 35;
- nextQuestionImageView.frame = aFrame;
- }
- if (previousQuestionImageView) {
- CGRect aFrame = previousQuestionImageView.frame;
- aFrame.origin.x += 35;
- previousQuestionImageView.frame = aFrame;
- }
- } completion:^(BOOL finished) {
- [UIView animateWithDuration:0.2 delay:0.05 options:UIViewAnimationOptionCurveEaseInOut animations:^{
- CGRect aFrame = currentScrollView.frame;
- aFrame.origin.x -= 70;
- currentScrollView.frame = aFrame;
- if (nextQuestionImageView) {
- CGRect aFrame = nextQuestionImageView.frame;
- aFrame.origin.x -= 35;
- nextQuestionImageView.frame = aFrame;
- }
- if (previousQuestionImageView) {
- CGRect aFrame = previousQuestionImageView.frame;
- aFrame.origin.x -= 35;
- previousQuestionImageView.frame = aFrame;
- }
- 
- } completion:^(BOOL finished) {
- isAnimatingTransition = NO;
- }];
- }];
- }
- }
- 
  */
+
+-(void)bounceViewLeft
+{
+    self.isAnimatingTransition = YES;
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (!padUI) {
+        [UIView animateWithDuration:0.1 animations:^{
+            CGRect aFrame = self.scrollView.frame;
+            aFrame.origin.x += 30;
+            self.scrollView.frame = aFrame;
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.1 animations:^{
+                CGRect aFrame = self.scrollView.frame;
+                aFrame.origin.x -= 40;
+                self.scrollView.frame = aFrame;
+            } completion:^(BOOL finished) {
+                [UIView animateWithDuration:0.1 animations:^{
+                    CGRect aFrame = self.scrollView.frame;
+                    aFrame.origin.x += 30;
+                    self.scrollView.frame = aFrame;
+                } completion:^(BOOL finished) {
+                    [UIView animateWithDuration:0.1 animations:^{
+                        CGRect aFrame = self.scrollView.frame;
+                        aFrame.origin.x -= 20;
+                        self.scrollView.frame = aFrame;
+                    } completion:^(BOOL finished) {
+                        self.isAnimatingTransition = NO;
+                    }];
+                }];
+            }];
+        }];
+    }
+   /*
+    else {
+        [UIView animateWithDuration:0.15 animations:^{
+            CGRect aFrame = currentScrollView.frame;
+            aFrame.origin.x += 70;
+            currentScrollView.frame = aFrame;
+            if (nextQuestionImageView) {
+                CGRect aFrame = nextQuestionImageView.frame;
+                aFrame.origin.x += 35;
+                nextQuestionImageView.frame = aFrame;
+            }
+            if (previousQuestionImageView) {
+                CGRect aFrame = previousQuestionImageView.frame;
+                aFrame.origin.x += 35;
+                previousQuestionImageView.frame = aFrame;
+            }
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.2 delay:0.05 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                CGRect aFrame = currentScrollView.frame;
+                aFrame.origin.x -= 70;
+                currentScrollView.frame = aFrame;
+                if (nextQuestionImageView) {
+                    CGRect aFrame = nextQuestionImageView.frame;
+                    aFrame.origin.x -= 35;
+                    nextQuestionImageView.frame = aFrame;
+                }
+                if (previousQuestionImageView) {
+                    CGRect aFrame = previousQuestionImageView.frame;
+                    aFrame.origin.x -= 35;
+                    previousQuestionImageView.frame = aFrame;
+                }
+                
+            } completion:^(BOOL finished) {
+                isAnimatingTransition = NO;
+            }];
+        }];
+    }
+    */
+}
 
 - (void)bounceViewRight
 {
@@ -420,6 +434,59 @@
      */
 }
 
+- (BOOL)setupPreviousQuestionScrollView
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    BOOL foundPreviousPage = NO;
+
+    NSInteger previousQuestionIndex = self.currentQuestionIndex;
+    while (!foundPreviousPage) {
+
+        // If we're at the intro screen, just bounce the screen
+        if (previousQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+        {
+            return NO;
+        }
+        
+        // Mode to the previous question, but check if we should show it taking into account logic issues
+        previousQuestionIndex -= 1;
+        
+        if (previousQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+            foundPreviousPage = YES;
+        else
+            if ([self.survey shouldShowQuestion:previousQuestionIndex])
+                foundPreviousPage = YES;
+    }
+    
+    LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:previousQuestionIndex];
+    
+    // If we already have a previous question view, and we're just updating it
+    if (self.previousQuestionView)
+    {
+        self.previousQuestionView.tag = previousQuestionIndex;
+        [self.previousQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+    }
+    else
+    {
+        // If not, we should set up a new one
+        if (self.reusableQuestionView)
+        {
+            self.previousQuestionView = self.reusableQuestionView;
+            self.reusableQuestionView = nil;
+        }
+        else
+        {
+            self.previousQuestionView = [[LIOSurveyQuestionView alloc] initWithFrame:self.scrollView.bounds];
+        }
+        [self.scrollView addSubview:self.previousQuestionView];
+        
+        self.previousQuestionView.tag = previousQuestionIndex;
+        [self.previousQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+    }
+    
+    return YES;
+}
+
 - (BOOL)setupNextQuestionScrollView
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -447,12 +514,6 @@
         nextQuestionIndex += 1;
         if ([self.survey shouldShowQuestion:nextQuestionIndex])
             foundNextPage = YES;
-    }
-    
-    if (self.validationView)
-    {
-        [self.validationTimer stopTimer];
-        [self validationTimerDidFire];
     }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:nextQuestionIndex];
@@ -538,8 +599,55 @@
     
 }
 
+- (void)switchToPreviousQuestion
+{
+    if (self.validationView)
+    {
+        [self.validationTimer stopTimer];
+        [self validationTimerDidFire];
+    }
+    
+    [self.currentQuestionView endEditing:YES];
+    [self.previousQuestionView setNeedsLayout];
+    [self.previousQuestionView becomeFirstResponder];
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        CGPoint contentOffset = self.scrollView.contentOffset;
+        contentOffset.x = 0;
+        self.scrollView.contentOffset = contentOffset;
+    } completion:^(BOOL finished) {
+        self.currentQuestionIndex = self.previousQuestionView.tag;
+        
+        LIOSurveyQuestionView *tempView = nil;
+        if (self.nextQuestionView)
+        {
+            [self.nextQuestionView removeFromSuperview];
+            tempView = self.nextQuestionView;
+        }
+        self.nextQuestionView = self.currentQuestionView;
+        self.currentQuestionView = self.previousQuestionView;
+        self.previousQuestionView = nil;
+        [self setupPreviousQuestionScrollView];
+        
+        [self updateScrollView];
+        
+        if (tempView)
+        {
+            self.reusableQuestionView = tempView;
+        }
+        
+        [self.selectedIndices removeAllObjects];
+    }];
+}
+
 - (void)switchToNextQuestion
 {
+    if (self.validationView)
+    {
+        [self.validationTimer stopTimer];
+        [self validationTimerDidFire];
+    }
+    
     [self.currentQuestionView endEditing:YES];
     [self.nextQuestionView setNeedsLayout];
     [self.nextQuestionView becomeFirstResponder];
@@ -556,7 +664,7 @@
         }        
         self.scrollView.contentOffset = contentOffset;
     } completion:^(BOOL finished) {
-        self.currentQuestionIndex += 1;
+        self.currentQuestionIndex = self.nextQuestionView.tag;
         
         LIOSurveyQuestionView *tempView = nil;
         if (self.previousQuestionView)
@@ -1317,7 +1425,7 @@
 #pragma mark UITextField delegate methods
 
 -(BOOL)textFieldShouldReturn:(UITextField *)textField {
-    [self switchToNextQuestion];
+    [self surveyQuestionViewDidTapNextButton:self.currentQuestionView];
     
     return NO;
 }
@@ -1325,7 +1433,7 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 {
 	if ([text isEqualToString:@"\n"]) {
-        [self switchToNextQuestion];
+        [self surveyQuestionViewDidTapNextButton:self.currentQuestionView];
         return NO;
     }
     return YES;

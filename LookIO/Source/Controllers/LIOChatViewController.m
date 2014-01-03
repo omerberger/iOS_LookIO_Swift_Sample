@@ -122,7 +122,10 @@
     switch (alertView.tag) {
         case LIOChatViewControllerEndChatAlertViewTag:
             if (buttonIndex == 1)
+            {
                 [self.engagement endEngagement];
+                [self.delegate chatViewControllerEndChat:self];
+            }
             break;
             
         default:

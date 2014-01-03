@@ -17,7 +17,8 @@ typedef enum
     LIOSSEChannelStateInitialized = 0,
     LIOSSEChannelStateConnecting,
     LIOSSEChannelStateConnected,
-    LIOSSEChannelStateCancelling
+    LIOSSEChannelStateCancelling,
+    LIOSSeChannelStateEnding
 } LIOSSEChannelState;
 
 @class LIOEngagement;

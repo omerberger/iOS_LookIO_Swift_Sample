@@ -112,15 +112,12 @@
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController
 {
-    [UIView animateWithDuration:0.3 animations:^{
-        self.blurImageView.alpha = 0.0;
-        self.view.alpha = 0.0;
-    } completion:^(BOOL finished) {
-        [self.delegate containerViewControllerDidDismiss:self];
-        self.containerViewState = LIOContainerViewStateLoading;
-        [self swapCurrentControllerWith:self.loadingViewController animated:NO];
-        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
-    }];
+    [self dismiss];
+}
+
+- (void)chatViewControllerEndChat:(LIOChatViewController *)chatViewController
+{
+    [self dismiss];
 }
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
@@ -174,7 +171,7 @@
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCancelSurvey:(LIOSurvey *)survey
 {
-    
+    [self dismiss];
 }
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
@@ -226,6 +223,19 @@
         self.currentViewController = viewController;
         [self.currentViewController didMoveToParentViewController:self];
     }
+}
+
+- (void)dismiss
+{
+    [UIView animateWithDuration:0.3 animations:^{
+        self.blurImageView.alpha = 0.0;
+        self.view.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [self.delegate containerViewControllerDidDismiss:self];
+        self.containerViewState = LIOContainerViewStateLoading;
+        [self swapCurrentControllerWith:self.loadingViewController animated:NO];
+        [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
+    }];
 }
 
 #pragma mark -

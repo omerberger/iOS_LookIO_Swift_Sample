@@ -306,7 +306,6 @@ static LIOManager *sharedLookIOManager = nil;
     [self dismissLookIOWindow];
 }
 
-
 #pragma mark Engagement Interaction Methods
 
 - (void)presentLookIOWindow
@@ -345,9 +344,16 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     switch (self.visit.visitState) {
+        // If chat was opened but not started, we cancel the engagement
         case LIOVisitStateChatOpened:
             self.visit.visitState = LIOVisitStateVisitInProgress;
             [self.engagement cancelEngagement];
+            break;
+            
+        case LIOVisitStatePreChatSurvey:
+            // If prechat survey is open and no questions were answered, cancel the engagement
+            if (![self.engagement.prechatSurvey anyQuestionsAnswered])
+                [self.engagement cancelEngagement];
             break;
             
         default:
@@ -388,6 +394,10 @@ static LIOManager *sharedLookIOManager = nil;
             [self.containerViewController presentChatForEngagement:self.engagement];
             break;
             
+        case LIOVisitStatePreChatSurvey:
+            [self.containerViewController presentPrechatSurveyForEngagement:self.engagement];
+            break;
+            
         default:
             break;
     }
@@ -422,6 +432,14 @@ static LIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateChatActive;
             [self.containerViewController presentChatForEngagement:engagement];
         }
+    }
+    
+    // If surveys are enabled, and no survey is available, an empty survey will be returned
+    // In this case, chat should just be displayed as if it was opened normally
+    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState )
+    {
+        self.visit.visitState = LIOVisitStateChatOpened;
+        [self.containerViewController presentChatForEngagement:engagement];
     }
 }
 
@@ -463,6 +481,7 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)engagementDidCancel:(LIOEngagement *)engagement
 {
     self.engagement = nil;
+    self.visit.visitState = LIOVisitStateVisitInProgress;
 }
 
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement
