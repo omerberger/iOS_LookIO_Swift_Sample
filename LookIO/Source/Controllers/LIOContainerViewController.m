@@ -124,9 +124,18 @@
     [self dismiss];
 }
 
-- (void)chatViewControllerEndChat:(LIOChatViewController *)chatViewController
+- (void)chatViewControllerDidEndChat:(LIOChatViewController *)chatViewController
 {
-    [self dismiss];
+    // Let's see it there is a post chat survey
+    if ([self.engagement shouldPresentPostChatSurvey])
+    {
+        [self.delegate containerViewControllerDidPresentPostChatSurvey:self];
+        [self presentPostchatSurveyForEngagement:self.engagement];
+    }
+    else
+    {
+        [self dismiss];
+    }
 }
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
@@ -154,7 +163,10 @@
 
 - (void)presentOfflineSurveyForEngagement:(LIOEngagement *)anEngagement
 {
-    [self presentHeaderBarView:YES];
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        [self presentHeaderBarView:YES];
+    else
+        self.headerBarState = LIOHeaderBarStateLandscapeHidden;
     [self presentSurveyViewControllerWithSurvey:self.engagement.offlineSurvey animated:YES];
 }
 
@@ -174,6 +186,15 @@
     [self.chatViewController setEngagement:self.engagement];
     self.containerViewState = LIOContainerViewStateChat;
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
+}
+
+- (void)presentPostchatSurveyForEngagement:(LIOEngagement *)anEngagement
+{
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        [self presentHeaderBarView:YES];
+    else
+        self.headerBarState = LIOHeaderBarStateLandscapeHidden;
+    [self presentSurveyViewControllerWithSurvey:self.engagement.postchatSurvey animated:YES];
 }
 
 - (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
@@ -203,6 +224,9 @@
 
 - (void)swapCurrentControllerWith:(UIViewController*)viewController animated:(BOOL)animated
 {
+    if (viewController == self.currentViewController)
+        return;
+    
     [self.currentViewController willMoveToParentViewController:nil];
     [self addChildViewController:viewController];
     

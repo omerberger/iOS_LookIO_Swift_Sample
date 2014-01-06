@@ -124,7 +124,7 @@
             if (buttonIndex == 1)
             {
                 [self.engagement endEngagement];
-                [self.delegate chatViewControllerEndChat:self];
+                [self.delegate chatViewControllerDidEndChat:self];
             }
             break;
             

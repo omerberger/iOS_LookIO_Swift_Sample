@@ -741,6 +741,8 @@
         if (tempView)
         {
             self.reusableQuestionView = tempView;
+            self.reusableQuestionView.tag = -1000;
+
         }
     }];
 }
@@ -790,6 +792,7 @@
         if (tempView)
         {
             self.reusableQuestionView = tempView;
+            self.reusableQuestionView.tag = -1000;
         }
     }];
     

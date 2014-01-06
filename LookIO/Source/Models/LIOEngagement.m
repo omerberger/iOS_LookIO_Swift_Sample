@@ -82,6 +82,12 @@
 
 #pragma mark Engagement Lifecycle Methods
 
+- (void)cleanUpEngagement
+{
+    self.sseManager.delegate = nil;
+}
+
+
 - (void)startEngagement
 {
     [self sendIntroPacket];
@@ -414,18 +420,25 @@
             // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
             // we do want to use this method
             
+            // TODO Handle shouldUseCustomactionForNotChatAnswered
+            
             NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
             if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
             {
                 self.offlineSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:offlineSurveyDict surveyType:LIOSurveyTypeOffline];
             } else {
-                // TODO Handle lastSentMessageText
-                // lastSentMessageText = altChatViewController.lastSentMessageText;
+                NSString *lastSentMessageText = nil;
                 
-                NSString *lastSentMessageText = @"TODO Put message here";
+                if (self.messages.count > 0)
+                {
+                    LIOChatMessage *chatMessage = [self.messages objectAtIndex:self.messages.count - 1];
+                    lastSentMessageText = chatMessage.text;
+                }
                 
                 self.offlineSurvey = [[LIOSurvey alloc] initWithDefaultOfflineSurveyWithResponse:lastSentMessageText];
             }
+            
+            [self.delegate engagementDidReceiveOfflineSurvey:self];
         }
         
         // Check if this is a postchat survey
@@ -673,5 +686,16 @@
     }];
 }
 
+#pragma mark -
+#pragma mark Helper Methods
+
+- (BOOL)shouldPresentPostChatSurvey
+{
+    BOOL shouldPresentPostChatSurvey = NO;
+    if (self.visit.surveysEnabled && self.postchatSurvey)
+        shouldPresentPostChatSurvey = YES;
+    
+    return shouldPresentPostChatSurvey;
+}
 
 @end

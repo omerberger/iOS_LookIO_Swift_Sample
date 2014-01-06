@@ -56,9 +56,13 @@ typedef enum
 - (void)startEngagement;
 - (void)cancelEngagement;
 - (void)endEngagement;
+- (void)cleanUpEngagement;
 
 - (void)sendVisitorLineWithText:(NSString *)text;
 
 - (void)submitSurvey:(LIOSurvey *)survey;
+- (BOOL)shouldPresentPostChatSurvey;
+
+
 
 @end

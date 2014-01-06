@@ -306,6 +306,12 @@ static LIOManager *sharedLookIOManager = nil;
     [self dismissLookIOWindow];
 }
 
+- (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController
+{
+    self.visit.visitState = LIOVisitStatePostChatSurvey;
+}
+
+#pragma mark -
 #pragma mark Engagement Interaction Methods
 
 - (void)presentLookIOWindow
@@ -471,12 +477,24 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
 {
-    
+    if (!self.visit.surveysEnabled)
+        return;
+
+    if (LIOVisitStateChatStarted == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateOfflineSurvey;
+        [self.containerViewController presentOfflineSurveyForEngagement:engagement];
+    }
 }
 
 - (void)engagementDidEnd:(LIOEngagement *)engagement
 {
+    if (LIOVisitStatePostChatSurvey == self.visit.visitState)
+        return;
+    
+    [self.engagement cleanUpEngagement];
     self.engagement = nil;
+    
     self.visit.visitState = LIOVisitStateVisitInProgress;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self dismissLookIOWindow];
@@ -484,7 +502,9 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement
 {
+    [self.engagement cleanUpEngagement];
     self.engagement = nil;
+    
     self.visit.visitState = LIOVisitStateVisitInProgress;
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
@@ -498,7 +518,9 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidCancel:(LIOEngagement *)engagement
 {
+    [self.engagement cleanUpEngagement];
     self.engagement = nil;
+    
     self.visit.visitState = LIOVisitStateVisitInProgress;
 }
 

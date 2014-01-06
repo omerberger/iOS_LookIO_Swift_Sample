@@ -28,6 +28,7 @@ typedef enum {
 @protocol LIOContainerViewControllerDelegate <NSObject>
 
 - (void)containerViewControllerDidDismiss:(LIOContainerViewController *)containerViewController;
+- (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController;
 
 @end
 
@@ -40,6 +41,7 @@ typedef enum {
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement;
 - (void)presentOfflineSurveyForEngagement:(LIOEngagement *)anEngagement;
+- (void)presentPostchatSurveyForEngagement:(LIOEngagement *)anEngagement;
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;

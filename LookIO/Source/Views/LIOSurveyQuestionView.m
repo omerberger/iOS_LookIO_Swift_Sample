@@ -440,7 +440,7 @@
         
         CGSize aSize;
         aSize.width = self.frame.size.width;
-        aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + (landscape ? 8.0 : 45.0);
+        aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + (landscape ? 20.0 : 45.0);
         self.contentSize = aSize;
     }
     
@@ -527,7 +527,7 @@
         // Set up the scroll view to allow scrolling down to the text field if needed
         CGSize aSize;
         aSize.width = self.frame.size.width;
-        aSize.height = self.textFieldBackground.frame.origin.y + self.textFieldBackground.frame.size.height + 30.0;
+        aSize.height = self.textFieldBackground.frame.origin.y + self.textFieldBackground.frame.size.height + 65.0;
         self.contentSize = aSize;
         
         if (padUI)
