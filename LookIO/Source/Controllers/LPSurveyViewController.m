@@ -1102,8 +1102,7 @@
     
     self.validationView = [[LIOSurveyValidationView alloc] init];
     CGRect aFrame = self.validationView.frame;
-    aFrame.origin.y = (landscape || padUI) ? 0 : 32;
-    self.validationView.verticallyMirrored = YES;
+    aFrame.origin.y = 0;
     aFrame.size.width = self.view.bounds.size.width;
     if (padUI)
     {
@@ -1323,9 +1322,11 @@
         }
     }
     
-    UIFont* font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+    UIFont* font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyList];
+
     if (isRowSelected)
-        font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+        font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
+
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
@@ -1361,8 +1362,8 @@
         
         UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectMake(15.0, 17.0, tableView.bounds.size.width - 40.0, 19.0)];
         textLabel.tag = LIOSurveyViewTableCellLabelTag;
-        textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        textLabel.textColor = [UIColor darkGrayColor];
+        textLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyList];
+        textLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyList];
         textLabel.backgroundColor = [UIColor clearColor];
         [cell.contentView addSubview:textLabel];
                 
@@ -1393,12 +1394,12 @@
         if (isRowSelected)
         {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+            textLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
         }
         else
         {
             cell.accessoryType = UITableViewCellAccessoryNone;
-            textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+            textLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyList];
         }
     }
     else

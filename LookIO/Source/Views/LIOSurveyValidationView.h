@@ -15,17 +15,9 @@
 @end
 
 @interface LIOSurveyValidationView : UIView
-{
-    UILabel *label;
-    UIImageView *cautionSign;
-    UIImageView *backgroundImage;
-    BOOL verticallyMirrored;
-    id<LIOSurveyValidationViewDelegate> delegate;
-}
 
-@property(nonatomic, readonly) UILabel *label;
-@property(nonatomic, assign) BOOL verticallyMirrored;
-@property(nonatomic, assign) id<LIOSurveyValidationViewDelegate> delegate;
+@property (nonatomic, assign) id<LIOSurveyValidationViewDelegate> delegate;
+@property (nonatomic, strong) UILabel *label;
 
 - (void)showAnimated;
 - (void)hideAnimated;

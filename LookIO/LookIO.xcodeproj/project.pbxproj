@@ -398,10 +398,10 @@
 				A73D44371856776A0030FF44 /* LIOContainerViewController.m */,
 				A721D2751851367D0039395E /* LIOChatViewController.h */,
 				A721D2761851367D0039395E /* LIOChatViewController.m */,
-				A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */,
-				A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */,
 				A7F4622818771EAA00C0BD23 /* LIOLoadingViewController.h */,
 				A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */,
+				A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */,
+				A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */,
 			);
 			name = "New View Controllers";
 			sourceTree = "<group>";
@@ -458,6 +458,8 @@
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
+				D4137A121592948E0097E385 /* LIOSurveyValidationView.h */,
+				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -589,8 +591,6 @@
 				D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */,
 				D4137A0E159148F30097E385 /* LIOSurveyPickerView.h */,
 				D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */,
-				D4137A121592948E0097E385 /* LIOSurveyValidationView.h */,
-				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
 				A7D4E843177498AB0037E47B /* LIOStarRatingView.h */,

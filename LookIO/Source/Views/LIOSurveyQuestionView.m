@@ -134,10 +134,10 @@
         [self addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-        self.tableView.backgroundColor = [UIColor whiteColor];
-        self.tableView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+        self.tableView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyList];
+        self.tableView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList] CGColor];
         self.tableView.layer.borderWidth = 1.0;
-        self.tableView.separatorColor = [UIColor lightGrayColor];
+        self.tableView.separatorColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList];
         self.tableView.layer.cornerRadius = 5.0;
         self.tableView.backgroundView = nil;
         self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -230,9 +230,20 @@
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.barStyle = UIBarStyleDefault;
+            
+            UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
+            [nextBarButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+            nextBarButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardNextButton];
+            UIColor *nextButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardNextButton];
+            [nextBarButton setTitleColor:nextButtonColor forState:UIControlStateNormal];
+            [nextBarButton setTitleColor:[nextButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+            [nextBarButton setTitle:buttonTitle forState:UIControlStateNormal];
+            [nextBarButton sizeToFit];
+            
             numberToolbar.items = [NSArray arrayWithObjects:
                                    [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                                   [[UIBarButtonItem alloc] initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(nextButtonWasTapped:)],
+                                   [[UIBarButtonItem alloc] initWithCustomView:nextBarButton],
                                    nil];
             [numberToolbar sizeToFit];
             self.textField.inputAccessoryView = numberToolbar;
@@ -629,7 +640,7 @@
         
         CGFloat tableViewContentHeight = [self heightForTableView:self.tableView];
         
-        CGFloat maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (!padUI ? 130.0 : 130.0) ;
+        CGFloat maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (!padUI ? 140.0 : 140.0) ;
         
         if (tableViewContentHeight > maxHeight)
         {

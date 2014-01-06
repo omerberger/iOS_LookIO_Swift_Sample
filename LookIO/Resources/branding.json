@@ -208,7 +208,7 @@
             },
             "next_button" : {
                 "font" : {
-                    "color" : "#ff0000",
+                    "color" : "#007df5",
                     "size" : "17.0"
                 },
                 "background" : {
