@@ -72,17 +72,18 @@
         
         self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.backgroundView.backgroundColor = [UIColor whiteColor];
-        self.backgroundView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyCard];
+        CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementSurveyCard];
+        self.backgroundView.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
+        self.backgroundView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyCard] CGColor];
         self.backgroundView.layer.borderWidth = 1.0;
         self.backgroundView.layer.cornerRadius = 5.0;
         [self addSubview:self.backgroundView];
         
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.titleLabel.backgroundColor = [UIColor clearColor];
-        self.titleLabel.textColor = [UIColor whiteColor];
-        self.titleLabel.font = [UIFont boldSystemFontOfSize:17.0];
-        self.titleLabel.textColor = [UIColor darkGrayColor];
+        self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardTitle];
+        self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardTitle];
         self.titleLabel.textAlignment = UITextAlignmentCenter;
         self.titleLabel.lineBreakMode = UILineBreakModeWordWrap;
         self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -90,9 +91,8 @@
         
         self.subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.subtitleLabel.backgroundColor = [UIColor clearColor];
-        self.subtitleLabel.textColor = [UIColor whiteColor];
-        self.subtitleLabel.font = [UIFont boldSystemFontOfSize:14.0];
-        self.subtitleLabel.textColor = [UIColor darkGrayColor];
+        self.subtitleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardSubtitle];
+        self.subtitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardSubtitle];
         self.subtitleLabel.numberOfLines = 0;
         self.subtitleLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
         self.subtitleLabel.textAlignment = UITextAlignmentCenter;
@@ -102,8 +102,10 @@
         self.textFieldBackground = [[UIView alloc] init];
         self.textFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         self.textFieldBackground.alpha = 0.85;
-        self.textFieldBackground.backgroundColor = [UIColor whiteColor];
-        self.textFieldBackground.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+        UIColor *textFieldBackgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyTextField];
+        CGFloat textFieldBackgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementSurveyTextField];
+        self.textFieldBackground.backgroundColor = [textFieldBackgroundColor colorWithAlphaComponent:textFieldBackgroundAlpha];
+        self.textFieldBackground.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyTextField] CGColor];
         self.textFieldBackground.layer.borderWidth = 1.0;
         self.textFieldBackground.layer.cornerRadius = 5.0;
         [self addSubview:self.textFieldBackground];
@@ -112,8 +114,8 @@
         self.textField.delegate = self;
         self.textField.backgroundColor = [UIColor clearColor];
         self.textField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.textField.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        self.textField.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        self.textField.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
+        self.textField.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
         self.textField.keyboardAppearance = UIKeyboardAppearanceDefault;
         [self.textFieldBackground addSubview:self.textField];
@@ -122,12 +124,13 @@
         self.textView.delegate = self;
         self.textView.backgroundColor = [UIColor clearColor];
         self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.textView.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
-        self.textView.textColor = [UIColor colorWithWhite:41.0/255.0 alpha:1.0];
+        self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
+        self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textView.autocorrectionType = UITextAutocorrectionTypeNo;
         [self.textFieldBackground addSubview:self.textView];
         
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
+        // TODO Star rating customization
         [self addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -143,18 +146,20 @@
         
         self.nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.nextButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        self.nextButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        [self.nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [self.nextButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+        self.nextButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardNextButton];
+        UIColor *nextButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardNextButton];
+        [self.nextButton setTitleColor:nextButtonColor forState:UIControlStateNormal];
+        [self.nextButton setTitleColor:[nextButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         self.nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
         [self addSubview:self.nextButton];
         
         self.cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        self.cancelButton.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-        [self.cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
-        [self.cancelButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+        self.cancelButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardCancelButton];
+        UIColor *cancelButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardCancelButton];
+        [self.cancelButton setTitleColor:cancelButtonColor forState:UIControlStateNormal];
+        [self.cancelButton setTitleColor:[cancelButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         self.cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
         [self addSubview:self.cancelButton];

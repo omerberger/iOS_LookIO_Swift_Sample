@@ -70,6 +70,7 @@ static LIOBrandingManager *brandingManager = nil;
     NSDictionary *dictionary = nil;
     NSDictionary *visitDictionary = [self.brandingDictionary objectForKey:@"visit"];
     NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
+    NSDictionary *surveyDictionary = [self.brandingDictionary objectForKey:@"surveys"];
 
     if (LIOBrandingElementControlButton == element)
     {
@@ -208,6 +209,122 @@ static LIOBrandingManager *brandingManager = nil;
         }
     }
     
+    if (LIOBrandingElementSurveyCard == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyCardDictionary = [surveyDictionary objectForKey:@"survey_card"];
+            if (surveyCardDictionary)
+                dictionary = surveyCardDictionary;
+        }
+    }
+    
+    if (LIOBrandingElementSurveyCardTitle == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+            if (surveyPageDictionary)
+            {
+                NSDictionary *titleDictionary = [surveyPageDictionary objectForKey:@"title"];
+                if (titleDictionary)
+                    dictionary = titleDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementSurveyCardSubtitle == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+            if (surveyPageDictionary)
+            {
+                NSDictionary *subtitleDictionary = [surveyPageDictionary objectForKey:@"subtitle"];
+                if (subtitleDictionary)
+                    dictionary = subtitleDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementSurveyCardNextButton == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+            if (surveyPageDictionary)
+            {
+                NSDictionary *nextButtonDictionary = [surveyPageDictionary objectForKey:@"next_button"];
+                if (nextButtonDictionary)
+                    dictionary = nextButtonDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementSurveyCardCancelButton == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+            if (surveyPageDictionary)
+            {
+                NSDictionary *cancelButtonDictionary = [surveyPageDictionary objectForKey:@"cancel"];
+                if (cancelButtonDictionary)
+                    dictionary = cancelButtonDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementSurveyPageControl == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"page_control"];
+            if (surveyPageDictionary)
+                dictionary = surveyPageDictionary;
+        }
+    }
+    
+    if (LIOBrandingElementSurveyTextField == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyTextFieldDictionary = [surveyDictionary objectForKey:@"text_field"];
+            if (surveyTextFieldDictionary)
+                dictionary = surveyTextFieldDictionary;
+        }
+    }
+    
+    if (LIOBrandingElementSurveyList == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyListDictionary = [surveyDictionary objectForKey:@"list"];
+            if (surveyListDictionary)
+                dictionary = surveyListDictionary;
+        }
+    }
+
+    if (LIOBrandingElementSurveyStars == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyStarsDictionary = [surveyDictionary objectForKey:@"stars"];
+            if (surveyStarsDictionary)
+                dictionary = surveyStarsDictionary;
+        }
+    }
+    
+    if (LIOBrandingElementSurveyValidationAlert == element)
+    {
+        if (surveyDictionary)
+        {
+            NSDictionary *surveyValidationAlertDictionary = [surveyDictionary objectForKey:@"validation_alert"];
+            if (surveyValidationAlertDictionary)
+                dictionary = surveyValidationAlertDictionary;
+        }
+    }
+
     return dictionary;
 }
 
@@ -304,7 +421,7 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (NSString *)fontNameForElement:(LIOBrandingElement)element
 {
-    NSString *fontName = @"HelveticaNeue-Light";
+    NSString *fontName = @"HelveticaNeue";
     
     NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     if (elementDictionary)
@@ -319,6 +436,25 @@ static LIOBrandingManager *brandingManager = nil;
     }
     return fontName;
 }
+
+- (NSString *)boldFontNameForElement:(LIOBrandingElement)element
+{
+    NSString *fontName = @"HelveticaNeue-Medium";
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"bold_font"];
+        if (fontDictionary)
+        {
+            NSString *fontNameString = [fontDictionary objectForKey:@"family"];
+            if (fontNameString)
+                fontName = fontNameString;
+        }
+    }
+    return fontName;
+}
+
 
 - (CGFloat)fontSizeForElement:(LIOBrandingElement)element
 {
@@ -349,6 +485,20 @@ static LIOBrandingManager *brandingManager = nil;
     
     return font;
 }
+
+- (UIFont *)boldFontForElement:(LIOBrandingElement)element
+{
+    UIFont *font;
+    CGFloat size = [self fontSizeForElement:element];
+    
+    if ([self boldFontNameForElement:LIOBrandingElementBoldFont])
+        font = [UIFont fontWithName:[self boldFontNameForElement:LIOBrandingElementBoldFont] size:size];
+    else
+        font = [UIFont boldSystemFontOfSize:size];
+    
+    return font;
+}
+
 
 - (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element
 {

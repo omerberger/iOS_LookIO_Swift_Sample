@@ -26,7 +26,7 @@
 @property (nonatomic, assign) LIOContainerViewState containerViewState;
 @property (nonatomic, strong) UIViewController *currentViewController;
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
-@property (nonatomic, strong) UIViewController *loadingViewController;
+@property (nonatomic, strong) LIOLoadingViewController *loadingViewController;
 @property (nonatomic, strong) LPSurveyViewController *surveyViewController;
 
 @property (nonatomic, strong) LIOEngagement *engagement;
@@ -109,6 +109,14 @@
 }
 
 #pragma mark -
+#pragma mark LoadingViewController Delegate Methods
+
+- (void)loadingViewControllerDidDismiss:(LIOLoadingViewController *)loadingViewController
+{
+    [self dismiss];
+}
+
+#pragma mark -
 #pragma mark ChatViewController Delegate Methods
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController
@@ -126,7 +134,10 @@
     if (self.containerViewState != LIOContainerViewStateChat)
     {
         self.engagement = anEngagement;
-        [self presentHeaderBarView:YES];
+        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+            [self presentHeaderBarView:YES];
+        else
+            self.headerBarState = LIOHeaderBarStateLandscapeHidden;
         [self presentChatViewController:YES];
     }
 }
@@ -194,22 +205,19 @@
     
     if (animated)
     {
-        CGRect frame = viewController.view.frame;
-        frame.origin.y = -frame.size.height;
-        viewController.view.frame = frame;
+        viewController.view.frame = self.contentView.bounds;
+        viewController.view.alpha = 0.0;
         
         [self transitionFromViewController:self.currentViewController toViewController:viewController
                                   duration:0.3 options:nil
                                 animations:^{
-                                    viewController.view.frame = self.contentView.bounds;
-                                    
-                                    CGRect frame = self.currentViewController.view.frame;
-                                    frame.origin.y = frame.size.height;
-                                    self.currentViewController.view.frame = frame;
+                                    viewController.view.alpha = 1.0;
+                                    self.currentViewController.view.alpha = 0.0;
                                 } completion:^(BOOL finished) {
                                     //Remove the old view controller
                                     [self.currentViewController removeFromParentViewController];
                                     [self.currentViewController.view removeFromSuperview];
+                                    self.currentViewController.view.alpha = 1.0;
                                     
                                     //Set the new view controller as current
                                     self.currentViewController = viewController;
@@ -290,6 +298,7 @@
     self.chatViewController.delegate = self;
     
     self.loadingViewController = [[LIOLoadingViewController alloc] init];
+    self.loadingViewController.delegate = self;
 
     self.containerViewState = LIOContainerViewStateLoading;
     [self addChildViewController:self.loadingViewController];

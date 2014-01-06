@@ -3,16 +3,19 @@
         "font" : {
             "family" : "HelveticaNeue"
         },
+        "bold_font" : {
+            "family" : "HelveticaNeue-Light"
+        },				
         "logo" : {
             "image" : ""
         },
         "loading_screen" : {
             "spin_image" : "1",
             "font" : {
-                "color" : "#666666"
+                "color" : "#ffffff"
             },
             "background" : {
-                "color" : "#cccccc",
+                "color" : "#aaaaaa",
                 "alpha" : "0.8"
             },
             "image" : ""
@@ -181,23 +184,32 @@
         },
     "surveys" : {
         "page_control" : {
-            "color" : "#ffffff"
+            "color" : "#888888"
         },
         "survey_card" : {
             "background" : {
                 "color" : "#ffffff",
                 "alpha" : "0.9"
             },
+            "border" : {
+                "color" : "#999999"
+            },
             "title" : {
                 "font" : {
-                    "color" : "#555555",
-                    "size" : "15.0"
+                    "color" : "#666666",
+                    "size" : "16.0"
+                }
+            },
+            "subtitle" : {
+                "font" : {
+                    "color" : "#666666",
+                    "size" : "14.0"
                 }
             },
             "next_button" : {
                 "font" : {
-                    "color" : "#007df5",
-                    "size" : "15.0"
+                    "color" : "#ff0000",
+                    "size" : "17.0"
                 },
                 "background" : {
                     "linear-gradient" : ""
@@ -206,7 +218,7 @@
             "cancel" : {
                 "font" : {
                     "color" : "#007df5",
-                    "size" : "15.0"
+                    "size" : "17.0"
                 },
                 "background" : {
                     "linear-gradient" : ""
@@ -222,7 +234,7 @@
                 "size" : "17.0"
             },
             "border" : {
-                "color" : "#b7b7b7"
+                "color" : "#999999"
             }
         },
         "list" : {

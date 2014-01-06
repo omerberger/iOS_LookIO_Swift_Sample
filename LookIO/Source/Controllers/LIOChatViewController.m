@@ -279,12 +279,12 @@
     }
 }
 
-
 #pragma mark View Lifecycle Methods
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
     [self.tableView reloadData];
     [self.inputBarView.textView becomeFirstResponder];
 }
@@ -292,7 +292,9 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
+    
+    self.tableView.contentOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+    
     // Register for keyboard notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -308,6 +310,12 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+
+    // Hide the chat so we can drop it when we return..
+    self.keyboardState = LIOKeyboardStateIntroAnimation;
+    CGRect frame = self.tableView.frame;
+    frame.origin.y = -frame.size.height;
+    self.tableView.frame = frame;
     
     // Unregister for keyboard notifications while not visible.
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -332,6 +340,11 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.showsVerticalScrollIndicator = NO;
     [self.view addSubview:self.tableView];
+    
+    self.keyboardState = LIOKeyboardStateIntroAnimation;
+    CGRect frame = self.tableView.frame;
+    frame.origin.y = -frame.size.height;
+    self.tableView.frame = frame;
 
     self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 50, self.view.bounds.size.width, 50)];
     self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
@@ -411,6 +424,10 @@
     
     CGRect keyboardRect;
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
+
+    BOOL introAnimation = NO;
+    if (LIOKeyboardStateIntroAnimation == self.keyboardState)
+        introAnimation = YES;
     
     // Set new keyboard state and size
     self.keyboardState = LIOKeyboardStateKeyboard;
@@ -419,6 +436,12 @@
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
+        if (introAnimation)
+        {
+            CGRect frame = self.tableView.frame;
+            frame.origin.y = 0;
+            self.tableView.frame = frame;
+        }
     } completion:^(BOOL finished) {
     }];
 }

@@ -350,6 +350,11 @@ static LIOManager *sharedLookIOManager = nil;
             [self.engagement cancelEngagement];
             break;
             
+        case LIOVisitStateChatRequested:
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+            [self.engagement cancelEngagement];
+            break;
+            
         case LIOVisitStatePreChatSurvey:
             // If prechat survey is open and no questions were answered, cancel the engagement
             if (![self.engagement.prechatSurvey anyQuestionsAnswered])
@@ -445,7 +450,6 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement
 {
-    return;
     // If surveys aren't enabled, ignore this survey
     if (!self.visit.surveysEnabled)
         return;

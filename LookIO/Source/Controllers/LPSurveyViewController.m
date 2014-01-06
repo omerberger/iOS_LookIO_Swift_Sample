@@ -15,6 +15,7 @@
 
 #import "LIOTimerProxy.h"
 #import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
 #define LIOSurveyViewControllerIndexForIntroPage   -1
 #define LIOSurveyViewControllerValidationDuration   5
@@ -43,8 +44,6 @@
 @property (nonatomic, strong) UIPageControl* pageControl;
 @property (nonatomic, strong) UIView* backgroundDismissableArea;
 
-@property (nonatomic, strong) UITapGestureRecognizer* tapGestureRecognizer, *iPadBackgroundGestureRecognizer;
-
 @property (nonatomic, assign) BOOL isAnimatingTransition;
 /*
  BOOL isAnimatingEntrance;
@@ -71,6 +70,22 @@
     return self;
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    // Animate in the survey view
+    
+    CGRect frame = self.scrollView.frame;
+    frame.origin.y = 0;
+    self.scrollView.frame = frame;
+    
+    frame = self.pageControl.frame;
+    frame.origin.y = self.view.bounds.size.height - frame.size.height;
+    self.pageControl.frame = frame;
+
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -84,10 +99,42 @@
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.scrollView];
     
+    CGRect frame = self.scrollView.frame;
+    frame.origin.y = -frame.size.height;
+    self.scrollView.frame = frame;
+    
+    UISwipeGestureRecognizer *swipeLeftGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeLeft:)];
+    swipeLeftGestureRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
+    [self.scrollView addGestureRecognizer:swipeLeftGestureRecognizer];
+    
+    UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
+    swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.scrollView addGestureRecognizer:swipeRightGestureRecognizer];
+    
     self.selectedIndices = [[NSMutableArray alloc] init];
     
     self.currentQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
     LIOSurveyQuestion *introQuestion = [self.survey questionForIntroView];
+    
+    self.pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 20.0, self.view.bounds.size.width, 20.0)];
+    self.pageControl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        UIColor *indicatorColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSurveyPageControl];
+        self.pageControl.currentPageIndicatorTintColor = indicatorColor;
+        self.pageControl.pageIndicatorTintColor = [indicatorColor colorWithAlphaComponent:0.3];
+    }
+        
+    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+        self.pageControl.currentPage = 0;
+    else
+        self.pageControl.currentPage = self.currentQuestionIndex + 1;
+    [self.view addSubview:self.pageControl];
+    
+    frame = self.pageControl.frame;
+    frame.origin.y = frame.origin.y + frame.size.height;
+    self.pageControl.frame = frame;
     
     self.currentQuestionView = [[LIOSurveyQuestionView alloc] initWithFrame:self.scrollView.bounds];
     self.currentQuestionView.tag = self.currentQuestionIndex;
@@ -116,11 +163,9 @@
 
 - (void) updateSubviewFrames
 {
-    return;
-    
-    CGRect frame = self.scrollView.frame;
-    frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
-    self.scrollView.frame = frame;
+    CGRect frame = self.pageControl.frame;
+    frame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight - frame.size.height;
+    self.pageControl.frame = frame;
 }
 
 
@@ -166,7 +211,7 @@
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    self.lastKeyboardHeight = 0;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
@@ -183,6 +228,27 @@
     [self validateAndRegisterCurrentAnswerAndShowAlert:NO];
 }
 
+- (void)didSwipeLeft:(id)sender
+{
+    [self surveyQuestionViewDidTapNextButton:self.currentQuestionView];
+}
+
+- (void)didSwipeRight:(id)sender
+{
+    [self surveyQuestionViewDidTapPreviousButton:self.currentQuestionView];
+}
+
+- (void)surveyQuestionViewDidTapPreviousButton:(LIOSurveyQuestionView *)surveyQuestionView
+{
+    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+    {
+        [self bounceViewLeft];
+        return;
+    }
+    
+    [self switchToPreviousQuestion];
+}
+
 - (void)surveyQuestionViewDidTapNextButton:(LIOSurveyQuestionView *)surveyQuestionView
 {
     if (self.isLastQuestion)
@@ -195,6 +261,10 @@
     if (isAnswerValid)
     {
         [self switchToNextQuestion];
+    }
+    else
+    {
+        [self bounceViewRight];
     }
 }
 
@@ -458,7 +528,11 @@
                 foundPreviousPage = YES;
     }
     
-    LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:previousQuestionIndex];
+    LIOSurveyQuestion *question;
+    if (LIOSurveyViewControllerIndexForIntroPage == previousQuestionIndex)
+        question = [self.survey questionForIntroView];
+    else
+        question = [self.survey.questions objectAtIndex:previousQuestionIndex];
     
     // If we already have a previous question view, and we're just updating it
     if (self.previousQuestionView)
@@ -617,6 +691,8 @@
         self.scrollView.contentOffset = contentOffset;
     } completion:^(BOOL finished) {
         self.currentQuestionIndex = self.previousQuestionView.tag;
+        NSLog(@"Current question is %d", self.currentQuestionIndex);
+        self.pageControl.currentPage -= 1;
         
         LIOSurveyQuestionView *tempView = nil;
         if (self.nextQuestionView)
@@ -665,6 +741,9 @@
         self.scrollView.contentOffset = contentOffset;
     } completion:^(BOOL finished) {
         self.currentQuestionIndex = self.nextQuestionView.tag;
+        self.pageControl.currentPage += 1;
+        
+        NSLog(@"Current question is %d", self.currentQuestionIndex);
         
         LIOSurveyQuestionView *tempView = nil;
         if (self.previousQuestionView)
@@ -1296,28 +1375,7 @@
     }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
-    LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];
-    
-    
-    // TODO Design tableView
-    /*
-     UIImageView* backgroundImageView = (UIImageView*)cell.backgroundView;
-     UIImage *backgroundImage;
-     
-     if (indexPath.row == 0) {
-     if ([self tableView:tableView numberOfRowsInSection:0] == 1)
-     backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableSingleCell"];
-     else
-     backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableTopCell"];
-     } else {
-     if (indexPath.row == question.pickerEntries.count - 1)
-     backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableBottomCell"];
-     else
-     backgroundImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSurveyTableMiddleCell"];
-     }
-     UIImage *stretchableBackgroundImage = [backgroundImage stretchableImageWithLeftCapWidth:142 topCapHeight:10];
-     backgroundImageView.image = stretchableBackgroundImage;
-     */
+    LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];    
     
     UILabel* textLabel = (UILabel*)[cell.contentView viewWithTag:LIOSurveyViewTableCellLabelTag];
     

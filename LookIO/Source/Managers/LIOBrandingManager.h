@@ -14,6 +14,7 @@ typedef enum
     LIOBrandingElementLoadingScreen,
     LIOBrandingElementChatBackground,
     LIOBrandingElementFont,
+    LIOBrandingElementBoldFont,
     LIOBrandingElementLogo,
     LIOBrandingElementBrandingBar,
     LIOBrandingElementBrandingBarNotifications,
@@ -25,7 +26,17 @@ typedef enum
     LIOBrandingElementSendBarTextField,
     LIOBrandingElementSendBarPlusButton,
     LIOBrandingElementSendBarSendButton,
-    LIOBrandingElementKeyboardMenu
+    LIOBrandingElementKeyboardMenu,
+    LIOBrandingElementSurveyPageControl,
+    LIOBrandingElementSurveyCard,
+    LIOBrandingElementSurveyCardTitle,
+    LIOBrandingElementSurveyCardSubtitle,
+    LIOBrandingElementSurveyCardNextButton,
+    LIOBrandingElementSurveyCardCancelButton,
+    LIOBrandingElementSurveyTextField,
+    LIOBrandingElementSurveyList,
+    LIOBrandingElementSurveyStars,
+    LIOBrandingElementSurveyValidationAlert
 } LIOBrandingElement;
 
 typedef enum
@@ -46,6 +57,8 @@ typedef enum
 - (CGFloat)backgroundAlphaForElement:(LIOBrandingElement)element;
 - (CGFloat)widthForElement:(LIOBrandingElement)element;
 - (NSString *)fontNameForElement:(LIOBrandingElement)element;
+- (NSString *)boldFontNameForElement:(LIOBrandingElement)element;
+- (UIFont *)boldFontForElement:(LIOBrandingElement)element;
 - (UIFont *)fontForElement:(LIOBrandingElement)element;
 - (CGFloat)fontSizeForElement:(LIOBrandingElement)element;
 - (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element;
