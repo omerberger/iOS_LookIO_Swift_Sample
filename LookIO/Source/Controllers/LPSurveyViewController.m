@@ -12,6 +12,7 @@
 #import "LIOSurveyQuestionView.h"
 #import "LIOSurveyValidationView.h"
 #import "LIOSurveyPickerEntry.h"
+#import "LIOStarRatingView.h"
 
 #import "LIOTimerProxy.h"
 #import "LIOBundleManager.h"
@@ -39,7 +40,6 @@
 
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
 
-@property (nonatomic, strong) NSMutableArray* selectedIndices;
 @property (nonatomic, strong) UIImageView* previousQuestionImageView, *nextQuestionImageView, *currentQuestionImageView;
 @property (nonatomic, strong) UIPageControl* pageControl;
 @property (nonatomic, strong) UIView* backgroundDismissableArea;
@@ -83,7 +83,8 @@
     frame = self.pageControl.frame;
     frame.origin.y = self.view.bounds.size.height - frame.size.height;
     self.pageControl.frame = frame;
-
+    
+    [self updateScrollView];
 }
 
 - (void)viewDidLoad
@@ -110,8 +111,6 @@
     UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
     swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [self.scrollView addGestureRecognizer:swipeRightGestureRecognizer];
-    
-    self.selectedIndices = [[NSMutableArray alloc] init];
     
     self.currentQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
     LIOSurveyQuestion *introQuestion = [self.survey questionForIntroView];
@@ -145,7 +144,6 @@
     // Set up the next question; If we get a FALSE response, we're at the last question
     self.isLastQuestion = ![self setupNextQuestionScrollView];
     self.previousQuestionView = nil;
-    [self updateScrollView];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -166,6 +164,13 @@
     CGRect frame = self.pageControl.frame;
     frame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight - frame.size.height;
     self.pageControl.frame = frame;
+    
+    if (self.currentQuestionView)
+        [self.currentQuestionView setNeedsLayout];
+    if (self.nextQuestionView)
+        [self.nextQuestionView setNeedsLayout];
+    if (self.previousQuestionView)
+        [self.previousQuestionView setNeedsLayout];
 }
 
 
@@ -192,7 +197,12 @@
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        [self.currentQuestionView setNeedsLayout];
+        if (self.currentQuestionView)
+            [self.currentQuestionView setNeedsLayout];
+        if (self.nextQuestionView)
+            [self.nextQuestionView setNeedsLayout];
+        if (self.previousQuestionView)
+            [self.previousQuestionView setNeedsLayout];
     }];
 }
 
@@ -216,7 +226,12 @@
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        [self.currentQuestionView setNeedsLayout];
+        if (self.currentQuestionView)
+            [self.currentQuestionView setNeedsLayout];
+        if (self.nextQuestionView)
+            [self.nextQuestionView setNeedsLayout];
+        if (self.previousQuestionView)
+            [self.previousQuestionView setNeedsLayout];
     }];
 }
 
@@ -225,7 +240,15 @@
 
 - (void)surveyQuestionViewAnswerDidChange:(LIOSurveyQuestionView *)surveyQuestionView
 {
+    // Validate and register the new answer
     [self validateAndRegisterCurrentAnswerAndShowAlert:NO];
+    
+    // We also need to check to re-build the logic and check to see if the next question has changed
+    self.isLastQuestion = ![self setupNextQuestionScrollView];
+    
+    // We also need to reset the page control pages
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
+    
 }
 
 - (void)didSwipeLeft:(id)sender
@@ -636,6 +659,9 @@
         previousFrame.origin.x = 0;
         currentFrame.origin.x = viewWidth;
         nextFrame.origin.x = viewWidth * 2;
+        
+        previousFrame.size = self.view.bounds.size;
+        nextFrame.size = self.view.bounds.size;
     }
     else
     {
@@ -645,6 +671,7 @@
             contentOffset.x = viewWidth;
             previousFrame.origin.x = 0;
             currentFrame.origin.x = viewWidth;
+            previousFrame.size = self.view.bounds.size;
         }
         if (self.nextQuestionView)
         {
@@ -652,12 +679,14 @@
             contentOffset.x = 0;
             currentFrame.origin.x = 0;
             nextFrame.origin.x = viewWidth;
+            nextFrame.size = self.view.bounds.size;
         }
         if (!self.nextQuestionView && !self.previousQuestionView)
         {
             contentSize.width = viewWidth;
             contentOffset.x = 0;
             currentFrame.origin.x = 0;
+            currentFrame.size = self.view.bounds.size;
         }
     }
     
@@ -675,6 +704,8 @@
 
 - (void)switchToPreviousQuestion
 {
+    self.isLastQuestion = NO;
+    
     if (self.validationView)
     {
         [self.validationTimer stopTimer];
@@ -691,7 +722,7 @@
         self.scrollView.contentOffset = contentOffset;
     } completion:^(BOOL finished) {
         self.currentQuestionIndex = self.previousQuestionView.tag;
-        NSLog(@"Current question is %d", self.currentQuestionIndex);
+        NSLog(@"Current question is %ld", (long)self.currentQuestionIndex);
         self.pageControl.currentPage -= 1;
         
         LIOSurveyQuestionView *tempView = nil;
@@ -711,8 +742,6 @@
         {
             self.reusableQuestionView = tempView;
         }
-        
-        [self.selectedIndices removeAllObjects];
     }];
 }
 
@@ -762,8 +791,6 @@
         {
             self.reusableQuestionView = tempView;
         }
-        
-        [self.selectedIndices removeAllObjects];
     }];
     
     /*
@@ -1253,7 +1280,7 @@
     else
     {
         // We have to make an exception for checkbox type questions, because they can be submitted without an answer
-        if (currentQuestion.mandatory && 0 == [self.selectedIndices count] && currentQuestion.displayType != LIOSurveyQuestionDisplayTypeMultiselect)
+        if (currentQuestion.mandatory && 0 == [currentQuestion.selectedIndices count] && currentQuestion.displayType != LIOSurveyQuestionDisplayTypeMultiselect)
         {
             if (showAlert)
                 [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
@@ -1264,14 +1291,14 @@
             if (LIOSurveyQuestionDisplayTypeMultiselect == currentQuestion.displayType)
             {
                 // If this is a checkbox (=multiselect), and the user hasn't checked anything, we should report an empty string
-                if (self.selectedIndices.count == 0)
+                if (currentQuestion.selectedIndices.count == 0)
                 {
                     [self.survey registerAnswerObject:@"" withQuestionIndex:self.currentQuestionIndex];
                 }
                 else
                 {
                     NSMutableArray* selectedAnswers = [NSMutableArray array];
-                    for (NSIndexPath* indexPath in self.selectedIndices)
+                    for (NSIndexPath* indexPath in currentQuestion.selectedIndices)
                     {
                         LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
                         [selectedAnswers addObject:selectedPickerEntry.label];
@@ -1282,9 +1309,9 @@
             
             if (LIOSurveyQuestionDisplayTypePicker == currentQuestion.displayType)
             {
-                if (self.selectedIndices.count == 1)
+                if (currentQuestion.selectedIndices.count == 1)
                 {
-                    NSIndexPath* indexPath = (NSIndexPath*)[self.selectedIndices objectAtIndex:0];
+                    NSIndexPath* indexPath = (NSIndexPath*)[currentQuestion.selectedIndices objectAtIndex:0];
                     LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
                     [self.survey registerAnswerObject:selectedPickerEntry.label withQuestionIndex:self.currentQuestionIndex];
                 }
@@ -1311,10 +1338,12 @@
 {
     LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[tableView superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
+    LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
+    LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
     
     BOOL isRowSelected = NO;
     
-    for (NSIndexPath* selectedIndexPath in self.selectedIndices)
+    for (NSIndexPath* selectedIndexPath in question.selectedIndices)
     {
         if (indexPath.row == selectedIndexPath.row)
         {
@@ -1327,9 +1356,6 @@
     if (isRowSelected)
         font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
 
-    
-    LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
-    LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
     
     CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
     
@@ -1372,7 +1398,6 @@
         UIImageView* backgroundImageView = [[UIImageView alloc] initWithFrame:CGRectMake(9.0, 0, tableView.bounds.size.width - 20.0, 55.0)];
         backgroundImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         cell.backgroundView = backgroundImageView;
-        [backgroundImageView release];
     }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
@@ -1381,7 +1406,7 @@
     UILabel* textLabel = (UILabel*)[cell.contentView viewWithTag:LIOSurveyViewTableCellLabelTag];
     
     BOOL isRowSelected = NO;
-    for (NSIndexPath* selectedIndexPath in self.selectedIndices)
+    for (NSIndexPath* selectedIndexPath in question.selectedIndices)
     {
         if (indexPath.row == selectedIndexPath.row)
         {
@@ -1431,9 +1456,14 @@
 
 - (void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(NSInteger)aRating
 {
-    [self.selectedIndices removeAllObjects];
+    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[aView superview];
+    NSInteger tableViewQuestionIndex = questionView.tag;
+    
+    LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
+
+    [question.selectedIndices removeAllObjects];
     if (aRating > 0 && aRating < 6)
-        [self.selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
+        [question.selectedIndices addObject:[NSIndexPath indexPathForRow:(5 - aRating) inSection:0]];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -1444,7 +1474,7 @@
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     
     NSIndexPath* existingIndexPath = nil;
-    for (NSIndexPath* selectedIndexPath in self.selectedIndices)
+    for (NSIndexPath* selectedIndexPath in question.selectedIndices)
     {
         if (indexPath.row == selectedIndexPath.row)
         {
@@ -1456,12 +1486,12 @@
     {
         if (existingIndexPath) // Deselect
         {
-            [self.selectedIndices removeObject:existingIndexPath];
+            [question.selectedIndices removeObject:existingIndexPath];
         }
         else
         {
-            [self.selectedIndices removeAllObjects];
-            [self.selectedIndices addObject:indexPath];
+            [question.selectedIndices removeAllObjects];
+            [question.selectedIndices addObject:indexPath];
         }
     }
     
@@ -1469,13 +1499,15 @@
     {
         if (existingIndexPath) // Deselect
         {
-            [self.selectedIndices removeObject:existingIndexPath];
+            [question.selectedIndices removeObject:existingIndexPath];
         }
         else
         {
-            [self.selectedIndices addObject:indexPath];
+            [question.selectedIndices addObject:indexPath];
         }
     }
+    
+    [self surveyQuestionViewAnswerDidChange:self.currentQuestionView];
     
     [tableView reloadData];
 }
@@ -1483,13 +1515,14 @@
 #pragma mark
 #pragma mark UITextField delegate methods
 
--(BOOL)textFieldShouldReturn:(UITextField *)textField {
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
     [self surveyQuestionViewDidTapNextButton:self.currentQuestionView];
     
     return NO;
 }
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
 	if ([text isEqualToString:@"\n"]) {
         [self surveyQuestionViewDidTapNextButton:self.currentQuestionView];
@@ -1504,6 +1537,14 @@
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self updateScrollView];
+    
+    if (self.currentQuestionView)
+        [self.currentQuestionView setNeedsLayout];
+    if (self.nextQuestionView)
+        [self.nextQuestionView setNeedsLayout];
+    if (self.previousQuestionView)
+        [self.previousQuestionView setNeedsLayout];
 }
+
 
 @end

@@ -9,16 +9,10 @@
 #import <UIKit/UIKit.h>
 
 @interface LIOSurveyPickerEntry : NSObject
-{
-    NSInteger order;
-    BOOL initiallyChecked;
-    NSString *label;
-    NSArray *logicItems;
-}
 
-@property NSInteger order;
-@property(nonatomic, assign) BOOL initiallyChecked;
-@property(nonatomic, retain) NSString *label;
-@property(nonatomic, retain) NSArray *logicItems;
+@property (nonatomic, assign) NSInteger order;
+@property (nonatomic, assign) BOOL initiallyChecked;
+@property (nonatomic, copy) NSString *label;
+@property (nonatomic, strong) NSArray *logicItems;
 
 @end

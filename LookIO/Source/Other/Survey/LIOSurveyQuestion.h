@@ -27,30 +27,19 @@ typedef enum
 } LIOSurveyQuestionValidationType;
 
 @interface LIOSurveyQuestion : NSObject
-{
-    NSInteger questionId;
-    BOOL mandatory;
-    NSInteger order;
-    NSString *label;
-    NSInteger logicId;
-    LIOSurveyQuestionDisplayType displayType;
-    LIOSurveyQuestionValidationType validationType;
-    NSArray *pickerEntries;
-    
-    NSString* lastKnownValue;
-}
 
-@property(nonatomic, assign) NSInteger questionId;
-@property(nonatomic, assign) BOOL mandatory;
-@property(nonatomic, assign) NSInteger order;
-@property(nonatomic, retain) NSString *label;
-@property(nonatomic, assign) NSInteger logicId;
-@property(nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
-@property(nonatomic, assign) LIOSurveyQuestionValidationType validationType;
-@property(nonatomic, retain) NSArray *pickerEntries;
-
-@property (nonatomic, retain) NSString* lastKnownValue;
+@property (nonatomic, assign) NSInteger questionId;
+@property (nonatomic, assign) BOOL mandatory;
+@property (nonatomic, assign) NSInteger order;
+@property (nonatomic, copy) NSString *label;
+@property (nonatomic, assign) NSInteger logicId;
+@property (nonatomic, assign) LIOSurveyQuestionDisplayType displayType;
+@property (nonatomic, assign) LIOSurveyQuestionValidationType validationType;
+@property (nonatomic, strong) NSArray *pickerEntries;
+@property (nonatomic, strong) NSMutableArray *selectedIndices;
+@property (nonatomic, copy) NSString* lastKnownValue;
 
 - (BOOL)shouldUseStarRatingView;
 - (NSArray*)pickerEntryTitles;
+
 @end

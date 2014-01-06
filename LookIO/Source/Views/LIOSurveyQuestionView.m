@@ -17,7 +17,7 @@
 
 #define LIOSurveyViewPageControlHeight          15.0
 #define LIOSurveyViewTopMarginPortrait          40.0
-#define LIOSurveyViewTopMarginLandscape         30.0
+#define LIOSurveyViewTopMarginLandscape         15.0
 #define LIOSurveyViewSideMargin                 10.0
 #define LIOSurveyViewSideMarginiPad             25.0
 #define LIOSurveyViewPageControlOriginY         265.0
@@ -64,6 +64,8 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         self.tag = -1;
+        self.scrollEnabled = YES;
+        
         if (padUI) {
             self.frame = [self frameForIpadScrollView];
             self.scrollEnabled = NO;
@@ -229,6 +231,7 @@
         if (!padUI)
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             numberToolbar.barStyle = UIBarStyleDefault;
             
             UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
@@ -297,7 +300,8 @@
         
         if (!padUI)
         {
-            UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             numberToolbar.barStyle = UIBarStyleDefault;
             
             numberToolbar.items = [NSArray arrayWithObjects:
@@ -571,7 +575,7 @@
             frame.origin.x = 10;
             frame.size.width = self.bounds.size.width - 20;
             frame.size.height = self.contentSize.height - 30;
-            frame.origin.y = 25;
+            frame.origin.y = 10;
         }
         self.backgroundView.frame = frame;
     }
@@ -637,20 +641,32 @@
     if (!self.tableView.isHidden)
     {
         [self.tableView reloadData];
-        
+
+        // We need to set the tableView width ahead of time, because it's used for the calculation of the row height
+        CGRect frame = self.tableView.frame;
+        frame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2;
+        self.tableView.frame = frame;
+
         CGFloat tableViewContentHeight = [self heightForTableView:self.tableView];
+
+        CGFloat maxHeight;
+        if (padUI)
+        {
+            maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - 140.0;
+        }
+        else
+        {
+            maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (landscape ? 100.0 : 135.0);
+        }
         
-        CGFloat maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (!padUI ? 140.0 : 140.0) ;
-        
+        NSLog(@">>> tableViewContentHeight: %f // maxHeight: %f", tableViewContentHeight, maxHeight);
+
         if (tableViewContentHeight > maxHeight)
         {
-            self.tableView.scrollEnabled = YES;
             tableViewContentHeight = maxHeight;
         }
         else
         {
-            self.tableView.scrollEnabled = NO;
-            
             if (padUI)
             {
                 CGFloat contentHeight = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + tableViewContentHeight;
@@ -663,6 +679,7 @@
         }
         
         self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
+        
         
         if (!padUI)
         {
@@ -697,7 +714,7 @@
                 frame.origin.x = 10;
                 frame.size.width = self.bounds.size.width - 20;
                 frame.size.height = self.tableView.frame.origin.y + tableViewContentHeight - 20 + 45;
-                frame.origin.y = 25;
+                frame.origin.y = 10;
             }
             self.backgroundView.frame = frame;
         }
@@ -707,7 +724,7 @@
 - (CGFloat)heightForTableView:(UITableView*)tableView
 {
     CGFloat tableViewContentHeight = 0.0;
-    NSInteger numberOfTableRows = [self.tableView.delegate tableView:self.tableView numberOfRowsInSection:0];
+    NSInteger numberOfTableRows = [self.tableView.dataSource tableView:self.tableView numberOfRowsInSection:0];
     for (int i=0; i<numberOfTableRows; i++) {
         tableViewContentHeight += [self.tableView.delegate tableView:self.tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
     }

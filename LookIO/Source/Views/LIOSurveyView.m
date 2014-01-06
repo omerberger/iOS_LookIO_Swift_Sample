@@ -2119,7 +2119,6 @@
     validationView = [[LIOSurveyValidationView alloc] init];
     CGRect aFrame = validationView.frame;
     aFrame.origin.y = (landscape || padUI) ? 0 : 32;
-//    validationView.verticallyMirrored = YES;
     aFrame.size.width = self.bounds.size.width;
     if (padUI) {
         aFrame.size.width = currentScrollView.bounds.size.width - 15;

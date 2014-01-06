@@ -305,6 +305,11 @@
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidChangeFrame:)
+                                                 name:UIKeyboardDidChangeFrameNotification
+                                               object:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -339,6 +344,7 @@
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.showsVerticalScrollIndicator = NO;
+    self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self.view addSubview:self.tableView];
     
     self.keyboardState = LIOKeyboardStateIntroAnimation;
@@ -350,7 +356,7 @@
     self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
-    [self.view addSubview:self.inputBarView];
+    [self.view addSubview:self.inputBarView];    
     
     self.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, self.inputBarView.frame.size.height + 5.0)];
     self.tableFooterView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -471,6 +477,26 @@
         [self updateSubviewFrames];
     } completion:^(BOOL finished) {
     }];
+}
+
+- (void)keyboardDidChangeFrame:(NSNotification *)notification
+{
+    // Acquire keyboard info
+    NSDictionary *info = [notification userInfo];
+    
+    UIViewAnimationCurve curve;
+    [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&curve];
+    
+    NSTimeInterval duration;
+    [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&duration];
+    
+    CGRect keyboardRect;
+    [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
+
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    [self updateSubviewFrames];
 }
 
 #pragma mark Rotation Methods

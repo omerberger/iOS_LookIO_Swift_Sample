@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
+//#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
+#define LOOKIO_VERSION_STRING @"400"
+// TODO
 
 // Event constants.
 // Use these with the "reportEvent" methods.

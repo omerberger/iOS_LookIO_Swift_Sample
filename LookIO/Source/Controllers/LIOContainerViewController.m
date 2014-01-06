@@ -145,7 +145,10 @@
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement
 {
     self.engagement = anEngagement;
-    [self presentHeaderBarView:YES];
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+        [self presentHeaderBarView:YES];
+    else
+        self.headerBarState = LIOHeaderBarStateLandscapeHidden;
     [self presentSurveyViewControllerWithSurvey:self.engagement.prechatSurvey animated:YES];
 }
 

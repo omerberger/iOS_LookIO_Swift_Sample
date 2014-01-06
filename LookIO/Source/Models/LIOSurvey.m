@@ -336,6 +336,7 @@
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] integerValue];
         newQuestion.lastKnownValue = [aQuestionDict objectForKey:@"last_known_value"];
+        newQuestion.selectedIndices = [[NSMutableArray alloc] init];
         
         NSString *typeString = [aQuestionDict objectForKey:@"type"];
         newQuestion.displayType = LIOSurveyQuestionDisplayTypeTextField;
@@ -400,6 +401,17 @@
             
             newQuestion.pickerEntries = entries;
             
+            // After sorting, let's check the initiall checked entries
+            for (LIOSurveyPickerEntry* pickerEntry in newQuestion.pickerEntries) {
+                if (pickerEntry.initiallyChecked) {
+                    NSUInteger questionRow = [newQuestion.pickerEntries indexOfObject:pickerEntry];
+                    if (newQuestion.shouldUseStarRatingView)
+                        [newQuestion.selectedIndices addObject:[NSIndexPath indexPathForRow:(5-questionRow) inSection:0]];
+                    else
+                        [newQuestion.selectedIndices addObject:[NSIndexPath indexPathForRow:questionRow inSection:0]];
+                }
+            }
+                        
             if ([newQuestion.pickerEntries count])
                 [questions addObject:newQuestion];
         }

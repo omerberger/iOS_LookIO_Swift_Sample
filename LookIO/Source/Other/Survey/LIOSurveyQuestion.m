@@ -9,23 +9,11 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOSurveyPickerEntry.h"
 
-
 @implementation LIOSurveyQuestion
 
-@synthesize questionId, mandatory, order, label, logicId, displayType;
-@synthesize validationType, pickerEntries;
-@synthesize lastKnownValue;
-
-- (void)dealloc
+- (NSArray*)pickerEntryTitles
 {
-    [label release];
-    [pickerEntries release];
-    
-    [super dealloc];
-}
-
-- (NSArray*)pickerEntryTitles {
-    NSMutableArray* pickerEntryTitles = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray* pickerEntryTitles = [[NSMutableArray alloc] init];
     
     for (int i=0; i < self.pickerEntries.count; i++) {
         LIOSurveyPickerEntry* pickerEntry = [self.pickerEntries objectAtIndex:i];
@@ -35,7 +23,8 @@
     return pickerEntryTitles;
 }
 
-- (BOOL)shouldUseStarRatingView {
+- (BOOL)shouldUseStarRatingView
+{
     if (self.displayType != LIOSurveyQuestionDisplayTypePicker)
         return NO;
     
