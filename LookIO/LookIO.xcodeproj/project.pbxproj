@@ -70,7 +70,7 @@
 		A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = A7CF0497177C833200AFDC5D /* LPSSEvent.h */; };
 		A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = A7CF0498177C833200AFDC5D /* LPSSEvent.m */; };
 		A7D4E845177498AB0037E47B /* LIOStarRatingView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D4E843177498AB0037E47B /* LIOStarRatingView.h */; };
-		A7D4E846177498AB0037E47B /* LIOStarRatingView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D4E844177498AB0037E47B /* LIOStarRatingView.m */; };
+		A7D4E846177498AB0037E47B /* LIOStarRatingView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D4E844177498AB0037E47B /* LIOStarRatingView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8D8631799784F005989FD /* LPMediaAPIClient.h */; };
 		A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8D8641799784F005989FD /* LPMediaAPIClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7DB82151860EFA400473483 /* LIOBrandingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7DB82131860EFA400473483 /* LIOBrandingManager.h */; };
@@ -459,6 +459,8 @@
 				D42DE7991563274B006DFE81 /* LIONotificationArea.m */,
 				D4137A121592948E0097E385 /* LIOSurveyValidationView.h */,
 				D4137A131592948E0097E385 /* LIOSurveyValidationView.m */,
+				A7D4E843177498AB0037E47B /* LIOStarRatingView.h */,
+				A7D4E844177498AB0037E47B /* LIOStarRatingView.m */,
 			);
 			name = "New Views";
 			sourceTree = "<group>";
@@ -601,8 +603,6 @@
 				D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
-				A7D4E843177498AB0037E47B /* LIOStarRatingView.h */,
-				A7D4E844177498AB0037E47B /* LIOStarRatingView.m */,
 				A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */,
 				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
 				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,

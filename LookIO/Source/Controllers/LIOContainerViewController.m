@@ -11,11 +11,15 @@
 #import "LIOHeaderBarView.h"
 #import "LIOBlurImageView.h"
 
+#import "LIOBundleManager.h"
+
 #import "LIOChatViewController.h"
 #import "LPSurveyViewController.h"
 #import "LIOLoadingViewController.h"
 
-@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate>
+#define LIOContainerViewControllerAlertViewNextStepDismiss 2001
+
+@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIView *contentView;
 
@@ -215,8 +219,51 @@
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
 {
-    [self presentLoadingViewController];
     [self.engagement submitSurvey:survey];
+
+    // For offline survey or post chat survey, dismiss chat
+    switch (survey.surveyType) {
+        case LIOSurveyTypeOffline:
+            [self showSurveySubmissionAlert];
+            break;
+            
+        case LIOSurveyTypePostchat:
+            [self showSurveySubmissionAlert];
+            break;
+            
+        case LIOSurveyTypePrechat:
+            [self presentLoadingViewController];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)showSurveySubmissionAlert
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertBody")
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertButton"), nil];
+    alertView.tag = LIOContainerViewControllerAlertViewNextStepDismiss;
+    [alertView show];
+}
+
+#pragma mark -
+#pragma mark UIAlertView Delegate Methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    switch (alertView.tag) {
+        case LIOContainerViewControllerAlertViewNextStepDismiss:
+            [self dismiss];
+            break;
+            
+        default:
+            break;
+    }
 }
 
 #pragma mark -

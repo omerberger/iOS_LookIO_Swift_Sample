@@ -21,6 +21,7 @@
 #import "LIODraggableButton.h"
 
 #define LIOAlertViewNextStepDismissLookIOWindow 2001
+#define LIOAlertViewNextStepShowPostChatSurvey  2002
 
 typedef enum
 {
@@ -296,6 +297,17 @@ static LIOManager *sharedLookIOManager = nil;
     {
         [self dismissLookIOWindow];
     }
+    if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
+    {
+        self.visit.visitState = LIOVisitStatePostChatSurvey;
+        
+        if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+        {
+            [self presentLookIOWindow];
+            
+        }
+        [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
+    }
 }
 
 #pragma mark -
@@ -360,11 +372,24 @@ static LIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateVisitInProgress;
             [self.engagement cancelEngagement];
             break;
+
             
         case LIOVisitStatePreChatSurvey:
             // If prechat survey is open and no questions were answered, cancel the engagement
+            self.visit.visitState = LIOVisitStateVisitInProgress;
             if (![self.engagement.prechatSurvey anyQuestionsAnswered])
                 [self.engagement cancelEngagement];
+            break;
+
+        // If we just sumbitted an offline survey, end the engagement
+        case LIOVisitStateOfflineSurvey:
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+            [self.engagement endEngagement];
+            break;
+            
+        case LIOVisitStatePostChatSurvey:
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+            [self.engagement endEngagement];
             break;
             
         default:
@@ -477,9 +502,6 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
 {
-    if (!self.visit.surveysEnabled)
-        return;
-
     if (LIOVisitStateChatStarted == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateOfflineSurvey;
@@ -502,17 +524,33 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement
 {
-    [self.engagement cleanUpEngagement];
-    self.engagement = nil;
+    // If chat is disconnected, let's show an alert view.
     
-    self.visit.visitState = LIOVisitStateVisitInProgress;
+    NSInteger alertViewTag;
+    
+    // If a post chat survey is available and surveys are enabled, keep the engagement object and show the survey
+    if (self.visit.surveysEnabled && self.engagement.postchatSurvey)
+    {
+        alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
+    }
+    else
+    {
+        // Otherwise, clear the engagement and dismiss the window after dismissing the alert
+        
+        alertViewTag = LIOAlertViewNextStepDismissLookIOWindow;;
+        
+        [self.engagement cleanUpEngagement];
+        self.engagement = nil;
+        
+        self.visit.visitState = LIOVisitStateVisitInProgress;
+    }
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    alertView.tag = alertViewTag;
     [alertView show];
 }
 

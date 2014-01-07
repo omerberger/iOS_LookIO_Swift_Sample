@@ -794,6 +794,8 @@
             self.reusableQuestionView = tempView;
             self.reusableQuestionView.tag = -1000;
         }
+        
+        [self.currentQuestionView questionViewDidAppear];
     }];
     
     /*

@@ -186,7 +186,7 @@
     UILabel *aLabel = [[UILabel alloc] init];
     aLabel.tag = LIONotificationAreaNotificationLabelTag;
     aLabel.backgroundColor = [UIColor clearColor];
-    aLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarNotifications];
+    aLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementBrandingBarNotifications];
     aLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
     aLabel.text = aString;
     [newNotification addSubview:aLabel];        

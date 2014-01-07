@@ -30,5 +30,6 @@
 @property (nonatomic, strong) UITextView *textView;
 
 - (void)becomeFirstResponder;
+- (void)questionViewDidAppear;
 
 @end

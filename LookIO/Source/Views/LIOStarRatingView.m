@@ -7,28 +7,42 @@
 //
 
 #import "LIOStarRatingView.h"
-#import "LIOBundleManager.h"
+
 #import <QuartzCore/QuartzCore.h>
-#import "LIOLookIOManager.h"
+
+#import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
 #define LIOStarRatingViewTempStarButtonTag 1000
 
-@implementation LIOStarRatingView
+@interface LIOStarRatingView ()
 
-@synthesize currentRating, valueLabelArray, delegate;
+@property (nonatomic, strong) NSMutableArray *starButtonArray;
+
+@property (nonatomic, strong) UILabel *ratingLabel;
+
+@property (nonatomic, assign) BOOL isAnimating;
+@property (nonatomic, assign) BOOL isPanning;
+
+@property (nonatomic, strong) UIPanGestureRecognizer *panGestureRecognizer;
+
+@end
+
+@implementation LIOStarRatingView
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        currentRating = 0;
+        self.currentRating = 0;
         
-        starButtonArray = [[NSMutableArray alloc] init];
-        for (int i=0; i<5; i++) {
+        self.starButtonArray = [[NSMutableArray alloc] init];
+        for (int i=0; i<5; i++)
+        {
             UIImage* fullStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarFull"];
             UIImage* emptyStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarEmpty"];
 
-            UIButton* starButton = [[[UIButton alloc] initWithFrame:CGRectZero] autorelease];
+            UIButton* starButton = [[UIButton alloc] initWithFrame:CGRectZero];
             [starButton setImage:emptyStarImage forState:UIControlStateNormal];
             [starButton setImage:emptyStarImage forState:UIControlStateNormal | UIControlStateHighlighted];
             [starButton setImage:fullStarImage forState:UIControlStateSelected];
@@ -36,61 +50,38 @@
             [starButton addTarget:self action:@selector(starWasTapped:) forControlEvents:UIControlEventTouchUpInside];
             starButton.selected = YES;
             [self addSubview:starButton];
-            [starButtonArray addObject:starButton];
+            [self.starButtonArray addObject:starButton];
         }
         
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-        ratingLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        ratingLabel.backgroundColor = [UIColor clearColor];
-        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
-            ratingLabel.font = [UIFont boldSystemFontOfSize:15.0];
-//            if (!padUI) {
-//                ratingLabel.textColor = [UIColor whiteColor];
-//                ratingLabel.shadowColor = [UIColor darkGrayColor];
-//                ratingLabel.shadowOffset = CGSizeMake(0.0, 1.0);
-//            } else
-                ratingLabel.textColor = [UIColor darkGrayColor];
-        } else {
-            ratingLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-            ratingLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-            ratingLabel.layer.shadowRadius = 1.0;
-            ratingLabel.layer.shadowOpacity = 1.0;
-            ratingLabel.layer.shadowOffset = CGSizeMake(0.0, 1.0);
-            ratingLabel.textColor = [UIColor whiteColor];
-        }
+        self.ratingLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.ratingLabel.backgroundColor = [UIColor clearColor];
+        self.ratingLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyStars];
+        self.ratingLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyStars];
+        self.ratingLabel.numberOfLines = 0;
+        self.ratingLabel.textAlignment = UITextAlignmentCenter;
+        self.ratingLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        [self addSubview:self.ratingLabel];
         
-        ratingLabel.numberOfLines = 0;
-        ratingLabel.textAlignment = UITextAlignmentCenter;
-        ratingLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [self addSubview:ratingLabel];
-        [ratingLabel release];
+        self.valueLabelArray = [[NSMutableArray alloc] init];
         
-        valueLabelArray = [[NSMutableArray alloc] init];
-        
-        panGestureRecognizer = [[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)] autorelease];
-        [self addGestureRecognizer:panGestureRecognizer];
+        self.panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+        [self addGestureRecognizer:self.panGestureRecognizer];
     }
+
     return self;
 }
 
--(void)dealloc {
-    [super dealloc];
-    
-    [valueLabelArray release];
-    
-    [starButtonArray removeAllObjects];
-    [starButtonArray release];
-    starButtonArray = nil;
-    
-}
-
--(void)layoutSubviews {
-    for (int i=0; i<5; i++) {
-        if (i < starButtonArray.count) {
-            UIButton* starButton = [starButtonArray objectAtIndex:i];
-            if (!isAnimating)
-                starButton.selected = (i < currentRating);
+- (void)layoutSubviews
+{
+    for (int i=0; i<5; i++)
+    {
+        if (i < self.starButtonArray.count)
+        {
+            UIButton* starButton = [self.starButtonArray objectAtIndex:i];
+            if (!self.isAnimating)
+                starButton.selected = (i < self.currentRating);
             
             CGRect aFrame = starButton.frame;
             aFrame.origin.x = (self.frame.size.width/2 - 125.0) + i * 50.0;
@@ -100,34 +91,38 @@
             
             starButton.frame = aFrame;
             
-            if (!isAnimating) {
-                if (isPanning && i == currentRating - 1) {
+            if (!self.isAnimating)
+            {
+                if (self.isPanning && i == self.currentRating - 1)
+                {
                     starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
-                } else {
+                } else
+                {
                     starButton.transform = CGAffineTransformIdentity;
                 }
             }
         }
     }
     
-    CGRect aFrame = ratingLabel.frame;
+    CGRect aFrame = self.ratingLabel.frame;
     aFrame.origin.x = 0.0;
 
     aFrame.origin.y = 60.0;
     aFrame.size.width = self.bounds.size.width;
     aFrame.size.height = 18.0;
-    ratingLabel.frame = aFrame;
+    self.ratingLabel.frame = aFrame;
     
-    if (!isAnimating)
-        [self setRatingTextForRating:currentRating];
+    if (!self.isAnimating)
+        [self setRatingTextForRating:self.currentRating];
 
 }
 
-- (void)handlePan:(UIPanGestureRecognizer *)recognizer {
-    isAnimating = NO;
+- (void)handlePan:(UIPanGestureRecognizer *)recognizer
+{
+    self.isAnimating = NO;
     
     if (recognizer.state == UIGestureRecognizerStateBegan)
-        isPanning = YES;
+        self.isPanning = YES;
     
     CGPoint translation = [recognizer locationInView:self];
 
@@ -138,41 +133,42 @@
     }
     
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        isPanning = NO;
+        self.isPanning = NO;
         [self setNeedsLayout];
     }
 }
 
-- (void)setRatingTextForRating:(NSInteger)rating {
-    if (valueLabelArray && valueLabelArray.count == 5) {
+- (void)setRatingTextForRating:(NSInteger)rating
+{
+    if (self.valueLabelArray && self.valueLabelArray.count == 5) {
         if (rating == 0)
-            ratingLabel.text = @"";
+            self.ratingLabel.text = @"";
         else
-            ratingLabel.text = (NSString*)[valueLabelArray objectAtIndex:(5 - rating)];
+            self.ratingLabel.text = (NSString*)[self.valueLabelArray objectAtIndex:(5 - rating)];
     } else {
         switch (rating) {
             case 5:
-                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
+                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
                 break;
                 
             case 4:
-                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
+                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
                 break;
                 
             case 3:
-                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
+                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
                 break;
                 
             case 2:
-                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
+                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
                 break;
                 
             case 1:
-                ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
+                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
                 break;
                 
             case 0:
-                ratingLabel.text = @"";
+                self.ratingLabel.text = @"";
                 
             default:
                 break;
@@ -180,46 +176,47 @@
     }
 }
 
-- (void)showIntroAnimationForAnswerAtIndex:(int)index {
+- (void)showIntroAnimationForAnswerAtIndex:(int)index
+{
     [self setRatingTextForRating:index + 1];
-    UIButton* starButton = [starButtonArray objectAtIndex:index];
+    UIButton* starButton = [self.starButtonArray objectAtIndex:index];
     starButton.selected = YES;
     
     UIButton *tempStarButton = [[UIButton alloc] initWithFrame:starButton.frame];
     tempStarButton.tag = LIOStarRatingViewTempStarButtonTag + index;
     [tempStarButton addTarget:self action:@selector(tempButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:tempStarButton];
-    [tempStarButton release];
 
     [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
         starButton.transform = CGAffineTransformMakeScale(1.3, 1.3);
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
-            UIButton* starButton = [starButtonArray objectAtIndex:index];
+            UIButton* starButton = [self.starButtonArray objectAtIndex:index];
             starButton.transform = CGAffineTransformIdentity;
             
-            ratingLabel.transform = CGAffineTransformIdentity;
+            self.ratingLabel.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
             UIButton *tempStarButton = (UIButton*)[self viewWithTag:LIOStarRatingViewTempStarButtonTag + index];
             if (tempStarButton)
                 [tempStarButton removeFromSuperview];
             
-            if (index < 4 && isAnimating)
+            if (index < 4 && self.isAnimating)
                 [self showIntroAnimationForAnswerAtIndex:index+1];
             else {
-                isAnimating = NO;
+                self.isAnimating = NO;
                 [self setNeedsLayout];
             }
         }];
     }];
 }
 
-- (void)showIntroAnimation {
-    isAnimating = YES;
+- (void)showIntroAnimation
+{
+    self.isAnimating = YES;
 
     for (int i=0; i<5; i++) {
-        if (i < starButtonArray.count) {
-            UIButton* starButton = [starButtonArray objectAtIndex:i];
+        if (i < self.starButtonArray.count) {
+            UIButton* starButton = [self.starButtonArray objectAtIndex:i];
             starButton.selected = NO;
         }
     }
@@ -227,40 +224,42 @@
     [self showIntroAnimationForAnswerAtIndex:0];
 }
 
-- (void)tempButtonWasTapped:(id)sender {
-    isAnimating = NO;
+- (void)tempButtonWasTapped:(id)sender
+{
+    self.isAnimating = NO;
     
     UIButton* button = (UIButton*)sender;
     [self setRating:button.tag - LIOStarRatingViewTempStarButtonTag + 1];
 }
 
-- (void)starWasTapped:(id)sender {
-    isAnimating = NO;
+- (void)starWasTapped:(id)sender
+{
+    self.isAnimating = NO;
     
     UIButton* button = (UIButton*)sender;
-    [self setRating:[starButtonArray indexOfObject:button] + 1];
+    [self setRating:[self.starButtonArray indexOfObject:button] + 1];
 }
 
-- (void)setRating:(NSInteger)newRating {
-    currentRating = newRating;
+- (void)setRating:(NSInteger)newRating
+{
+    self.currentRating = newRating;
     [self setNeedsLayout];
     
-    if ([(NSObject *)delegate respondsToSelector:@selector(starRatingView:didUpdateRating:)])
-        [delegate starRatingView:self didUpdateRating:currentRating];
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(starRatingView:didUpdateRating:)])
+        [self.delegate starRatingView:self didUpdateRating:self.currentRating];
 }
 
--(void)setValueLabels:(NSArray*)newValueLabelsArray {
+- (void)setValueLabels:(NSArray*)newValueLabelsArray
+{
     if (newValueLabelsArray.count != 5)
         return;
     
-    [valueLabelArray removeAllObjects];
+    [self.valueLabelArray removeAllObjects];
     
     for (int i=0; i<newValueLabelsArray.count; i++) {
         NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
-        [valueLabelArray addObject:valueLabel];
+        [self.valueLabelArray addObject:valueLabel];
     }
 }
-                                    
-
 
 @end

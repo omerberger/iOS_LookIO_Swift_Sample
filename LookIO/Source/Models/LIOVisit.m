@@ -1046,7 +1046,7 @@
         }
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         // TODO Rereport a failed funnel request?
-        LIOLog(@"<FUNNEL> with data:%@ failure: %@", funnelDict, error);
+        LIOLog(@"<FUNNEL> with data:%@ failure: %@ code: %d", funnelDict, error, operation.responseCode);
         
         self.funnelRequestIsActive = NO;
         if (self.funnelRequestQueue.count > 0) {

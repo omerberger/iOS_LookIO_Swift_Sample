@@ -280,8 +280,9 @@
 {
     self.sseChannelState = LIOSSEChannelStateConnected;
     
-    if (LIOVisitStateChatRequested)
+    if (LIOVisitStateChatRequested == self.visit.visitState)
     {
+        [self sendCapabilitiesPacket];
         [self.delegate engagementDidConnect:self];
     }
 }
@@ -599,7 +600,7 @@
     }];
 }
 
--(void)sendOutroPacket
+- (void)sendOutroPacket
 {
     // TODO Check if engagement id exists
 
@@ -626,6 +627,29 @@
 
     }];
 }
+
+- (void)sendCapabilitiesPacket {
+    // TODO Check if engagement id exists
+    
+    NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
+    NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                              capsArray, @"capabilities",
+                              nil];
+    NSString* capsRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatCapabilitiesRequestURL, self.engagementId];
+    
+    [[LPChatAPIClient sharedClient] postPath:capsRequestUrl parameters:capsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<CAPABILITIES> response: %@", responseObject);
+        else
+            LIOLog(@"<CAPABILITIES> success");
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<CAPABILITIES> failure: %@", error);
+        
+        // TODO Retry failed capabilities call
+    }];
+}
+
 
 
 #pragma mark Action Methods

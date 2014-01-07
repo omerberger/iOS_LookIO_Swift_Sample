@@ -12,10 +12,10 @@
         "loading_screen" : {
             "spin_image" : "1",
             "font" : {
-                "color" : "#ffffff"
+                "color" : "#666666"
             },
             "background" : {
-                "color" : "#aaaaaa",
+                "color" : "#dddddd",
                 "alpha" : "0.8"
             },
             "image" : ""
@@ -252,6 +252,10 @@
         "stars" : {
             "border" : {
                 "color" : "#fafafa"
+            },
+            "font" : {
+                "color" : "#666666",
+                "size" : "15.0"
             },
             "unselected" : {
                 "background" : {

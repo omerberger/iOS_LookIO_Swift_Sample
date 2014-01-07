@@ -415,7 +415,7 @@
     {
         aFrame.origin.x = LIOSurveyViewSideMargin;
         // TODO Base origin here on the actual text which can be localized
-        aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height - (landscape ? -15.0 : 10.0);
+        aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 10.0;
         aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
         if (!padUI)
         {
@@ -627,12 +627,14 @@
             if (!landscape) {
                 frame.origin.x = 10;
                 frame.size.width = self.bounds.size.width - 20;
-                frame.origin.y = 65;
+                frame.size.height = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height + 45;
+                frame.origin.y = 25;
             }
             else {
                 frame.origin.x = 10;
                 frame.size.width = self.bounds.size.width - 20;
-                frame.origin.y = 25;
+                frame.size.height = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height + 25;
+                frame.origin.y = 10;
             }
             self.backgroundView.frame = frame;
         }
@@ -659,8 +661,6 @@
             maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (landscape ? 100.0 : 135.0);
         }
         
-        NSLog(@">>> tableViewContentHeight: %f // maxHeight: %f", tableViewContentHeight, maxHeight);
-
         if (tableViewContentHeight > maxHeight)
         {
             tableViewContentHeight = maxHeight;
@@ -744,6 +744,13 @@
 {
     [self.delegate surveyQuestionViewDidTapNextButton:self];
 }
+
+- (void)questionViewDidAppear
+{
+    if (!self.starRatingView.hidden)
+        [self.starRatingView showIntroAnimation];
+}
+
 
 #pragma mark -
 #pragma mark UITextField/UITextView delegate methods
