@@ -288,7 +288,10 @@
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
-    switch (self.sseChannelState) {
+    LIOSSEChannelState previousChannelState = self.sseChannelState;
+    self.sseChannelState = LIOSSEChannelStateInitialized;
+
+    switch (previousChannelState) {
         // If we are attempting to connect initially, this means we failed to start
         case LIOSSEChannelStateConnecting:
             if (LIOVisitStateChatRequested == self.visit.visitState)
@@ -316,7 +319,6 @@
             break;
     }
     
-    self.sseChannelState = LIOSSEChannelStateInitialized;
 }
 
 - (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError *)err
