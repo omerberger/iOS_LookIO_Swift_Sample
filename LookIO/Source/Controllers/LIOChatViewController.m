@@ -78,8 +78,12 @@
 - (void)dismissChat:(id)sender
 {
     [self.delegate chatViewControllerDidDismissChat:self];
+ 
     if ([self.inputBarView.textView isFirstResponder])
         [self.inputBarView.textView resignFirstResponder];
+    
+    self.keyboardState = LIOKeyboardStateHidden;
+    [self updateSubviewFrames];
 }
 
 - (void)sendPhoto
@@ -123,8 +127,14 @@
         case LIOChatViewControllerEndChatAlertViewTag:
             if (buttonIndex == 1)
             {
-                [self.engagement endEngagement];
                 [self.delegate chatViewControllerDidEndChat:self];
+
+                if ([self.inputBarView.textView isFirstResponder])
+                    [self.inputBarView.textView resignFirstResponder];
+                
+                self.keyboardState = LIOKeyboardStateHidden;
+                [self updateSubviewFrames];
+
             }
             break;
             
@@ -306,10 +316,13 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardDidChangeFrame:)
-                                                 name:UIKeyboardDidChangeFrameNotification
-                                               object:nil];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(keyboardDidChangeFrame:)
+                                                     name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
+                                                   object:nil];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -330,21 +343,34 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIKeyboardWillHideNotification
                                                   object:nil];
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
+                                                      object:nil];
+    }
+    
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-    
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+    if (padUI)
+        self.tableView.frame = CGRectMake(self.view.bounds.size.width/2, self.view.bounds.origin.y, self.view.bounds.size.width/2, self.view.bounds.size.height);
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin;
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.showsVerticalScrollIndicator = NO;
-    self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+        self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self.view addSubview:self.tableView];
     
     self.keyboardState = LIOKeyboardStateIntroAnimation;
@@ -356,6 +382,7 @@
     self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
+    self.inputBarView.textView.inputAccessoryView = [[LIOObservingInputAccessoryView alloc] init];
     [self.view addSubview:self.inputBarView];    
     
     self.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, self.inputBarView.frame.size.height + 5.0)];
@@ -481,22 +508,14 @@
 
 - (void)keyboardDidChangeFrame:(NSNotification *)notification
 {
-    // Acquire keyboard info
-    NSDictionary *info = [notification userInfo];
+    if (self.keyboardState == LIOKeyboardStateKeyboard)
+    {
+        LIOObservingInputAccessoryView *accessoryView = (LIOObservingInputAccessoryView *)notification.object;
+        CGRect frame = [self.view convertRect:accessoryView.frame fromView:accessoryView];
+        self.lastKeyboardHeight = self.view.bounds.size.height - frame.origin.y;
     
-    UIViewAnimationCurve curve;
-    [[info objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&curve];
-    
-    NSTimeInterval duration;
-    [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&duration];
-    
-    CGRect keyboardRect;
-    [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
-
-    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
-    
-    [self updateSubviewFrames];
+        [self updateSubviewFrames];
+    }
 }
 
 #pragma mark Rotation Methods

@@ -174,7 +174,7 @@
     return self;
 }
 
-- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question existingResponse:(id)existingResponse isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate
+- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate
 {
     self.delegate = delegate;
     self.question = question;
@@ -251,19 +251,10 @@
             [numberToolbar sizeToFit];
             self.textField.inputAccessoryView = numberToolbar;
         }
-        
-        // If the user has answered this survey, we should display their answer
-        if (existingResponse && [existingResponse isKindOfClass:[NSString class]])
-        {
-            NSString *responseString = (NSString *)existingResponse;
-            self.textField.text = existingResponse;
-        }
-        // If user hasn't answered, let's see if there's a last known response to populate
-        else
-        {
-            if (question.lastKnownValue)
-                self.textField.text = question.lastKnownValue;
-        }
+
+        // Populate last known value
+        if (question.lastKnownValue)
+            self.textField.text = question.lastKnownValue;
     }
     else
     {
@@ -311,19 +302,10 @@
             [numberToolbar sizeToFit];
             self.textView.inputAccessoryView = numberToolbar;
         }
-        
-        // If the user has answered this survey, we should display their answer
-        if ((existingResponse) && [existingResponse isKindOfClass:[NSString class]])
-        {
-            NSString *responseString = (NSString *)existingResponse;
-            self.textView.text = existingResponse;
-        }
-        // If user hasn't answered, let's see if there's a last known response to populate
-        else
-        {
-            if (question.lastKnownValue)
-                self.textView.text = question.lastKnownValue;
-        }
+
+        // Populate last known answer
+        if (question.lastKnownValue)
+            self.textView.text = question.lastKnownValue;
     }
 
     if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI)
@@ -658,7 +640,7 @@
         }
         else
         {
-            maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (landscape ? 100.0 : 135.0);
+            maxHeight = referenceFrame.size.height - self.titleLabel.bounds.size.height - (landscape ? 100.0 : 140.0);
         }
         
         if (tableViewContentHeight > maxHeight)
@@ -761,11 +743,12 @@
     
     return NO;
 }
-
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
+    [textField setText:[textField.text stringByReplacingCharactersInRange:range withString:string]];
+    
     [self.delegate surveyQuestionViewAnswerDidChange:self];
-    return YES;
+    return NO;
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
@@ -775,10 +758,11 @@
         [self.delegate surveyQuestionViewDidTapNextButton:self];
         return NO;
     }
-    
+
+    [textView setText:[textView.text stringByReplacingCharactersInRange:range withString:text]];
     [self.delegate surveyQuestionViewAnswerDidChange:self];
     
-    return YES;
+    return NO   ;
 }
 
 #pragma mark -

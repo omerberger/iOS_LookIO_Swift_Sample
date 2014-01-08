@@ -22,7 +22,7 @@
 
 @interface LIOSurveyQuestionView : UIScrollView
 
-- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question existingResponse:(id)existingResponse isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate;
+- (void)setupViewWithQuestion:(LIOSurveyQuestion *)question isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate;
 
 @property (nonatomic, assign) id <LIOSurveyQuestionViewDelegate> delegate;
 

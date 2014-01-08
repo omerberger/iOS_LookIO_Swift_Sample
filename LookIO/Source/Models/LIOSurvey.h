@@ -17,6 +17,8 @@ typedef enum
     LIOSurveyTypeOffline
 } LIOSurveyType;
 
+#define LIOSurveyViewControllerIndexForIntroPage   -1
+
 @interface LIOSurvey : NSObject
 
 @property (nonatomic, assign) LIOSurveyType surveyType;

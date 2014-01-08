@@ -143,6 +143,8 @@ static LIOManager *sharedLookIOManager = nil;
 {
     [LIOStatusManager statusManager].appForegrounded = NO;
     
+    [self dismissLookIOWindow];
+    
     // TODO Dismiss any existing alertViews
     
     // TODO Created background task, monitor background time and send continue
@@ -376,9 +378,11 @@ static LIOManager *sharedLookIOManager = nil;
             
         case LIOVisitStatePreChatSurvey:
             // If prechat survey is open and no questions were answered, cancel the engagement
-            self.visit.visitState = LIOVisitStateVisitInProgress;
             if (![self.engagement.prechatSurvey anyQuestionsAnswered])
+            {
+                self.visit.visitState = LIOVisitStateVisitInProgress;
                 [self.engagement cancelEngagement];
+            }
             break;
 
         // If we just sumbitted an offline survey, end the engagement
@@ -420,6 +424,9 @@ static LIOManager *sharedLookIOManager = nil;
             self.engagement.delegate = self;
             self.visit.visitState = LIOVisitStateChatRequested;
             [self.engagement startEngagement];
+            
+            if (self.visit.surveysEnabled)
+                [self.containerViewController presentLoadingViewController];            
             break;
             
         case LIOVisitStateChatStarted:

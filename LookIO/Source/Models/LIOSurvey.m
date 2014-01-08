@@ -33,8 +33,8 @@
     if (self)
     {
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = -1;
-        self.lastSeenQuestionIndex = -1;
+        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
+        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
     }
     
     return self;
@@ -49,8 +49,8 @@
         self.surveyType = surveyType;
         
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = -1;
-        self.lastSeenQuestionIndex = -1;
+        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
+        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateTemplateWithDictionary:aDictionary];
     }
@@ -65,8 +65,8 @@
     if (self)
     {
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = -1;
-        self.lastSeenQuestionIndex = -1;
+        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
+        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateDefaultOfflineSurveyWithResponse:response];
     }

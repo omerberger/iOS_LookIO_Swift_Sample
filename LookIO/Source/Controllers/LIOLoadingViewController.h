@@ -20,4 +20,7 @@
 
 @property (nonatomic, assign) id <LIOLoadingViewControllerDelegate> delegate;
 
+- (void)showBezel;
+- (void)hideBezel;
+
 @end

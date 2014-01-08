@@ -138,6 +138,7 @@
     }
     else
     {
+        [self.engagement endEngagement];
         [self dismiss];
     }
 }
@@ -182,7 +183,10 @@
 - (void)presentLoadingViewController
 {
     self.containerViewState = LIOContainerViewStateLoading;
-    [self swapCurrentControllerWith:self.loadingViewController animated:YES];
+    [self.loadingViewController showBezel];
+    
+    if (self.currentViewController != self.loadingViewController)
+        [self swapCurrentControllerWith:self.loadingViewController animated:YES];
 }
 
 - (void)presentChatViewController:(BOOL)animated
@@ -274,6 +278,7 @@
     if (viewController == self.currentViewController)
         return;
     
+    
     [self.currentViewController willMoveToParentViewController:nil];
     [self addChildViewController:viewController];
     
@@ -320,6 +325,7 @@
         [self.delegate containerViewControllerDidDismiss:self];
         self.containerViewState = LIOContainerViewStateLoading;
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
+        [self.loadingViewController hideBezel];
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
     }];
 }
@@ -380,6 +386,8 @@
     [self.contentView addSubview:self.loadingViewController.view];
     self.currentViewController = self.loadingViewController;
     [self.loadingViewController didMoveToParentViewController:self];
+    
+    [self.loadingViewController hideBezel];
 }
 
 @end

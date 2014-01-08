@@ -18,13 +18,13 @@
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
-#define LIOSurveyViewControllerIndexForIntroPage   -1
 #define LIOSurveyViewControllerValidationDuration   5
 
 #define LIOSurveyViewTableCellLabelTag 100
 
+#define LIOSurveyViewControllerAlertViewTagNextActionCancel 1001
 
-@interface LPSurveyViewController () <UIScrollViewDelegate>
+@interface LPSurveyViewController () <UIScrollViewDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) LIOSurvey *survey;
 
@@ -112,9 +112,17 @@
     swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [self.scrollView addGestureRecognizer:swipeRightGestureRecognizer];
     
-    self.currentQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-    LIOSurveyQuestion *introQuestion = [self.survey questionForIntroView];
-    
+    LIOSurveyQuestion *currentQuestion = nil;
+    self.currentQuestionIndex = self.survey.lastSeenQuestionIndex;
+    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+    {
+        currentQuestion = [self.survey questionForIntroView];
+    }
+    else
+    {
+        currentQuestion = [self.survey.questions objectAtIndex:self.currentQuestionIndex];
+    }
+
     self.pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 20.0, self.view.bounds.size.width, 20.0)];
     self.pageControl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
     self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
@@ -137,13 +145,13 @@
     
     self.currentQuestionView = [[LIOSurveyQuestionView alloc] initWithFrame:self.scrollView.bounds];
     self.currentQuestionView.tag = self.currentQuestionIndex;
-    [self.currentQuestionView setupViewWithQuestion:introQuestion existingResponse:nil isLastQuestion:NO delegate:self];
+    [self.currentQuestionView setupViewWithQuestion:currentQuestion isLastQuestion:NO delegate:self];
     [self.scrollView addSubview:self.currentQuestionView];
     [self.currentQuestionView becomeFirstResponder];
     
     // Set up the next question; If we get a FALSE response, we're at the last question
     self.isLastQuestion = ![self setupNextQuestionScrollView];
-    self.previousQuestionView = nil;
+    [self setupPreviousQuestionScrollView];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -236,6 +244,24 @@
 }
 
 #pragma mark -
+#pragma mark UIAlertView Delegate Methods
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1)
+    {
+        switch (alertView.tag) {
+            case LIOSurveyViewControllerAlertViewTagNextActionCancel:
+                [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+                break;
+            
+            default:
+                break;
+        }
+    }
+}
+
+#pragma mark -
 #pragma mark LIOSurveyQuestionView Delegate
 
 - (void)surveyQuestionViewAnswerDidChange:(LIOSurveyQuestionView *)surveyQuestionView
@@ -276,7 +302,14 @@
 {
     if (self.isLastQuestion)
     {
+        if (self.validationView)
+        {
+            [self.validationTimer stopTimer];
+            [self validationTimerDidFire];
+        }
+        
         [self completeSurvey];
+        
         return;
     }
     
@@ -294,6 +327,11 @@
 - (void)surveyQuestionViewDidTapCancelButton:(LIOSurveyQuestionView *)surveyQuestionView
 {
     [self.view endEditing:YES];
+        if (self.validationView)
+    {
+        [self.validationTimer stopTimer];
+        [self validationTimerDidFire];
+    }
     
     // For a prechat survey, we allow just tapping off
     if (LIOSurveyTypePrechat == self.survey.surveyType)
@@ -302,40 +340,15 @@
     }
     else
     {
-        // TODO: Show an alertview for dismissing the survey for postchat or offline
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertBody")
+                                                           delegate:self
+                                                  cancelButtonTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertNoButton")
+                                                  otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertYesButton"), nil];
+        alertView.tag = LIOSurveyViewControllerAlertViewTagNextActionCancel;
+        [alertView show];
     }
 }
-
-/*
- -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
- if (buttonIndex == 1)
- [self cancelSurveyView];
- }
- 
- - (void)cancelSurveyView {
- if (delegate) {
- pageControl.alpha = 0.0;
- BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
- 
- if (!padUI) {
- [self.superview endEditing:YES];
- 
- [UIView animateWithDuration:0.3 animations:^{
- currentScrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.bounds.size.height/2);
- currentScrollView.alpha = 0.0;
- if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
- backgroundDismissableArea.alpha = 0.0;
- }
- } completion:^(BOOL finished) {
- [delegate surveyViewDidCancel:self];
- }];
- } else {
- [delegate surveyViewDidCancel:self];
- }
- }
- }
- 
- */
 
 - (void)completeSurvey {
     self.pageControl.alpha = 0.0;
@@ -355,29 +368,6 @@
         [self.delegate surveyViewController:self didCompleteSurvey:self.survey];
     }
 }
-
-/*
- 
- -(void)handleTapGesture:(UITapGestureRecognizer*)sender {
- if (self.currentSurveyType == LIOSurveyManagerSurveyTypeOffline || self.currentSurveyType == LIOSurveyManagerSurveyTypePost) {
- alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle") message:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertBody") delegate:self cancelButtonTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertNoButton") otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertYesButton"), nil];
- [alertView show];
- 
- [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
- } else {
- if (!isAnimatingTransition && !isAnimatingEntrance)
- [self cancelSurveyView];
- }
- }
- 
- - (void) applicationDidEnterBackground:(id) sender {
- // Remove alertView if going to background
- if (alertView) {
- [alertView dismissWithClickedButtonIndex:-1 animated:NO];
- }
- }
- 
- */
 
 -(void)bounceViewLeft
 {
@@ -561,7 +551,7 @@
     if (self.previousQuestionView)
     {
         self.previousQuestionView.tag = previousQuestionIndex;
-        [self.previousQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+        [self.previousQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
     }
     else
     {
@@ -578,7 +568,7 @@
         [self.scrollView addSubview:self.previousQuestionView];
         
         self.previousQuestionView.tag = previousQuestionIndex;
-        [self.previousQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+        [self.previousQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
     }
     
     return YES;
@@ -619,7 +609,7 @@
     if (self.nextQuestionView)
     {
         self.nextQuestionView.tag = nextQuestionIndex;
-        [self.nextQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
     }
     else
     {
@@ -636,7 +626,7 @@
         [self.scrollView addSubview:self.nextQuestionView];
         
         self.nextQuestionView.tag = nextQuestionIndex;
-        [self.nextQuestionView setupViewWithQuestion:question existingResponse:nil isLastQuestion:NO delegate:self];
+        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
     }
     
     return YES;
@@ -744,6 +734,8 @@
             self.reusableQuestionView.tag = -1000;
 
         }
+
+        self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
     }];
 }
 
@@ -796,6 +788,7 @@
         }
         
         [self.currentQuestionView questionViewDidAppear];
+        self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
     }];
     
     /*
@@ -1205,6 +1198,8 @@
             stringResponse = self.currentQuestionView.textView.text;
         }
         
+        currentQuestion.lastKnownValue = stringResponse;
+        
         if (0 == [stringResponse length])
         {
             // An empty response is okay for optional questions.
@@ -1272,6 +1267,7 @@
             if (validated)
             {
                 [self.survey registerAnswerObject:stringResponse withQuestionIndex:self.currentQuestionIndex];
+                
                 self.survey.lastCompletedQuestionIndex = self.currentQuestionIndex;
                 
                 return YES;

@@ -8,6 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+static NSString * const LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification = @"LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification";
+
+@interface LIOObservingInputAccessoryView : UIView
+
+@end
+
 @class LPInputBarView;
 
 @protocol LPInputBarViewDelegte <NSObject>

@@ -11,6 +11,38 @@
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
+@implementation LIOObservingInputAccessoryView
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    if (self.superview)
+    {
+        [self.superview removeObserver:self
+                            forKeyPath:@"frame"];
+    }
+    
+    [newSuperview addObserver:self
+                   forKeyPath:@"frame"
+                      options:0
+                      context:NULL];
+    
+    [super willMoveToSuperview:newSuperview];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+    if (object == self.superview && [keyPath isEqualToString:@"frame"])
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
+                                                            object:self];
+    }
+}
+
+@end
+
 @interface LPInputBarView () <UITextViewDelegate>
 
 @property (nonatomic, strong) UIView *textViewBackgroundView;

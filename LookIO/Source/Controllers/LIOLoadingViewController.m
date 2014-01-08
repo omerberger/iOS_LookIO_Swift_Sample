@@ -98,4 +98,17 @@
     [self.view addSubview:self.dismissButton];
 }
 
+#pragma mark -
+#pragma mark Action Methods
+
+- (void)showBezel
+{
+    self.bezelView.hidden = NO;
+}
+
+- (void)hideBezel
+{
+    self.bezelView.hidden = YES;
+}
+
 @end
