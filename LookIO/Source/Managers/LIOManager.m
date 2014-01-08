@@ -426,7 +426,11 @@ static LIOManager *sharedLookIOManager = nil;
             [self.engagement startEngagement];
             
             if (self.visit.surveysEnabled)
-                [self.containerViewController presentLoadingViewController];            
+                [self.containerViewController presentLoadingViewController];
+            else
+            {
+                [self.containerViewController presentChatForEngagement:self.engagement];
+            }
             break;
             
         case LIOVisitStateChatStarted:
@@ -455,9 +459,7 @@ static LIOManager *sharedLookIOManager = nil;
     {
         if (![self.visit surveysEnabled])
         {
-            self.visit.visitState = LIOVisitStateChatOpened;
-            [self.containerViewController presentChatForEngagement:self.engagement];
-            
+            self.visit.visitState = LIOVisitStateChatOpened;            
         }
     }
 }

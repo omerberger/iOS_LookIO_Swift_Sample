@@ -12,12 +12,13 @@
 #import "LPInputBarView.h"
 #import "LIOKeyboardMenu.h"
 #import "LIOBundleManager.h"
+#import "LPChatBubbleView.h"
 
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
 
 #define LIOChatViewControllerEndChatAlertViewTag 1001
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -129,6 +130,8 @@
             {
                 [self.delegate chatViewControllerDidEndChat:self];
 
+                self.inputBarView.textView.text = @"";
+                
                 if ([self.inputBarView.textView isFirstResponder])
                     [self.inputBarView.textView resignFirstResponder];
                 
@@ -395,7 +398,8 @@
     [self.view addSubview:self.keyboardMenu];
     
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
-    [self.view addGestureRecognizer:tapGestureRecognizer];
+    tapGestureRecognizer.delegate = self;
+    [self.tableView addGestureRecognizer:tapGestureRecognizer];
 }
 
 
@@ -518,6 +522,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark Rotation Methods
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
@@ -538,5 +543,17 @@
 {
     [self.tableView reloadData];
 }
+
+#pragma mark -
+#pragma mark UIGestureRecognizerDelegate method
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+    if ([touch.view isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview.superview isKindOfClass:[LPChatBubbleView class]])
+        return NO;
+    
+    return YES;
+}
+
 
 @end
