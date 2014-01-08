@@ -36,7 +36,13 @@ typedef enum
     LIOBrandingElementSurveyTextField,
     LIOBrandingElementSurveyList,
     LIOBrandingElementSurveyStars,
-    LIOBrandingElementSurveyValidationAlert
+    LIOBrandingElementSurveyValidationAlert,
+    LIOBrandingElementEmailChat,
+    LIOBrandingElementEmailChatTitle,
+    LIOBrandingElementEmailChatSubtitle,
+    LIOBrandingElementEmailChatTextField,
+    LIOBrandingElementEmailChatSubmitButton,
+    LIOBrandingElementEmailChatCancelButton
 } LIOBrandingElement;
 
 typedef enum

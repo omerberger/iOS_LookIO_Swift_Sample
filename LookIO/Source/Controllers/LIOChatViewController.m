@@ -14,6 +14,8 @@
 #import "LIOBundleManager.h"
 #import "LPChatBubbleView.h"
 
+#import "LIOEmailChatView.h"
+
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
 
 #define LIOChatViewControllerEndChatAlertViewTag 1001
@@ -39,10 +41,13 @@
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
+@property (nonatomic, strong) LIOEmailChatView *emailChatView;
+
 @end
 
 @implementation LIOChatViewController
 
+#pragma mark -
 #pragma mark UITableView Methods
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -80,7 +85,7 @@
     return cell;
 }
 
-
+#pragma mark -
 #pragma mark Action Methods
 
 - (void)scrollToBottomDelayed:(BOOL)delayed
@@ -154,6 +159,7 @@
     [self.alertView show];
 }
 
+#pragma mark -
 #pragma mark AlertView Delegate Methods
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -272,6 +278,7 @@
     
 }
 
+#pragma mark -
 #pragma mark Keyboard Menu Methods
 
 - (void)presentKeyboardMenu
@@ -314,6 +321,12 @@
     }];
 }
 
+- (BOOL)keyboardMenuShouldShowHideEmailChatDefaultItem:(LIOKeyboardMenu *)keyboardMenu
+{
+    return [self.engagement shouldEmailChatButtonItem];
+}
+
+
 - (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item
 {
     switch (item.type) {
@@ -341,6 +354,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark View Lifecycle Methods
 
 - (void)viewDidAppear:(BOOL)animated
@@ -453,6 +467,7 @@
     self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
     self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.keyboardMenu.delegate = self;
+    [self.keyboardMenu setDefaultButtonItems];
     [self.view addSubview:self.keyboardMenu];
     
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
@@ -460,7 +475,7 @@
     [self.tableView addGestureRecognizer:tapGestureRecognizer];
 }
 
-
+#pragma mark -
 #pragma mark Subview Update Methods
 
 - (void)updateSubviewFrames
@@ -527,6 +542,7 @@
     return heightAccum;
 }
 
+#pragma mark -
 #pragma mark Keyboard Methods
 
 - (void)keyboardWillShow:(NSNotification *)notification

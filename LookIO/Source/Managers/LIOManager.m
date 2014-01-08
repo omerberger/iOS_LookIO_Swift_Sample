@@ -121,7 +121,7 @@ static LIOManager *sharedLookIOManager = nil;
 {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationDidEnterBackground:)
-                                                 name:UIApplicationWillResignActiveNotification
+                                                 name:UIApplicationDidEnterBackgroundNotification
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self

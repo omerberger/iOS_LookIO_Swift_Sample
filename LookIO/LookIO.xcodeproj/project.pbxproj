@@ -48,6 +48,8 @@
 		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
 		A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
 		A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7913063187E0723001099ED /* LIOEmailChatView.h */; };
+		A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7913064187E0723001099ED /* LIOEmailChatView.m */; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
@@ -226,6 +228,8 @@
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenuButton.h; path = Source/Views/LIOKeyboardMenuButton.h; sourceTree = "<group>"; };
 		A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenuButton.m; path = Source/Views/LIOKeyboardMenuButton.m; sourceTree = "<group>"; };
+		A7913063187E0723001099ED /* LIOEmailChatView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOEmailChatView.h; path = Source/Views/LIOEmailChatView.h; sourceTree = "<group>"; };
+		A7913064187E0723001099ED /* LIOEmailChatView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEmailChatView.m; path = Source/Views/LIOEmailChatView.m; sourceTree = "<group>"; };
 		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
 		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
 		A7AE31FC18732922002D9F23 /* LIOSurvey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurvey.h; path = Source/Models/LIOSurvey.h; sourceTree = "<group>"; };
@@ -439,6 +443,8 @@
 		A739FA891864C6CC00CA35C4 /* New Views */ = {
 			isa = PBXGroup;
 			children = (
+				A7913063187E0723001099ED /* LIOEmailChatView.h */,
+				A7913064187E0723001099ED /* LIOEmailChatView.m */,
 				A7AE320418735E11002D9F23 /* LIOSurveyQuestionView.h */,
 				A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */,
 				A73D4432185610240030FF44 /* LIODraggableButton.h */,
@@ -782,6 +788,7 @@
 				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				A7DB82151860EFA400473483 /* LIOBrandingManager.h in Headers */,
 				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
+				A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */,
 				A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */,
 				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
 				A739FA8C1864C77600CA35C4 /* LIOChatTableViewCell.h in Headers */,
@@ -940,6 +947,7 @@
 				D4ADC7F514F322C300713F29 /* NSString+SBJSON.m in Sources */,
 				D4ADC7F714F322C300713F29 /* SBJSON.m in Sources */,
 				A7F4622B18771EAA00C0BD23 /* LIOLoadingViewController.m in Sources */,
+				A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */,
 				D4ADC7F914F322C300713F29 /* SBJsonBase.m in Sources */,
 				D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */,
 				A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */,

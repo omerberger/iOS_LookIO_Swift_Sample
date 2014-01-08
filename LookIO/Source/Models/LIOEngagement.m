@@ -727,4 +727,9 @@
     return shouldPresentPostChatSurvey;
 }
 
+- (BOOL)shouldEmailChatButtonItem
+{
+    return self.visit.hideEmailChat;
+}
+
 @end

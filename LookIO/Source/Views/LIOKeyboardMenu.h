@@ -16,11 +16,14 @@
 @optional
 
 - (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item;
+- (BOOL)keyboardMenuShouldShowHideEmailChatDefaultItem:(LIOKeyboardMenu *)keyboardMenu;
 
 @end
 
 @interface LIOKeyboardMenu : UIView
 
 @property (nonatomic, assign) id <LIOKeyboardMenuDelegate> delegate;
+
+- (void)setDefaultButtonItems;
 
 @end

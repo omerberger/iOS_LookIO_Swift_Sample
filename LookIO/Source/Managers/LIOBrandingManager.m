@@ -325,6 +325,86 @@ static LIOBrandingManager *brandingManager = nil;
         }
     }
 
+    if (LIOBrandingElementEmailChat == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+                dictionary = emailChatDictionary;
+        }
+    }
+
+    if (LIOBrandingElementEmailChatTextField == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *textFieldDictionary = [emailChatDictionary objectForKey:@"text_field"];
+                if (textFieldDictionary)
+                    dictionary = textFieldDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementEmailChatTitle == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *titleDictionary = [emailChatDictionary objectForKey:@"title"];
+                if (titleDictionary)
+                    dictionary = titleDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementEmailChatSubtitle == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *subtitleDictionary = [emailChatDictionary objectForKey:@"subtitle"];
+                if (subtitleDictionary)
+                    dictionary = subtitleDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementEmailChatSubmitButton == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *submitButtonDictionary = [emailChatDictionary objectForKey:@"submit_button"];
+                if (submitButtonDictionary)
+                    dictionary = submitButtonDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementEmailChatCancelButton == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *cancelButtonDictionary = [emailChatDictionary objectForKey:@"cancel_button"];
+                if (cancelButtonDictionary)
+                    dictionary = cancelButtonDictionary;
+            }
+        }
+    }
+    
     return dictionary;
 }
 

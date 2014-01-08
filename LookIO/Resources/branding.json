@@ -168,6 +168,49 @@
                 }
             }
 				},
+				"email_chat": {
+          "background": {
+              "color": "#ffffff",
+              "alpha": "0.9"
+          },
+          "border": {
+              "color": "#999999",
+          },					
+          "text_field": {
+	          "background": {
+	              "color": "#ffffff",
+	              "alpha": "0.9"
+	          },
+            "font": {
+                "color": "#cccccc",
+                "size": "16.0"
+            }				
+          },				
+					"title": {
+            "font": {
+                "color": "#cccccc",
+                "size": "16.0"
+            }
+					},
+					"subtitle": {
+            "font": {
+                "color": "#cccccc",
+                "size": "13.0"
+            }
+					},					
+					"cancel_button": {
+            "font": {
+                "color": "#cccccc",
+                "size": "13.0"
+            }
+					},										
+					"submit_button": {
+            "font": {
+                "color": "#cccccc",
+                "size": "13.0"
+            }
+					}					
+				},
         "keyboard_menu" : {
                 "background" : {
                     "color" : "#4c4c4c",

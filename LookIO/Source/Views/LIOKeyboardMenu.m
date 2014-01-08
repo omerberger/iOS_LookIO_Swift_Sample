@@ -34,69 +34,7 @@
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.items = [[NSMutableArray alloc] init];
-        [self setDefaultButtonItems];
         
-        UIColor *iconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementKeyboardMenu];
-        
-        for (int i=0; i<self.items.count; i++)
-        {
-            LIOKeyboardMenuItem *item = [self.items objectAtIndex:i];
-            LIOKeyboardMenuButton *button = [[LIOKeyboardMenuButton alloc] init];
-            button.tag = LIOKeyboardMenuButtonTagBase + i;
-            [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName withTint:iconColor] forState:UIControlStateNormal];
-            [button setBottomLabelText:[item.title uppercaseString]];
-            [button addTarget:self action:@selector(keyboardMenuButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-            [self addSubview:button];
-        }
-        
-        /*
-        
-        BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
-
-        if (attachNeeded) {
-            LIOKeyboardMenuButton* attachButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-            [attachButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCameraIconLarge"] forState:UIControlStateNormal];
-            [self addSubview:attachButton];
-            [attachButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto") uppercaseString]];
-            [attachButton addTarget:self action:@selector(attachButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-            [buttonsArray addObject:attachButton];
-        }
-        
-        LIOKeyboardMenuButton* faqsButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [faqsButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIONewspaperIcon"] forState:UIControlStateNormal];
-        [self addSubview:faqsButton];
-        [faqsButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs") uppercaseString]];
-        [faqsButton addTarget:self action:@selector(faqsButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:faqsButton];
-        
-        LIOKeyboardMenuButton* emailChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [emailChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOEnvelopeIconLarge"] forState:UIControlStateNormal];
-        [self addSubview:emailChatButton];
-        [emailChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat") uppercaseString]];
-        [emailChatButton addTarget:self action:@selector(emailChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:emailChatButton];
-        
-        LIOKeyboardMenuButton* hideChatButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [hideChatButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORoadSignIcon"] forState:UIControlStateNormal];
-        [self addSubview:hideChatButton];
-        [hideChatButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonHideChat") uppercaseString]];
-        [hideChatButton addTarget:self action:@selector(hideChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:hideChatButton];
-        
-        LIOKeyboardMenuButton* endSessionButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [endSessionButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSkullIcon"] forState:UIControlStateNormal];
-        [self addSubview:endSessionButton];
-        [endSessionButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEndSession") uppercaseString]];
-        [endSessionButton addTarget:self action:@selector(endSessionButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:endSessionButton];
-        
-        LIOKeyboardMenuButton* keyboardButton = [[LIOKeyboardMenuButton alloc] initWithFrame:CGRectZero];
-        [keyboardButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOArrowUpIconLarge"] forState:UIControlStateNormal];
-        [self addSubview:keyboardButton];
-        [keyboardButton setBottomLabelText:[LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard") uppercaseString]];
-        [keyboardButton addTarget:self action:@selector(showKeyboardButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [buttonsArray addObject:keyboardButton];
-         */
     }
     
     return self;
@@ -118,12 +56,15 @@
     
     [self.items addObject:item];
 
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemEmailChat;
-    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat");
-    item.iconName = @"LIOEnvelopeIconLarge";
+    if (![self.delegate keyboardMenuShouldShowHideEmailChatDefaultItem:self])
+    {
+        item = [[LIOKeyboardMenuItem alloc] init];
+        item.type = LIOKeyboardMenuItemEmailChat;
+        item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonEmailChat");
+        item.iconName = @"LIOEnvelopeIconLarge";
     
-    [self.items addObject:item];
+        [self.items addObject:item];
+    }
     
     item = [[LIOKeyboardMenuItem alloc] init];
     item.type = LIOKeyboardMenuItemHideChat;
@@ -145,6 +86,20 @@
     item.iconName = @"LIOArrowUpIconLarge";
     
     [self.items addObject:item];
+
+    UIColor *iconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementKeyboardMenu];
+
+    for (int i=0; i<self.items.count; i++)
+    {
+        LIOKeyboardMenuItem *item = [self.items objectAtIndex:i];
+        LIOKeyboardMenuButton *button = [[LIOKeyboardMenuButton alloc] init];
+        button.tag = LIOKeyboardMenuButtonTagBase + i;
+        [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName withTint:iconColor] forState:UIControlStateNormal];
+        [button setBottomLabelText:[item.title uppercaseString]];
+        [button addTarget:self action:@selector(keyboardMenuButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:button];
+    }
+    
 }
 
 -(void)layoutSubviews {

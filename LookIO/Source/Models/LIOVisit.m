@@ -38,6 +38,7 @@
 #define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
 #define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
 #define LIOLookIOManagerLastKnownSurveysEnabled         @"LIOLookIOManagerLastKnownSurveysEnabled"
+#define LIOLookIOManagerLastKnownHideEmailChat          @"LIOLookIOManagerLastKnownHideEmailChat"
 
 @interface LIOVisit ()
 
@@ -66,6 +67,8 @@
 @property (nonatomic, assign) BOOL lastKnownSurveysEnabled;
 @property (nonatomic, assign) BOOL disableSurveysOverride;
 @property (nonatomic, assign) BOOL previousSurveysEnabledValue;
+
+@property (nonatomic, assign) BOOL lastKnownHideEmailChat;
 
 @property (nonatomic, strong) NSMutableArray *queuedLaunchReportDates;
 @property (nonatomic, strong) NSDictionary *multiskillMapping;
@@ -352,7 +355,11 @@
     
     NSNumber *surveysEnabledNumber = [settingsDict objectForKey:@"surveys_enabled"];
     if (surveysEnabledNumber)
-        [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];    
+        [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
+    
+    NSNumber *hideEmailChatNumber = [settingsDict objectForKey:@"hide_email_chat"];
+    if (hideEmailChatNumber)
+        [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
     
     return resolvedSettings;
 }
@@ -488,6 +495,13 @@
         if (self.disableSurveysOverride) {
             self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
             self.lastKnownSurveysEnabled = NO;
+        }
+        
+        NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
+        if (hideEmailChat)
+        {
+            [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
+            self.lastKnownHideEmailChat = [hideEmailChat boolValue];
         }
         
         [self refreshControlButtonVisibility];
@@ -735,6 +749,11 @@
 }
 
 #pragma mark Visit Status Methods
+
+- (BOOL)hideEmailChat
+{
+    return self.lastKnownHideEmailChat;
+}
 
 - (BOOL)surveysEnabled
 {

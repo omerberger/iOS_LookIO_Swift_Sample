@@ -66,4 +66,6 @@ typedef enum
 
 - (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict;
 
+- (BOOL)shouldEmailChatButtonItem;
+
 @end
