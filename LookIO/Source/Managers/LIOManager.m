@@ -48,6 +48,9 @@ typedef enum
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
+@property (nonatomic, strong) NSDate *backgroundedTime;
+@property (nonatomic, assign) UIBackgroundTaskIdentifier backgroundTaskId;
+
 @end
 
 @implementation LIOManager
@@ -118,7 +121,7 @@ static LIOManager *sharedLookIOManager = nil;
 {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationDidEnterBackground:)
-                                                 name:UIApplicationDidEnterBackgroundNotification
+                                                 name:UIApplicationWillResignActiveNotification
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -143,31 +146,67 @@ static LIOManager *sharedLookIOManager = nil;
 {
     [LIOStatusManager statusManager].appForegrounded = NO;
     
-    [self dismissLookIOWindow];
-    
-    // TODO Dismiss any existing alertViews
-    
-    // TODO Created background task, monitor background time and send continue
-    
-    // TODO Send app_backgrounded advisory packet
-    
-    // TODO Dismiss chat if it's visible
-    
-    // TODO Rejigger windows if needed
+    if (UIBackgroundTaskInvalid == self.backgroundTaskId)
+    {
+        self.backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+            [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskId];
+            self.backgroundTaskId = UIBackgroundTaskInvalid;
+        }];
+
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController dismissCurrentViewController];
+        }
+
+        self.backgroundedTime = [NSDate date];
+        [self.visit sendContinuationReport];
+
+        if (self.engagement)
+        {
+            NSMutableDictionary *backgroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                     @"app_backgrounded", @"action",
+                                                     nil];
+            [self.engagement sendAdvisoryPacketWithDict:backgroundedDict];
+        }
+        
+        // TODO Dismiss any active alert views
+    }
 }
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
     [LIOStatusManager statusManager].appForegrounded = YES;
     
-    // TODO End background task
+    if (UIBackgroundTaskInvalid != self.backgroundTaskId)
+    {
+        [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskId];
+        self.backgroundTaskId = UIBackgroundTaskInvalid;
+        
+        if ([self.backgroundedTime timeIntervalSinceNow] <= -1800.0)
+        {
+            // TODO Reset Visit after 30 minutes
+        }
+        else
+        {
+            [self.visit sendContinuationReport];
+        }
+    }
     
-    // TODO Check if 30 minutes have passed, if so, create a new visit
-    // TODO If not, send continue report
+    if (self.engagement)
+    {
     
-    // TODO Send app_foregrounded advisory packet
-    
-    // TODO Check if a message was recieved while background and show chat if needed
+        NSMutableDictionary *foregroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                                 @"app_foregrounded", @"action",
+                                                 nil];
+        
+        [self.engagement sendAdvisoryPacketWithDict:foregroundedDict];
+        
+        if (self.chatReceivedWhileAppBackgrounded)
+        {
+            self.chatReceivedWhileAppBackgrounded = NO;
+            [self.containerViewController presentChatForEngagement:self.engagement];
+        }
+    }
 }
 
 - (void)applicationWillChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -297,7 +336,10 @@ static LIOManager *sharedLookIOManager = nil;
 {
     if (LIOAlertViewNextStepDismissLookIOWindow == alertView.tag)
     {
-        [self dismissLookIOWindow];
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController dismissCurrentViewController];
+        }
     }
     if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
     {
@@ -546,7 +588,7 @@ static LIOManager *sharedLookIOManager = nil;
     {
         // Otherwise, clear the engagement and dismiss the window after dismissing the alert
         
-        alertViewTag = LIOAlertViewNextStepDismissLookIOWindow;;
+        alertViewTag = LIOAlertViewNextStepDismissLookIOWindow;
         
         [self.engagement cleanUpEngagement];
         self.engagement = nil;

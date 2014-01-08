@@ -33,5 +33,6 @@ typedef enum {
 
 - (void)setEngagement:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
+- (void)dismissChat:(id)sender;
 
 @end

@@ -47,5 +47,7 @@ typedef enum {
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
 
 - (void)presentLoadingViewController;
+- (void)dismissCurrentViewController;
+
 
 @end

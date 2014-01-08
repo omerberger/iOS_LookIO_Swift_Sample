@@ -51,11 +51,11 @@
                     "radial-gradient" : ""
                 },
                 "size" : {
-                    "width": "0.625"
+                    "width": "0.7"
                 },
                 "font" : {
                     "color" : "#ffffff",
-                    "size" : "15.0"
+                    "size" : "16.0"
                 },
                 "avatar" : {
                     "show" : "0",
@@ -80,11 +80,11 @@
                     "linear-gradient" : ""
                 },
                 "size" : {
-                    "width" : "0.625"
+                    "width" : "0.7"
                 },
                 "font" : {
                     "color" : "#4f4f4f",
-                    "size" : "15.0"
+                    "size" : "16.0"
                 },
                 "avatar" : {
                     "show" : "0",
@@ -110,11 +110,11 @@
                 "linear-gradient" : ""
             },
             "size" : {
-                "width" : "0.625"
+                "width" : "0.7"
             },
             "font" : {
                 "color" : "#4f4f4f",
-                "size" : "15.0"
+                "size" : "16.0"
             },
             "bubble_alignment" : "left"
         },
@@ -188,7 +188,7 @@
         },
         "survey_card" : {
             "background" : {
-                "color" : "#ffffff",
+                "color" : "#f9f9f9",
                 "alpha" : "0.9"
             },
             "border" : {

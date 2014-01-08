@@ -18,12 +18,16 @@
 
 #define LIOChatViewControllerEndChatAlertViewTag 1001
 
+#define LIO_IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+
 @interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UIView *tableFooterView;
+@property (nonatomic, assign) NSInteger numberOfMessagesToShowInScrollBack;
+@property (nonatomic, assign) NSInteger lastScrollId;
 
 @property (nonatomic, strong) LPInputBarView *inputBarView;
 @property (nonatomic, assign) CGFloat inputBarViewDesiredHeight;
@@ -55,6 +59,9 @@
 {
     LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:indexPath.row];
     CGSize expectedMessageSize = [LIOChatTableViewCell expectedSizeForChatMessage:chatMessage constrainedToSize:self.tableView.bounds.size];
+    
+    NSLog(@"Height for row is %f", expectedMessageSize.height);
+    
     return expectedMessageSize.height;
 }
 
@@ -76,15 +83,39 @@
 
 #pragma mark Action Methods
 
+- (void)scrollToBottomDelayed:(BOOL)delayed
+{
+    self.lastScrollId += 1;
+    if (self.lastScrollId > 1000)
+        self.lastScrollId = 0;
+    NSInteger scrollId = self.lastScrollId;
+    
+    if (delayed)
+    {
+        double delayInSeconds = 1.0;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(){
+            if (self.lastScrollId == scrollId)
+            {
+                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+                [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+            }
+        });
+    }
+    else
+    {
+        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+        [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
+    }
+}
+
+
 - (void)dismissChat:(id)sender
 {
     [self.delegate chatViewControllerDidDismissChat:self];
  
     if ([self.inputBarView.textView isFirstResponder])
         [self.inputBarView.textView resignFirstResponder];
-    
-    self.keyboardState = LIOKeyboardStateHidden;
-    [self updateSubviewFrames];
 }
 
 - (void)sendPhoto
@@ -101,11 +132,16 @@
 {
     [self.engagement sendVisitorLineWithText:text];
     [self.tableView reloadData];
+    [self scrollToBottomDelayed:YES];
 }
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message
 {
     [self.tableView reloadData];
+    [self updateSubviewFrames];
+    [self scrollToBottomDelayed:YES];
+    
+    NSLog(@"Did receive message - total messages is %d", self.engagement.messages.count);
 }
 
 - (void)presentEndChatAlertView
@@ -134,9 +170,6 @@
                 
                 if ([self.inputBarView.textView isFirstResponder])
                     [self.inputBarView.textView resignFirstResponder];
-                
-                self.keyboardState = LIOKeyboardStateHidden;
-                [self updateSubviewFrames];
 
             }
             break;
@@ -305,8 +338,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
-    self.tableView.contentOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+
+    [self scrollToBottomDelayed:YES];
     
     // Register for keyboard notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -334,9 +367,7 @@
 
     // Hide the chat so we can drop it when we return..
     self.keyboardState = LIOKeyboardStateIntroAnimation;
-    CGRect frame = self.tableView.frame;
-    frame.origin.y = -frame.size.height;
-    self.tableView.frame = frame;
+    [self updateSubviewFrames];
     
     // Unregister for keyboard notifications while not visible.
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -362,6 +393,17 @@
 	// Do any additional setup after loading the view.
 
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (padUI)
+        self.numberOfMessagesToShowInScrollBack = 3;
+    else
+    {
+        if (LIO_IS_IPHONE_5)
+            self.numberOfMessagesToShowInScrollBack = 2;
+        else
+            self.numberOfMessagesToShowInScrollBack = 1;
+    }
+    self.lastScrollId = 0;
 
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
     if (padUI)
@@ -389,7 +431,7 @@
     [self.view addSubview:self.inputBarView];    
     
     self.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, self.inputBarView.frame.size.height + 5.0)];
-    self.tableFooterView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableFooterView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.tableView.tableFooterView = self.tableFooterView;
     
     self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
@@ -407,6 +449,7 @@
 
 - (void)updateSubviewFrames
 {
+    CGFloat tableViewContentOffsetY = self.tableView.contentOffset.y;
     CGRect tableViewFrame = self.tableView.frame;
     CGRect inputBarViewFrame = self.inputBarView.frame;
     CGRect tableFooterViewFrame = self.tableFooterView.frame;
@@ -431,19 +474,41 @@
             [self.inputBarView rotatePlusButton];
             break;
             
+        case LIOKeyboardStateIntroAnimation:
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height;
+            tableViewFrame.origin.y = - (inputBarViewFrame.origin.y + inputBarViewFrame.size.height);
+            break;
+            
         default:
             break;
     }
 
     keyboardMenuFrame.origin.y = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
-    tableFooterViewFrame.size.height = inputBarViewFrame.size.height + 5.0;
     tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
+    tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
 
     self.inputBarView.frame = inputBarViewFrame;
     self.tableView.frame = tableViewFrame;
     self.tableFooterView.frame = tableFooterViewFrame;
     self.tableView.tableFooterView = self.tableFooterView;
     self.keyboardMenu.frame = keyboardMenuFrame;
+    
+    self.tableView.contentOffset = CGPointMake(0, tableViewContentOffsetY);
+}
+
+- (CGFloat)heightForPreviousMessagesToShow
+{
+    CGFloat heightAccum = 0.0;
+    
+    for (int i=0; i<self.numberOfMessagesToShowInScrollBack; i++)
+    {
+        NSInteger aRow = [self.engagement.messages count] - i - 1;
+        if (aRow > -1) {
+            heightAccum +=  [self tableView:self.tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
+            NSLog(@"Adding height for row %d", aRow);
+        }
+    }
+    return heightAccum;
 }
 
 #pragma mark Keyboard Methods
@@ -542,6 +607,11 @@
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self.tableView reloadData];
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [self scrollToBottomDelayed:NO];
 }
 
 #pragma mark -

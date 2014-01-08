@@ -69,6 +69,7 @@ typedef enum
 - (BOOL)surveysEnabled;
 
 - (void)launchVisit;
+- (void)sendContinuationReport;
 
 - (void)setChatAvailable;
 - (void)setChatUnavailable;

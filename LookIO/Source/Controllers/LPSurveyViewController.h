@@ -24,5 +24,6 @@
 @property (nonatomic, assign) id <LPSurveyViewControllerDelegate> delegate;
 
 - (id)initWithSurvey:(LIOSurvey *)aSurvey;
+- (void)cancelSurveyImmediately:(id)sender;
 
 @end

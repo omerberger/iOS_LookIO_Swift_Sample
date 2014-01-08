@@ -316,11 +316,31 @@
     }
 }
 
+- (void)dismissCurrentViewController {
+    switch (self.containerViewState) {
+        case LIOContainerViewStateChat:
+            [self.chatViewController dismissChat:self];
+            break;
+            
+        case LIOContainerViewStateSurvey:
+            [self.surveyViewController cancelSurveyImmediately:self];
+            break;
+            
+        case LIOContainerViewStateLoading:
+            [self dismiss];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+
 - (void)dismiss
 {
     [UIView animateWithDuration:0.3 animations:^{
         self.blurImageView.alpha = 0.0;
-        self.view.alpha = 0.0;
+        self.view.alpha = 0.01;
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
         self.containerViewState = LIOContainerViewStateLoading;
@@ -358,6 +378,11 @@
     [super viewDidLoad];
     
     [self setupStatusBarInset];
+    
+    UIButton *emergencyDismissButton = [[UIButton alloc] initWithFrame:self.view.bounds];
+    emergencyDismissButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [emergencyDismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:emergencyDismissButton];
     
 	// Do any additional setup after loading the view.
     self.blurImageView = [[LIOBlurImageView alloc] initWithFrame:self.view.bounds];

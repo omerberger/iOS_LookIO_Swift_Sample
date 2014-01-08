@@ -569,6 +569,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark Chat API Methods
 
 - (void)sendLineWithMessage:(LIOChatMessage *)message
@@ -650,7 +651,21 @@
     }];
 }
 
+- (void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict
+{
+    // TODO Check if engagement id exists
 
+    NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, self.engagementId];
+    
+    [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
+        else
+            LIOLog(@"<ADVISORY> with data %@ success", advisoryDict);
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<ADVISORY> with data %@ failure: %@", advisoryDict, error);
+    }];
+}
 
 #pragma mark Action Methods
 

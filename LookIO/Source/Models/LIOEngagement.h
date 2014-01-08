@@ -63,6 +63,6 @@ typedef enum
 - (void)submitSurvey:(LIOSurvey *)survey;
 - (BOOL)shouldPresentPostChatSurvey;
 
-
+- (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict;
 
 @end

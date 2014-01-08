@@ -262,6 +262,21 @@
 }
 
 #pragma mark -
+#pragma mark Action Methods
+
+- (void)cancelSurveyImmediately:(id)sender
+{
+    [self.view endEditing:YES];
+    if (self.validationView)
+    {
+        [self.validationTimer stopTimer];
+        [self validationTimerDidFire];
+    }
+    
+    [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+}
+
+#pragma mark -
 #pragma mark LIOSurveyQuestionView Delegate
 
 - (void)surveyQuestionViewAnswerDidChange:(LIOSurveyQuestionView *)surveyQuestionView
@@ -271,6 +286,8 @@
     
     // We also need to check to re-build the logic and check to see if the next question has changed
     self.isLastQuestion = ![self setupNextQuestionScrollView];
+    
+    [self updateScrollView];
     
     // We also need to reset the page control pages
     self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
@@ -1344,21 +1361,9 @@
     
     BOOL isRowSelected = NO;
     
-    for (NSIndexPath* selectedIndexPath in question.selectedIndices)
-    {
-        if (indexPath.row == selectedIndexPath.row)
-        {
-            isRowSelected = YES;
-        }
-    }
+    UIFont *font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
     
-    UIFont* font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyList];
-
-    if (isRowSelected)
-        font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
-
-    
-    CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 40.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 50.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
     
     return expectedSize.height + 33.0;
 }
