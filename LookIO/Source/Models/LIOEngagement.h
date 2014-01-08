@@ -27,6 +27,7 @@ typedef enum
 
 - (void)engagementDidStart:(LIOEngagement *)engagement;
 - (void)engagementDidConnect:(LIOEngagement *)engagement;
+- (void)engagementAgentIsReady:(LIOEngagement *)engagement;
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement;
 - (void)engagementDidCancel:(LIOEngagement *)engagement;
 - (void)engagementDidEnd:(LIOEngagement *)engagement;

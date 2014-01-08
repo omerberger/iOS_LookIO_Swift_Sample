@@ -49,6 +49,8 @@
 @property (nonatomic, strong) UIButton *plusButton;
 @property (nonatomic, strong) UIButton *sendButton;
 
+@property (nonatomic, assign) NSInteger previousTextLength;
+
 @end
 
 @implementation LPInputBarView
@@ -133,8 +135,30 @@
 }
 
 #pragma mark TextFieldDelegate methods
+
+- (void)clearTextView
+{
+    self.previousTextLength = 0;
+    self.textView.text = @"";
+}
+
 - (void)textViewDidChange:(UITextView *)aTextView {
     [self setNeedsLayout];
+    
+    NSUInteger currentTextLength = aTextView.text.length;
+    if (0 == self.previousTextLength)
+    {
+        // "Typing" started.
+        if (currentTextLength)
+            [self.delegate inputBarDidStartTyping:self];
+    }
+    else
+    {
+        if (0 == currentTextLength)
+            [self.delegate inputBarDidStopTyping:self];
+    }
+    
+    self.previousTextLength = currentTextLength;
 }
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {

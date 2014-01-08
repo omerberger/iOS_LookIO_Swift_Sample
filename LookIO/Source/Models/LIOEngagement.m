@@ -498,21 +498,8 @@
         }
         if ([action isEqualToString:@"connected"])
         {
-            // TODO Notify "agent is ready to chat with you"
-            LIOLog(@"We're live!");
-        
-            /*
-            if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
-            {
-                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-                localNotification.soundName = @"LookIODing.caf";
-                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
-                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
-                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
-            
-                [self showChatAnimated:NO];
-            }
-            */
+            LIOLog(@"We're live!");            
+            [self.delegate engagementAgentIsReady:self];
         }
         if ([action isEqualToString:@"unprovisioned"])
         {
@@ -676,6 +663,7 @@
     newMessage.kind = LIOChatMessageKindLocal;
     newMessage.date = [NSDate date];
     newMessage.lineId = nil;
+    newMessage.senderName = @"Me";
     newMessage.text = text;
     newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
     self.lastClientLineId += 1;

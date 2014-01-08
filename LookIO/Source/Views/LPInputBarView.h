@@ -23,6 +23,8 @@ static NSString * const LIOObservingInputAccessoryViewSuperviewFrameDidChangeNot
 - (void)inputBarViewKeyboardSendButtonWasTapped:(LPInputBarView *)inputBarView;
 - (void)inputBarTextFieldDidBeginEditing:(LPInputBarView *)inputBarView;
 - (void)inputBarTextFieldDidEndEditing:(LPInputBarView *)inputBarView;
+- (void)inputBarDidStartTyping:(LPInputBarView *)inputBarView;
+- (void)inputBarDidStopTyping:(LPInputBarView *)inputBarView;
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height;
 - (void)inputBarStartedTyping:(LPInputBarView *)inputBar;
 - (void)inputBarEndedTyping:(LPInputBarView *)inputBar;
@@ -36,5 +38,7 @@ static NSString * const LIOObservingInputAccessoryViewSuperviewFrameDidChangeNot
 
 - (void)rotatePlusButton;
 - (void)unrotatePlusButton;
+
+- (void)clearTextView;
 
 @end

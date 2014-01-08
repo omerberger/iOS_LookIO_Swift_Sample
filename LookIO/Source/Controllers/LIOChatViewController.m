@@ -140,8 +140,6 @@
     [self.tableView reloadData];
     [self updateSubviewFrames];
     [self scrollToBottomDelayed:YES];
-    
-    NSLog(@"Did receive message - total messages is %d", self.engagement.messages.count);
 }
 
 - (void)presentEndChatAlertView
@@ -166,7 +164,7 @@
             {
                 [self.delegate chatViewControllerDidEndChat:self];
 
-                self.inputBarView.textView.text = @"";
+                [self.inputBarView clearTextView];
                 
                 if ([self.inputBarView.textView isFirstResponder])
                     [self.inputBarView.textView resignFirstResponder];
@@ -179,6 +177,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark InputBarViewDelegate Methods
 
 - (void)inputBarViewSendButtonWasTapped:(LPInputBarView *)inputBarView
@@ -199,9 +198,10 @@
             }
             else
             {
+                [self inputBarDidStopTyping:self.inputBarView];
                 [self sendLineWithText:self.inputBarView.textView.text];
+                [self.inputBarView clearTextView];
                 
-                self.inputBarView.textView.text = @"";
                 [self updateSubviewFrames];
                 
                 [self.inputBarView.textView resignFirstResponder];
@@ -236,6 +236,22 @@
 - (void)inputBarTextFieldDidEndEditing:(LPInputBarView *)inputBarView
 {
     
+}
+
+- (void)inputBarDidStartTyping:(LPInputBarView *)inputBarView
+{
+    NSDictionary *typingStart = [NSDictionary dictionaryWithObjectsAndKeys:
+                                 @"typing_start", @"action",
+                                 nil];
+    [self.engagement sendAdvisoryPacketWithDict:typingStart];
+}
+
+- (void)inputBarDidStopTyping:(LPInputBarView *)inputBarView
+{
+    NSDictionary *typingStart = [NSDictionary dictionaryWithObjectsAndKeys:
+                                 @"typing_stop", @"action",
+                                 nil];
+    [self.engagement sendAdvisoryPacketWithDict:typingStart];
 }
 
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
@@ -338,8 +354,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-
-    [self scrollToBottomDelayed:YES];
+    
+    [self scrollToBottomDelayed:NO];
     
     // Register for keyboard notifications
     [[NSNotificationCenter defaultCenter] addObserver:self

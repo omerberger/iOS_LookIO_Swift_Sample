@@ -35,6 +35,7 @@ typedef enum
     LIOVisitStateChatRequested,
     LIOVisitStateChatOpened,
     LIOVisitStatePreChatSurvey,
+    LIOVisitStatePreChatSurveyBackgrounded,
     LIOVisitStateChatStarted,
     LIOVisitStateOfflineSurvey,
     LIOVisitStateChatActive,

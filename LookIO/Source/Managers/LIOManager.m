@@ -170,12 +170,46 @@ static LIOManager *sharedLookIOManager = nil;
         }
         
         // TODO Dismiss any active alert views
+        
+        switch (self.visit.visitState) {
+            case LIOVisitStateChatActive:
+                self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
+                break;
+                
+            case LIOVisitStateVisitInProgress:
+                self.visit.visitState = LIOVisitStateAppBackgrounded;
+                break;
+                
+            case LIOVisitStatePreChatSurvey:
+                self.visit.visitState = LIOVisitStatePreChatSurveyBackgrounded;
+                
+            default:
+                self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
+                break;
+        }
     }
 }
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
     [LIOStatusManager statusManager].appForegrounded = YES;
+    
+    switch (self.visit.visitState) {
+        case LIOVisitStateChatActiveBackgrounded:
+            self.visit.visitState = LIOVisitStateChatActive;
+            break;
+            
+        case LIOVisitStateAppBackgrounded:
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+            break;
+            
+        case LIOVisitStatePreChatSurveyBackgrounded:
+            self.visit.visitState = LIOVisitStatePreChatSurvey;
+            
+        default:
+            self.visit.visitState = LIOVisitStateChatActive;
+            break;
+    }
     
     if (UIBackgroundTaskInvalid != self.backgroundTaskId)
     {
@@ -204,7 +238,13 @@ static LIOManager *sharedLookIOManager = nil;
         if (self.chatReceivedWhileAppBackgrounded)
         {
             self.chatReceivedWhileAppBackgrounded = NO;
-            [self.containerViewController presentChatForEngagement:self.engagement];
+            
+            [self.containerViewController engagement:self.engagement didReceiveMessage:nil];
+            
+            if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
+            {
+                [self beginChat];
+            }
         }
     }
 }
@@ -390,6 +430,14 @@ static LIOManager *sharedLookIOManager = nil;
     [self takeScreenshotAndSetBlurImageView];
     
     self.lookIOWindowState = LIOLookIOWindowStateVisible;
+    
+    if (self.engagement)
+    {
+        NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
+                            @"chat_up", @"action",
+                            nil];
+        [self.engagement sendAdvisoryPacketWithDict:chatUp];
+    }
 }
 
 - (void)dismissLookIOWindow
@@ -443,6 +491,11 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     self.lookIOWindowState = LIOLookIOWindowStateHidden;
+    
+    NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
+                            @"chat_down", @"action",
+                            nil];
+    [self.engagement sendAdvisoryPacketWithDict:chatUp];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -503,6 +556,28 @@ static LIOManager *sharedLookIOManager = nil;
         {
             self.visit.visitState = LIOVisitStateChatOpened;            
         }
+    }
+    
+    NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
+                            @"chat_up", @"action",
+                            nil];
+    [self.engagement sendAdvisoryPacketWithDict:chatUp];
+}
+
+- (void)engagementAgentIsReady:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
+    {
+         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+         {
+             UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+             localNotification.soundName = @"LookIODing.caf";
+             localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+             localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
+             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+ 
+             self.chatReceivedWhileAppBackgrounded = YES;
+         }
     }
 }
 
@@ -575,6 +650,8 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement
 {
+    // TODO ADd cases where an alert shouldn't be shown, like a prechat survey which was not completed and isn't visible
+    
     // If chat is disconnected, let's show an alert view.
     
     NSInteger alertViewTag;
@@ -641,14 +718,13 @@ static LIOManager *sharedLookIOManager = nil;
     {
         [self.containerViewController engagement:engagement didReceiveMessage:message];
         
-        
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
             [self beginChat];
         }
     }
     
-    if (LIOVisitStateAppBackgrounded == self.visit.visitState)
+    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
     {
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
