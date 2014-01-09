@@ -51,6 +51,11 @@
     }];
 }
 
+- (void)updateBlurImage:(UIImage *)image
+{
+    [self.blurImageView setImageAndBlur:image];
+}
+
 #pragma mark -
 #pragma mark HeaderBarView Methods
 

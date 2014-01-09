@@ -182,6 +182,7 @@ static LIOManager *sharedLookIOManager = nil;
                 
             case LIOVisitStatePreChatSurvey:
                 self.visit.visitState = LIOVisitStatePreChatSurveyBackgrounded;
+                break;
                 
             default:
                 self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
@@ -261,7 +262,11 @@ static LIOManager *sharedLookIOManager = nil;
         self.controlButton.hidden = YES;
     }
     
-    [self takeScreenshotAndSetBlurImageView];
+    // If the lookIO window is visible, let's update the blur image
+    if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
+    {
+        [self updateBlurImageView];
+    }
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
@@ -514,6 +519,18 @@ static LIOManager *sharedLookIOManager = nil;
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.containerViewController setBlurImage:viewImage];
+    });
+}
+
+- (void)updateBlurImageView
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        LIOLog(@"Previous window is %@", self.previousKeyWindow);
+        UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
+        [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
+        UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        [self.containerViewController updateBlurImage:viewImage];
     });
 }
 

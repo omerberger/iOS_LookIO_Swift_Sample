@@ -37,6 +37,7 @@ typedef enum {
 @property (nonatomic, assign) id <LIOContainerViewControllerDelegate> delegate;
 
 - (void)setBlurImage:(UIImage *)image;
+- (void)updateBlurImage:(UIImage *)image;
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement;

@@ -90,6 +90,12 @@
     return cell;
 }
 
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+    // Reset the delayed scrolling animation if user scrolled
+    self.lastScrollId = 0;
+}
+
 #pragma mark -
 #pragma mark Action Methods
 
@@ -523,6 +529,11 @@
 
 - (void)updateSubviewFrames
 {
+    [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:NO];
+}
+
+- (void)updateSubviewFramesAndSaveTableViewFrames:(BOOL)saveTableViewFrames saveOtherFrames:(BOOL)saveOtherFrames maintainTableViewOffset:(BOOL)maintainTableViewOffset
+{
     CGFloat tableViewContentOffsetY = self.tableView.contentOffset.y;
     CGRect tableViewFrame = self.tableView.frame;
     CGRect inputBarViewFrame = self.inputBarView.frame;
@@ -569,14 +580,25 @@
     tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
 
-    self.inputBarView.frame = inputBarViewFrame;
-    self.tableView.frame = tableViewFrame;
-    self.tableFooterView.frame = tableFooterViewFrame;
-    self.tableView.tableFooterView = self.tableFooterView;
-    self.keyboardMenu.frame = keyboardMenuFrame;
-    self.emailChatView.frame = emailChatViewFrame;
+    if (saveOtherFrames)
+    {
+        self.inputBarView.frame = inputBarViewFrame;
+        self.keyboardMenu.frame = keyboardMenuFrame;
+        self.emailChatView.frame = emailChatViewFrame;
+    }
     
-    self.tableView.contentOffset = CGPointMake(0, tableViewContentOffsetY);
+    if (saveTableViewFrames)
+    {
+        self.tableView.frame = tableViewFrame;
+        self.tableFooterView.frame = tableFooterViewFrame;
+        self.tableView.tableFooterView = self.tableFooterView;
+    }
+    
+    if (maintainTableViewOffset)
+    {
+        self.tableView.contentOffset = CGPointMake(0, tableViewContentOffsetY);
+    }
+
 }
 
 - (CGFloat)heightForPreviousMessagesToShow
@@ -621,7 +643,7 @@
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        [self updateSubviewFrames];
+        [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:NO];
         if (introAnimation)
         {
             CGRect frame = self.tableView.frame;
@@ -629,6 +651,8 @@
             self.tableView.frame = frame;
         }
     } completion:^(BOOL finished) {
+        if (introAnimation)
+            self.keyboardState = LIOKeyboardStateKeyboard;
     }];
 }
 
@@ -653,8 +677,9 @@
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
+    [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:NO maintainTableViewOffset:YES];
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        [self updateSubviewFrames];
+        [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
     } completion:^(BOOL finished) {
         if (LIOKeyboardStateEmailChatOutroAnimation == self.keyboardState)
         {
@@ -696,11 +721,12 @@
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self.tableView reloadData];
+    [self updateSubviewFrames];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    [self scrollToBottomDelayed:NO];
+//    [self scrollToBottomDelayed:NO];
 }
 
 #pragma mark -

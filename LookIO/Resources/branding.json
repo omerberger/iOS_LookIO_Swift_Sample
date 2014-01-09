@@ -76,7 +76,7 @@
             },
             "visitor" : {
                 "background" : {
-                    "color" : "#e1e1e7",
+                    "color" : "#dddddd",
                     "linear-gradient" : ""
                 },
                 "size" : {

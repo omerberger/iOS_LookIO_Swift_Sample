@@ -140,7 +140,7 @@
 -(void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    NSInteger rowWidth = padUI ? 160 : 100;
+    NSInteger rowWidth = padUI ? 160 : 105;
     NSInteger rowHeight = padUI ? 120 : 80;
     
     if (self.bounds.size.width < rowWidth || self.bounds.size.height < rowHeight)
