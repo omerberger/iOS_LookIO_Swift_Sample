@@ -46,7 +46,7 @@
         self.backgroundView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChatCard];
         self.backgroundView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementEmailChatCard] CGColor];
         self.backgroundView.layer.borderWidth = 1.0;
-        self.backgroundView.layer.cornerRadius = 5.0;
+        self.backgroundView.layer.cornerRadius = 10.0;
         [self addSubview:self.backgroundView];
         
         self.cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
@@ -59,6 +59,7 @@
         [self.backgroundView addSubview:self.cancelButton];
         
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.titleLabel.backgroundColor = [UIColor clearColor];
         self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementEmailChatTitle];
         self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementEmailChatTitle];
         self.titleLabel.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderText");
@@ -67,6 +68,7 @@
         [self.backgroundView addSubview:self.titleLabel];
         
         self.subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.subtitleLabel.backgroundColor = [UIColor clearColor];
         self.subtitleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementEmailChatSubtitle];
         self.subtitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementEmailChatSubtitle];
         self.subtitleLabel.text = LIOLocalizedString(@"LIOEmailHistoryViewController.EmailHeader");
@@ -100,7 +102,7 @@
         UIColor *submitButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementEmailChatSubmitButton];
         [self.submitButton setTitleColor:submitButtonColor forState:UIControlStateNormal];
         [self.submitButton setTitleColor:[submitButtonColor colorWithAlphaComponent:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
-        self.submitButton.titleLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementEmailChatSubmitButton];
+        self.submitButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementEmailChatSubmitButton];
         [self.backgroundView addSubview:self.submitButton];
     }
     
@@ -127,8 +129,7 @@
     frame = self.titleLabel.frame;
     expectedSize = [self.titleLabel.text sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(self.backgroundView.bounds.size.width - 2*LIOEmailChatViewInnerMargin, self.backgroundView.bounds.size.height - 2*LIOEmailChatViewInnerMargin) lineBreakMode:UILineBreakModeWordWrap];
     frame.origin.x = (self.backgroundView.bounds.size.width - expectedSize.width)/2;
-    BOOL isPhone5 = LIO_IS_IPHONE_5;
-    frame.origin.y = LIO_IS_IPHONE_5 ? 50.0 : 30.0;
+    frame.origin.y = LIO_IS_IPHONE_5 ? 60.0 : 30.0;
     frame.size = expectedSize;
     self.titleLabel.frame = frame;
     self.titleLabel.numberOfLines = 0;
@@ -137,7 +138,7 @@
     frame = self.subtitleLabel.frame;
     expectedSize = [self.subtitleLabel.text sizeWithFont:self.subtitleLabel.font constrainedToSize:CGSizeMake(self.backgroundView.bounds.size.width - 2*LIOEmailChatViewInnerMargin, self.backgroundView.bounds.size.height - 2*LIOEmailChatViewInnerMargin) lineBreakMode:UILineBreakModeWordWrap];
     frame.origin.x = (self.backgroundView.bounds.size.width - expectedSize.width)/2;
-    frame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + (LIO_IS_IPHONE_5 ? 70.0 : 20.0);
+    frame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + (LIO_IS_IPHONE_5 ? 60.0 : 10.0);
     frame.size = expectedSize;
     self.subtitleLabel.frame = frame;
     self.subtitleLabel.numberOfLines = 0;

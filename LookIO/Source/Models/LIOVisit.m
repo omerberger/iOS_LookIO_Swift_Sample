@@ -682,7 +682,8 @@
     }
     
     // Trump card #1: Not in a session, and not "enabled" from server-side settings.
-    if (!self.chatEnabled)
+
+    if (!self.chatEnabled && !self.chatInProgress)
     {
         self.controlButtonHidden = YES;
         LIOLog(@"<<CONTROL>> Hiding. Reason: [self enabled] == NO.");
@@ -763,8 +764,8 @@
 - (void)setVisitState:(LIOVisitState)visitState
 {
     _visitState = visitState;
-
-    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey"];
+    
+    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"PreChatSurveyBackgrounded", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey"];
     
     LIOLog(@"<VISIT STATE> %@", [stateNames objectAtIndex:self.visitState]);
 }
@@ -804,6 +805,76 @@
     
     // Oh well.
     return NO;
+}
+
+- (BOOL)chatInProgress
+{
+    switch (self.visitState)
+    {
+        case LIOVisitStateInitialized:
+            return NO;
+            break;
+            
+        case LIOVisitStateFailed:
+            return NO;
+            break;
+            
+        case LIOVisitStateQueued:
+            return NO;
+            break;
+            
+        case LIOVisitStateLaunching:
+            return NO;
+            break;
+            
+        case LIOVisitStateVisitInProgress:
+            return NO;
+            break;
+            
+        case LIOVisitStateAppBackgrounded:
+            return NO;
+            break;
+
+        case LIOVisitStateChatRequested:
+            return YES;
+            break;
+
+        case LIOVisitStateChatOpened:
+            return YES;
+            break;
+            
+        case LIOVisitStatePreChatSurvey:
+            return YES;
+            break;
+            
+        case LIOVisitStatePreChatSurveyBackgrounded:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatStarted:
+            return YES;
+            break;
+            
+        case LIOVisitStateOfflineSurvey:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatActive:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatActiveBackgrounded:
+            return YES;
+            break;
+            
+        case LIOVisitStatePostChatSurvey:
+            return YES;
+            break;
+            
+        default:
+            return NO;
+            break;
+    }
 }
 
 #pragma mark Custom Chat Button Methods

@@ -408,14 +408,14 @@
         
         self.nextButton.hidden = NO;
         aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
-        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height - (landscape ? 0 : 20.0);
+        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height + 20;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         self.nextButton.frame = aFrame;
         
         self.cancelButton.hidden = NO;
         aFrame.origin.x = referenceFrame.size.width/2 - LIOSurveyViewIntroButtonMargin - 92.0;
-        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height - (landscape ? 0 : 20.0);
+        aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height + 20;
         aFrame.size.width = 92.0;
         aFrame.size.height = 44.0;
         self.cancelButton.frame = aFrame;

@@ -197,7 +197,7 @@
 					"title": {
             "font": {
                 "color": "#666666",
-                "size": "16.0"
+                "size": "18.0"
             }
 					},
 					"subtitle": {
@@ -224,6 +224,9 @@
                     "color" : "#4c4c4c",
                     "alpha" : "0.55"
                 },
+								"border" : {
+									"color" : "#7f7f7f"									
+								},
                 "font" : {
                     "color" : "#ffffff",
                     "size" : "13.0"

@@ -20,6 +20,11 @@
 
 @property (nonatomic, strong) NSMutableArray *items;
 
+@property (nonatomic, assign) NSInteger numberOfPages;
+@property (nonatomic, assign) NSInteger numberOfRows;
+@property (nonatomic, assign) NSInteger numberOfColumns;
+@property (nonatomic, assign) NSInteger numberOfItemsPerPage;
+
 @end
 
 @implementation LIOKeyboardMenu
@@ -28,13 +33,15 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        self.pagingEnabled = YES;
+        self.showsHorizontalScrollIndicator = NO;
+        
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementKeyboardMenu];
         CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementKeyboardMenu];
         
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.items = [[NSMutableArray alloc] init];
-        
     }
     
     return self;
@@ -86,6 +93,34 @@
     item.iconName = @"LIOArrowUpIconLarge";
     
     [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = @"Sample";
+    item.iconName = @"LIONewspaperIcon";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = @"Sample";
+    item.iconName = @"LIONewspaperIcon";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = @"Sample";
+    item.iconName = @"LIONewspaperIcon";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = @"Sample";
+    item.iconName = @"LIONewspaperIcon";
+    
+    [self.items addObject:item];
 
     UIColor *iconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementKeyboardMenu];
 
@@ -103,47 +138,79 @@
 }
 
 -(void)layoutSubviews {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    NSInteger rowWidth = padUI ? 160 : 100;
+    NSInteger rowHeight = padUI ? 120 : 80;
+    
+    if (self.bounds.size.width < rowWidth || self.bounds.size.height < rowHeight)
+        return;
+    
+    self.numberOfColumns = self.bounds.size.width / rowWidth;
+    self.numberOfRows = self.bounds.size.height / rowHeight;
+    self.numberOfItemsPerPage = self.numberOfColumns * self.numberOfRows;
+    self.numberOfPages = (self.items.count / self.numberOfItemsPerPage);
+    if ((self.items.count % self.numberOfItemsPerPage) != 0)
+        self.numberOfPages += 1;
+    
+    CGSize contentSize = self.contentSize;
+    contentSize.width = self.numberOfPages*self.bounds.size.width;
+    self.contentSize = contentSize;
+    
     for (int i=0; i<self.items.count; i++) {
         LIOKeyboardMenuButton* button = (LIOKeyboardMenuButton*)[self viewWithTag:(i + LIOKeyboardMenuButtonTagBase)];
 
-        int buttonRow = i/3;
-        int buttonColumn = i % 3;
+        NSInteger currentPage = i/self.numberOfItemsPerPage;
+        NSInteger currentIndexInPage = i - currentPage*self.numberOfItemsPerPage;
+        
+        NSInteger buttonRow = currentIndexInPage/self.numberOfColumns;
+        NSInteger buttonColumn = currentIndexInPage % self.numberOfColumns;
         
         CGRect aFrame = button.frame;
-        aFrame.size.width = self.bounds.size.width/3;
-        aFrame.size.height = self.bounds.size.height/2;
-        aFrame.origin.x = buttonColumn*aFrame.size.width;
+        aFrame.size.width = self.bounds.size.width/self.numberOfColumns;
+        aFrame.size.height = self.bounds.size.height/self.numberOfRows;
+        aFrame.origin.x = buttonColumn*aFrame.size.width + self.bounds.size.width*currentPage;
         aFrame.origin.y = buttonRow*aFrame.size.height;
         button.frame = aFrame;
-    }    
+    }
+    
+    [self setNeedsDisplay];
 }
 
-/*
 -(void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    UIColor *lineColor = [UIColor colorWithRed:81.0/255.0 green:81.0/255 blue:81.0/255.0 alpha:1.0];
-    UIColor *shadowColor = [UIColor colorWithRed:103.0/255.0 green:103.0/255 blue:103.0/255.0 alpha:1.0];
+    UIColor *lineColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementKeyboardMenu];
 
     CGContextSaveGState(context);
     CGContextSetStrokeColorWithColor(context, lineColor.CGColor);
-    CGContextSetShadowWithColor(context, CGSizeMake(1.0, 1.0), 0.0, shadowColor.CGColor);
     CGContextSetLineWidth(context, 1.0);
-    CGContextMoveToPoint(context, 0, self.bounds.size.height/2);
-    CGContextAddLineToPoint(context, self.bounds.size.width, self.bounds.size.height/2);
     
-    CGContextMoveToPoint(context, self.bounds.size.width/3, 0);
-    CGContextAddLineToPoint(context, self.bounds.size.width/3, self.bounds.size.height);
-    CGContextMoveToPoint(context, self.bounds.size.width*2/3, 0);
-    CGContextAddLineToPoint(context, self.bounds.size.width*2/3, self.bounds.size.height);
+    for (int i=1; i<self.numberOfRows; i++)
+    {
+        CGContextMoveToPoint(context, 0, (self.bounds.size.height/self.numberOfRows)*i);
+        CGContextAddLineToPoint(context, self.bounds.size.width*self.numberOfPages, (self.bounds.size.height/self.numberOfRows)*i);
+    }
+    
+    for (int i=0; i<self.numberOfPages; i++)
+    {
+        for (int j=0; j<self.numberOfColumns; j++)
+        {
+            // Don't draw first row
+            if (!(i == 0 && j == 0))
+            {
+                CGContextMoveToPoint(context, (self.bounds.size.width/self.numberOfColumns)*j + i*self.bounds.size.width, 0);
+                CGContextAddLineToPoint(context,(self.bounds.size.width/self.numberOfColumns)*j + i*self.bounds.size.width, self.bounds.size.height);
+            }
+        }
+    }
+
     CGContextStrokePath(context);
-    
     
     CGContextRestoreGState(context);    
 }
-*/
 
 - (void)keyboardMenuButtonWasTapped:(id)sender
 {

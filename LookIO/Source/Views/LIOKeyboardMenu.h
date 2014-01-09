@@ -20,7 +20,7 @@
 
 @end
 
-@interface LIOKeyboardMenu : UIView
+@interface LIOKeyboardMenu : UIScrollView
 
 @property (nonatomic, assign) id <LIOKeyboardMenuDelegate> delegate;
 

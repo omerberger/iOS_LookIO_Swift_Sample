@@ -729,7 +729,6 @@
         self.scrollView.contentOffset = contentOffset;
     } completion:^(BOOL finished) {
         self.currentQuestionIndex = self.previousQuestionView.tag;
-        NSLog(@"Current question is %ld", (long)self.currentQuestionIndex);
         self.pageControl.currentPage -= 1;
         
         LIOSurveyQuestionView *tempView = nil;
@@ -782,9 +781,7 @@
     } completion:^(BOOL finished) {
         self.currentQuestionIndex = self.nextQuestionView.tag;
         self.pageControl.currentPage += 1;
-        
-        NSLog(@"Current question is %d", self.currentQuestionIndex);
-        
+                
         LIOSurveyQuestionView *tempView = nil;
         if (self.previousQuestionView)
         {

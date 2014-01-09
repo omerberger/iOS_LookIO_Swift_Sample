@@ -67,6 +67,7 @@ typedef enum
 - (void)refreshControlButtonVisibility;
 
 - (BOOL)chatEnabled;
+- (BOOL)chatInProgress;
 - (BOOL)surveysEnabled;
 - (BOOL)hideEmailChat;
 

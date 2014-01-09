@@ -9,6 +9,7 @@
 #import "LIOChatTableViewCell.h"
 
 #import "LIOBrandingManager.h"
+#import "LIOBundleManager.h"
 
 #import "LPChatBubbleView.h"
 
@@ -52,11 +53,28 @@
     
     UIFont *font = [[LIOBrandingManager brandingManager] boldFontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
-    CGFloat maxSize = size.width * bubbleWidthFactor - 16;
+    CGFloat maxSize = size.width * bubbleWidthFactor - 20;
     
-    CGSize expectedTextSize = [chatMessage.text sizeWithFont:font constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    NSString *text = chatMessage.text;
+    if (chatMessage.senderName != nil)
+        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
+    
+    CGSize expectedTextSize;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        CGRect expectedTextRect = [text boundingRectWithSize:CGSizeMake(maxSize, 9999)
+                                                     options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+                                                  attributes:@{NSFontAttributeName:font}
+                                                     context:nil];
+        expectedTextSize = expectedTextRect.size;
+    }
+    else
+    {
+        expectedTextSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    }
     expectedTextSize = CGSizeMake(ceil(expectedTextSize.width), ceil(expectedTextSize.height));
-
+    
     return CGSizeMake(expectedTextSize.width + 31.0, expectedTextSize.height + 35.0);
 }
 
@@ -86,20 +104,33 @@
     self.chatBubbleView.messageLabel.textColor = textColor;
     self.chatBubbleView.messageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
-    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor - 16;
+    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor - 20;
     
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
         text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
     
-    CGSize expectedTextSize = [text sizeWithFont:boldNameFont constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    CGSize expectedTextSize;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        CGRect expectedTextRect = [text boundingRectWithSize:CGSizeMake(maxSize, 9999)
+                                                                 options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+                                                              attributes:@{NSFontAttributeName:boldNameFont}
+                                                                 context:nil];
+        expectedTextSize = expectedTextRect.size;
+    }
+    else
+    {
+        expectedTextSize = [text sizeWithFont:boldNameFont constrainedToSize:CGSizeMake(maxSize, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    }
     expectedTextSize = CGSizeMake(ceil(expectedTextSize.width), ceil(expectedTextSize.height));
     
     CGRect aFrame = self.chatBubbleView.frame;
     aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
     aFrame.origin.y = 10;
-    aFrame.size.width = expectedTextSize.width + 23;
-    aFrame.size.height = expectedTextSize.height + 20;
+    aFrame.size.width = expectedTextSize.width + 20;
+    aFrame.size.height = expectedTextSize.height + 16;
     self.chatBubbleView.frame = aFrame;
     
     self.chatBubbleView.messageLabel.numberOfLines = 0;
@@ -128,6 +159,8 @@
     aFrame.origin.y = 8;
     aFrame.size = expectedTextSize;
     self.chatBubbleView.messageLabel.frame = aFrame;
+    self.chatBubbleView.messageLabel.numberOfLines = 0;
+    [self.chatBubbleView.messageLabel sizeThatFits:expectedTextSize];
     
 }
 

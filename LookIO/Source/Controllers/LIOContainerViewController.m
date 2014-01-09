@@ -355,7 +355,14 @@
 
 - (void)setupStatusBarInset
 {
-    self.statusBarInset = 20.0;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        self.statusBarInset = 20.0;
+    }
+    else
+    {
+        self.statusBarInset = 0.0;
+    }
 }
 
 #pragma mark -
@@ -377,6 +384,8 @@
 {
     [super viewDidLoad];
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     [self setupStatusBarInset];
     
     UIButton *emergencyDismissButton = [[UIButton alloc] initWithFrame:self.view.bounds];
@@ -394,10 +403,13 @@
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.contentView];
     
-    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
-    self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.headerBarState = LIOHeaderBarStateHidden;
-    [self.view addSubview:self.headerBarView];
+    if (!padUI)
+    {
+        self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
+        self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.headerBarState = LIOHeaderBarStateHidden;
+        [self.view addSubview:self.headerBarView];
+    }
     
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;

@@ -72,8 +72,6 @@
     LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:indexPath.row];
     CGSize expectedMessageSize = [LIOChatTableViewCell expectedSizeForChatMessage:chatMessage constrainedToSize:self.tableView.bounds.size];
     
-    NSLog(@"Height for row is %f", expectedMessageSize.height);
-    
     return expectedMessageSize.height;
 }
 
@@ -124,6 +122,9 @@
 
 - (void)dismissChat:(id)sender
 {
+    if (self.emailChatView)
+        [self.emailChatView dismiss];
+    
     [self.delegate chatViewControllerDidDismissChat:self];
  
     if ([self.inputBarView.textView isFirstResponder])
@@ -587,7 +588,6 @@
         NSInteger aRow = [self.engagement.messages count] - i - 1;
         if (aRow > -1) {
             heightAccum +=  [self tableView:self.tableView heightForRowAtIndexPath:[NSIndexPath indexPathForRow:aRow inSection:0]];
-            NSLog(@"Adding height for row %d", aRow);
         }
     }
     return heightAccum;

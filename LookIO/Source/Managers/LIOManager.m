@@ -205,6 +205,7 @@ static LIOManager *sharedLookIOManager = nil;
             
         case LIOVisitStatePreChatSurveyBackgrounded:
             self.visit.visitState = LIOVisitStatePreChatSurvey;
+            break;
             
         default:
             self.visit.visitState = LIOVisitStateChatActive;
@@ -332,6 +333,11 @@ static LIOManager *sharedLookIOManager = nil;
 - (BOOL)enabled
 {
     return self.visit.chatEnabled;
+}
+
+- (BOOL)chatInProgress
+{
+    return self.visit.chatInProgress;
 }
 
 - (void)chatEnabledDidUpdate:(LIOVisit *)visit
@@ -496,11 +502,13 @@ static LIOManager *sharedLookIOManager = nil;
                             @"chat_down", @"action",
                             nil];
     [self.engagement sendAdvisoryPacketWithDict:chatUp];
+    
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"Previous window is %@", self.previousKeyWindow);
+        LIOLog(@"Previous window is %@", self.previousKeyWindow);
         UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
         [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -680,6 +688,8 @@ static LIOManager *sharedLookIOManager = nil;
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
     alertView.tag = alertViewTag;
     [alertView show];
+    
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (void)engagementDidCancel:(LIOEngagement *)engagement

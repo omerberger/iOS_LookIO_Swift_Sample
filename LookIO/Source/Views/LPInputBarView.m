@@ -96,7 +96,7 @@
         
         self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 62, (self.frame.size.height - 30)/2, 60, 30)];
         [self.sendButton setTitle:@"Send" forState:UIControlStateNormal];
-        [self.sendButton.titleLabel setFont:[[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarSendButton]];
+        [self.sendButton.titleLabel setFont:[[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSendBarSendButton]];
         UIColor *sendButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarSendButton];
         [self.sendButton setTitleColor:sendButtonColor forState:UIControlStateNormal];
         [self.sendButton setTitleColor:[sendButtonColor colorWithAlphaComponent:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
@@ -117,6 +117,10 @@
         expectedSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
     
     [self.delegate inputBar:self wantsNewHeight:expectedSize.height + 30];
+    
+    CGRect frame = self.textViewBackgroundView.frame;
+    frame.size.height = expectedSize.height + 30 - 10;
+    self.textViewBackgroundView.frame = frame;
 }
 
 -(void)drawRect:(CGRect)rect {
