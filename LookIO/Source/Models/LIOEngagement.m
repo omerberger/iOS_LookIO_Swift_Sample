@@ -654,6 +654,25 @@
     }];
 }
 
+- (void)sendChatHistoryPacketWithEmail:(NSString *)email
+{
+    // TODO Check if engagement id exists
+
+    NSDictionary *emailDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:email], @"email_addresses", nil];
+
+    NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, self.engagementId];
+    
+    [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
+        else
+            LIOLog(@"<CHAT_HISTORY> success");
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<CHAT_HISTORY> failure: %@", error);
+    }];
+}
+
+#pragma mark -
 #pragma mark Action Methods
 
 - (void)sendVisitorLineWithText:(NSString *)text

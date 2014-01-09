@@ -20,9 +20,7 @@
 
 #define LIOChatViewControllerEndChatAlertViewTag 1001
 
-#define LIO_IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
-
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -46,6 +44,15 @@
 @end
 
 @implementation LIOChatViewController
+
+#pragma mark -
+#pragma mark Init methods
+
+- (void)setEngagement:(LIOEngagement *)engagement
+{
+    _engagement = engagement;
+    [self.tableView reloadData];
+}
 
 #pragma mark -
 #pragma mark UITableView Methods
@@ -130,7 +137,22 @@
 
 - (void)emailChat
 {
+    // Only allow if at least one message has been sent
+    if (self.engagement.messages.count < 2)
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertTitle") message:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertButton") otherButtonTitles:nil];
+        [alertView show];
+        return;
+    }
     
+    CGFloat emailChatHeight = self.view.bounds.size.height - self.keyboardMenu.bounds.size.height;
+    self.emailChatView = [[LIOEmailChatView alloc] initWithFrame:CGRectMake(0, -emailChatHeight, self.view.bounds.size.width, emailChatHeight)];
+    self.emailChatView.delegate = self;
+    self.emailChatView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:self.emailChatView];
+    
+    self.keyboardState = LIOKeyboardStateEmailChatIntroAnimation;
+    [self.emailChatView present];
 }
 
 - (void)sendLineWithText:(NSString *)text
@@ -157,6 +179,26 @@
     self.alertView.tag = LIOChatViewControllerEndChatAlertViewTag;
     
     [self.alertView show];
+}
+
+#pragma mark -
+#pragma mark EmailChatView Delegate Methods
+
+- (void)emailChatView:(LIOEmailChatView *)emailChatView didSubmitEmail:(NSString *)email
+{
+    self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
+    [self.emailChatView dismiss];
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
+    [alertView show];
+    
+    [self.engagement sendChatHistoryPacketWithEmail:email];
+}
+
+- (void)emailChatViewDidCancel:(LIOEmailChatView *)emailChatView
+{
+    self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
+    [self.emailChatView dismiss];
 }
 
 #pragma mark -
@@ -485,6 +527,7 @@
     CGRect inputBarViewFrame = self.inputBarView.frame;
     CGRect tableFooterViewFrame = self.tableFooterView.frame;
     CGRect keyboardMenuFrame = self.keyboardMenu.frame;
+    CGRect emailChatViewFrame = self.emailChatView.frame;
     
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
     keyboardMenuFrame.size.height = self.lastKeyboardHeight;
@@ -510,6 +553,13 @@
             tableViewFrame.origin.y = - (inputBarViewFrame.origin.y + inputBarViewFrame.size.height);
             break;
             
+        case LIOKeyboardStateEmailChatIntroAnimation:
+            emailChatViewFrame.origin.y = 0;
+            break;
+            
+        case LIOKeyboardStateEmailChatOutroAnimation:
+            emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
+            
         default:
             break;
     }
@@ -523,6 +573,7 @@
     self.tableFooterView.frame = tableFooterViewFrame;
     self.tableView.tableFooterView = self.tableFooterView;
     self.keyboardMenu.frame = keyboardMenuFrame;
+    self.emailChatView.frame = emailChatViewFrame;
     
     self.tableView.contentOffset = CGPointMake(0, tableViewContentOffsetY);
 }
@@ -564,7 +615,8 @@
         introAnimation = YES;
     
     // Set new keyboard state and size
-    self.keyboardState = LIOKeyboardStateKeyboard;
+    if (self.keyboardState != LIOKeyboardStateEmailChatIntroAnimation)
+        self.keyboardState = LIOKeyboardStateKeyboard;
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
@@ -604,6 +656,11 @@
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
     } completion:^(BOOL finished) {
+        if (LIOKeyboardStateEmailChatOutroAnimation == self.keyboardState)
+        {
+            self.keyboardState = LIOKeyboardStateMenu;
+            [self.emailChatView removeFromSuperview];
+        }
     }];
 }
 

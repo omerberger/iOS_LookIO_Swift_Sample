@@ -21,4 +21,7 @@
 
 @property (nonatomic, assign) id<LIOEmailChatViewDelegate> delegate;
 
+- (void)present;
+- (void)dismiss;
+
 @end

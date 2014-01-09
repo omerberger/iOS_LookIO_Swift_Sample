@@ -334,6 +334,20 @@ static LIOBrandingManager *brandingManager = nil;
                 dictionary = emailChatDictionary;
         }
     }
+    
+    if (LIOBrandingElementEmailChatCard == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+            if (emailChatDictionary)
+            {
+                NSDictionary *emailChatCardDictionary = [emailChatDictionary objectForKey:@"email_chat_card"];
+                if (emailChatCardDictionary)
+                    dictionary = emailChatCardDictionary;
+            }
+        }
+    }
 
     if (LIOBrandingElementEmailChatTextField == element)
     {

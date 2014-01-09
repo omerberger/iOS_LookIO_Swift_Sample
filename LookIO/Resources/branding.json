@@ -34,7 +34,7 @@
         "branding_bar" : {
             "background" : {
                 "color" : "#dddddd",
-                "alpha" : "0.5",
+                "alpha" : "1.0",
                 "linear-gradient" : ""
             },
             "notifications" : {
@@ -170,44 +170,52 @@
 				},
 				"email_chat": {
           "background": {
-              "color": "#ffffff",
-              "alpha": "0.9"
-          },
-          "border": {
               "color": "#999999",
-          },					
-          "text_field": {
+              "alpha": "0.8"
+          },
+					"email_chat_card": {
 	          "background": {
-	              "color": "#ffffff",
-	              "alpha": "0.9"
+	              "color": "#f9f9f9",
+	              "alpha": "1.0"
 	          },
-            "font": {
-                "color": "#cccccc",
-                "size": "16.0"
-            }				
+	          "border": {
+	              "color": "#aaaaaa",
+	          }							
+					},
+	        "text_field" : {
+	            "background" : {
+	                "color" : "#ffffff"
+	            },
+	            "font" : {
+	                "color" : "#555555",
+	                "size" : "17.0"
+	            },
+	            "border" : {
+	                "color" : "#999999"
+	            }
           },				
 					"title": {
             "font": {
-                "color": "#cccccc",
+                "color": "#666666",
                 "size": "16.0"
             }
 					},
 					"subtitle": {
             "font": {
-                "color": "#cccccc",
-                "size": "13.0"
+                "color": "#666666",
+                "size": "14.0"
             }
 					},					
 					"cancel_button": {
             "font": {
-                "color": "#cccccc",
-                "size": "13.0"
+                "color": "#007df5",
+                "size": "15.0"
             }
 					},										
 					"submit_button": {
             "font": {
-                "color": "#cccccc",
-                "size": "13.0"
+                "color": "#007df5",
+                "size": "17.0"
             }
 					}					
 				},

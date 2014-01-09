@@ -62,6 +62,7 @@ typedef enum
 - (void)sendVisitorLineWithText:(NSString *)text;
 
 - (void)submitSurvey:(LIOSurvey *)survey;
+- (void)sendChatHistoryPacketWithEmail:(NSString *)email;
 - (BOOL)shouldPresentPostChatSurvey;
 
 - (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict;
