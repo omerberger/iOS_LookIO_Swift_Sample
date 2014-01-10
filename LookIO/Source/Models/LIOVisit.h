@@ -50,7 +50,7 @@ typedef enum
 - (void)visitSkillMappingDidChange:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden;
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
-- (void)chatEnabledDidUpdate:(LIOVisit *)visit;
+- (void)visitChatEnabledDidUpdate:(LIOVisit *)visit;
 
 @end
 
@@ -72,7 +72,10 @@ typedef enum
 - (BOOL)hideEmailChat;
 
 - (void)launchVisit;
+- (void)stopVisit;
 - (void)sendContinuationReport;
+
+- (void)setSkill:(NSString *)skill;
 
 - (void)setChatAvailable;
 - (void)setChatUnavailable;

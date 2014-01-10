@@ -115,6 +115,26 @@ static LIOManager *sharedLookIOManager = nil;
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
+- (void)launchNewVisit
+{
+    // End existing chats if they exist
+    
+    if (self.engagement)
+    {
+        [self.engagement endEngagement];
+    }
+    
+    [self.visit stopVisit];
+    self.visit.delegate = nil;
+    self.visit = nil;
+    
+    [[LIONetworkManager networkManager] resetNetworkEndpoints];
+    
+    self.visit = [[LIOVisit alloc] init];
+    self.visit.delegate = self;
+    [self.visit launchVisit];
+}
+
 #pragma mark Notification handlers
 
 - (void)addNotificationHandlers
@@ -330,6 +350,11 @@ static LIOManager *sharedLookIOManager = nil;
 
 #pragma mark Visit Interaction Methods
 
+- (NSDictionary *)statusDictionary
+{
+    return [self.visit introDictionary];
+}
+
 - (void)visitSkillMappingDidChange:(LIOVisit *)visit
 {
     
@@ -345,7 +370,12 @@ static LIOManager *sharedLookIOManager = nil;
     return self.visit.chatInProgress;
 }
 
-- (void)chatEnabledDidUpdate:(LIOVisit *)visit
+- (void)setSkill:(NSString *)aRequiredSkill
+{
+    [self.visit setSkill:aRequiredSkill];
+}
+
+- (void)visitChatEnabledDidUpdate:(LIOVisit *)visit
 {
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
@@ -362,6 +392,26 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
 {
     [self.controlButton updateButtonBranding];
+}
+
+- (void)reportEvent:(NSString *)anEvent
+{
+    // TODO Report Event
+}
+
+- (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
+{
+    // TODO Report Event With Data
+}
+
+- (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey
+{
+    // TODO Set custom variable
+}
+
+- (void)addCustomVariables:(NSDictionary *)aDictionary
+{
+    // TODO Add custom variables
 }
 
 #pragma mark DraggableButtonDelegate Methods
@@ -532,6 +582,16 @@ static LIOManager *sharedLookIOManager = nil;
         UIGraphicsEndImageContext();
         [self.containerViewController updateBlurImage:viewImage];
     });
+}
+
+- (void)beginSession
+{
+    [self beginChat];
+}
+
+- (void)endChatAndShowAlert:(BOOL)showAlert
+{
+    // TODO End chat
 }
 
 - (void)beginChat

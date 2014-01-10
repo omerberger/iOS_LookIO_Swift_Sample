@@ -397,7 +397,7 @@
             [userDefaults setObject:self.multiskillMapping forKey:LIOLookIOManagerMultiskillMappingKey];
         }
         
-        [self.delegate chatEnabledDidUpdate:self];
+        [self.delegate visitChatEnabledDidUpdate:self];
         
         NSNumber *buttonVisibility = [resolvedSettings objectForKey:@"button_visibility"];
         if (buttonVisibility)
@@ -560,6 +560,12 @@
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
     }
+}
+
+- (void)stopVisit
+{
+    [self.continuationTimer stopTimer];
+    self.continuationTimer = nil;
 }
 
 #pragma mark Continue Methods
@@ -768,6 +774,15 @@
     NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"PreChatSurveyBackgrounded", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey"];
     
     LIOLog(@"<VISIT STATE> %@", [stateNames objectAtIndex:self.visitState]);
+}
+
+- (void)setSkill:(NSString *)skill
+{
+    self.requiredSkill = skill;
+    [self sendContinuationReport];
+    [self refreshControlButtonVisibility];
+    
+    [self.delegate visitChatEnabledDidUpdate:self];
 }
 
 #pragma mark Chat Status Methods

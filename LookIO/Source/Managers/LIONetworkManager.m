@@ -44,6 +44,26 @@ static LIONetworkManager *networkManager = nil;
 
 #pragma mark Control Endpoint Setup
 
+- (void)resetNetworkEndpoints
+{
+    switch (self.serverMode) {
+        case LIOServerProduction:
+            [self setProductionMode];
+            break;
+            
+        case LIOServerStaging:
+            [self setStagingMode];
+            break;
+            
+        case LIOServerQA:
+            [self setQAMode];
+            break;
+            
+        default:
+            break;
+    }
+}
+
 - (void)setProductionMode
 {
     self.serverMode = LIOServerProduction;
