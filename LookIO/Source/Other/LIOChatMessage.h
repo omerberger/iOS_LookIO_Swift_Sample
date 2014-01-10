@@ -12,6 +12,7 @@ typedef enum
 {
     LIOChatMessageKindRemote,
     LIOChatMessageKindLocal,
+    LIOChatMessageKindLocalImage,
     LIOChatMessageKindMapLocation,
     LIOChatMessageKindLink,
     LIOChatMessageKindPhoneNumber

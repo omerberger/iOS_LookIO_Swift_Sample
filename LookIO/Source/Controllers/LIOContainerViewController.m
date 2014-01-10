@@ -61,6 +61,10 @@
 
 - (void)presentHeaderBarView:(BOOL)animated
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI)
+        return;
+
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = 0;
     
@@ -86,6 +90,10 @@
 
 - (void)dismissHeaderBarView:(BOOL)animated withState:(LIOHeaderBarState)state
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI)
+        return;
+
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = -headerBarFrame.size.height;
     

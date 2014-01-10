@@ -60,6 +60,7 @@ typedef enum
 - (void)cleanUpEngagement;
 
 - (void)sendVisitorLineWithText:(NSString *)text;
+- (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId;
 
 - (void)submitSurvey:(LIOSurvey *)survey;
 - (void)sendChatHistoryPacketWithEmail:(NSString *)email;

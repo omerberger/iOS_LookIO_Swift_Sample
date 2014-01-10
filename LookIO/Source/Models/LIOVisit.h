@@ -21,7 +21,7 @@ typedef enum
 {
     LIOButtonVisibilityNever = 0,
     LIOButtonVisibilityAlways = 1,
-    LIOButtonVisibilityInSession = 3
+    LIOButtonVisibilityInSession = 2
 } LIOButtonVisibility;
 
 typedef enum
@@ -40,7 +40,8 @@ typedef enum
     LIOVisitStateOfflineSurvey,
     LIOVisitStateChatActive,
     LIOVisitStateChatActiveBackgrounded,
-    LIOVisitStatePostChatSurvey
+    LIOVisitStatePostChatSurvey,
+    LIOVisitStateEnding
 } LIOVisitState;
 
 @class LIOVisit;

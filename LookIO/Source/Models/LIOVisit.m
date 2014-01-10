@@ -480,9 +480,13 @@
             
             [self.continuationTimer stopTimer];
             self.continuationTimer = nil;
-            self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
-                                                                     target:self
-                                                                   selector:@selector(continuationTimerDidFire)];
+            
+            if (self.visitState != LIOVisitStateEnding)
+            {
+                self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
+                                                                              target:self
+                                                                            selector:@selector(continuationTimerDidFire)];
+            }
         }
         
         NSNumber *surveysEnabled = [resolvedSettings objectForKey:@"surveys_enabled"];
@@ -564,6 +568,10 @@
 
 - (void)stopVisit
 {
+    self.visitState = LIOVisitStateEnding;
+    
+    [self refreshControlButtonVisibility];
+    
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
 }
@@ -578,11 +586,14 @@
     if (0.0 == self.nextTimeInterval)
         self.nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
-    self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
+    // Don't create a new timer if the visit state is ending
+    if (self.visitState != LIOVisitStateEnding)
+    {
+        self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
                                                              target:self
                                                            selector:@selector(continuationTimerDidFire)];
-    
-    [self sendContinuationReport];
+        [self sendContinuationReport];
+    }
 }
 
 - (void)sendContinuationReport
@@ -675,6 +686,15 @@
 - (void)refreshControlButtonVisibility
 {
     // TODO: Trump card #-1: If the session is ending, button is hidden.
+    if (self.visitState == LIOVisitStateEnding)
+    {
+        self.controlButtonHidden = YES;
+
+        LIOLog(@"<<CONTROL>> Hiding. Reason: Visit ending.");
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        
+        return;
+    }
     
     // Trump card #0: If we have no visibility information, button is hidden.
     if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
@@ -771,7 +791,7 @@
 {
     _visitState = visitState;
     
-    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"PreChatSurveyBackgrounded", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey"];
+    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"PreChatSurveyBackgrounded", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey", @"Ending"];
     
     LIOLog(@"<VISIT STATE> %@", [stateNames objectAtIndex:self.visitState]);
 }
@@ -885,6 +905,9 @@
         case LIOVisitStatePostChatSurvey:
             return YES;
             break;
+            
+        case LIOVisitStateEnding:
+            return NO;
             
         default:
             return NO;

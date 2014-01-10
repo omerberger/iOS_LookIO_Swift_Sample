@@ -213,6 +213,8 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)applicationWillEnterForeground:(NSNotification *)aNotification
 {
+    [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+
     [LIOStatusManager statusManager].appForegrounded = YES;
     
     switch (self.visit.visitState) {

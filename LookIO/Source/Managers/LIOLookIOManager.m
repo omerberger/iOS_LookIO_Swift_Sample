@@ -373,6 +373,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        return nil;
+        
         lastClientLineId = 0;
         
         customButtonChatAvailable = NO;
@@ -479,6 +481,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                      name:LIOAnalyticsManagerLocationWasDeterminedNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
         
+        /*
         // Init the ChatAPIClient
         LPChatAPIClient* chatClient = [LPChatAPIClient sharedClient];
         chatClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@/api/v2/chat/", LIOLookIOManagerDefaultControlEndpoint]];
@@ -488,6 +491,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
         visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+         */
     }
     
     return self;

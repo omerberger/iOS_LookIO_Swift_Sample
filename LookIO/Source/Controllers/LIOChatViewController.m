@@ -11,16 +11,22 @@
 #import "LIOChatTableViewCell.h"
 #import "LPInputBarView.h"
 #import "LIOKeyboardMenu.h"
-#import "LIOBundleManager.h"
 #import "LPChatBubbleView.h"
 
 #import "LIOEmailChatView.h"
 
+#import "LIOBundleManager.h"
+#import "LIOMediaManager.h"
+
 #define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
+
+#define LIOChatViewControllerMaximumAttachmentActualSize 800.0
 
 #define LIOChatViewControllerEndChatAlertViewTag 1001
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate>
+#define LIOChatViewControllerPhotoSourceActionSheetTag 2001
+
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -40,6 +46,8 @@
 @property (nonatomic, strong) UIAlertView *alertView;
 
 @property (nonatomic, strong) LIOEmailChatView *emailChatView;
+
+@property (nonatomic, strong) UIImage *pendingImageAttachment;
 
 @end
 
@@ -139,7 +147,22 @@
 
 - (void)sendPhoto
 {
-    
+    if (self.engagement.messages.count <= 1)
+    {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
+                                                            message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
+                                                           delegate:nil
+                                                  cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
+                                                  otherButtonTitles:nil];
+        [alertView show];
+    }
+    else
+    {
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+            [self presentPhotoSourceActionSheet];
+        else
+            [self presentImagePickerWithCamera:NO];
+    }
 }
 
 - (void)emailChat
@@ -169,6 +192,15 @@
     [self scrollToBottomDelayed:YES];
 }
 
+- (void)sendLineWithPendingImage
+{
+    NSString *attachmentId = [[LIOMediaManager sharedInstance] commitImageMedia:self.pendingImageAttachment];
+
+    [self.engagement sendVisitorLineWithAttachmentId:attachmentId];
+    [self.tableView reloadData];
+    [self scrollToBottomDelayed:YES];
+}
+
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message
 {
     [self.tableView reloadData];
@@ -186,6 +218,77 @@
     self.alertView.tag = LIOChatViewControllerEndChatAlertViewTag;
     
     [self.alertView show];
+}
+
+#pragma mark -
+#pragma mark UIActionSheetDelegate Methods
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    switch (actionSheet.tag) {
+        case LIOChatViewControllerPhotoSourceActionSheetTag:
+            if (buttonIndex == 0)
+                [self presentImagePickerWithCamera:YES];
+            if (buttonIndex == 1)
+                [self presentImagePickerWithCamera:NO];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+#pragma mark -
+#pragma mark Photo Sharing Methods
+
+- (void)presentImagePickerWithCamera:(BOOL)withCamera
+{
+    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
+    imagePickerController.sourceType = withCamera ? UIImagePickerControllerSourceTypeCamera : (UIImagePickerControllerSourceTypePhotoLibrary | UIImagePickerControllerSourceTypeSavedPhotosAlbum);
+    imagePickerController.allowsEditing = NO;
+    imagePickerController.delegate = self;
+    
+    [self presentModalViewController:imagePickerController animated:YES];
+}
+
+- (void)presentPhotoSourceActionSheet
+{
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
+                                              delegate:self
+                                     cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachSourceCancel")
+                                destructiveButtonTitle:nil
+                                     otherButtonTitles:LIOLocalizedString(@"LIOAltChatViewController.AttachSourceCamera"),
+                                                       LIOLocalizedString(@"LIOAltChatViewController.AttachSourceLibrary"), nil];
+    actionSheet.tag = LIOChatViewControllerPhotoSourceActionSheetTag;
+    actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
+    
+    [actionSheet showInView:self.view];
+}
+
+#pragma mark -
+#pragma mark UIImagePickerControllerDelegate methods
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    [self dismissModalViewControllerAnimated:YES];
+    
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    if (image)
+    {
+        CGSize resizedImageSize;
+        CGFloat targetSize = LIOChatViewControllerMaximumAttachmentActualSize / [[UIScreen mainScreen] scale];
+        if (image.size.height >= image.size.width)
+        {
+            resizedImageSize.height = targetSize;
+            resizedImageSize.width = targetSize*(image.size.width/image.size.height);
+        } else {
+            resizedImageSize.width = targetSize;
+            resizedImageSize.height = targetSize*(image.size.height/image.size.width);
+        }
+        self.pendingImageAttachment = [[LIOMediaManager sharedInstance] scaleImage:image toSize:resizedImageSize];
+        
+        [self sendLineWithPendingImage];
+    }
 }
 
 #pragma mark -

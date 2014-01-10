@@ -11,7 +11,10 @@
 #import "LIOAnalyticsManager.h"
 #import "LPChatAPIClient.h"
 #import "LPMediaAPIClient.h"
+#import "LIOMediaManager.h"
+#import "LIOStatusManager.h"
 #import "LPHTTPRequestOperation.h"
+#import "NSData+Base64.h"
 
 #import "LIOLogManager.h"
 
@@ -578,6 +581,8 @@
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<LINE> failure: %@", error);
         
+        // TODO - failed message with alert signal
+        
         // If we get a 404, let's terminate the engagement
         if (operation.responseCode == 404) {
             // TO DO - End engagement and alert
@@ -586,6 +591,78 @@
             // TO DO - Refresh table view and notify user if needed
         }
     }];
+}
+
+- (void)sendMediaPacketWithMessage:(LIOChatMessage *)message
+{
+    // TODO: No engagement ID
+    
+    NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:message.attachmentId];
+    
+    if (attachmentData)
+    {
+        NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:message.attachmentId];
+        NSString *sessionId = self.engagementId;
+        NSString *bundleId = [LIOStatusManager bundleId];
+        NSString *boundary = @"0xKhTmLbOuNdArY";
+        NSString *dataBase64 = base64EncodedStringFromData(attachmentData);
+        
+        NSMutableData *body = [NSMutableData data];
+        [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"file\"; filename=\"lpmobile_ios_upload\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[dataBase64 dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"engagement_key\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[sessionId dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Disposition: form-data; name=\"bundle\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[bundleId dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        
+        [[LPMediaAPIClient sharedClient] postMultipartDataToPath:LIOLookIOManagerMediaUploadRequestURL data:body success:^(LPHTTPRequestOperation *operation, id responseObject) {
+
+            message.status = LIOChatMessageStatusSent;
+
+            // TODO - If message had failed before, update it here
+
+            if (responseObject)
+                LIOLog(@"<PHOTO UPLOAD> with response: %@", responseObject);
+            else
+                LIOLog(@"<PHOTO UPLOAD> success");
+            
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            message.status = LIOChatMessageStatusFailed;
+            
+            if (operation.responseCode == 413) {
+                // TODO - If message is too big, has special notification for the user
+                /*
+                UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileTitle")
+                                                                    message:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileBody") delegate:nil
+                                                              cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachFailureLargeFileButton")
+                                                              otherButtonTitles:nil];
+                    
+                [alertView show];
+                [alertView release];
+                 */
+            }
+            else
+            {
+                // TODO - Regular failure notification
+                /*
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendTitle")
+                                                                    message:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendBody")
+                                                                   delegate:nil
+                                                          cancelButtonTitle:@"LIOLookIOManager.FailedAttachmentSendButton"
+                                                          otherButtonTitles:nil];
+                [alertView show];
+                [alertView autorelease];
+                 */
+            }
+            
+            LIOLog(@"<PHOTO UPLOAD> with failure: %@", error);
+        }];
+    }
 }
 
 - (void)sendOutroPacket
@@ -689,6 +766,19 @@
     [self.messages addObject:newMessage];
     
     [self sendLineWithMessage:newMessage];
+    [self.delegate engagement:self didSendMessage:newMessage];
+}
+
+- (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId
+{
+    LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
+    newMessage.status = LIOChatMessageStatusInitialized;
+    newMessage.kind = LIOChatMessageKindLocalImage;
+    newMessage.date = [NSDate date];
+    newMessage.attachmentId = attachmentId;
+    [self.messages addObject:newMessage];
+    
+    [self sendMediaPacketWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
 }
 
