@@ -10,6 +10,7 @@
 #import "LPChatImageView.h"
 
 #import "LIOMediaManager.h"
+#import "LIOBundleManager.h"
 
 #define LIOChatTableViewImageCellAttachmentRowHeight           135.0
 #define LIOChatTableViewImageCellAttachmentDisplayHeight       120.0
@@ -91,6 +92,10 @@
             }
         }
     }
+    
+    if (LIOIsUIKitFlatMode())
+        for (UIView *subview in self.subviews)
+            subview.clipsToBounds = NO;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
