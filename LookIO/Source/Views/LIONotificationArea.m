@@ -26,7 +26,9 @@
 @property (nonatomic, strong) LIOTimerProxy *startAnimatedLongTextTimer;
 @property (nonatomic, strong) LIOTimerProxy *moveAnimatedLongTextTimer;
 @property (nonatomic, strong) LIOAnimatedKeyboardIcon *keyboardIcon;
+
 @property (nonatomic, assign) BOOL animatingLongText;
+@property (nonatomic, assign) BOOL agentIsTyping;
 
 @end
 

@@ -19,7 +19,7 @@
 
 #define LIOContainerViewControllerAlertViewNextStepDismiss 2001
 
-@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate>
+@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate, LIOHeaderBarViewDelegate>
 
 @property (nonatomic, strong) UIView *contentView;
 
@@ -58,6 +58,14 @@
 
 #pragma mark -
 #pragma mark HeaderBarView Methods
+
+- (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView
+{
+    if (self.containerViewState == LIOContainerViewStateChat)
+    {
+        [self.chatViewController headerBarViewPlusButtonWasTapped];
+    }
+}
 
 - (void)presentHeaderBarView:(BOOL)animated
 {
@@ -116,6 +124,7 @@
         self.contentView.frame = contentViewFrame;
     }
 }
+
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
@@ -436,6 +445,7 @@
     {
         self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
         self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.headerBarView.delegate = self;
         self.headerBarState = LIOHeaderBarStateHidden;
         [self.view addSubview:self.headerBarView];
     }

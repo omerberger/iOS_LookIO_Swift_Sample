@@ -17,6 +17,7 @@
 
 - (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item;
 - (BOOL)keyboardMenuShouldShowHideEmailChatDefaultItem:(LIOKeyboardMenu *)keyboardMenu;
+- (BOOL)keyboardMenuShouldShowTakePhotoDefaultItem:(LIOKeyboardMenu *)keyboardMenu;
 
 @end
 

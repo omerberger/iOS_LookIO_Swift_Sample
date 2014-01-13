@@ -160,7 +160,9 @@
 - (void)dismissChat:(id)sender
 {
     if (self.emailChatView)
+    {
         [self.emailChatView dismiss];
+    }
     
     [self.delegate chatViewControllerDidDismissChat:self];
  
@@ -376,7 +378,12 @@
 {
     switch (self.keyboardState) {
         case LIOKeyboardStateHidden:
-            // Do nothing
+            [self inputBarDidStopTyping:self.inputBarView];
+            [self sendLineWithText:self.inputBarView.textView.text];
+            [self.inputBarView clearTextView];
+            
+            [self updateSubviewFrames];
+
             break;
             
         case LIOKeyboardStateMenu:
@@ -885,6 +892,15 @@
         return NO;
     
     return YES;
+}
+
+#pragma mark -
+#pragma mark Header Bar Methods
+
+- (void)headerBarViewPlusButtonWasTapped
+{
+    [self.tableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
+    [self.view endEditing:YES];
 }
 
 
