@@ -9,6 +9,8 @@
 #import "LIOChatViewController.h"
 
 #import "LIOChatTableViewCell.h"
+#import "LIOChatTableViewImageCell.h"
+
 #import "LPInputBarView.h"
 #import "LIOKeyboardMenu.h"
 #import "LPChatBubbleView.h"
@@ -18,7 +20,8 @@
 #import "LIOBundleManager.h"
 #import "LIOMediaManager.h"
 
-#define LIOChatViewControllerChatTableViewCellIdentifier  @"LIOChatViewControllerChatTableViewCellIdentifier"
+#define LIOChatViewControllerChatTableViewCellIdentifier        @"LIOChatViewControllerChatTableViewCellIdentifier"
+#define LIOChatViewControllerChatTableViewImageCellIdentifier   @"LIOChatViewControllerChatTableViewImageCellIdentifier"
 
 #define LIOChatViewControllerMaximumAttachmentActualSize 800.0
 
@@ -78,23 +81,41 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:indexPath.row];
-    CGSize expectedMessageSize = [LIOChatTableViewCell expectedSizeForChatMessage:chatMessage constrainedToSize:self.tableView.bounds.size];
+
+    CGSize expectedMessageSize;
+    if (chatMessage.kind == LIOChatMessageKindLocalImage)
+        expectedMessageSize = [LIOChatTableViewImageCell expectedSizeForChatMessage:chatMessage constrainedToSize:self.tableView.bounds.size];
+    else
+        expectedMessageSize = [LIOChatTableViewCell expectedSizeForChatMessage:chatMessage constrainedToSize:self.tableView.bounds.size];
     
     return expectedMessageSize.height;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:indexPath.row];
+    if (chatMessage.kind == LIOChatMessageKindLocalImage)
+    {
+        LIOChatTableViewImageCell *cell = [self.tableView dequeueReusableCellWithIdentifier:LIOChatViewControllerChatTableViewImageCellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[LIOChatTableViewImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewImageCellIdentifier];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        }
+        
+        [cell layoutSubviewsForChatMessage:chatMessage];
+
+        return cell;
+    }
+ 
     LIOChatTableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:LIOChatViewControllerChatTableViewCellIdentifier];
     if (cell == nil)
     {
         cell = [[LIOChatTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewCellIdentifier];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
-    
-    LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:indexPath.row];
     [cell layoutSubviewsForChatMessage:chatMessage];
-    
+
     return cell;
 }
 
