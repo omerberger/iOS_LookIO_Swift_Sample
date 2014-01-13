@@ -757,7 +757,14 @@ static LIOManager *sharedLookIOManager = nil;
         [self.engagement cleanUpEngagement];
         self.engagement = nil;
         
-        self.visit.visitState = LIOVisitStateVisitInProgress;
+        if ([LIOStatusManager statusManager].appForegrounded)
+        {
+            self.visit.visitState = LIOVisitStateVisitInProgress;
+        }
+        else
+        {
+            self.visit.visitState = LIOVisitStateAppBackgrounded;
+        }
     }
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
@@ -834,6 +841,10 @@ static LIOManager *sharedLookIOManager = nil;
     [self.containerViewController engagement:engagement didReceiveNotification:notification];
 }
 
+- (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
+{
+    [self.containerViewController engagement:engagement agentIsTyping:isTyping];
+}
 
 #pragma mark Custom Branding Methods
 

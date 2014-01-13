@@ -298,7 +298,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     if (image.size.width == 0 || image.size.height == 0)
         return image;
     
-    UIGraphicsBeginImageContext(image.size);
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     [color setFill];

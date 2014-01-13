@@ -19,6 +19,13 @@ typedef enum {
     LIOKeyboardStateEmailChatOutroAnimation
 } LIOKeyboardState;
 
+typedef enum {
+    LIOChatStateChat = 0,
+    LIOChatStateEmailChat,
+    LIOChatStateImagePicker,
+    LIOChatStateImageApprove
+} LIOChatState;
+
 @class LIOChatViewController;
 
 @protocol LIOChatViewControllerDelegate <NSObject>

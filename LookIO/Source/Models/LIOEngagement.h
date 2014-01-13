@@ -38,6 +38,7 @@ typedef enum
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
+- (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
 
 @end
 

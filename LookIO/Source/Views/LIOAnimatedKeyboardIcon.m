@@ -7,9 +7,13 @@
 //
 
 #import "LIOAnimatedKeyboardIcon.h"
-#import "LIOBundleManager.h"
-#import "LIOTimerProxy.h"
+
 #import "LIOLogManager.h"
+#import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
+
+#import "LIOTimerProxy.h"
+
 
 @implementation LIOAnimatedKeyboardIcon
 
@@ -21,7 +25,9 @@
     
     if (self)
     {
-        UIImageView *background = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOKeyboardIcon"]] autorelease];
+        UIColor *keyboardTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
+        
+        UIImageView *background = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOKeyboardIcon" withTint:keyboardTintColor]] autorelease];
         [self addSubview:background];
         
         for (int i=0; i<LIOAnimatedKeyboardIconNumKeys; i++)
@@ -76,9 +82,11 @@
     
     [self processKeyOpacities];
     
+    UIColor *keyboardTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
+
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextClearRect(context, rect);
-    CGContextSetFillColorWithColor(context, [UIColor whiteColor].CGColor);
+    CGContextSetFillColorWithColor(context, keyboardTintColor.CGColor);
     
     for (int i=0; i<LIOAnimatedKeyboardIconNumKeys; i++)
     {

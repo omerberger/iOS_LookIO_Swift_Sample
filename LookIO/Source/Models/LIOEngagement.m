@@ -493,11 +493,11 @@
         }
         if ([action isEqualToString:@"typing_start"])
         {
-            // TODO Set agent typing
+            [self.delegate engagement:self agentDidUpdateTypingStatus:YES];
         }
         if ([action isEqualToString:@"typing_stop"])
         {
-            // TODO Set agent not typing
+            [self.delegate engagement:self agentDidUpdateTypingStatus:NO];
         }
         if ([action isEqualToString:@"connected"])
         {

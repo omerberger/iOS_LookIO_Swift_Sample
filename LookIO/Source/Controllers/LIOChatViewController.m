@@ -31,6 +31,8 @@
 
 @interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
+@property (nonatomic, assign) LIOChatState chatState;
+
 @property (nonatomic, strong) LIOEngagement *engagement;
 
 @property (nonatomic, strong) UITableView *tableView;
@@ -203,6 +205,7 @@
     [self.view addSubview:self.emailChatView];
     
     self.keyboardState = LIOKeyboardStateEmailChatIntroAnimation;
+    self.chatState = LIOChatStateEmailChat;
     [self.emailChatView present];
 }
 
@@ -264,6 +267,7 @@
 
 - (void)presentImagePickerWithCamera:(BOOL)withCamera
 {
+    self.chatState = LIOChatStateImagePicker;
     UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
     imagePickerController.sourceType = withCamera ? UIImagePickerControllerSourceTypeCamera : (UIImagePickerControllerSourceTypePhotoLibrary | UIImagePickerControllerSourceTypeSavedPhotosAlbum);
     imagePickerController.allowsEditing = NO;
@@ -292,6 +296,7 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     [self dismissModalViewControllerAnimated:YES];
+    self.chatState = LIOChatStateChat;
     
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (image)
@@ -312,12 +317,19 @@
     }
 }
 
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [self dismissModalViewControllerAnimated:YES];
+    self.chatState = LIOChatStateChat;
+}
+
 #pragma mark -
 #pragma mark EmailChatView Delegate Methods
 
 - (void)emailChatView:(LIOEmailChatView *)emailChatView didSubmitEmail:(NSString *)email
 {
     self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
+    self.chatState = LIOChatStateChat;
     [self.emailChatView dismiss];
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
@@ -329,6 +341,7 @@
 - (void)emailChatViewDidCancel:(LIOEmailChatView *)emailChatView
 {
     self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
+    self.chatState = LIOChatStateChat;
     [self.emailChatView dismiss];
 }
 
@@ -568,9 +581,12 @@
 {
     [super viewWillDisappear:animated];
 
-    // Hide the chat so we can drop it when we return..
-    self.keyboardState = LIOKeyboardStateIntroAnimation;
-    [self updateSubviewFrames];
+    if (self.chatState != LIOChatStateImagePicker)
+    {
+        // Hide the chat so we can drop it when we return..
+        self.keyboardState = LIOKeyboardStateIntroAnimation;
+        [self updateSubviewFrames];
+    }
     
     // Unregister for keyboard notifications while not visible.
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -595,6 +611,8 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
 
+    self.chatState = LIOChatStateChat;
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI)
@@ -671,17 +689,20 @@
     switch (self.keyboardState) {
         case LIOKeyboardStateKeyboard:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - self.lastKeyboardHeight;
-            [self.inputBarView unrotatePlusButton];
+            if (saveOtherFrames)
+                [self.inputBarView unrotatePlusButton];
             break;
             
         case LIOKeyboardStateHidden:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height;
-            [self.inputBarView unrotatePlusButton];
+            if (saveOtherFrames)
+                [self.inputBarView unrotatePlusButton];
             break;
             
         case LIOKeyboardStateMenu:
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - keyboardMenuFrame.size.height;
-            [self.inputBarView rotatePlusButton];
+            if (saveOtherFrames)
+                [self.inputBarView rotatePlusButton];
             break;
             
         case LIOKeyboardStateIntroAnimation:
@@ -775,6 +796,8 @@
             self.tableView.frame = frame;
         }
     } completion:^(BOOL finished) {
+        if (self.chatState == LIOChatStateChat)
+            [self scrollToBottomDelayed:NO];
         if (introAnimation)
             self.keyboardState = LIOKeyboardStateKeyboard;
     }];

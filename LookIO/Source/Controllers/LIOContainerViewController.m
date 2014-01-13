@@ -125,6 +125,20 @@
     }
 }
 
+- (void)engagement:(LIOEngagement *)engagement agentIsTyping:(BOOL)isTyping
+{
+//    pendingNotificationStringIsTypingNotification = YES;
+    
+    if (isTyping)
+    {
+        [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
+    }
+    else
+    {
+        [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
+    }
+}
+
 #pragma mark -
 #pragma mark LoadingViewController Delegate Methods
 
@@ -329,8 +343,10 @@
     }
 }
 
-- (void)dismissCurrentViewController {
-    switch (self.containerViewState) {
+- (void)dismissCurrentViewController
+{
+    switch (self.containerViewState)
+    {
         case LIOContainerViewStateChat:
             [self.chatViewController dismissChat:self];
             break;
