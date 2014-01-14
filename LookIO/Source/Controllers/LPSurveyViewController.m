@@ -24,6 +24,10 @@
 
 #define LIOSurveyViewControllerAlertViewTagNextActionCancel 1001
 
+#define LIOSurveyViewiPadNextQuestionAlpha      0.5
+#define LIOSurveyViewiPadNextQuestionScale      0.8
+#define LIOSurveyViewiPadNextQuestionOffset     0.55
+
 @interface LPSurveyViewController () <UIScrollViewDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) LIOSurvey *survey;
@@ -651,6 +655,8 @@
 
 - (void)updateScrollView
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     CGSize contentSize = self.scrollView.contentSize;
     CGPoint contentOffset = self.scrollView.contentOffset;
     CGRect previousFrame = self.previousQuestionView.frame;
@@ -659,42 +665,51 @@
     
     CGFloat viewWidth = self.scrollView.bounds.size.width;
     
-    if (self.previousQuestionView && self.nextQuestionView)
+    if (!padUI)
     {
-        contentSize.width = viewWidth * 3;
-        contentOffset.x = viewWidth;
-        previousFrame.origin.x = 0;
-        currentFrame.origin.x = viewWidth;
-        nextFrame.origin.x = viewWidth * 2;
-        
-        previousFrame.size = self.view.bounds.size;
-        nextFrame.size = self.view.bounds.size;
-    }
-    else
-    {
-        if (self.previousQuestionView)
+        if (self.previousQuestionView && self.nextQuestionView)
         {
-            contentSize.width = viewWidth * 2;
+            contentSize.width = viewWidth * 3;
             contentOffset.x = viewWidth;
             previousFrame.origin.x = 0;
             currentFrame.origin.x = viewWidth;
+            nextFrame.origin.x = viewWidth * 2;
+            
             previousFrame.size = self.view.bounds.size;
-        }
-        if (self.nextQuestionView)
-        {
-            contentSize.width = viewWidth * 2;
-            contentOffset.x = 0;
-            currentFrame.origin.x = 0;
-            nextFrame.origin.x = viewWidth;
             nextFrame.size = self.view.bounds.size;
         }
-        if (!self.nextQuestionView && !self.previousQuestionView)
+        else
         {
-            contentSize.width = viewWidth;
-            contentOffset.x = 0;
-            currentFrame.origin.x = 0;
-            currentFrame.size = self.view.bounds.size;
+            if (self.previousQuestionView)
+            {
+                contentSize.width = viewWidth * 2;
+                contentOffset.x = viewWidth;
+                previousFrame.origin.x = 0;
+                currentFrame.origin.x = viewWidth;
+                previousFrame.size = self.view.bounds.size;
+            }
+            if (self.nextQuestionView)
+            {
+                contentSize.width = viewWidth * 2;
+                contentOffset.x = 0;
+                currentFrame.origin.x = 0;
+                nextFrame.origin.x = viewWidth;
+                nextFrame.size = self.view.bounds.size;
+            }
+            if (!self.nextQuestionView && !self.previousQuestionView)
+            {
+                contentSize.width = viewWidth;
+                contentOffset.x = 0;
+                currentFrame.origin.x = 0;
+                currentFrame.size = self.view.bounds.size;
+            }
         }
+    }
+    else
+    {
+        currentFrame = [self frameForIpadScrollView];
+        previousFrame = [self frameForIpadScrollView];
+        nextFrame = [self frameForIpadScrollView];
     }
     
     self.scrollView.contentSize = contentSize;
@@ -702,11 +717,33 @@
     self.previousQuestionView.frame = previousFrame;
     self.currentQuestionView.frame = currentFrame;
     self.nextQuestionView.frame = nextFrame;
+
+    if (padUI)
+    {
+        self.currentQuestionView.transform = CGAffineTransformIdentity;
+        CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.view.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
+        self.previousQuestionView.transform = CGAffineTransformConcat(scale, translate);
+        scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
+        translate = CGAffineTransformMakeTranslation(self.view.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
+        self.nextQuestionView.transform = CGAffineTransformConcat(scale, translate);
+        
+        [self.view bringSubviewToFront:self.currentQuestionView];
+    }
 }
 
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+- (CGRect)frameForIpadScrollView
 {
+    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
+    CGRect aFrame = CGRectZero;
+    aFrame.origin.y = landscape ? 20 : 135;
+    aFrame.size.width = landscape ? 400 : 450;
+    aFrame.size.height = landscape ? 360 : 460;
+    aFrame.origin.x = (self.view.bounds.size.width - aFrame.size.width)/2;
+    
+    return aFrame;
 }
 
 - (void)switchToPreviousQuestion
@@ -767,43 +804,103 @@
     [self.nextQuestionView setNeedsLayout];
     [self.nextQuestionView becomeFirstResponder];
     
-    [UIView animateWithDuration:0.3 animations:^{
-        CGPoint contentOffset = self.scrollView.contentOffset;
-        if (self.previousQuestionView)
-        {
-            contentOffset.x = self.scrollView.bounds.size.width * 2;
-        }
-        else
-        {
-            contentOffset.x = self.scrollView.bounds.size.width;
-        }        
-        self.scrollView.contentOffset = contentOffset;
-    } completion:^(BOOL finished) {
-        self.currentQuestionIndex = self.nextQuestionView.tag;
-        self.pageControl.currentPage += 1;
-                
-        LIOSurveyQuestionView *tempView = nil;
-        if (self.previousQuestionView)
-        {
-            [self.previousQuestionView removeFromSuperview];
-            tempView = self.previousQuestionView;
-        }
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (!padUI)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            CGPoint contentOffset = self.scrollView.contentOffset;
+            if (self.previousQuestionView)
+            {
+                contentOffset.x = self.scrollView.bounds.size.width * 2;
+            }
+            else
+            {
+                contentOffset.x = self.scrollView.bounds.size.width;
+            }
+            self.scrollView.contentOffset = contentOffset;
+        } completion:^(BOOL finished) {
+            self.currentQuestionIndex = self.nextQuestionView.tag;
+            self.pageControl.currentPage += 1;
+            
+            LIOSurveyQuestionView *tempView = nil;
+            if (self.previousQuestionView)
+            {
+                [self.previousQuestionView removeFromSuperview];
+                tempView = self.previousQuestionView;
+            }
+            self.previousQuestionView = self.currentQuestionView;
+            self.currentQuestionView = self.nextQuestionView;
+            self.nextQuestionView = nil;
+            self.isLastQuestion = ![self setupNextQuestionScrollView];
+            
+            [self updateScrollView];
+            
+            if (tempView)
+            {
+                self.reusableQuestionView = tempView;
+                self.reusableQuestionView.tag = -1000;
+            }
+            
+            [self.currentQuestionView questionViewDidAppear];
+            self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
+        }];
+    }
+    else
+    {
+        [self.view bringSubviewToFront:self.currentQuestionView];
+
         self.previousQuestionView = self.currentQuestionView;
         self.currentQuestionView = self.nextQuestionView;
         self.nextQuestionView = nil;
+
+        self.currentQuestionIndex = self.nextQuestionView.tag;
+        self.pageControl.currentPage += 1;
+
         self.isLastQuestion = ![self setupNextQuestionScrollView];
+        self.nextQuestionView.frame = [self frameForIpadScrollView];
+        CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
+        CGAffineTransform translate = CGAffineTransformMakeTranslation(self.view.bounds.size.width, 0.0);
+        self.nextQuestionView.transform = CGAffineTransformConcat(scale, translate);
+        [self.view addSubview:self.nextQuestionView];
         
-        [self updateScrollView];
+        [UIView animateWithDuration:0.3 animations:^{
+            self.currentQuestionView.transform = CGAffineTransformIdentity;
+            
+            CGAffineTransform scale2 = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
+            CGAffineTransform translate2 = CGAffineTransformMakeTranslation(-self.view.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
+            self.previousQuestionView.transform = CGAffineTransformConcat(scale2, translate2);
+            
+            CGAffineTransform scale3 = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
+            CGAffineTransform translate3 = CGAffineTransformMakeTranslation(self.view.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
+            self.nextQuestionView.transform = CGAffineTransformConcat(scale3, translate3);
+            
+        } completion:^(BOOL finished) {
+            self.previousQuestionView.userInteractionEnabled = NO;
+            self.currentQuestionView.userInteractionEnabled = YES;
+            self.nextQuestionView.userInteractionEnabled = NO;
+            
+            /*
+            LIOSurveyQuestionView *tempView = nil;
+            if (self.previousQuestionView)
+            {
+                [self.previousQuestionView removeFromSuperview];
+                tempView = self.previousQuestionView;
+            }
+            if (tempView)
+            {
+                self.reusableQuestionView = tempView;
+                self.reusableQuestionView.tag = -1000;
+            }
+             */
+            
+            [self.currentQuestionView questionViewDidAppear];
+            self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
+            
+//            NSLog(@"Current question ")
+        }];
         
-        if (tempView)
-        {
-            self.reusableQuestionView = tempView;
-            self.reusableQuestionView.tag = -1000;
-        }
-        
-        [self.currentQuestionView questionViewDidAppear];
-        self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
-    }];
+    }
     
     /*
      

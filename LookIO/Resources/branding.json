@@ -242,7 +242,7 @@
         },
         "survey_card" : {
             "background" : {
-                "color" : "#f9f9f9",
+                "color" : "#ff0000",
                 "alpha" : "0.9"
             },
             "border" : {

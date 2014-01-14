@@ -26,10 +26,6 @@
 #define LIOSurveyViewIntroTopMarginPortrait     90.0
 #define LIOSurveyViewIntroTopMarginLandscape    50.0
 
-#define LIOSurveyViewiPadNextQuestionAlpha      0.5
-#define LIOSurveyViewiPadNextQuestionScale      0.8
-#define LIOSurveyViewiPadNextQuestionOffset     0.55
-
 #define LIOSurveyViewControllerValidationDuration 5.0
 
 #define LIOIndexForSurveyIntroPage  -1
@@ -67,7 +63,6 @@
         self.scrollEnabled = YES;
         
         if (padUI) {
-            self.frame = [self frameForIpadScrollView];
             self.scrollEnabled = NO;
         }
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -348,20 +343,6 @@
 
 #pragma mark
 #pragma mark Question view setup methods
-
-- (CGRect)frameForIpadScrollView
-{
-    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
-    
-    CGRect aFrame = CGRectZero;
-    aFrame.origin.y = landscape ? 20 : 135;
-    aFrame.size.width = landscape ? 400 : 450;
-    aFrame.size.height = landscape ? 360 : 460;
-    aFrame.origin.x = (self.bounds.size.width - aFrame.size.width)/2;
-    
-    return aFrame;
-}
 
 - (void)layoutSubviews
 {
