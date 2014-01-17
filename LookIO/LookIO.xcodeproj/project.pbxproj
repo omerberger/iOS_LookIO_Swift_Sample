@@ -495,6 +495,8 @@
 		A742967518842CDF007A0FC3 /* Container */ = {
 			isa = PBXGroup;
 			children = (
+				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
+				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
 				D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */,
 				D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */,
 				D42DE7981563274B006DFE81 /* LIONotificationArea.h */,
@@ -659,8 +661,6 @@
 				D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */,
 				D4137A0E159148F30097E385 /* LIOSurveyPickerView.h */,
 				D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */,
-				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
-				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
 				A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */,
 				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
 				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,

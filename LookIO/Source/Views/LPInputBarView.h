@@ -10,6 +10,9 @@
 
 static NSString * const LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification = @"LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification";
 
+#define LIOInputBarViewHeightIphone 50.0
+#define LIOInputBarViewHeightIpad   70.0
+
 @interface LIOObservingInputAccessoryView : UIView
 
 @end

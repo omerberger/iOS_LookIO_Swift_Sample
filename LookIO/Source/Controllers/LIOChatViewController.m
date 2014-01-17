@@ -15,6 +15,8 @@
 #import "LIOKeyboardMenu.h"
 #import "LPChatBubbleView.h"
 
+#import "LIOToasterView.h"
+
 #import "LIOEmailChatView.h"
 
 #import "LIOBundleManager.h"
@@ -29,7 +31,7 @@
 
 #define LIOChatViewControllerPhotoSourceActionSheetTag 2001
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate>
 
 @property (nonatomic, assign) LIOChatState chatState;
 
@@ -53,6 +55,8 @@
 @property (nonatomic, strong) LIOEmailChatView *emailChatView;
 
 @property (nonatomic, strong) UIImage *pendingImageAttachment;
+
+@property (nonatomic, strong) LIOToasterView *toasterView;
 
 @end
 
@@ -103,7 +107,12 @@
         {
             cell = [[LIOChatTableViewImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewImageCellIdentifier];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         }
+        
+        CGRect frame = cell.frame;
+        frame.size.width = tableView.bounds.size.width;
+        cell.frame = frame;
         
         [cell layoutSubviewsForChatMessage:chatMessage];
 
@@ -115,7 +124,13 @@
     {
         cell = [[LIOChatTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewCellIdentifier];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     }
+    
+    CGRect frame = cell.frame;
+    frame.size.width = tableView.bounds.size.width;
+    cell.frame = frame;
+
     [cell layoutSubviewsForChatMessage:chatMessage];
 
     return cell;
@@ -378,11 +393,14 @@
 {
     switch (self.keyboardState) {
         case LIOKeyboardStateHidden:
-            [self inputBarDidStopTyping:self.inputBarView];
-            [self sendLineWithText:self.inputBarView.textView.text];
-            [self.inputBarView clearTextView];
+            if (self.inputBarView.textView.text.length > 0)
+            {
+                [self inputBarDidStopTyping:self.inputBarView];
+                [self sendLineWithText:self.inputBarView.textView.text];
+                [self.inputBarView clearTextView];
             
-            [self updateSubviewFrames];
+                [self updateSubviewFrames];
+            }
 
             break;
             
@@ -638,6 +656,8 @@
         self.tableView.frame = CGRectMake(self.view.bounds.size.width/2, self.view.bounds.origin.y, self.view.bounds.size.width/2, self.view.bounds.size.height);
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
+    if (padUI)
+        self.tableView.clipsToBounds = NO;
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleLeftMargin;
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -650,8 +670,9 @@
     CGRect frame = self.tableView.frame;
     frame.origin.y = -frame.size.height;
     self.tableView.frame = frame;
-
-    self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 50, self.view.bounds.size.width, 50)];
+    
+    CGFloat inputBarHeight = padUI ? 85 : 50;
+    self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - inputBarHeight, self.view.bounds.size.width, inputBarHeight)];
     self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
@@ -671,6 +692,17 @@
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     tapGestureRecognizer.delegate = self;
     [self.tableView addGestureRecognizer:tapGestureRecognizer];
+        
+    if (padUI)
+    {
+        self.toasterView = [[LIOToasterView alloc] init];
+        self.toasterView.delegate = self;
+        self.toasterView.yOrigin = self.view.bounds.size.height - 200.0;
+        CGRect aFrame = self.toasterView.frame;
+        aFrame.origin.x = -500.0;
+        self.toasterView.frame = aFrame;
+        [self.view addSubview:self.toasterView];
+    }
 }
 
 #pragma mark -

@@ -8,6 +8,8 @@
 
 #import "LPInputBarView.h"
 
+#import "LIOManager.h"
+
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
@@ -51,6 +53,8 @@
 
 @property (nonatomic, assign) NSInteger previousTextLength;
 
+@property (nonatomic, assign) BOOL hasCustomBranding;
+
 @end
 
 @implementation LPInputBarView
@@ -61,20 +65,48 @@
     if (self) {
         // Initialization code
         
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSendBar];
         CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementSendBar];
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
-        self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(0, (self.frame.size.height - 50)/2, 50, 50)];
+        CGFloat inputBarHeight = padUI ? LIOInputBarViewHeightIpad : LIOInputBarViewHeightIphone;
+        
+        self.hasCustomBranding = NO;
+        if (padUI)
+        {
+            CGSize brandingSize = CGSizeMake(130.0, 44.0);
+            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
+            if (aBrandingView)
+            {
+                if ([aBrandingView isKindOfClass:[UIImage class]])
+                {
+                    UIImage *anImage = (UIImage *)aBrandingView;
+                    UIImageView *brandingImageView = [[UIImageView alloc] initWithImage:anImage];
+                    brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
+                    brandingImageView.frame = CGRectMake(10.0, 20.0, 130.0, 44.0);
+                    brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                    [self addSubview:brandingImageView];
+                    
+                    self.hasCustomBranding = YES;
+                }
+            }
+        }
+        
+        self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(self.hasCustomBranding ? 130.0 : 0.0, (self.frame.size.height - inputBarHeight)/2, inputBarHeight, inputBarHeight)];
         UIColor *buttonTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSendBarPlusButton];
-        [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIcon" withTint:buttonTintColor] forState:UIControlStateNormal];
+        if (padUI)
+            [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIconBig" withTint:buttonTintColor] forState:UIControlStateNormal];
+        else
+            [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIcon" withTint:buttonTintColor] forState:UIControlStateNormal];
         self.plusButton.imageView.clipsToBounds = NO;
         self.plusButton.imageView.contentMode = UIViewContentModeCenter;
         [self.plusButton addTarget:self action:@selector(plusButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.plusButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [self addSubview:self.plusButton];
         
-        self.textViewBackgroundView = [[UIView alloc] initWithFrame:CGRectMake(50, 5, self.bounds.size.width - 115, self.frame.size.height - 10)];
+        self.textViewBackgroundView = [[UIView alloc] initWithFrame:CGRectMake(self.plusButton.frame.origin.x + inputBarHeight, padUI ? 10 : 5, self.bounds.size.width - 2*inputBarHeight - 15.0 - self.plusButton.frame.origin.x, self.frame.size.height - 10)];
         self.textViewBackgroundView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSendBarTextField];
         self.textViewBackgroundView.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBarTextField].CGColor;
         self.textViewBackgroundView.layer.cornerRadius = 5.0;
@@ -94,12 +126,14 @@
         self.textView.contentInset = UIEdgeInsetsMake(2, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];
         
-        self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 62, (self.frame.size.height - 30)/2, 60, 30)];
-        [self.sendButton setTitle:@"Send" forState:UIControlStateNormal];
+        // TODO: Consider the language of the send here
+        self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - inputBarHeight - 12, (self.frame.size.height - 30)/2, inputBarHeight + 10.0, 30)];
+        [self.sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
         [self.sendButton.titleLabel setFont:[[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSendBarSendButton]];
         UIColor *sendButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarSendButton];
         [self.sendButton setTitleColor:sendButtonColor forState:UIControlStateNormal];
         [self.sendButton setTitleColor:[sendButtonColor colorWithAlphaComponent:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
+        self.sendButton.titleLabel.textAlignment = UITextAlignmentCenter;
         [self.sendButton addTarget:self action:@selector(sendButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.sendButton.showsTouchWhenHighlighted = YES;
         self.sendButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
@@ -110,16 +144,19 @@
 }
 
 - (void)layoutSubviews {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    CGFloat inputBarHeight = padUI ? LIOInputBarViewHeightIpad : LIOInputBarViewHeightIpad;
+
     CGSize expectedSize;
     if (self.textView.text.length > 0)
-        expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
+        expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     else
-        expectedSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, 80) lineBreakMode:UILineBreakModeWordWrap];
+        expectedSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     
-    [self.delegate inputBar:self wantsNewHeight:expectedSize.height + 30];
+    [self.delegate inputBar:self wantsNewHeight:expectedSize.height + (padUI ? 50.0 : 30.0)];
     
     CGRect frame = self.textViewBackgroundView.frame;
-    frame.size.height = expectedSize.height + 30 - 10;
+    frame.size.height = expectedSize.height + (padUI ? 30.0 : 20.0);
     self.textViewBackgroundView.frame = frame;
 }
 

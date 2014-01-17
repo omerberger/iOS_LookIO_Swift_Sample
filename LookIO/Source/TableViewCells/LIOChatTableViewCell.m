@@ -104,7 +104,7 @@
     self.chatBubbleView.messageLabel.textColor = textColor;
     self.chatBubbleView.messageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
-    CGFloat maxSize = self.contentView.bounds.size.width * bubbleWidthFactor - 20;
+    CGFloat maxSize = self.bounds.size.width * bubbleWidthFactor - 20;
     
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
@@ -161,6 +161,10 @@
     self.chatBubbleView.messageLabel.frame = aFrame;
     self.chatBubbleView.messageLabel.numberOfLines = 0;
     [self.chatBubbleView.messageLabel sizeThatFits:expectedTextSize];
+    
+    if (LIOIsUIKitFlatMode())
+        for (UIView *subview in self.subviews)
+            subview.clipsToBounds = NO;
     
 }
 

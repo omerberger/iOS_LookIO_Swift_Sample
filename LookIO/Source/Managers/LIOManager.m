@@ -848,11 +848,6 @@ static LIOManager *sharedLookIOManager = nil;
 
 #pragma mark Custom Branding Methods
 
-- (BOOL)customBrandingAvailable
-{
-    return [(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)];
-}
-
 - (id)brandingViewWithDimensions:(NSValue *)aValue
 {
     CGSize aSize = [aValue CGSizeValue];

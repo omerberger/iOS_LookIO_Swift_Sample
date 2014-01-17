@@ -10,6 +10,14 @@
 #import "LIOSurvey.h"
 #import "LIOSurveyQuestionView.h"
 
+typedef enum {
+    LIOIpadSurveyQuestionCurrent,
+    LIOIpadSurveyQuestionNext,
+    LIOIpadSurveyQuestionPrevious,
+    LIOIpadSurveyQuestionNextNext,
+    LIOIpadSurveyQuestionPreviousPrevious
+} LIOIpadSurveyQuestion;
+
 @class LPSurveyViewController;
 
 @protocol LPSurveyViewControllerDelegate

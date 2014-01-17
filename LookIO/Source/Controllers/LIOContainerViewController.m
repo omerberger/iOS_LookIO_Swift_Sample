@@ -130,22 +130,67 @@
 {
     if (LIOContainerViewStateChat == self.containerViewState)
     {
-        [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+        if (!padUI)
+        {
+            [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
+        }
+        else
+        {
+            self.toasterView.keyboardIconVisible = NO;
+            self.toasterView.text = notification;
+            [self.toasterView showAnimated:YES permanently:NO];
+        }
     }
 }
 
 - (void)engagement:(LIOEngagement *)engagement agentIsTyping:(BOOL)isTyping
 {
-//    pendingNotificationStringIsTypingNotification = YES;
+//   TODO pendingNotificationStringIsTypingNotification = YES;
+
+    if (LIOContainerViewStateChat == self.containerViewState)
+    {
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        
+        if (isTyping)
+        {
+            if (!padUI)
+            {
+                [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
+            }
+            else
+            {
+                self.toasterView.keyboardIconVisible = YES;
+                self.toasterView.text = LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification");
+                [self.toasterView showAnimated:YES permanently:YES];
+            }
+        }
+        else
+        {
+            if (!padUI)
+            {
+                [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
+            }
+            else
+            {
+                [self.toasterView hideAnimated:YES];
+            }
+        }
+    }
+}
+
+#pragma mark -
+#pragma mark ToasterView Delegate Methods
+
+- (void)toasterViewDidFinishHiding:(LIOToasterView *)aView
+{
     
-    if (isTyping)
-    {
-        [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
-    }
-    else
-    {
-        [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
-    }
+}
+
+- (void)toasterViewDidFinishShowing:(LIOToasterView *)aView
+{
+    
 }
 
 #pragma mark -
@@ -464,6 +509,7 @@
     [self.loadingViewController didMoveToParentViewController:self];
     
     [self.loadingViewController hideBezel];
+
 }
 
 @end

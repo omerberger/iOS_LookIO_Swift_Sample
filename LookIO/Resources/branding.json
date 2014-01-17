@@ -179,7 +179,7 @@
 	              "alpha": "1.0"
 	          },
 	          "border": {
-	              "color": "#aaaaaa",
+	              "color": "#aaaaaa"
 	          }							
 					},
 	        "text_field" : {
@@ -242,7 +242,7 @@
         },
         "survey_card" : {
             "background" : {
-                "color" : "#ff0000",
+                "color" : "#f9f9f9",
                 "alpha" : "0.9"
             },
             "border" : {
