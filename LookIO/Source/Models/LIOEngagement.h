@@ -39,6 +39,7 @@ typedef enum
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
+- (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;
 
 @end
 
@@ -69,6 +70,7 @@ typedef enum
 
 - (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict;
 
-- (BOOL)shouldEmailChatButtonItem;
+- (BOOL)shouldShowEmailChatButtonItem;
+- (BOOL)shouldShowSendPhotoButtonItem;
 
 @end

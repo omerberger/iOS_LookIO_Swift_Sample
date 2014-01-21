@@ -846,6 +846,18 @@ static LIOManager *sharedLookIOManager = nil;
     [self.containerViewController engagement:engagement agentIsTyping:isTyping];
 }
 
+- (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement
+{
+    UInt32 result = kLPCollaborationComponentNone;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerEnabledCollaborationComponents:)])
+        result = [self.delegate lookIOManagerEnabledCollaborationComponents:self];
+    
+    if (kLPCollaborationComponentPhoto == result)
+        return YES;
+
+    return NO;
+}
+
 #pragma mark Custom Branding Methods
 
 - (id)brandingViewWithDimensions:(NSValue *)aValue

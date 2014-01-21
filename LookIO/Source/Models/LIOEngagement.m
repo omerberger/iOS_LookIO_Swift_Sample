@@ -836,9 +836,16 @@
     return shouldPresentPostChatSurvey;
 }
 
-- (BOOL)shouldEmailChatButtonItem
+- (BOOL)shouldShowEmailChatButtonItem
 {
-    return self.visit.hideEmailChat;
+    return !self.visit.hideEmailChat;
 }
+
+- (BOOL)shouldShowSendPhotoButtonItem
+{
+    return [self.delegate engagementShouldShowSendPhotoKeyboardItem:self];
+}
+
+
 
 @end

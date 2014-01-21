@@ -49,12 +49,17 @@
 
 - (void)setDefaultButtonItems
 {
-    LIOKeyboardMenuItem *item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemSendPhoto;
-    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto");
-    item.iconName = @"LIOCameraIconLarge";
+    LIOKeyboardMenuItem *item;
     
-    [self.items addObject:item];
+    if ([self.delegate keyboardMenuShouldShowTakePhotoDefaultItem:self])
+    {
+        item = [[LIOKeyboardMenuItem alloc] init];
+        item.type = LIOKeyboardMenuItemSendPhoto;
+        item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto");
+        item.iconName = @"LIOCameraIconLarge";
+    
+        [self.items addObject:item];
+    }
     
     item = [[LIOKeyboardMenuItem alloc] init];
     item.type = LIOKeyboardMenuItemWebView;
@@ -63,7 +68,7 @@
     
     [self.items addObject:item];
 
-    if (![self.delegate keyboardMenuShouldShowHideEmailChatDefaultItem:self])
+    if ([self.delegate keyboardMenuShouldShowHideEmailChatDefaultItem:self])
     {
         item = [[LIOKeyboardMenuItem alloc] init];
         item.type = LIOKeyboardMenuItemEmailChat;

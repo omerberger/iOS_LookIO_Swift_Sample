@@ -540,9 +540,13 @@
 
 - (BOOL)keyboardMenuShouldShowHideEmailChatDefaultItem:(LIOKeyboardMenu *)keyboardMenu
 {
-    return [self.engagement shouldEmailChatButtonItem];
+    return [self.engagement shouldShowEmailChatButtonItem];
 }
 
+- (BOOL)keyboardMenuShouldShowTakePhotoDefaultItem:(LIOKeyboardMenu *)keyboardMenu
+{
+    return [self.engagement shouldShowSendPhotoButtonItem];
+}
 
 - (void)keyboardMenu:(LIOKeyboardMenu *)keyboardMenu itemWasTapped:(LIOKeyboardMenuItem *)item
 {
