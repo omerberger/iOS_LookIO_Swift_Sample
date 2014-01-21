@@ -1480,8 +1480,6 @@
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
     
-    BOOL isRowSelected = NO;
-    
     UIFont *font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
     
     CGSize expectedSize = [entry.label sizeWithFont:font constrainedToSize:CGSizeMake(tableView.bounds.size.width - 50.0, 9999) lineBreakMode:UILineBreakModeWordWrap];

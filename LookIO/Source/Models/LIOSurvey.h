@@ -33,7 +33,7 @@ typedef enum
 
 - (void)registerAnswerObject:(id)anAnswerObj withQuestionIndex:(NSInteger)anIndex;
 - (id)answerObjectForQuestionIndex:(NSInteger)anIndex;
-- (BOOL)responsesRequired;
+- (BOOL)allMandatoryQuestionsAnswered;
 - (int)nextQuestionWithResponseRequired;
 - (void)clearAllResponses;
 - (int)realIndexWithLogicOfQuestionAtIndex:(NSInteger)anIndex;

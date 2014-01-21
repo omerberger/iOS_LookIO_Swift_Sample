@@ -609,9 +609,9 @@
 
         // We need to set the tableView width ahead of time, because it's used for the calculation of the row height
         CGRect frame = self.tableView.frame;
-        frame.size.width = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2;
+        frame.size.width = padUI ? (referenceFrame.size.width - LIOSurveyViewSideMarginiPad + 2) : (self.bounds.size.width - 50);
         self.tableView.frame = frame;
-
+        
         CGFloat tableViewContentHeight = [self heightForTableView:self.tableView];
 
         CGFloat maxHeight;
@@ -641,16 +641,7 @@
             }
         }
         
-        self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad + 2: LIOSurveyViewSideMargin)*2, tableViewContentHeight);
-        
-        
-        if (!padUI)
-        {
-            CGRect frame = self.tableView.frame;
-            frame.origin.x = 25;
-            frame.size.width = self.bounds.size.width - 50;
-            self.tableView.frame = frame;
-        }
+        self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : 25.0), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, padUI ? (referenceFrame.size.width - LIOSurveyViewSideMarginiPad*2) : (self.bounds.size.width - 50), tableViewContentHeight);
         
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
         if (landscape) {

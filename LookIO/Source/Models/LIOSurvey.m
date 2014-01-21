@@ -127,7 +127,7 @@
     return [self.responses objectForKey:[NSNumber numberWithInteger:anIndex]];
 }
 
-- (BOOL)responsesRequired
+- (BOOL)allMandatoryQuestionsAnswered
 {
     int unansweredMandatoryAndVisibleQuestions = 0;
     for (int i=0; i<[self.questions count]; i++)
@@ -145,7 +145,7 @@
         }
     }
     
-    return (unansweredMandatoryAndVisibleQuestions > 0);
+    return (unansweredMandatoryAndVisibleQuestions == 0);
 }
 
 - (NSInteger)nextQuestionWithResponseRequired

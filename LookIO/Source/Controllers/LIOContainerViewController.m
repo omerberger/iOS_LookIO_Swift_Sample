@@ -276,6 +276,13 @@
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCancelSurvey:(LIOSurvey *)survey
 {
+    // For a postchat survey, let's check if we can still submit it..
+    if (LIOSurveyTypePostchat == survey.surveyType)
+    {
+        if ([survey anyQuestionsAnswered] && [survey allMandatoryQuestionsAnswered])
+            [self.engagement submitSurvey:survey];
+    }
+  
     [self dismiss];
 }
 
