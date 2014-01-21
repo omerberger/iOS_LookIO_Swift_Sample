@@ -182,6 +182,12 @@
     [self.emailTextField resignFirstResponder];
 }
 
+- (void)forceDismiss
+{
+    [self.emailTextField resignFirstResponder];
+    [self.delegate emailChatViewDidForceDismiss:self];
+}
+
 - (void)cancelButtonWasTapped:(id)sender
 {
     [self.delegate emailChatViewDidCancel:self];

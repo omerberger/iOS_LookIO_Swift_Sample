@@ -176,7 +176,7 @@
 {
     if (self.emailChatView)
     {
-        [self.emailChatView dismiss];
+        [self.emailChatView forceDismiss];
     }
     
     [self.delegate chatViewControllerDidDismissChat:self];
@@ -360,6 +360,12 @@
     self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
     self.chatState = LIOChatStateChat;
     [self.emailChatView dismiss];
+}
+
+- (void)emailChatViewDidForceDismiss:(LIOEmailChatView *)emailChatView
+{
+    self.keyboardState = LIOKeyboardStateMenu;
+    [self.emailChatView removeFromSuperview];
 }
 
 #pragma mark -
@@ -605,7 +611,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-
+    
     if (self.chatState != LIOChatStateImagePicker)
     {
         // Hide the chat so we can drop it when we return..
