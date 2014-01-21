@@ -13,6 +13,11 @@
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
+#define LIOInputBarViewMaxLinesPortrait     4
+#define LIOInputBarViewMaxLinesLandscape    2
+#define LIOInputBarViewMaxTextLength        150
+#define LIOInputBarViewMaxTextLength_iPad   300
+
 @implementation LIOObservingInputAccessoryView
 
 - (void)willMoveToSuperview:(UIView *)newSuperview
@@ -54,6 +59,8 @@
 @property (nonatomic, assign) NSInteger previousTextLength;
 
 @property (nonatomic, assign) BOOL hasCustomBranding;
+
+@property (nonatomic, strong) UILabel *characterCountLabel;
 
 @end
 
@@ -139,6 +146,14 @@
         self.sendButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:self.sendButton];
         
+        self.characterCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.sendButton.frame.origin.x, self.sendButton.frame.origin.y + self.sendButton.frame.size.height, self.sendButton.frame.size.width, 20)];
+        self.characterCountLabel.text = @"(20/300)";
+        self.characterCountLabel.textAlignment = UITextAlignmentCenter;
+        self.characterCountLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin;
+        self.characterCountLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarCharacterCount];
+        self.characterCountLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarCharacterCount];
+        [self addSubview:self.characterCountLabel];
+        
     }
     return self;
 }
@@ -146,18 +161,27 @@
 - (void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     CGFloat inputBarHeight = padUI ? LIOInputBarViewHeightIpad : LIOInputBarViewHeightIpad;
-
+    
+    CGSize singleLineSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
+    
     CGSize expectedSize;
     if (self.textView.text.length > 0)
         expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     else
-        expectedSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
+        expectedSize = singleLineSize;
     
     [self.delegate inputBar:self wantsNewHeight:expectedSize.height + (padUI ? 50.0 : 30.0)];
     
     CGRect frame = self.textViewBackgroundView.frame;
     frame.size.height = expectedSize.height + (padUI ? 30.0 : 20.0);
     self.textViewBackgroundView.frame = frame;
+    
+    NSInteger numberOfLines = expectedSize.height / singleLineSize.height;
+    NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
+    
+    self.characterCountLabel.frame = CGRectMake(self.sendButton.frame.origin.x, self.sendButton.frame.origin.y + self.sendButton.frame.size.height, self.sendButton.frame.size.width, 20);
+    self.characterCountLabel.hidden = (numberOfLines < 3);
+    self.characterCountLabel.text = [NSString stringWithFormat:@"(%ld/%ld)", (long)self.textView.text.length, (long)maxCharacters];
 }
 
 -(void)drawRect:(CGRect)rect {
@@ -207,6 +231,9 @@
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
+    
     if ([text isEqualToString:@"\n"])
     {
         [self setNeedsLayout];
@@ -214,6 +241,10 @@
         [self.delegate inputBarViewSendButtonWasTapped:self];
         return NO;
     }
+    
+    if (self.textView.text.length == maxCharacters)
+        return NO;
+    
     return YES;
 }
 

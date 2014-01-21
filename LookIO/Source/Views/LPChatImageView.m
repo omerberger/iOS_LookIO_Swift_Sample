@@ -10,7 +10,7 @@
 
 #import "LIOBundleManager.h"
 
-@interface LPChatImageView ()
+@interface LPChatImageView () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, assign) BOOL isBouncing;
 
@@ -38,6 +38,7 @@
 //        [self addSubview:self.foregroundImageView];
 
         UILongPressGestureRecognizer *aLongPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
+        aLongPresser.delegate = self;
         [self addGestureRecognizer:aLongPresser];
         
         self.userInteractionEnabled = YES;
@@ -108,6 +109,9 @@
     UIImageWriteToSavedPhotosAlbum(self.imageView.image, nil, nil, nil);
 }
 
+#pragma mark -
+#pragma mark Gesture handlers
+
 - (void)handleLongPress:(id)sender
 {
     if (self.isBouncing)
@@ -118,6 +122,12 @@
     [self enterCopyModeAnimated:YES];
     
 }
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+
 
 @end
 

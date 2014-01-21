@@ -13,7 +13,9 @@
 
 #import "LPInputBarView.h"
 #import "LIOKeyboardMenu.h"
+
 #import "LPChatBubbleView.h"
+#import "LPChatImageView.h"
 
 #import "LIOToasterView.h"
 
@@ -49,6 +51,8 @@
 
 @property (nonatomic, assign) LIOKeyboardState keyboardState;
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
+@property (nonatomic, assign) CGFloat keyboardMenuHeightBeforeDragging;
+@property (nonatomic, assign) CGFloat keyboardMenuDragStartPoint;
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
@@ -498,6 +502,17 @@
 #pragma mark -
 #pragma mark Keyboard Menu Methods
 
+- (void)setDefaultKeyboardHeightsForOrientation:(UIInterfaceOrientation)orientation
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (padUI) {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(orientation) ? 264.0 : 352.0;
+    } else {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(orientation) ? 216.0 : 162.0;
+    }
+}
+
 - (void)presentKeyboardMenu
 {
     self.keyboardState = LIOKeyboardStateMenu;
@@ -513,14 +528,9 @@
         
         if (self.lastKeyboardHeight == 0.0)
         {
-            BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
             UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
             
-            if (padUI) {
-                self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 264.0 : 352.0;
-            } else {
-                self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? 216.0 : 162.0;
-            }
+            [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
         }
         
         [UIView animateWithDuration:0.3 animations:^{
@@ -702,6 +712,10 @@
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     tapGestureRecognizer.delegate = self;
     [self.tableView addGestureRecognizer:tapGestureRecognizer];
+    
+    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(tableViewDidPan:)];
+    panGestureRecognizer.delegate = self;
+    [self.tableView addGestureRecognizer:panGestureRecognizer];
         
     if (padUI)
     {
@@ -734,7 +748,9 @@
     CGRect emailChatViewFrame = self.emailChatView.frame;
     
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
-    keyboardMenuFrame.size.height = self.lastKeyboardHeight;
+    
+    if (self.keyboardState != LIOKeyboardStateMenuDragging)
+        keyboardMenuFrame.size.height = self.lastKeyboardHeight;
 
     switch (self.keyboardState) {
         case LIOKeyboardStateKeyboard:
@@ -753,6 +769,10 @@
             inputBarViewFrame.origin.y = self.view.bounds.size.height - inputBarViewFrame.size.height - keyboardMenuFrame.size.height;
             if (saveOtherFrames)
                 [self.inputBarView rotatePlusButton];
+            break;
+            
+        case LIOKeyboardStateMenuDragging:
+            inputBarViewFrame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight;
             break;
             
         case LIOKeyboardStateIntroAnimation:
@@ -907,27 +927,13 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    if (LIOKeyboardStateMenu == self.keyboardState)
-    {
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-        if (padUI) {
-            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(toInterfaceOrientation) ? 264.0 : 352.0;
-        } else {
-            self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(toInterfaceOrientation) ? 216.0 : 162.0;
-        }
-    }
+    [self setDefaultKeyboardHeightsForOrientation:toInterfaceOrientation];
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self.tableView reloadData];
     [self updateSubviewFrames];
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-//    [self scrollToBottomDelayed:NO];
 }
 
 #pragma mark -
@@ -938,8 +944,127 @@
     if ([touch.view isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview.superview isKindOfClass:[LPChatBubbleView class]])
         return NO;
     
+    if ([touch.view isKindOfClass:[LPChatImageView class]] || [touch.view.superview isKindOfClass:[LPChatImageView class]] || [touch.view.superview.superview isKindOfClass:[LPChatImageView class]])
+        return NO;
+    
     return YES;
 }
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
+}
+
+- (void)tableViewDidPan:(id)sender
+{
+    // Only allow dragging for keyboard menu on iOS 7.0
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        if (!(self.keyboardState == LIOKeyboardStateMenu || self.keyboardState == LIOKeyboardStateMenuDragging))
+            return;
+    }
+    
+    UIPanGestureRecognizer *panGestureRecognizer = (UIPanGestureRecognizer*)sender;
+    CGPoint locationPoint = [panGestureRecognizer locationInView:self.view];
+    
+    BOOL shouldAnimateToEndState = NO;
+    CGFloat delta = 0.0;
+    switch ([panGestureRecognizer state]) {
+        case UIGestureRecognizerStateBegan:
+            break;
+            
+        case UIGestureRecognizerStateChanged:
+            switch (self.keyboardState) {
+                case LIOKeyboardStateKeyboard:
+                    if (locationPoint.y > (self.view.bounds.size.height - self.keyboardMenu.frame.size.height))
+                    {
+                        [self.inputBarView.textView resignFirstResponder];
+                        return;
+                    }
+                    break;
+                    
+                case LIOKeyboardStateMenu:
+                    // Let's see if we've started to drag the actual menu
+                    if (locationPoint.y > (self.view.bounds.size.height - self.keyboardMenu.frame.size.height))
+                    {
+                        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+                        {
+                            [self dismissKeyboardMenu];
+                            return;
+                        }
+
+                        self.keyboardState = LIOKeyboardStateMenuDragging;
+                        self.keyboardMenuHeightBeforeDragging = self.lastKeyboardHeight;
+                        self.keyboardMenuDragStartPoint = locationPoint.y;
+                    }
+                    
+                    break;
+                    
+                case LIOKeyboardStateMenuDragging:
+                    delta = self.keyboardMenuDragStartPoint - locationPoint.y;
+
+                    if (delta > 0)
+                    {
+                        self.keyboardState = LIOKeyboardStateMenu;
+                        self.lastKeyboardHeight = self.keyboardMenuHeightBeforeDragging;
+                        [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:YES];
+                    }
+                    else
+                    {
+                        if (self.lastKeyboardHeight >= self.inputBarView.frame.size.height)
+                        {
+                            self.keyboardState = LIOKeyboardStateMenuDragging;
+                        
+                            self.lastKeyboardHeight = self.keyboardMenuHeightBeforeDragging + delta + self.inputBarView.frame.size.height;
+                            [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:YES];
+                        }
+                        else
+                        {
+                            self.keyboardState = LIOKeyboardStateHidden;
+                            shouldAnimateToEndState = YES;
+                        }
+                    }
+                    
+                    break;
+                    
+                default:
+                    break;
+            }
+            
+            break;
+            
+        case UIGestureRecognizerStateCancelled:
+            if (self.keyboardState == LIOKeyboardStateMenuDragging)
+            {
+                self.keyboardState = LIOKeyboardStateMenu;
+                shouldAnimateToEndState = YES;
+            }
+            break;
+            
+        case UIGestureRecognizerStateEnded:
+            if (self.keyboardState == LIOKeyboardStateMenuDragging)
+            {
+                self.keyboardState = LIOKeyboardStateHidden;
+                shouldAnimateToEndState = YES;
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (shouldAnimateToEndState)
+    {
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+        [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
+
+        [UIView animateWithDuration:0.3 animations:^{
+            [self updateSubviewFrames];
+        } completion:^(BOOL finished) {
+        }];
+    }
+}
+
 
 #pragma mark -
 #pragma mark Header Bar Methods

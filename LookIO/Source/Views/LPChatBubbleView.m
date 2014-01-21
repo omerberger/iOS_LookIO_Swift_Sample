@@ -9,6 +9,10 @@
 #import "LPChatBubbleView.h"
 #import "LIOBrandingManager.h"
 
+@interface LPChatBubbleView () <UIGestureRecognizerDelegate>
+
+@end
+
 @implementation LPChatBubbleView
 
 - (id)initWithFrame:(CGRect)frame
@@ -27,6 +31,7 @@
         [self addSubview:self.messageLabel];
         
         UILongPressGestureRecognizer *aLongPresser = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        aLongPresser.delegate = self;
         [self addGestureRecognizer:aLongPresser];
     }
     
@@ -98,6 +103,11 @@
 {
     if (aLongPresser.state == UIGestureRecognizerStateBegan)
         [self enterCopyModeAnimated:YES];
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    return YES;
 }
 
 @end

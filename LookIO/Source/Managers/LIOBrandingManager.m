@@ -175,6 +175,20 @@ static LIOBrandingManager *brandingManager = nil;
         }
     }
     
+    if (LIOBrandingElementSendBarCharacterCount == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+            if (sendBarDictionary)
+            {
+                NSDictionary *characterCountDictionary = [sendBarDictionary objectForKey:@"character_count"];
+                if (characterCountDictionary)
+                    dictionary = characterCountDictionary;
+            }
+        }
+    }
+
     if (LIOBrandingElementKeyboardMenu == element)
     {
         if (engagementDictionary)
@@ -428,6 +442,7 @@ static LIOBrandingManager *brandingManager = nil;
                 dictionary = toasterViewDictionary;
         }
     }
+
     
     return dictionary;
 }

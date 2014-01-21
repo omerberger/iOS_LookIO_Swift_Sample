@@ -14,6 +14,7 @@ typedef enum {
     LIOKeyboardStateKeyboard = 0,
     LIOKeyboardStateHidden,
     LIOKeyboardStateMenu,
+    LIOKeyboardStateMenuDragging,
     LIOKeyboardStateIntroAnimation,
     LIOKeyboardStateEmailChatIntroAnimation,
     LIOKeyboardStateEmailChatOutroAnimation

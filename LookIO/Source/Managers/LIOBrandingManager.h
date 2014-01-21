@@ -26,6 +26,7 @@ typedef enum
     LIOBrandingElementSendBarTextField,
     LIOBrandingElementSendBarPlusButton,
     LIOBrandingElementSendBarSendButton,
+    LIOBrandingElementSendBarCharacterCount,
     LIOBrandingElementKeyboardMenu,
     LIOBrandingElementSurveyPageControl,
     LIOBrandingElementSurveyCard,
