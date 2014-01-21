@@ -67,6 +67,8 @@ typedef enum
 
 - (void)refreshControlButtonVisibility;
 
+- (void)updateAndReportFunnelState;
+
 - (BOOL)chatEnabled;
 - (BOOL)chatInProgress;
 - (BOOL)surveysEnabled;

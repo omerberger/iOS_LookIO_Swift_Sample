@@ -94,6 +94,7 @@
 - (void)startEngagement
 {
     [self sendIntroPacket];
+    [self.visit updateAndReportFunnelState];
 }
 
 - (void)cancelEngagement

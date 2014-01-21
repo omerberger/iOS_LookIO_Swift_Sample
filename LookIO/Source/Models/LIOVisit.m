@@ -946,7 +946,7 @@
 - (BOOL)engagementInProgress
 {
     BOOL engagementInProgress = NO;
-    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatActive || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePostChatSurvey)
+    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatOpened || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePreChatSurveyBackgrounded || self.visitState == LIOVisitStateChatStarted || self.visitState ==  LIOVisitStateOfflineSurvey || self.visitState == LIOVisitStateChatActive || self.visitState == LIOVisitStateChatActiveBackgrounded || self.visitState == LIOVisitStatePostChatSurvey)
         engagementInProgress = YES;
     
     return engagementInProgress;
