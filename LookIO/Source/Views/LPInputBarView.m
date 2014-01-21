@@ -152,6 +152,7 @@
         self.characterCountLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin;
         self.characterCountLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarCharacterCount];
         self.characterCountLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarCharacterCount];
+        self.characterCountLabel.backgroundColor = [UIColor clearColor];
         [self addSubview:self.characterCountLabel];
         
     }

@@ -305,6 +305,14 @@ typedef enum
                 self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = NO;
             }
+            if (self.frame.origin.y < self.frame.size.height)
+            {
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.frame.size.height);
+            }
+            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height)
+            {
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height*2);
+            }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
         {
@@ -317,6 +325,14 @@ typedef enum
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
                 self.isAttachedToRight = YES;
+            }
+            if (self.frame.origin.x < self.frame.size.width)
+            {
+                self.preDragPosition = CGPointMake(self.frame.size.width, self.preDragPosition.y);
+            }
+            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width)
+            {
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width*2, self.preDragPosition.y);
             }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
@@ -343,6 +359,14 @@ typedef enum
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
                 self.isAttachedToRight = NO;
+            }
+            if (self.frame.origin.x < self.frame.size.width)
+            {
+                self.preDragPosition = CGPointMake(self.frame.size.width, self.preDragPosition.y);
+            }
+            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width)
+            {
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width*2, self.preDragPosition.y);
             }
         }
         
