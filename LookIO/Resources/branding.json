@@ -220,22 +220,32 @@
 					}					
 				},
         "keyboard_menu" : {
-                "background" : {
-                    "color" : "#4c4c4c",
-                    "alpha" : "0.55"
-                },
-								"border" : {
-									"color" : "#7f7f7f"									
-								},
-                "font" : {
-                    "color" : "#ffffff",
-                    "size" : "13.0"
-                },
-                "icon" : {
-                    "color" : "#ffffff"
-                }
-            }
-        },
+            "background" : {
+                 "color" : "#4c4c4c",
+                 "alpha" : "0.55"
+             },
+			  		 "border" : {
+			  		 	   "color" : "#7f7f7f"									
+					   },
+             "font" : {
+                 "color" : "#ffffff",
+                 "size" : "13.0"
+             },
+             "icon" : {
+                "color" : "#ffffff"
+             }
+         },
+         "toaster_view" : {
+             "background" : {
+                 "color" : "#666666",
+                 "alpha" : "0.5"
+						 },
+						 "font" : {
+								 "color" : "#ffffff",
+								 "size" : "14.0"
+						 }
+				 }						
+    },
     "surveys" : {
         "page_control" : {
             "color" : "#888888"

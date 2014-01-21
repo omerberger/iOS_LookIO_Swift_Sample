@@ -161,7 +161,7 @@
             [self.defaultNotification addSubview:finalBrandingView];
         }
         
-        self.keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
+        self.keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0) forElement:LIOBrandingElementBrandingBarNotifications];
         self.keyboardIcon.backgroundColor = [UIColor clearColor];
         
         [[NSNotificationCenter defaultCenter] addObserver:self

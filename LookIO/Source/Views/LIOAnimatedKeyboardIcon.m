@@ -10,7 +10,6 @@
 
 #import "LIOLogManager.h"
 #import "LIOBundleManager.h"
-#import "LIOBrandingManager.h"
 
 #import "LIOTimerProxy.h"
 
@@ -19,13 +18,13 @@
 
 @synthesize animating;
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame forElement:(LIOBrandingElement)brandingElement
 {
     self = [super initWithFrame:frame];
     
     if (self)
     {
-        UIColor *keyboardTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
+        UIColor *keyboardTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];
         
         UIImageView *background = [[[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOKeyboardIcon" withTint:keyboardTintColor]] autorelease];
         [self addSubview:background];

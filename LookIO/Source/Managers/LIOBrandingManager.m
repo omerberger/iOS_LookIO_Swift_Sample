@@ -419,6 +419,16 @@ static LIOBrandingManager *brandingManager = nil;
         }
     }
     
+    if (LIOBrandingElementToasterView == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *toasterViewDictionary = [engagementDictionary objectForKey:@"toaster_view"];
+            if (toasterViewDictionary)
+                dictionary = toasterViewDictionary;
+        }
+    }
+    
     return dictionary;
 }
 

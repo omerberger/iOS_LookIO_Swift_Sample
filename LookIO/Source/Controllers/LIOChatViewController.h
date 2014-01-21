@@ -46,4 +46,7 @@ typedef enum {
 
 - (void)headerBarViewPlusButtonWasTapped;
 
+- (void)displayToasterNotification:(NSString *)notification;
+- (void)displayToasterAgentIsTyping:(BOOL)isTyping;
+
 @end

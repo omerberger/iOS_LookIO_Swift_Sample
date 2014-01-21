@@ -138,9 +138,7 @@
         }
         else
         {
-            self.toasterView.keyboardIconVisible = NO;
-            self.toasterView.text = notification;
-            [self.toasterView showAnimated:YES permanently:NO];
+            [self.chatViewController displayToasterNotification:notification];
         }
     }
 }
@@ -153,45 +151,24 @@
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
-        if (isTyping)
+        if (padUI)
         {
-            if (!padUI)
+            [self.chatViewController displayToasterAgentIsTyping:isTyping];
+        }
+        else
+        {
+            if (isTyping)
             {
                 [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
             }
             else
             {
-                self.toasterView.keyboardIconVisible = YES;
-                self.toasterView.text = LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification");
-                [self.toasterView showAnimated:YES permanently:YES];
-            }
-        }
-        else
-        {
-            if (!padUI)
-            {
                 [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
-            }
-            else
-            {
-                [self.toasterView hideAnimated:YES];
             }
         }
     }
 }
 
-#pragma mark -
-#pragma mark ToasterView Delegate Methods
-
-- (void)toasterViewDidFinishHiding:(LIOToasterView *)aView
-{
-    
-}
-
-- (void)toasterViewDidFinishShowing:(LIOToasterView *)aView
-{
-    
-}
 
 #pragma mark -
 #pragma mark LoadingViewController Delegate Methods

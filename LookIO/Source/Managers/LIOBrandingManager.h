@@ -43,7 +43,8 @@ typedef enum
     LIOBrandingElementEmailChatSubtitle,
     LIOBrandingElementEmailChatTextField,
     LIOBrandingElementEmailChatSubmitButton,
-    LIOBrandingElementEmailChatCancelButton
+    LIOBrandingElementEmailChatCancelButton,
+    LIOBrandingElementToasterView
 } LIOBrandingElement;
 
 typedef enum

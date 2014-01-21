@@ -697,9 +697,10 @@
     {
         self.toasterView = [[LIOToasterView alloc] init];
         self.toasterView.delegate = self;
-        self.toasterView.yOrigin = self.view.bounds.size.height - 200.0;
+        self.toasterView.yOrigin = self.inputBarView.frame.origin.y - 80.0;
         CGRect aFrame = self.toasterView.frame;
         aFrame.origin.x = -500.0;
+        aFrame.origin.y = self.toasterView.yOrigin;
         self.toasterView.frame = aFrame;
         [self.view addSubview:self.toasterView];
     }
@@ -783,6 +784,10 @@
         self.tableView.contentOffset = CGPointMake(0, tableViewContentOffsetY);
     }
 
+    CGRect frame = self.toasterView.frame;
+    frame.origin.y = self.inputBarView.frame.origin.y - 80.0;
+    self.toasterView.yOrigin = frame.origin.y;
+    self.toasterView.frame = frame;
 }
 
 - (CGFloat)heightForPreviousMessagesToShow
@@ -934,6 +939,42 @@
     [self.tableView scrollRectToVisible:CGRectMake(0, 0, 1, 1) animated:YES];
     [self.view endEditing:YES];
 }
+
+#pragma mark -
+#pragma mark ToasterView Delegate Methods
+
+- (void)toasterViewDidFinishHiding:(LIOToasterView *)aView
+{
+
+}
+
+- (void)toasterViewDidFinishShowing:(LIOToasterView *)aView
+{
+    
+}
+
+- (void)displayToasterNotification:(NSString *)notification
+{
+    self.toasterView.keyboardIconVisible = NO;
+    self.toasterView.text = notification;
+    [self.toasterView showAnimated:YES permanently:NO];
+
+}
+
+- (void)displayToasterAgentIsTyping:(BOOL)isTyping
+{
+    if (isTyping)
+    {
+        self.toasterView.keyboardIconVisible = YES;
+        self.toasterView.text = LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification");
+        [self.toasterView showAnimated:YES permanently:YES];
+    }
+    else
+    {
+        [self.toasterView hideAnimated:YES];
+    }
+}
+
 
 
 @end
