@@ -23,9 +23,10 @@
 #define LIOAlertViewNextStepDismissLookIOWindow 2001
 #define LIOAlertViewNextStepShowPostChatSurvey  2002
 #define LIOAlertViewNextStepEngagementDidEnd    2003
+#define LIOAlertViewNextStepCancelReconnect     2004
 
-#define LIOAlertViewReconnectPrompt             2004
-#define LIOAlertViewReconnectSuccess            2005
+#define LIOAlertViewReconnectPrompt             2005
+#define LIOAlertViewReconnectSuccess            2006
 
 typedef enum
 {
@@ -473,6 +474,7 @@ static LIOManager *sharedLookIOManager = nil;
                 break;
                 
             case 1:
+                [self.controlButton setLoadingMode];
                 [self.engagement acceptEngagementReconnect];
                 break;
                 
@@ -495,7 +497,23 @@ static LIOManager *sharedLookIOManager = nil;
                 if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
                 {
                     [self presentLookIOWindow];
-                    [self.containerViewController presentChatForEngagement:self.engagement];
+                    switch (self.visit.visitState) {
+                        case LIOVisitStatePreChatSurvey:
+                            [self.containerViewController presentPrechatSurveyForEngagement:self.engagement];
+                            break;
+                            
+                        case LIOVisitStateOfflineSurvey:
+                            [self.containerViewController presentOfflineSurveyForEngagement:self.engagement];
+                            break;
+                            
+                        case LIOVisitStatePostChatSurvey:
+                            [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
+                            break;
+                            
+                        default:
+                            [self.containerViewController presentChatForEngagement:self.engagement];
+                            break;
+                    }
                 }
                 break;
                 
@@ -507,6 +525,12 @@ static LIOManager *sharedLookIOManager = nil;
     if (LIOAlertViewNextStepEngagementDidEnd == alertView.tag)
     {
         [self engagementDidEnd:self.engagement];
+    }
+    
+    if (LIOAlertViewNextStepCancelReconnect == alertView.tag)
+    {
+        if (buttonIndex == 0)
+            [self.engagement cancelReconnect];
     }
 }
 
@@ -589,6 +613,10 @@ static LIOManager *sharedLookIOManager = nil;
                 self.visit.visitState = LIOVisitStateVisitInProgress;
                 [self.engagement cancelEngagement];
             }
+            else
+            {
+                [self.controlButton setSurveyMode];
+            }
             break;
 
         // If we just sumbitted an offline survey, end the engagement
@@ -657,6 +685,12 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)beginChat
 {
+    if (LIOButtonModeLoading == self.controlButton.buttonMode)
+    {
+        [self showReconnectCancelAlert];
+        return;
+    }
+    
     [self presentLookIOWindow];
     
     switch (self.visit.visitState) {
@@ -689,6 +723,17 @@ static LIOManager *sharedLookIOManager = nil;
         default:
             break;
     }
+}
+
+- (void)showReconnectCancelAlert
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertBody")
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonStop"), LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonContinue"), nil];
+    alertView.tag = LIOAlertViewNextStepCancelReconnect;
+    [alertView show];
 }
 
 #pragma mark -
@@ -766,6 +811,8 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement
 {
+    [self.controlButton setChatMode];
+    
     if (LIOVisitStatePreChatSurvey == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatStarted;
@@ -792,6 +839,8 @@ static LIOManager *sharedLookIOManager = nil;
     self.visit.visitState = LIOVisitStateVisitInProgress;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self dismissLookIOWindow];
+    
+    [self.controlButton setChatMode];
 }
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement withAlert:(BOOL)withAlert
@@ -842,6 +891,7 @@ static LIOManager *sharedLookIOManager = nil;
         [self alertView:alertView didDismissWithButtonIndex:0];
     }
     
+    [self.controlButton setChatMode];
     [self.visit refreshControlButtonVisibility];
 }
 
@@ -949,6 +999,16 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReconnect:(LIOEngagement *)engagement
 {
+
+    if (self.visit.visitState == LIOVisitStatePreChatSurvey)
+    {
+        [self.controlButton setSurveyMode];
+    }
+    else
+    {
+        [self.controlButton setChatMode];
+    }
+
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
                                                        delegate:self
@@ -960,6 +1020,8 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement
 {
+    [self.controlButton setChatMode];
+
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
                                                        delegate:self

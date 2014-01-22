@@ -21,7 +21,8 @@ typedef enum
     LIOSSEChannelStateEnding,
     LIOSSEChannelStateDisconnecting,
     LIOSSEChannelStateReconnecting,
-    LIOSSEChannelStateReconnectPrompt
+    LIOSSEChannelStateReconnectPrompt,
+    LIOSSEChannelStateReconnectRetryAfter
 } LIOSSEChannelState;
 
 @class LIOEngagement;
@@ -67,6 +68,7 @@ typedef enum
 - (void)endEngagement;
 - (void)declineEngagementReconnect;
 - (void)acceptEngagementReconnect;
+- (void)cancelReconnect;
 - (void)cleanUpEngagement;
 
 - (void)sendVisitorLineWithText:(NSString *)text;

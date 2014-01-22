@@ -21,6 +21,7 @@
 #import "LPSSEManager.h"
 #import "LPSSEvent.h"
 
+#import "LIOTimerProxy.h"
 
 #define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
 #define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
@@ -47,6 +48,9 @@
 @property (nonatomic, copy) NSString *postUrlString;
 @property (nonatomic, copy) NSString *mediaUrlString;
 @property (nonatomic, copy) NSString *lastSSEventId;
+
+@property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
+@property (nonatomic, assign) LIOSSEChannelState retryAfterPreviousSSEChannelState;
 
 @end
 
@@ -101,6 +105,12 @@
 {
     self.sseChannelState = LIOSSEChannelStateCancelling;
     [self.sseManager disconnect];
+    
+    if (self.reconnectTimer)
+    {
+        [self.reconnectTimer stopTimer];
+        self.reconnectTimer = nil;
+    }
 }
 
 - (void)endEngagement
@@ -117,6 +127,21 @@
 - (void)acceptEngagementReconnect
 {
     [self connectSSESocket];
+}
+
+- (void)cancelReconnect
+{
+    if (LIOSSEChannelStateReconnectRetryAfter == self.sseChannelState)
+    {
+        if (self.reconnectTimer)
+        {
+            [self.reconnectTimer stopTimer];
+            self.reconnectTimer = nil;
+        }
+
+        self.sseChannelState = LIOSSEChannelStateInitialized;
+        [self.delegate engagementDidEnd:self];
+    }
 }
 
 #pragma Engagement Payload methods
@@ -262,6 +287,35 @@
             
         }];
     }
+    else
+    {
+        [self.delegate engagementDidFailToStart:self];
+    }
+}
+
+#pragma mark -
+#pragma mark Reconnect Methods
+
+- (void)reconnectRetryAfter:(NSInteger)retryAfterSeconds
+{
+    // Retry after can occur for different types of channel state. We remember the previos state so we can return to it later if the reconnect fails
+    self.retryAfterPreviousSSEChannelState = self.sseChannelState;
+    
+    self.sseChannelState = LIOSSEChannelStateReconnectRetryAfter;
+    self.reconnectTimer = [[LIOTimerProxy alloc] initWithTimeInterval:retryAfterSeconds target:self selector:@selector(reconnectTimerDidFire)];
+}
+
+- (void)reconnectTimerDidFire
+{
+    self.sseChannelState = self.retryAfterPreviousSSEChannelState;
+
+    if (self.reconnectTimer)
+    {
+        [self.reconnectTimer stopTimer];
+        self.reconnectTimer = nil;
+    }
+    
+    [self connectSSESocket];
 }
 
 #pragma mark SSE Channel Methods
@@ -292,24 +346,14 @@
 
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager
 {
-    if (LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
-    {
-        [self.delegate engagementDidReconnect:self];
-    }
-    
-    self.sseChannelState = LIOSSEChannelStateConnected;
-    
-    if (LIOVisitStateChatRequested == self.visit.visitState)
-    {
-        [self sendCapabilitiesPacket];
-        [self.delegate engagementDidConnect:self];
-    }
+
 }
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
     switch (self.sseChannelState) {
-        // If are not expecting a disconnect, we should try to reconnect
+
+            // If are not expecting a disconnect, we should try to reconnect
         case LIOSSEChannelStateConnected:
             self.sseChannelState = LIOSSEChannelStateReconnecting;
             [self connectSSESocket];
@@ -317,20 +361,16 @@
             
         // If we are trying to reconnect and failed, display an alert to the user
         case LIOSSEChannelStateReconnecting:
-            self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
-            [self.delegate engagementWantsReconnectionPrompt:self];
+            [self handleSSEConnectionFailed];
             break;
             
         case LIOSSEChannelStateReconnectPrompt:
-            self.sseChannelState = LIOSSEChannelStateInitialized;
-            [self.delegate engagementDidFailToReconnect:self];
+            [self handleSSEConnectionFailed];
             break;
 
         // If we are attempting to connect initially, this means we failed to start
         case LIOSSEChannelStateConnecting:
-            self.sseChannelState = LIOSSEChannelStateInitialized;
-            if (LIOVisitStateChatRequested == self.visit.visitState)
-                [self.delegate engagementDidFailToStart:self];
+            [self handleSSEConnectionFailed];
             break;
 
         // If we're cancelling, this means cancelling succeeded
@@ -351,8 +391,14 @@
             [self.delegate engagementDidDisconnect:self withAlert:YES];
             break;
             
+        case LIOSSEChannelStateReconnectRetryAfter:
+            break;
+            
+        case LIOSSEChannelStateInitialized:
+            // If we are disconnected in this state, it means we already handled the disconnection through "reintroed" or "dispatch_error", and we can ignore this
+            break;
+            
         default:
-            NSLog(@"Unhandled state..");
             break;
     }
 }
@@ -360,6 +406,33 @@
 - (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError *)err
 {
 }
+
+- (void)handleSSEConnectionFailed
+{
+    switch (self.sseChannelState) {
+        case LIOSSEChannelStateConnecting:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
+            if (LIOVisitStateChatRequested == self.visit.visitState)
+                [self.delegate engagementDidFailToStart:self];
+            break;
+            
+        case LIOSSEChannelStateReconnecting:
+            self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
+            [self.delegate engagementWantsReconnectionPrompt:self];
+            break;
+            
+        case LIOSSEChannelStateReconnectPrompt:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
+            [self.delegate engagementDidFailToReconnect:self];
+            break;
+            
+            
+            
+        default:
+            break;
+    }
+}
+
 
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent
 {
@@ -384,6 +457,72 @@
     
     NSString *type = [aPacket objectForKey:@"type"];
 
+    // Reintroed
+    if ([type isEqualToString:@"reintroed"])
+    {
+        NSNumber *success = [aPacket objectForKey:@"success"];
+        if (success)
+        {
+            if (LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
+            {
+                [self.delegate engagementDidReconnect:self];
+            }
+        
+            self.sseChannelState = LIOSSEChannelStateConnected;
+        
+            if (LIOVisitStateChatRequested == self.visit.visitState)
+            {
+                [self sendCapabilitiesPacket];
+                [self.delegate engagementDidConnect:self];
+            }
+        }
+        else
+        {
+            if ([aPacket objectForKey:@"retry_after"]) {
+                NSNumber *retryAfterObjects = [aPacket objectForKey:@"retry_after"];
+                NSInteger retryAfterSeconds = [retryAfterObjects integerValue];
+                
+                if (retryAfterSeconds != -1) {
+                    [self reconnectRetryAfter:retryAfterSeconds];
+                    LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", retryAfterSeconds);
+                }
+                else
+                {
+                    [self handleSSEConnectionFailed];
+                }
+            }
+            else
+                [self handleSSEConnectionFailed];
+        }
+    }
+    
+    // Dispatch Error
+    
+    if ([type isEqualToString:@"dispatch_error"])
+    {
+        if ([aPacket objectForKey:@"retry_after"]) {
+            NSNumber *retryAfterObjects = [aPacket objectForKey:@"retry_after"];
+            NSInteger retryAfterSeconds = [retryAfterObjects integerValue];
+
+            BOOL retryAfter = arc4random() % 2;
+            if (retryAfter)
+                retryAfterSeconds = 5;
+
+            if (retryAfterSeconds != -1) {
+                [self reconnectRetryAfter:retryAfterSeconds];
+                LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", retryAfterSeconds);
+            }
+            else
+            {
+                [self handleSSEConnectionFailed];
+            }
+        }
+        else
+        {
+            [self handleSSEConnectionFailed];
+        }
+    }
+    
     // Received line
     if ([type isEqualToString:@"line"])
     {

@@ -265,6 +265,9 @@
 
 - (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
 {
+    
+    
+    
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
     self.surveyViewController.delegate = self;
     self.containerViewState = LIOContainerViewStateSurvey;
