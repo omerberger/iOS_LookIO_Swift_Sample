@@ -109,6 +109,16 @@
     [self sendOutroPacket];
 }
 
+- (void)declineEngagementReconnect
+{
+    self.sseChannelState = LIOSSEChannelStateInitialized;
+}
+
+- (void)acceptEngagementReconnect
+{
+    [self connectSSESocket];
+}
+
 #pragma Engagement Payload methods
 
 - (void)saveChatCookies {
@@ -183,6 +193,7 @@
         
         [userDefaults synchronize];
         
+        self.sseChannelState = LIOSSEChannelStateConnecting;
         [self connectSSESocket];
     }
 }
@@ -257,7 +268,6 @@
 
 - (void)connectSSESocket
 {
-    self.sseChannelState = LIOSSEChannelStateConnecting;
     
     if (self.sseManager)
     {
@@ -282,6 +292,11 @@
 
 - (void)sseManagerDidConnect:(LPSSEManager *)aManager
 {
+    if (LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
+    {
+        [self.delegate engagementDidReconnect:self];
+    }
+    
     self.sseChannelState = LIOSSEChannelStateConnected;
     
     if (LIOVisitStateChatRequested == self.visit.visitState)
@@ -293,37 +308,53 @@
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
-    LIOSSEChannelState previousChannelState = self.sseChannelState;
-    self.sseChannelState = LIOSSEChannelStateInitialized;
+    switch (self.sseChannelState) {
+        // If are not expecting a disconnect, we should try to reconnect
+        case LIOSSEChannelStateConnected:
+            self.sseChannelState = LIOSSEChannelStateReconnecting;
+            [self connectSSESocket];
+            break;
+            
+        // If we are trying to reconnect and failed, display an alert to the user
+        case LIOSSEChannelStateReconnecting:
+            self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
+            [self.delegate engagementWantsReconnectionPrompt:self];
+            break;
+            
+        case LIOSSEChannelStateReconnectPrompt:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
+            [self.delegate engagementDidFailToReconnect:self];
+            break;
 
-    switch (previousChannelState) {
         // If we are attempting to connect initially, this means we failed to start
         case LIOSSEChannelStateConnecting:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
             if (LIOVisitStateChatRequested == self.visit.visitState)
                 [self.delegate engagementDidFailToStart:self];
             break;
 
         // If we're cancelling, this means cancelling succeeded
         case LIOSSEChannelStateCancelling:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
             [self.delegate engagementDidCancel:self];
             break;
            
         // If we're ending, this means ending succeeded
         case LIOSSEChannelStateEnding:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
             [self.delegate engagementDidEnd:self];
             break;
             
-        // If we didn't expect this, it's a disconnection
-        case LIOSSEChannelStateConnected:
-            // TODO: Add reconnect logic
-            [self.delegate engagementDidDisconnect:self];
+        // If we recieved an outro earlier, we are expecting this disconnect
+        case LIOSSEChannelStateDisconnecting:
+            self.sseChannelState = LIOSSEChannelStateInitialized;
+            [self.delegate engagementDidDisconnect:self withAlert:YES];
             break;
-            
             
         default:
+            NSLog(@"Unhandled state..");
             break;
     }
-    
 }
 
 - (void)sseManagerWillDisconnect:(LPSSEManager *)aManager withError:(NSError *)err
@@ -419,7 +450,7 @@
     }
     
     // Received Survey
-    else if ([type isEqualToString:@"survey"]) {
+    if ([type isEqualToString:@"survey"]) {
 
         // Check if this is an offline survey
         if ([aPacket objectForKey:@"offline"]) {
@@ -558,6 +589,12 @@
             [self.delegate engagementDidStart:self];
         }
     }
+    
+    if ([type isEqualToString:@"outro"])
+    {
+        self.sseChannelState = LIOSSEChannelStateDisconnecting;
+    }
+
 }
 
 #pragma mark -

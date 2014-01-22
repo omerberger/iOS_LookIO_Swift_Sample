@@ -100,6 +100,19 @@
         self.controlButtonHidden = YES;
         
         self.funnelRequestQueue = [[NSMutableArray alloc] init];
+        
+        // Start monitoring analytics.
+        [LIOAnalyticsManager sharedAnalyticsManager];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(reachabilityDidChange:)
+                                                     name:LIOAnalyticsManagerReachabilityDidChangeNotification
+                                                   object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(locationWasDetermined:)
+                                                     name:LIOAnalyticsManagerLocationWasDeterminedNotification
+                                                   object:[LIOAnalyticsManager sharedAnalyticsManager]];
+
     }
     return self;
 }
@@ -576,6 +589,34 @@
     self.continuationTimer = nil;
 }
 
+#pragma mark -
+#pragma mark Reachability Methods
+
+- (void)reachabilityDidChange:(NSNotification *)notification
+{
+    switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        case LIOAnalyticsManagerReachabilityStatusConnected:
+            if (LIOVisitStateQueued == self.visitState)
+            {
+                [self launchVisit];
+            }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+#pragma mark -
+#pragma mark Location Methods
+
+- (void)locationWasDetermined:(NSNotification *)aNotification
+{
+    // TODO: Report new location?
+}
+
+#pragma mark -
 #pragma mark Continue Methods
 
 - (void)continuationTimerDidFire

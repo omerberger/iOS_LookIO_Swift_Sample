@@ -18,7 +18,10 @@ typedef enum
     LIOSSEChannelStateConnecting,
     LIOSSEChannelStateConnected,
     LIOSSEChannelStateCancelling,
-    LIOSSEChannelStateEnding
+    LIOSSEChannelStateEnding,
+    LIOSSEChannelStateDisconnecting,
+    LIOSSEChannelStateReconnecting,
+    LIOSSEChannelStateReconnectPrompt
 } LIOSSEChannelState;
 
 @class LIOEngagement;
@@ -31,7 +34,7 @@ typedef enum
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement;
 - (void)engagementDidCancel:(LIOEngagement *)engagement;
 - (void)engagementDidEnd:(LIOEngagement *)engagement;
-- (void)engagementDidDisconnect:(LIOEngagement *)engagement;
+- (void)engagementDidDisconnect:(LIOEngagement *)engagement withAlert:(BOOL)withAlert;
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
@@ -40,6 +43,9 @@ typedef enum
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
 - (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;
+- (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement;
+- (void)engagementDidReconnect:(LIOEngagement *)engagement;
+- (void)engagementDidFailToReconnect:(LIOEngagement *)engagement;
 
 @end
 
@@ -59,6 +65,8 @@ typedef enum
 - (void)startEngagement;
 - (void)cancelEngagement;
 - (void)endEngagement;
+- (void)declineEngagementReconnect;
+- (void)acceptEngagementReconnect;
 - (void)cleanUpEngagement;
 
 - (void)sendVisitorLineWithText:(NSString *)text;

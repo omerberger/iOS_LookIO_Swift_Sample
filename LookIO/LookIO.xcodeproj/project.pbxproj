@@ -115,8 +115,6 @@
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
 		D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D447AC9917381460008919A1 /* LIOMediaManager.h */; };
 		D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D447AC9A17381460008919A1 /* LIOMediaManager.m */; };
-		D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7F71576D60300CF73CC /* LIORulesManager.h */; };
-		D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7F81576D60300CF73CC /* LIORulesManager.m */; };
 		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
 		D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */; };
 		D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */ = {isa = PBXBuildFile; fileRef = D462795915B9E98E00AEDE2D /* LIONavigationBar.h */; };
@@ -303,8 +301,6 @@
 		D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
 		D447AC9917381460008919A1 /* LIOMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOMediaManager.h; path = Source/Managers/LIOMediaManager.h; sourceTree = "<group>"; };
 		D447AC9A17381460008919A1 /* LIOMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOMediaManager.m; path = Source/Managers/LIOMediaManager.m; sourceTree = "<group>"; };
-		D454B7F71576D60300CF73CC /* LIORulesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORulesManager.h; path = Source/Managers/LIORulesManager.h; sourceTree = "<group>"; };
-		D454B7F81576D60300CF73CC /* LIORulesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORulesManager.m; path = Source/Managers/LIORulesManager.m; sourceTree = "<group>"; };
 		D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIORuleViewVisible.h; path = Source/Other/LIORuleViewVisible.h; sourceTree = "<group>"; };
 		D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIORuleViewVisible.m; path = Source/Other/LIORuleViewVisible.m; sourceTree = "<group>"; };
 		D462795915B9E98E00AEDE2D /* LIONavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONavigationBar.h; path = Source/Views/LIONavigationBar.h; sourceTree = "<group>"; };
@@ -626,8 +622,6 @@
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
 				D447AC9917381460008919A1 /* LIOMediaManager.h */,
 				D447AC9A17381460008919A1 /* LIOMediaManager.m */,
-				D454B7F71576D60300CF73CC /* LIORulesManager.h */,
-				D454B7F81576D60300CF73CC /* LIORulesManager.m */,
 				D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */,
 				D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */,
 			);
@@ -870,7 +864,6 @@
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
 				D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */,
-				D454B7F91576D60300CF73CC /* LIORulesManager.h in Headers */,
 				D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */,
 				D41F9425158AA40E004BE9A0 /* LIOSurveyManager.h in Headers */,
 				D41F9436158AA52C004BE9A0 /* LIOSurveyQuestion.h in Headers */,
@@ -1035,7 +1028,6 @@
 				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
 				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
 				A721D28B18513DFD0039395E /* LIOStatusManager.m in Sources */,
-				D454B7FA1576D60300CF73CC /* LIORulesManager.m in Sources */,
 				D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */,
 				D41F9426158AA40E004BE9A0 /* LIOSurveyManager.m in Sources */,
 				A721D27F18513A6F0039395E /* LIOVisit.m in Sources */,
