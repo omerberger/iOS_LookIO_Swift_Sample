@@ -33,6 +33,8 @@ typedef enum
 - (void)show:(BOOL)animated;
 - (void)hide:(BOOL)animated;
 
+- (void)presentMessage:(NSString *)message;
+
 - (void)resetFrame;
 - (void)updateButtonBranding;
 

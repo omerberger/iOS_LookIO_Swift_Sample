@@ -636,6 +636,7 @@ static LIOManager *sharedLookIOManager = nil;
             else
             {
                 [self.controlButton setSurveyMode];
+                [self.controlButton presentMessage:@"Tap to complete survey"];
             }
             break;
 
@@ -648,6 +649,10 @@ static LIOManager *sharedLookIOManager = nil;
         case LIOVisitStatePostChatSurvey:
             self.visit.visitState = LIOVisitStateVisitInProgress;
             [self.engagement endEngagement];
+            break;
+            
+        case LIOVisitStateChatActive:
+            [self.controlButton presentMessage:@"Tap to continue chat"];
             break;
             
         default:
@@ -951,10 +956,10 @@ static LIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatActive == self.visit.visitState)
     {
         [self.containerViewController engagement:engagement didReceiveMessage:message];
-        
+
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
-            [self beginChat];
+            [self.controlButton presentMessage:@"The agent has sent a message"];
         }
     }
     

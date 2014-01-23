@@ -10,7 +10,10 @@
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
-#define LIODraggleButtonSize 50.0
+#import "LIOTimerProxy.h"
+
+#define LIODraggableButtonSize 50.0
+#define LIODraggableButtonMessageTime 5.0
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                      green:((c>>8)&0xFF)/255.0 \
@@ -22,11 +25,17 @@
 @property (nonatomic, assign) BOOL isDragging;
 @property (nonatomic, assign) BOOL isVisible;
 @property (nonatomic, assign) BOOL isAttachedToRight;
+@property (nonatomic, assign) BOOL isShowingMessage;
 
 @property (nonatomic, assign) CGPoint panPoint;
 @property (nonatomic, assign) CGPoint preDragPosition;
 
+@property (nonatomic, strong) UIImageView *statusImageView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+
+@property (nonatomic, strong) UILabel *messageLabel;
+
+@property (nonatomic, strong) LIOTimerProxy *messageTimer;
 
 @end
 
@@ -57,6 +66,19 @@
         self.activityIndicatorView.userInteractionEnabled = NO;
         [self addSubview:self.activityIndicatorView];
         
+        self.statusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, LIODraggableButtonSize - 20.0, LIODraggableButtonSize - 20.0)];
+        self.statusImageView.userInteractionEnabled = NO;
+        [self addSubview:self.statusImageView];
+        
+        self.messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.messageLabel.backgroundColor = [UIColor clearColor];
+        self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+        self.messageLabel.hidden = YES;
+        self.messageLabel.userInteractionEnabled = NO;
+        [self addSubview:self.messageLabel];
+
+        self.clipsToBounds = YES;
+        
         [self resetFrame];
     }
     return self;
@@ -68,26 +90,26 @@
 - (void)updateButtonBranding
 {
     self.alpha = [[LIOBrandingManager brandingManager] alphaForElement:LIOBrandingElementControlButton];
-    
     self.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButton];
-    
     self.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
-    
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+    
     
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:
+            self.statusImageView.hidden = NO;
             [self.activityIndicatorView stopAnimating];
-            [self setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyIcon" withTint:contentColor] forState:UIControlStateNormal];
+            [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyIcon" withTint:contentColor]];
             break;
             
         case LIOButtonModeChat:
+            self.statusImageView.hidden = NO;
             [self.activityIndicatorView stopAnimating];
-            [self setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor] forState:UIControlStateNormal];
+            [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor]];
             break;
             
         case LIOButtonModeLoading:
-            [self setImage:nil forState:UIControlStateNormal];
+            self.statusImageView.hidden = YES;
             self.activityIndicatorView.frame = self.bounds;
             [self.activityIndicatorView startAnimating];
             break;
@@ -128,6 +150,8 @@
     CGSize screenSize = [buttonWindow bounds].size;
 
     CGRect frame = self.frame;
+    frame.size.width = LIODraggableButtonSize;
+    frame.size.height = LIODraggableButtonSize;
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
@@ -204,7 +228,7 @@
         return;
     
     CGRect frame = self.frame;
-    frame.size = CGSizeMake(LIODraggleButtonSize, LIODraggleButtonSize);
+    frame.size = CGSizeMake(LIODraggableButtonSize, LIODraggableButtonSize);
     
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -237,6 +261,27 @@
         [self setVisibleFrame];
     else
         [self setHiddenFrame];
+}
+
+- (void)setFrameForMessagedWithWidth:(CGFloat)width
+{
+    CGRect frame = self.frame;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+        if (self.isAttachedToRight)
+        {
+            frame.origin.x = self.frame.origin.x - width - 10.0;
+            frame.size.width = LIODraggableButtonSize + width + 10.0;
+        }
+        else
+        {
+            frame.size.width = LIODraggableButtonSize + width + 10.0;
+        }
+    }
+    
+    self.frame = frame;
 }
 
 #pragma mark -
@@ -272,6 +317,56 @@
     {
         [self setHiddenFrame];
     }
+}
+
+- (void)presentMessage:(NSString *)message
+{
+    self.isShowingMessage = YES;
+    
+    self.messageLabel.text = message;
+    
+    CGSize expectedSize;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        CGRect expectedTextRect = [message boundingRectWithSize:CGSizeMake(self.superview.bounds.size.width, self.bounds.size.height)
+                                                     options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+                                                  attributes:@{NSFontAttributeName:self.messageLabel.font}
+                                                     context:nil];
+        expectedSize = expectedTextRect.size;
+    }
+    else
+    {
+        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(self.superview.bounds.size.width, self.bounds.size.height) lineBreakMode:UILineBreakModeTailTruncation];
+    }
+    
+    CGRect frame = self.messageLabel.frame;
+    frame.origin.x = self.bounds.size.width;
+    frame.origin.y = 0;
+    frame.size.width = expectedSize.width;
+    frame.size.height = self.bounds.size.height;
+    self.messageLabel.frame = frame;
+    self.messageLabel.hidden = NO;
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        [self setFrameForMessagedWithWidth:expectedSize.width];
+    } completion:^(BOOL finished) {
+        self.messageTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIODraggableButtonMessageTime target:self selector:@selector(messageTimerDidFire)];
+    }];
+}
+
+- (void)messageTimerDidFire
+{
+    if (self.messageTimer)
+    {
+        [self.messageTimer stopTimer];
+        self.messageTimer = nil;
+    }
+
+    [UIView animateWithDuration:0.3 animations:^{
+        [self setVisibleFrame];
+    } completion:^(BOOL finished) {
+        self.isShowingMessage = NO;
+    }];
 }
 
 #pragma mark -
