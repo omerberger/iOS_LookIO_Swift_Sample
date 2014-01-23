@@ -378,7 +378,7 @@
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
     [alertView show];
     
-    [self.engagement sendChatHistoryPacketWithEmail:email];
+    [self.engagement sendChatHistoryPacketWithEmail:email retries:0];
 }
 
 - (void)emailChatViewDidCancel:(LIOEmailChatView *)emailChatView
@@ -492,7 +492,7 @@
     NSDictionary *typingStart = [NSDictionary dictionaryWithObjectsAndKeys:
                                  @"typing_start", @"action",
                                  nil];
-    [self.engagement sendAdvisoryPacketWithDict:typingStart];
+    [self.engagement sendAdvisoryPacketWithDict:typingStart retries:0];
 }
 
 - (void)inputBarDidStopTyping:(LPInputBarView *)inputBarView
@@ -500,7 +500,7 @@
     NSDictionary *typingStart = [NSDictionary dictionaryWithObjectsAndKeys:
                                  @"typing_stop", @"action",
                                  nil];
-    [self.engagement sendAdvisoryPacketWithDict:typingStart];
+    [self.engagement sendAdvisoryPacketWithDict:typingStart retries:0];
 }
 
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height

@@ -620,6 +620,7 @@
     // Update button and enabled status
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
+    [self.delegate visitReachabilityDidChange:self];
 
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
@@ -1259,8 +1260,8 @@
 {
     if (self.funnelRequestQueue.count > 0) {
         NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
-        [self sendFunnelPacketForState:[nextFunnelState intValue]];
         [self.funnelRequestQueue removeObjectAtIndex:0];
+        [self sendFunnelPacketForState:[nextFunnelState intValue]];
     }
 }
 

@@ -25,6 +25,14 @@ typedef enum
     LIOSSEChannelStateReconnectRetryAfter
 } LIOSSEChannelState;
 
+typedef enum
+{
+    LIOQueuedRequestTypeCapabilities,
+    LIOQueuedRequestTypeSurvey,
+    LIOQueuedRequestTypeAdvisory,
+    LIOQueuedRequestTypeChatHistory
+} LIOQueuedRequestType;
+
 @class LIOEngagement;
 
 @protocol LIOEngagementDelegate <NSObject>
@@ -79,13 +87,15 @@ typedef enum
 - (void)sendLineWithMessage:(LIOChatMessage *)message;
 - (void)sendMediaPacketWithMessage:(LIOChatMessage *)message;
 
-- (void)submitSurvey:(LIOSurvey *)survey;
-- (void)sendChatHistoryPacketWithEmail:(NSString *)email;
-- (BOOL)shouldPresentPostChatSurvey;
+- (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries;
+- (void)sendChatHistoryPacketWithEmail:(NSString *)email retries:(NSInteger)retries;
+- (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict retries:(NSInteger)retries;
 
-- (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict;
+- (BOOL)shouldPresentPostChatSurvey;
 
 - (BOOL)shouldShowEmailChatButtonItem;
 - (BOOL)shouldShowSendPhotoButtonItem;
+
+- (void)reachabilityDidChange;
 
 @end

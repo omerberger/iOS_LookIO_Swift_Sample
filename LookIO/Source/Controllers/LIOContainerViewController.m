@@ -292,7 +292,7 @@
     if (LIOSurveyTypePostchat == survey.surveyType)
     {
         if ([survey anyQuestionsAnswered] && [survey allMandatoryQuestionsAnswered])
-            [self.engagement submitSurvey:survey];
+            [self.engagement submitSurvey:survey retries:0];
     }
   
     [self dismiss];
@@ -300,7 +300,7 @@
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
 {
-    [self.engagement submitSurvey:survey];
+    [self.engagement submitSurvey:survey retries:0];
 
     // For offline survey or post chat survey, dismiss chat
     switch (survey.surveyType) {

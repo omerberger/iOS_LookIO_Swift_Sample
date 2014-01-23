@@ -53,6 +53,7 @@ typedef enum
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit;
 - (void)visitWillRelaunch:(LIOVisit *)visit;
+- (void)visitReachabilityDidChange:(LIOVisit *)visit;
 
 @end
 

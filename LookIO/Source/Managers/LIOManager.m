@@ -195,7 +195,7 @@ static LIOManager *sharedLookIOManager = nil;
             NSMutableDictionary *backgroundedDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                                      @"app_backgrounded", @"action",
                                                      nil];
-            [self.engagement sendAdvisoryPacketWithDict:backgroundedDict];
+            [self.engagement sendAdvisoryPacketWithDict:backgroundedDict retries:0];
         }
         
         // TODO Dismiss any active alert views
@@ -267,7 +267,7 @@ static LIOManager *sharedLookIOManager = nil;
                                                  @"app_foregrounded", @"action",
                                                  nil];
         
-        [self.engagement sendAdvisoryPacketWithDict:foregroundedDict];
+        [self.engagement sendAdvisoryPacketWithDict:foregroundedDict retries:0];
         
         if (self.chatReceivedWhileAppBackgrounded)
         {
@@ -437,6 +437,14 @@ static LIOManager *sharedLookIOManager = nil;
     [[LIONetworkManager networkManager] resetNetworkEndpoints];
 }
 
+- (void)visitReachabilityDidChange:(LIOVisit *)visit
+{
+    if (self.engagement)
+    {
+        [self.engagement reachabilityDidChange];
+    }
+}
+
 #pragma mark DraggableButtonDelegate Methods
 
 - (void)draggableButtonDidBeginDragging:(LIODraggableButton *)draggableButton
@@ -588,7 +596,7 @@ static LIOManager *sharedLookIOManager = nil;
         NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
                             @"chat_up", @"action",
                             nil];
-        [self.engagement sendAdvisoryPacketWithDict:chatUp];
+        [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
     }
 }
 
@@ -651,7 +659,7 @@ static LIOManager *sharedLookIOManager = nil;
     NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
                             @"chat_down", @"action",
                             nil];
-    [self.engagement sendAdvisoryPacketWithDict:chatUp];
+    [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
     
     [self.visit refreshControlButtonVisibility];
     
@@ -764,7 +772,7 @@ static LIOManager *sharedLookIOManager = nil;
     NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
                             @"chat_up", @"action",
                             nil];
-    [self.engagement sendAdvisoryPacketWithDict:chatUp];
+    [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
 }
 
 - (void)engagementAgentIsReady:(LIOEngagement *)engagement

@@ -33,6 +33,7 @@
 #define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
 #define LIOLookIOManagerLastKnownChatHistoryKey         @"LIOLookIOManagerLastKnownChatHistoryKey"
 
+#define LIOChatAPIRequestRetries                        3
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
 
@@ -52,6 +53,8 @@
 @property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
 @property (nonatomic, assign) LIOSSEChannelState retryAfterPreviousSSEChannelState;
 
+@property (nonatomic, strong) NSMutableArray *failedRequestQueue;
+
 @end
 
 @implementation LIOEngagement
@@ -69,6 +72,8 @@
         self.chatCookies = [[NSMutableArray alloc] init];
         
         self.sseChannelState = LIOSSEChannelStateInitialized;
+        
+        self.failedRequestQueue = [[NSMutableArray alloc] init];
     }
     return self;
 }
@@ -87,6 +92,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark Engagement Lifecycle Methods
 
 - (void)cleanUpEngagement
@@ -263,42 +269,6 @@
     }
 }
 
-#pragma mark Intro Methods
-
-- (void)sendIntroPacket
-{
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        // Clear any existing cookies
-        [[LPChatAPIClient sharedClient] clearCookies];
-        
-        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:[self.visit introDictionary] success:^(LPHTTPRequestOperation *operation, id responseObject) {
-            
-            if (responseObject)
-                LIOLog(@"<INTRO> response: %@", responseObject);
-            else
-                LIOLog(@"<INTRO> success");
-            
-            NSDictionary* responseDict = (NSDictionary*)responseObject;
-
-            [self saveChatCookies];
-            [self parseAndSaveEngagementInfoPayload:responseDict];
-            
-            
-        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-            LIOLog(@"<INTRO> failure: %@", error);
-            
-            [self.delegate engagementDidFailToStart:self];
-            
-        }];
-    }
-    else
-    {
-        [self.delegate engagementDidFailToStart:self];
-    }
-}
-
 #pragma mark -
 #pragma mark Reconnect Methods
 
@@ -324,6 +294,7 @@
     [self connectSSESocket];
 }
 
+#pragma mark -
 #pragma mark SSE Channel Methods
 
 - (void)connectSSESocket
@@ -484,7 +455,7 @@
         
             if (LIOVisitStateChatRequested == self.visit.visitState)
             {
-                [self sendCapabilitiesPacket];
+                [self sendCapabilitiesPacketRetries:0];
                 [self.delegate engagementDidConnect:self];
             }
         }
@@ -751,10 +722,42 @@
 #pragma mark -
 #pragma mark Chat API Methods
 
+- (void)sendIntroPacket
+{
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        // Clear any existing cookies
+        [[LPChatAPIClient sharedClient] clearCookies];
+        
+        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:[self.visit introDictionary] success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            
+            if (responseObject)
+                LIOLog(@"<INTRO> response: %@", responseObject);
+            else
+                LIOLog(@"<INTRO> success");
+            
+            NSDictionary* responseDict = (NSDictionary*)responseObject;
+            
+            [self saveChatCookies];
+            [self parseAndSaveEngagementInfoPayload:responseDict];
+            
+            
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<INTRO> failure: %@", error);
+            
+            [self.delegate engagementDidFailToStart:self];
+            
+        }];
+    }
+    else
+    {
+        [self.delegate engagementDidFailToStart:self];
+    }
+}
+
 - (void)sendLineWithMessage:(LIOChatMessage *)message
 {
-    // TO DO - Check that engagement is active
-    
     if (LIOChatMessageStatusFailed == message.status)
     {
         message.status = LIOChatMessageStatusResending;
@@ -803,8 +806,6 @@
 
 - (void)sendMediaPacketWithMessage:(LIOChatMessage *)message
 {
-    // TODO: No engagement ID
-    
     if (LIOChatMessageStatusFailed == message.status)
     {
         message.status = LIOChatMessageStatusResending;
@@ -892,8 +893,6 @@
 
 - (void)sendOutroPacket
 {
-    // TODO Check if engagement id exists
-
     NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
     NSString* outroRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatOutroRequestURL, self.engagementId];
     
@@ -914,64 +913,262 @@
             [self.sseManager disconnect];
         
         [self.delegate engagementDidEnd:self];
-
     }];
 }
 
-- (void)sendCapabilitiesPacket {
-    // TODO Check if engagement id exists
-    
-    NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
-    NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                              capsArray, @"capabilities",
-                              nil];
-    NSString* capsRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatCapabilitiesRequestURL, self.engagementId];
-    
-    [[LPChatAPIClient sharedClient] postPath:capsRequestUrl parameters:capsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        if (responseObject)
-            LIOLog(@"<CAPABILITIES> response: %@", responseObject);
-        else
-            LIOLog(@"<CAPABILITIES> success");
-        
-    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        LIOLog(@"<CAPABILITIES> failure: %@", error);
-        
-        // TODO Retry failed capabilities call
-    }];
-}
-
-- (void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict
+- (void)sendCapabilitiesPacketRetries:(NSInteger)retries
 {
-    // TODO Check if engagement id exists
-
-    NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, self.engagementId];
+    // Submit the request if network is available, otherwise, queue it
     
-    [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        if (responseObject)
-            LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
-        else
-            LIOLog(@"<ADVISORY> with data %@ success", advisoryDict);
-    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        LIOLog(@"<ADVISORY> with data %@ failure: %@", advisoryDict, error);
-    }];
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        
+        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
+        NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  capsArray, @"capabilities",
+                                  nil];
+        NSString* capsRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatCapabilitiesRequestURL, self.engagementId];
+        
+        [[LPChatAPIClient sharedClient] postPath:capsRequestUrl parameters:capsDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject)
+                LIOLog(@"<CAPABILITIES> response: %@", responseObject);
+            else
+                LIOLog(@"<CAPABILITIES> success");
+            
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<CAPABILITIES> failure: %@", error);
+            
+            // If we get a 404, let's terminate the engagement
+            if (operation.responseCode == 404) {
+                [self engagementNotFound];
+            }
+            else
+            {
+                [self addQueuedRequestWithType:LIOQueuedRequestTypeCapabilities payload:nil retries:retries+1];
+            }
+        }];
+    }
+    else
+    {
+        [self addQueuedRequestWithType:LIOQueuedRequestTypeCapabilities payload:nil retries:retries];
+    }
 }
 
-- (void)sendChatHistoryPacketWithEmail:(NSString *)email
+- (void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict retries:(NSInteger)retries
 {
-    // TODO Check if engagement id exists
-
-    NSDictionary *emailDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:email], @"email_addresses", nil];
-
-    NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, self.engagementId];
+    // Submit the request if network is available, otherwise, queue it
     
-    [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        if (responseObject)
-            LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        
+        NSString* advisoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatAdvisoryRequestURL, self.engagementId];
+        
+        [[LPChatAPIClient sharedClient] postPath:advisoryRequestUrl parameters:advisoryDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject)
+                LIOLog(@"<ADVISORY> with data %@ response: %@", advisoryDict, responseObject);
+            else
+                LIOLog(@"<ADVISORY> with data %@ success", advisoryDict);
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<ADVISORY> with data %@ failure: %@", advisoryDict, error);
+            
+            if (operation.responseCode == 404)
+            {
+                [self engagementNotFound];
+            }
+            else
+            {
+                [self addQueuedRequestWithType:LIOQueuedRequestTypeAdvisory payload:advisoryDict retries:retries + 1];
+                [self handleRequestQueueIfNeeded];
+            }
+        }];
+    }
+    else
+    {
+        [self addQueuedRequestWithType:LIOQueuedRequestTypeAdvisory payload:advisoryDict retries:retries];
+    }
+}
+
+- (void)sendChatHistoryPacketWithEmail:(NSString *)email retries:(NSInteger)retries
+{
+    // Submit the request if network is available, otherwise, queue it
+    
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSDictionary *emailDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSArray arrayWithObject:email], @"email_addresses", nil];
+        
+        NSString* chatHistoryRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatHistoryRequestURL, self.engagementId];
+        
+        [[LPChatAPIClient sharedClient] postPath:chatHistoryRequestUrl parameters:emailDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject)
+                LIOLog(@"<CHAT_HISTORY> response: %@", responseObject);
+            else
+                LIOLog(@"<CHAT_HISTORY> success");
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<CHAT_HISTORY> failure: %@", error);
+            
+            if (operation.responseCode == 404)
+            {
+                // For a 404, end the engagement
+                [self engagementNotFound];
+            }
+            else
+            {
+                [self addQueuedRequestWithType:LIOQueuedRequestTypeChatHistory payload:email retries:retries+1];
+                [self handleRequestQueueIfNeeded];
+            }
+        }];
+    }
+    else
+    {
+        [self addQueuedRequestWithType:LIOQueuedRequestTypeChatHistory payload:email retries:retries];
+    }
+}
+
+
+- (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries
+{
+    // Submit the request if network is available, otherwise, queue it
+    
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        NSString *surveyTypeString;
+        switch (survey.surveyType) {
+            case LIOSurveyTypePrechat:
+                surveyTypeString = @"prechat";
+                [self.delegate engagementDidSubmitPrechatSurvey:self];
+                
+                break;
+                
+            case LIOSurveyTypeOffline:
+                surveyTypeString = @"offline";
+                break;
+                
+            case LIOSurveyTypePostchat:
+                surveyTypeString = @"postchat";
+                break;
+                
+            default:
+                break;
+        }
+        
+        
+        NSString* surveyRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatSurveyRequestURL, self.engagementId];
+        NSDictionary *params = [NSDictionary dictionaryWithObject:[survey responseDict] forKey:surveyTypeString];
+        
+        [[LPChatAPIClient sharedClient] postPath:surveyRequestUrl parameters:params success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject)
+                LIOLog(@"<SURVEY> with data:%@ response: %@", params, responseObject);
+            else
+                LIOLog(@"<SURVEY> success");
+            
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<SURVEY> failure: %@", error);
+            
+            if (operation.responseCode == 404)
+            {
+                // For a 404, we only need to end the engagement if it's a pre chat survey, otherwise it is already ended
+                if (LIOSurveyTypePrechat == survey.surveyType)
+                {
+                    [self engagementNotFound];
+                }
+            }
+            else
+            {
+                // For all other failures, queue the request, and retry
+                [self addQueuedRequestWithType:LIOQueuedRequestTypeSurvey payload:survey retries:retries+1];
+                [self handleRequestQueueIfNeeded];
+            }
+        }];
+    }
+    else
+    {
+        [self addQueuedRequestWithType:LIOQueuedRequestTypeSurvey payload:survey retries:retries];
+    }
+}
+
+#pragma mark -
+#pragma mark Chat API Queue
+
+- (void)addQueuedRequestWithType:(LIOQueuedRequestType)type payload:(id)payload retries:(NSInteger)retries
+{
+    // Queue the request until the retries have reached the defined level
+    if (retries < LIOChatAPIRequestRetries)
+    {
+        NSDictionary *queuedRequest;
+        if (payload)
+        {
+            queuedRequest = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:type], @"type", payload, @"payload", [NSNumber numberWithInteger:retries], @"retries", nil];
+        }
         else
-            LIOLog(@"<CHAT_HISTORY> success");
-    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        LIOLog(@"<CHAT_HISTORY> failure: %@", error);
-    }];
+        {
+            queuedRequest = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:type], @"type", [NSNumber numberWithInteger:retries], @"retries", nil];
+        }
+        
+        [self.failedRequestQueue addObject:queuedRequest];
+    }
+}
+
+- (void)handleRequestQueueIfNeeded
+{
+    if (self.failedRequestQueue.count > 0)
+    {
+        NSDictionary *nextQueuedRequest = [self.failedRequestQueue objectAtIndex:0];
+        [self.failedRequestQueue removeObjectAtIndex:0];
+        
+        id payload = [nextQueuedRequest objectForKey:@"payload"];
+        
+        NSNumber *requestTypeObject = [nextQueuedRequest objectForKey:@"type"];
+        LIOQueuedRequestType requestType = [requestTypeObject intValue];
+        
+        NSNumber *retriesObject = [nextQueuedRequest objectForKey:@"retries"];
+        NSInteger retries = [retriesObject integerValue];
+        
+        switch (requestType) {
+            case LIOQueuedRequestTypeAdvisory:
+                if ([payload isKindOfClass:[NSDictionary class]])
+                {
+                    NSDictionary *payloadDictionary = (NSDictionary *)payload;
+                    [self sendAdvisoryPacketWithDict:payloadDictionary retries:retries];
+                }
+                break;
+                
+            case LIOQueuedRequestTypeCapabilities:
+                [self sendCapabilitiesPacketRetries:retries];
+                break;
+                
+            case LIOQueuedRequestTypeChatHistory:
+                if ([payload isKindOfClass:[NSString class]])
+                {
+                    NSString *payloadString = (NSString *)payload;
+                    [self sendChatHistoryPacketWithEmail:payloadString retries:retries];
+                }
+                break;
+                
+            case LIOQueuedRequestTypeSurvey:
+                if ([payload isKindOfClass:[LIOSurvey class]])
+                {
+                    LIOSurvey *payloadSurvey = (LIOSurvey *)payload;
+                    [self submitSurvey:payloadSurvey retries:retries];
+                }
+                break;
+                
+            default:
+                break;
+        }
+    }
+}
+
+- (void)reachabilityDidChange
+{
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        [self handleRequestQueueIfNeeded];
+    }
 }
 
 #pragma mark -
@@ -1007,48 +1204,6 @@
     
     [self sendMediaPacketWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
-}
-
-- (void)submitSurvey:(LIOSurvey *)survey
-{
-    // TODO Check if engagement id exists
-
-    NSString *surveyTypeString;
-    switch (survey.surveyType) {
-        case LIOSurveyTypePrechat:
-            surveyTypeString = @"prechat";
-            [self.delegate engagementDidSubmitPrechatSurvey:self];
-            
-            break;
-            
-        case LIOSurveyTypeOffline:
-            surveyTypeString = @"offline";
-            break;
-            
-        case LIOSurveyTypePostchat:
-            surveyTypeString = @"postchat";
-            break;
-            
-        default:
-            break;
-    }
-    
-    
-    NSString* surveyRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatSurveyRequestURL, self.engagementId];
-    NSDictionary *params = [NSDictionary dictionaryWithObject:[survey responseDict] forKey:surveyTypeString];
-    
-    [[LPChatAPIClient sharedClient] postPath:surveyRequestUrl parameters:params success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        if (responseObject)
-            LIOLog(@"<SURVEY> with data:%@ response: %@", params, responseObject);
-        else
-            LIOLog(@"<SURVEY> success");
-        
-    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        LIOLog(@"<SURVEY> failure: %@", error);
-        
-        // If submitting the survey fails, and it's a pre chat survey, it's better to start the chat without the survey than ending the session
-        // TODO
-    }];
 }
 
 #pragma mark -
