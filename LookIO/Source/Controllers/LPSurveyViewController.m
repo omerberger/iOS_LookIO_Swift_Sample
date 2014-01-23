@@ -326,22 +326,22 @@
 
 - (void)surveyQuestionViewDidTapNextButton:(LIOSurveyQuestionView *)surveyQuestionView
 {
-    if (self.isLastQuestion)
-    {
-        if (self.validationView)
-        {
-            [self.validationTimer stopTimer];
-            [self validationTimerDidFire];
-        }
-        
-        [self completeSurvey];
-        
-        return;
-    }
-    
     BOOL isAnswerValid = [self validateAndRegisterCurrentAnswerAndShowAlert:YES];
     if (isAnswerValid)
     {
+        if (self.isLastQuestion)
+        {
+            if (self.validationView)
+            {
+                [self.validationTimer stopTimer];
+                [self validationTimerDidFire];
+            }
+            
+            [self completeSurvey];
+            
+            return;
+        }
+
         [self switchToNextQuestion];
     }
     else
