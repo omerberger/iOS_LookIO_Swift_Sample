@@ -594,6 +594,8 @@
 
 - (void)reachabilityDidChange:(NSNotification *)notification
 {
+    [self refreshControlButtonVisibility];
+    
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         case LIOAnalyticsManagerReachabilityStatusConnected:
@@ -726,6 +728,17 @@
 
 - (void)refreshControlButtonVisibility
 {
+    // Trump Card #-2: If no network, no button
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        self.controlButtonHidden = YES;
+        LIOLog(@"<<CONTROL>> Hiding. Reason: No network connection.");
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        
+        return;
+    }
+    
     // TODO: Trump card #-1: If the session is ending, button is hidden.
     if (self.visitState == LIOVisitStateEnding)
     {
