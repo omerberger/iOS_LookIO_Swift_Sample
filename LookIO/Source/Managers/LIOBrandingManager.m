@@ -83,15 +83,49 @@ static LIOBrandingManager *brandingManager = nil;
         return engagementDictionary;
     }
     
+    if (LIOBrandingElementBoldFont == element)
+    {
+        return engagementDictionary;
+    }
+
     if (LIOBrandingElementLoadingScreen == element)
     {
         if (engagementDictionary)
         {
-            NSDictionary *loadingDictionary = [ engagementDictionary objectForKey:@"loading_screen"];
+            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
             if (loadingDictionary)
                 dictionary = loadingDictionary;
         }
     }
+    
+    if (LIOBrandingElementLoadingScreenSubtitle == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+            if (loadingDictionary)
+            {
+                NSDictionary *subtitleDictionary = [loadingDictionary objectForKey:@"subtitle"];
+                if (subtitleDictionary)
+                    dictionary = subtitleDictionary;
+            }
+        }
+    }
+    
+    if (LIOBrandingElementLoadingScreenTitle == element)
+    {
+        if (engagementDictionary)
+        {
+            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+            if (loadingDictionary)
+            {
+                NSDictionary *titleDictionary = [loadingDictionary objectForKey:@"title"];
+                if (titleDictionary)
+                    dictionary = titleDictionary;
+            }
+        }
+    }
+
     
     if (LIOBrandingElementAgentChatBubble == element)
     {

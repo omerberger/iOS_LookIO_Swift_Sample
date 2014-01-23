@@ -77,8 +77,8 @@
     self.loadingLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 80.0, self.bezelView.bounds.size.width, 20.0)];
     self.loadingLabel.backgroundColor = [UIColor clearColor];
     self.loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.loadingLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreen];
-    self.loadingLabel.font = [UIFont boldSystemFontOfSize:16.0];
+    self.loadingLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreenTitle];
+    self.loadingLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementLoadingScreenTitle];
     self.loadingLabel.textAlignment = UITextAlignmentCenter;
     self.loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
     [self.bezelView addSubview:self.loadingLabel];
@@ -86,8 +86,8 @@
     self.loadingSubLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 100.0, self.bezelView.bounds.size.width, 18.0)];
     self.loadingSubLabel.backgroundColor = [UIColor clearColor];
     self.loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.loadingSubLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreen];
-    self.loadingSubLabel.font = [UIFont systemFontOfSize:14.0];
+    self.loadingSubLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreenSubtitle];
+    self.loadingSubLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementLoadingScreenSubtitle];
     self.loadingSubLabel.textAlignment = UITextAlignmentCenter;
     self.loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
     [self.bezelView addSubview:self.loadingSubLabel];

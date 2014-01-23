@@ -4,15 +4,24 @@
             "family" : "HelveticaNeue"
         },
         "bold_font" : {
-            "family" : "HelveticaNeue-Light"
+            "family" : "HelveticaNeue-Medium"
         },				
         "logo" : {
             "image" : ""
         },
         "loading_screen" : {
             "spin_image" : "1",
-            "font" : {
-                "color" : "#666666"
+						"title" : {
+							 "font" : {
+                  "color" : "#666666",
+									"size" : "16.0"
+								}
+            },
+						"subtitle" : {
+							 "font" : {
+                  "color" : "#666666",
+									"size" : "14.0"
+								}
             },
             "background" : {
                 "color" : "#dddddd",

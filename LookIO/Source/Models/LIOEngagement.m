@@ -642,7 +642,7 @@
         }
         if ([action isEqualToString:@"send_logs"])
         {
-            // TODO Send Longs
+            // TODO: Send Longs
             // [[LIOLogManager sharedLogManager] uploadLog];
         }
         if ([action isEqualToString:@"typing_start"])
@@ -660,7 +660,7 @@
         }
         if ([action isEqualToString:@"unprovisioned"])
         {
-            // TODO Handle unprovisioed
+            // TODO: Handle unprovisioned?
             /*
             unprovisioned = YES;
         
@@ -682,7 +682,7 @@
             // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
             // we do want to use this method
         
-            // TODO Handle leave message
+            // TODO: Handle leave message?
             /*
              callChatNotAnsweredAfterDismissal = NO;
         

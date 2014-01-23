@@ -406,8 +406,8 @@
 				A73D44371856776A0030FF44 /* LIOContainerViewController.m */,
 				A721D2751851367D0039395E /* LIOChatViewController.h */,
 				A721D2761851367D0039395E /* LIOChatViewController.m */,
-				A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */,
 				A7F4622818771EAA00C0BD23 /* LIOLoadingViewController.h */,
+				A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */,
 				A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */,
 				A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */,
 			);
