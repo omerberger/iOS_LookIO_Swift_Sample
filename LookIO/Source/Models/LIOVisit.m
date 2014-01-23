@@ -50,6 +50,7 @@
 @property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
 @property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
+@property (nonatomic, assign) NSInteger failedFunnelCount;
 
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
@@ -87,6 +88,7 @@
     self = [super init];
     if (self) {
         self.funnelState = LIOFunnelStateInitialized;
+        self.failedFunnelCount = 0;
         
         self.visitState = LIOVisitStateInitialized;
         
@@ -117,6 +119,7 @@
     return self;
 }
 
+#pragma mark -
 #pragma mark Status Dictionary Methods
 
 - (NSDictionary *)statusDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType  includingEvents:(BOOL)includeEvents
@@ -145,7 +148,9 @@
     
     // Current Visit Id
     if ([self.currentVisitId length])
+    {
         [statusDictionary setObject:self.currentVisitId forKey:@"visit_id"];
+    }
     
     // TODO Find out if should send visitor_id here?
     
@@ -534,7 +539,25 @@
     return introDictionary;
 }
 
+#pragma mark -
 #pragma mark Launch Visit Methods
+
+// Launch a new visit because of a 404 response
+- (void)relaunchVisit
+{
+    [self.delegate visitWillRelaunch:self];
+
+    self.visitState = LIOVisitStateInitialized;
+    self.currentVisitId = nil;
+
+    [self.continuationTimer stopTimer];
+    self.continuationTimer = nil;
+    
+    [self refreshControlButtonVisibility];
+    [self.delegate visitChatEnabledDidUpdate:self];
+    
+    [self launchVisit];
+}
 
 - (void)launchVisit
 {
@@ -594,9 +617,10 @@
 
 - (void)reachabilityDidChange:(NSNotification *)notification
 {
+    // Update button and enabled status
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
-    
+
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         case LIOAnalyticsManagerReachabilityStatusConnected:
@@ -604,6 +628,10 @@
             {
                 [self launchVisit];
             }
+            
+            // Send any funnel requests that were queued while disconnected
+            [self handleFunnelQueueIfNeeded];
+            
             break;
             
         default:
@@ -679,12 +707,7 @@
                 // New launch
                 LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
 
-                self.currentVisitId = nil;
-                self.lastKnownVisitURL = nil;
-                [self.continuationTimer stopTimer];
-                self.continuationTimer = nil;
-                
-                [self launchVisit];
+                [self relaunchVisit];
             }
             else
             {
@@ -729,17 +752,6 @@
 
 - (void)refreshControlButtonVisibility
 {
-    // Trump Card #-2: If no network, no button
-    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
-    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
-    {
-        self.controlButtonHidden = YES;
-        LIOLog(@"<<CONTROL>> Hiding. Reason: No network connection.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
-        
-        return;
-    }
-    
     // TODO: Trump card #-1: If the session is ending, button is hidden.
     if (self.visitState == LIOVisitStateEnding)
     {
@@ -830,6 +842,7 @@
     }
 }
 
+#pragma mark -
 #pragma mark Visit Status Methods
 
 - (BOOL)hideEmailChat
@@ -860,6 +873,7 @@
     [self.delegate visitChatEnabledDidUpdate:self];
 }
 
+#pragma mark -
 #pragma mark Chat Status Methods
 
 - (BOOL)chatEnabled
@@ -975,6 +989,80 @@
     }
 }
 
+- (BOOL)visitActive
+{
+    switch (self.visitState)
+    {
+        case LIOVisitStateInitialized:
+            return YES;
+            break;
+            
+        case LIOVisitStateFailed:
+            return NO;
+            break;
+            
+        case LIOVisitStateQueued:
+            return NO;
+            break;
+            
+        case LIOVisitStateLaunching:
+            return YES;
+            break;
+            
+        case LIOVisitStateVisitInProgress:
+            return YES;
+            break;
+            
+        case LIOVisitStateAppBackgrounded:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatRequested:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatOpened:
+            return YES;
+            break;
+            
+        case LIOVisitStatePreChatSurvey:
+            return YES;
+            break;
+            
+        case LIOVisitStatePreChatSurveyBackgrounded:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatStarted:
+            return YES;
+            break;
+            
+        case LIOVisitStateOfflineSurvey:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatActive:
+            return YES;
+            break;
+            
+        case LIOVisitStateChatActiveBackgrounded:
+            return YES;
+            break;
+            
+        case LIOVisitStatePostChatSurvey:
+            return YES;
+            break;
+            
+        case LIOVisitStateEnding:
+            return YES;
+            
+        default:
+            return NO;
+            break;
+    }
+}
+
+#pragma mark -
 #pragma mark Custom Chat Button Methods
 
 - (void)setChatAvailable
@@ -1001,16 +1089,8 @@
     [self updateAndReportFunnelState];
 }
 
+#pragma mark -
 #pragma mark Funnel Reporting Methods
-
-- (BOOL)engagementInProgress
-{
-    BOOL engagementInProgress = NO;
-    if (self.visitState == LIOVisitStateChatRequested || self.visitState == LIOVisitStateChatOpened || self.visitState == LIOVisitStatePreChatSurvey || self.visitState == LIOVisitStatePreChatSurveyBackgrounded || self.visitState == LIOVisitStateChatStarted || self.visitState ==  LIOVisitStateOfflineSurvey || self.visitState == LIOVisitStateChatActive || self.visitState == LIOVisitStateChatActiveBackgrounded || self.visitState == LIOVisitStatePostChatSurvey)
-        engagementInProgress = YES;
-    
-    return engagementInProgress;
-}
 
 - (void)updateAndReportFunnelState
 {
@@ -1078,7 +1158,7 @@
     {
         // If a chat started before invitation state was reached, it will be reported here.
         // We can return from the call because it is the topmost state
-        if ([self engagementInProgress])
+        if ([self chatInProgress])
         {
             self.funnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
@@ -1126,7 +1206,7 @@
     // We can return from each condition because there the final state is set here
     if (self.funnelState == LIOFunnelStateClicked)
     {
-        if (![self engagementInProgress])
+        if (![self chatInProgress])
         {
             // Case one - Tab is not visible, and the button is not being displayed, downgrade to a visit
             if (LIOButtonVisibilityAlways != [self.lastKnownButtonVisibility intValue])
@@ -1175,14 +1255,23 @@
     }
 }
 
+- (void)handleFunnelQueueIfNeeded
+{
+    if (self.funnelRequestQueue.count > 0) {
+        NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
+        [self sendFunnelPacketForState:[nextFunnelState intValue]];
+        [self.funnelRequestQueue removeObjectAtIndex:0];
+    }
+}
+
 - (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
 {
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     
-    // Let's check if we are in the middle of a request, or disconnected,
+    // Let's check if we are in the middle of a request, or disconnected, or the visit is not yet active
     // otherwise queue this request until network returns or a new state is updated
     
-    if (self.funnelRequestIsActive || (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)) {
+    if (self.funnelRequestIsActive || (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus || ![self visitActive])) {
         NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
         [self.funnelRequestQueue addObject:nextFunnelRequest];
         return;
@@ -1227,24 +1316,41 @@
             LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
         
         self.funnelRequestIsActive = NO;
-        if (self.funnelRequestQueue.count > 0) {
-            NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
-            [self sendFunnelPacketForState:[nextFunnelState intValue]];
-            [self.funnelRequestQueue removeObjectAtIndex:0];
-        }
-    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        // TODO Rereport a failed funnel request?
-        LIOLog(@"<FUNNEL> with data:%@ failure: %@ code: %d", funnelDict, error, operation.responseCode);
+        self.failedFunnelCount = 0;
         
-        self.funnelRequestIsActive = NO;
-        if (self.funnelRequestQueue.count > 0) {
-            NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
-            [self sendFunnelPacketForState:[nextFunnelState intValue]];
-            [self.funnelRequestQueue removeObjectAtIndex:0];
+        [self handleFunnelQueueIfNeeded];
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        if (operation.responseCode == 404)
+        {
+            LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+            
+            self.funnelRequestIsActive = NO;
+            self.failedFunnelCount = 0;
+            
+            [self relaunchVisit];
+        }
+        else
+        {
+            LIOLog(@"<FUNNEL> with data:%@ failure: %@ code: %d", funnelDict, error, operation.responseCode);
+
+            self.funnelRequestIsActive = NO;
+            self.failedFunnelCount += 1;
+            if (self.failedFunnelCount < 10)
+            {
+                NSNumber* failedFunnelRequest = [NSNumber numberWithInt:funnelState];
+                [self.funnelRequestQueue insertObject:failedFunnelRequest atIndex:0];
+            }
+            else
+            {
+                self.failedFunnelCount = 0;
+            }
+        
+            [self handleFunnelQueueIfNeeded];
         }
     }];
 }
 
+#pragma mark -
 #pragma mark Access Methods to Visit Properties
 
 - (NSString *)welcomeText

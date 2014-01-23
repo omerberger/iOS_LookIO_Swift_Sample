@@ -217,6 +217,7 @@ static LIOManager *sharedLookIOManager = nil;
                 self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
                 break;
         }
+        
     }
 }
 
@@ -251,7 +252,7 @@ static LIOManager *sharedLookIOManager = nil;
         
         if ([self.backgroundedTime timeIntervalSinceNow] <= -1800.0)
         {
-            // TODO Reset Visit after 30 minutes
+            [self.visit relaunchVisit];
         }
         else
         {
@@ -359,6 +360,7 @@ static LIOManager *sharedLookIOManager = nil;
     [[LIONetworkManager networkManager] setQAMode];
 }
 
+#pragma mark -
 #pragma mark Visit Interaction Methods
 
 - (NSDictionary *)statusDictionary
@@ -423,6 +425,16 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)addCustomVariables:(NSDictionary *)aDictionary
 {
     // TODO Add custom variables
+}
+
+- (void)visitWillRelaunch:(LIOVisit *)visit
+{
+    if (self.chatInProgress)
+    {
+        [self.engagement engagementNotFound];
+    }
+
+    [[LIONetworkManager networkManager] resetNetworkEndpoints];
 }
 
 #pragma mark DraggableButtonDelegate Methods
@@ -841,6 +853,7 @@ static LIOManager *sharedLookIOManager = nil;
         [self dismissLookIOWindow];
     
     [self.controlButton setChatMode];
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement withAlert:(BOOL)withAlert

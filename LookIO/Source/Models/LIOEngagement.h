@@ -72,6 +72,7 @@ typedef enum
 - (void)acceptEngagementReconnect;
 - (void)cancelReconnect;
 - (void)cleanUpEngagement;
+- (void)engagementNotFound;
 
 - (void)sendVisitorLineWithText:(NSString *)text;
 - (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId;

@@ -52,6 +52,7 @@ typedef enum
 - (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden;
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit;
+- (void)visitWillRelaunch:(LIOVisit *)visit;
 
 @end
 
@@ -75,6 +76,7 @@ typedef enum
 - (BOOL)hideEmailChat;
 
 - (void)launchVisit;
+- (void)relaunchVisit;
 - (void)stopVisit;
 - (void)sendContinuationReport;
 
