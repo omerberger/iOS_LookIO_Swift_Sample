@@ -265,8 +265,11 @@
 
 - (void)presentSurveyViewControllerWithSurvey:(LIOSurvey *)survey animated:(BOOL)animated
 {
-    
-    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+    {
+        [self.headerBarView hideCurrentNotification];
+    }
     
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
     self.surveyViewController.delegate = self;

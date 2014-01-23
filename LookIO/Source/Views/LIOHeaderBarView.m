@@ -84,6 +84,11 @@
     [self.notificationArea revealNotificationString:aString permanently:permanent];
 }
 
+- (void)hideCurrentNotification
+{
+    [self.notificationArea hideCurrentNotification];
+}
+
 #pragma mark -
 #pragma mark UIControl actions
 

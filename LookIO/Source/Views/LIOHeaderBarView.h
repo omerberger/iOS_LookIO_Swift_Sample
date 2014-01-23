@@ -25,6 +25,7 @@
 
 - (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset;
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
+- (void)hideCurrentNotification;
 - (void)rejiggerSubviews;
 
 @end

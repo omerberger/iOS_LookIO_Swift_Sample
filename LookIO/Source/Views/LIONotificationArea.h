@@ -21,5 +21,6 @@
 @property (nonatomic, assign) BOOL hasCustomBranding;
 
 - (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent;
+- (void)hideCurrentNotification;
 
 @end

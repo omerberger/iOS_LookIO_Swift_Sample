@@ -411,6 +411,30 @@
     }
 }
 
+- (void)hideCurrentNotification
+{
+    if (nil == self.activeNotification)
+        return;
+
+    if (self.notificationTimer)
+    {
+        [self.notificationTimer stopTimer];
+        self.notificationTimer = nil;
+    }
+    if (self.startAnimatedLongTextTimer)
+    {
+        [self.startAnimatedLongTextTimer stopTimer];
+        self.startAnimatedLongTextTimer = nil;
+    }
+    if (self.moveAnimatedLongTextTimer)
+    {
+        [self.moveAnimatedLongTextTimer stopTimer];
+        self.moveAnimatedLongTextTimer = nil;
+    }
+    [self dismissActiveNotification];
+    [self revealDefaultNotification];
+}
+
 - (void)dismissActiveNotification
 {
     if (nil == self.activeNotification)
