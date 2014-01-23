@@ -119,6 +119,12 @@
     [self sendOutroPacket];
 }
 
+- (void)engagementNotFound
+{
+    self.sseChannelState = LIOSSEChannelStateDisconnecting;
+    [self.sseManager disconnect];
+}
+
 - (void)declineEngagementReconnect
 {
     self.sseChannelState = LIOSSEChannelStateInitialized;
@@ -748,6 +754,17 @@
 - (void)sendLineWithMessage:(LIOChatMessage *)message
 {
     // TO DO - Check that engagement is active
+    
+    if (LIOChatMessageStatusFailed == message.status)
+    {
+        message.status = LIOChatMessageStatusResending;
+        [self.delegate engagementChatMessageStatusDidChange:self];
+    }
+    else
+    {
+        message.status = LIOChatMessageStatusSending;
+    }
+    
     NSDictionary *lineDict = [NSDictionary dictionaryWithObjectsAndKeys:@"line", @"type", message.text, @"text", message.clientLineId, @"client_line_id", nil];
     NSString* lineRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatLineRequestURL, self.engagementId];
     
@@ -757,21 +774,29 @@
         else
             LIOLog(@"<LINE> success");
         
-        message.status = LIOChatMessageStatusSent;
-        
-        // Report message success to refresh table view if needed
+        // If this is a resend, we need to update the message view
+        if (LIOChatMessageStatusResending == message.status)
+        {
+            [self.delegate engagementChatMessageStatusDidChange:self];
+            message.status = LIOChatMessageStatusSent;
+        }
+        else
+        {
+            message.status = LIOChatMessageStatusSent;
+        }
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<LINE> failure: %@", error);
         
-        // TODO - failed message with alert signal
-        
         // If we get a 404, let's terminate the engagement
         if (operation.responseCode == 404) {
-            // TO DO - End engagement and alert
-        } else {
+            [self engagementNotFound];
+        }
+        // For other errors, we should display an alert for the failed message
+        else
+        {
             message.status = LIOChatMessageStatusFailed;
-            // TO DO - Refresh table view and notify user if needed
+            [self.delegate engagementChatMessageStatusDidChange:self];
         }
     }];
 }
@@ -779,6 +804,16 @@
 - (void)sendMediaPacketWithMessage:(LIOChatMessage *)message
 {
     // TODO: No engagement ID
+    
+    if (LIOChatMessageStatusFailed == message.status)
+    {
+        message.status = LIOChatMessageStatusResending;
+        [self.delegate engagementChatMessageStatusDidChange:self];
+    }
+    else
+    {
+        message.status = LIOChatMessageStatusSending;
+    }
     
     NSData *attachmentData = [[LIOMediaManager sharedInstance] mediaDataWithId:message.attachmentId];
     
@@ -805,14 +840,21 @@
         
         [[LPMediaAPIClient sharedClient] postMultipartDataToPath:LIOLookIOManagerMediaUploadRequestURL data:body success:^(LPHTTPRequestOperation *operation, id responseObject) {
 
-            message.status = LIOChatMessageStatusSent;
-
-            // TODO - If message had failed before, update it here
-
             if (responseObject)
                 LIOLog(@"<PHOTO UPLOAD> with response: %@", responseObject);
             else
                 LIOLog(@"<PHOTO UPLOAD> success");
+            
+            // If this is a resend, we need to update the message view
+            if (LIOChatMessageStatusResending == message.status)
+            {
+                [self.delegate engagementChatMessageStatusDidChange:self];
+                message.status = LIOChatMessageStatusSent;
+            }
+            else
+            {
+                message.status = LIOChatMessageStatusSent;
+            }
             
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             message.status = LIOChatMessageStatusFailed;
@@ -831,16 +873,16 @@
             }
             else
             {
-                // TODO - Regular failure notification
-                /*
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendTitle")
-                                                                    message:LIOLocalizedString(@"LIOLookIOManager.FailedAttachmentSendBody")
-                                                                   delegate:nil
-                                                          cancelButtonTitle:@"LIOLookIOManager.FailedAttachmentSendButton"
-                                                          otherButtonTitles:nil];
-                [alertView show];
-                [alertView autorelease];
-                 */
+                // If we get a 404, let's terminate the engagement
+                if (operation.responseCode == 404) {
+                    [self engagementNotFound];
+                }
+                // For other errors, we should display an alert for the failed message
+                else
+                {
+                    message.status = LIOChatMessageStatusFailed;
+                    [self.delegate engagementChatMessageStatusDidChange:self];
+                }
             }
             
             LIOLog(@"<PHOTO UPLOAD> with failure: %@", error);
@@ -959,6 +1001,8 @@
     newMessage.kind = LIOChatMessageKindLocalImage;
     newMessage.date = [NSDate date];
     newMessage.attachmentId = attachmentId;
+    newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
+    self.lastClientLineId += 1;
     [self.messages addObject:newMessage];
     
     [self sendMediaPacketWithMessage:newMessage];

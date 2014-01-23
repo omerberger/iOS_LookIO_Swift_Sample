@@ -595,6 +595,7 @@
 - (void)reachabilityDidChange:(NSNotification *)notification
 {
     [self refreshControlButtonVisibility];
+    [self.delegate visitChatEnabledDidUpdate:self];
     
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
@@ -863,6 +864,11 @@
 
 - (BOOL)chatEnabled
 {
+    // If no network, chat is not enabled
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+        return NO;
+    
     // nil or empty
     if (0 == [self.multiskillMapping count])
         return NO;

@@ -111,6 +111,7 @@
         {
             cell = [[LIOChatTableViewImageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewImageCellIdentifier];
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            [cell.failedToSendButton addTarget:self action:@selector(resendFailedMessage:) forControlEvents:UIControlEventTouchUpInside];
             cell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         }
         
@@ -128,6 +129,7 @@
     {
         cell = [[LIOChatTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LIOChatViewControllerChatTableViewCellIdentifier];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        [cell.failedToSendButton addTarget:self action:@selector(resendFailedMessage:) forControlEvents:UIControlEventTouchUpInside];
         cell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     }
     
@@ -237,6 +239,21 @@
     [self scrollToBottomDelayed:YES];
 }
 
+- (void)resendFailedMessage:(id)sender
+{
+    UIButton *failedToSendButton = (UIButton *)sender;
+    NSPredicate *clientLineIdPredicate = [NSPredicate predicateWithFormat:@"clientLineId = %@", failedToSendButton.tag];
+    NSArray *messagesWithClientLineId = [self.engagement.messages filteredArrayUsingPredicate:clientLineIdPredicate];
+    if (messagesWithClientLineId.count > 0)
+    {
+        LIOChatMessage *matchedClientLineIdMessage = [messagesWithClientLineId objectAtIndex:0];
+        if (LIOChatMessageKindLocal == matchedClientLineIdMessage.kind)
+            [self.engagement sendLineWithMessage:matchedClientLineIdMessage];
+        if (LIOChatMessageKindLocalImage == matchedClientLineIdMessage.kind)
+            [self.engagement sendMediaPacketWithMessage:matchedClientLineIdMessage];
+    }
+}
+
 - (void)sendLineWithPendingImage
 {
     NSString *attachmentId = [[LIOMediaManager sharedInstance] commitImageMedia:self.pendingImageAttachment];
@@ -251,6 +268,11 @@
     [self.tableView reloadData];
     [self updateSubviewFrames];
     [self scrollToBottomDelayed:YES];
+}
+
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement
+{
+    [self.tableView reloadData];
 }
 
 - (void)presentEndChatAlertView

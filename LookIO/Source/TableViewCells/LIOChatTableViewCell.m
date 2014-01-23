@@ -13,10 +13,10 @@
 
 #import "LPChatBubbleView.h"
 
-
 @interface LIOChatTableViewCell ()
 
 @property (nonatomic, strong) LPChatBubbleView *chatBubbleView;
+@property (nonatomic, strong) UIActivityIndicatorView *resendActivityIndicatorView;
 
 @end
 
@@ -30,6 +30,15 @@
         
         self.chatBubbleView = [[LPChatBubbleView alloc] initWithFrame:CGRectMake(8, 10, 100, 40)];
         [self.contentView addSubview:self.chatBubbleView];
+        
+        self.failedToSendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 313.0, 20, 22, 22)];
+        UIImage* failedToSendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFailedMessageAlertIcon"];
+        [self.failedToSendButton setImage:failedToSendButtonImage forState:UIControlStateNormal];
+        [self.contentView addSubview:self.failedToSendButton];
+        
+        self.resendActivityIndicatorView = [[UIActivityIndicatorView alloc] initWithFrame:self.failedToSendButton.frame];
+        self.resendActivityIndicatorView.activityIndicatorViewStyle = UIActivityIndicatorViewStyleGray;
+        [self.contentView addSubview:self.resendActivityIndicatorView];
     }
     return self;
 }
@@ -166,6 +175,38 @@
         for (UIView *subview in self.subviews)
             subview.clipsToBounds = NO;
     
+    // If message sending failed, show the failed button
+    if (LIOChatMessageKindLocal == chatMessage.kind && LIOChatMessageStatusFailed == chatMessage.status)
+    {
+        self.failedToSendButton.hidden = NO;
+        aFrame = self.failedToSendButton.frame;
+        aFrame.origin.x = self.chatBubbleView.frame.origin.x - self.failedToSendButton.frame.size.width - 10.0;
+        aFrame.origin.y = self.chatBubbleView.frame.origin.y + (self.chatBubbleView.frame.size.height - self.failedToSendButton.frame.size.height)/2;
+        self.failedToSendButton.frame = aFrame;
+        
+        self.failedToSendButton.tag = chatMessage.clientLineId;
+        
+        [self.resendActivityIndicatorView stopAnimating];
+    }
+    else
+    {
+        if (LIOChatMessageKindLocal == chatMessage.kind && LIOChatMessageStatusResending == chatMessage.status)
+        {
+            self.failedToSendButton.hidden = YES;
+            aFrame = self.failedToSendButton.frame;
+            aFrame.origin.x = self.chatBubbleView.frame.origin.x - self.failedToSendButton.frame.size.width - 10.0;
+            aFrame.origin.y = self.chatBubbleView.frame.origin.y + (self.chatBubbleView.frame.size.height - self.failedToSendButton.frame.size.height)/2;
+            self.failedToSendButton.frame = aFrame;
+
+            self.resendActivityIndicatorView.frame = self.failedToSendButton.frame;
+            [self.resendActivityIndicatorView startAnimating];
+        }
+        else
+        {
+            self.failedToSendButton.hidden = YES;
+            [self.resendActivityIndicatorView stopAnimating];
+        }
+    }
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated

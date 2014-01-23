@@ -235,8 +235,14 @@
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 {
-    [self.chatViewController engagement:self.engagement didReceiveMessage:message];
+    [self.chatViewController engagement:engagement didReceiveMessage:message];
 }
+
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
+{
+    [self.chatViewController engagementChatMessageStatusDidChange:engagement];
+}
+
 
 - (void)presentLoadingViewController
 {

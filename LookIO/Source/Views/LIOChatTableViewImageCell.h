@@ -11,6 +11,8 @@
 
 @interface LIOChatTableViewImageCell : UITableViewCell
 
+@property (nonatomic, strong) UIButton *failedToSendButton;
+
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage;
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size;
 

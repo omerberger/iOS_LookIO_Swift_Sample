@@ -43,6 +43,7 @@ typedef enum {
 
 - (void)setEngagement:(LIOEngagement *)engagement;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
 - (void)dismissChat:(id)sender;
 
 - (void)headerBarViewPlusButtonWasTapped;

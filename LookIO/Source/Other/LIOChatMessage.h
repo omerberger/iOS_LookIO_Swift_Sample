@@ -22,6 +22,7 @@ typedef enum
 {
     LIOChatMessageStatusInitialized,
     LIOChatMessageStatusSending,
+    LIOChatMessageStatusResending,
     LIOChatMessageStatusSent,
     LIOChatMessageStatusFailed,
     LIOChatMessageStatusReceived,

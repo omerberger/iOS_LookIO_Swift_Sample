@@ -48,6 +48,7 @@ typedef enum
 - (void)engagementDidReconnect:(LIOEngagement *)engagement;
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement;
 - (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement;
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
 
 @end
 
@@ -74,6 +75,8 @@ typedef enum
 
 - (void)sendVisitorLineWithText:(NSString *)text;
 - (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId;
+- (void)sendLineWithMessage:(LIOChatMessage *)message;
+- (void)sendMediaPacketWithMessage:(LIOChatMessage *)message;
 
 - (void)submitSurvey:(LIOSurvey *)survey;
 - (void)sendChatHistoryPacketWithEmail:(NSString *)email;

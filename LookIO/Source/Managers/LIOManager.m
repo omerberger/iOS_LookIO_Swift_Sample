@@ -1042,6 +1042,12 @@ static LIOManager *sharedLookIOManager = nil;
     [alertView show];
 }
 
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement
+{
+    [self.containerViewController engagementChatMessageStatusDidChange:engagement];
+}
+
+
 #pragma mark Custom Branding Methods
 
 - (id)brandingViewWithDimensions:(NSValue *)aValue
