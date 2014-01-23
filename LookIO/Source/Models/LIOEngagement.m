@@ -417,16 +417,22 @@
             break;
             
         case LIOSSEChannelStateReconnecting:
-            self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
-            [self.delegate engagementWantsReconnectionPrompt:self];
+            if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState)
+            {
+                self.sseChannelState = LIOSSEChannelStateInitialized;
+                [self.delegate engagementDidDisconnectWhileInPostOrOfflineSurvey:self];
+            }
+            else
+            {
+                self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
+                [self.delegate engagementWantsReconnectionPrompt:self];
+            }
             break;
             
         case LIOSSEChannelStateReconnectPrompt:
             self.sseChannelState = LIOSSEChannelStateInitialized;
             [self.delegate engagementDidFailToReconnect:self];
             break;
-            
-            
             
         default:
             break;

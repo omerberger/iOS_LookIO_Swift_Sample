@@ -1031,6 +1031,17 @@ static LIOManager *sharedLookIOManager = nil;
     [alertView show];
 }
 
+- (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    [alertView show];
+}
+
 #pragma mark Custom Branding Methods
 
 - (id)brandingViewWithDimensions:(NSValue *)aValue

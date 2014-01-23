@@ -47,6 +47,7 @@ typedef enum
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement;
 - (void)engagementDidReconnect:(LIOEngagement *)engagement;
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement;
+- (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement;
 
 @end
 
