@@ -282,16 +282,19 @@
 {
     CGRect frame = self.frame;
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    UIWindow *buttonWindow = (UIWindow *)self.superview;
+    CGSize screenSize = [buttonWindow bounds].size;
 
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
         {
-            frame.origin.x = self.frame.origin.x - width - 10.0;
+            frame.origin.x = screenSize.width - LIODraggableButtonSize - width - 10.0 + 3.0;
             frame.size.width = LIODraggableButtonSize + width + 10.0;
         }
         else
         {
+            frame.origin.x = -3;
             frame.size.width = LIODraggableButtonSize + width + 10.0;
         }
     }
@@ -351,6 +354,17 @@
 
 - (void)presentMessage:(NSString *)message
 {
+    // Just to make sure, don't display a message from a hidden button
+    if (self.isHidden)
+        return;
+    
+    // Cancel any existing timers, in case a message is already being shown
+    if (self.messageTimer)
+    {
+        [self.messageTimer stopTimer];
+        self.messageTimer = nil;
+    }
+    
     self.isShowingMessage = YES;
     
     self.messageLabel.text = message;
@@ -370,10 +384,10 @@
     }
     
     CGRect frame = self.messageLabel.frame;
-    frame.origin.x = self.bounds.size.width;
+    frame.origin.x = LIODraggableButtonSize;
     frame.origin.y = 0;
     frame.size.width = expectedSize.width;
-    frame.size.height = self.bounds.size.height;
+    frame.size.height = LIODraggableButtonSize;
     self.messageLabel.frame = frame;
     self.messageLabel.hidden = NO;
     
