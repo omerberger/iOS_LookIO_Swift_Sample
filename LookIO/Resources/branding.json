@@ -370,7 +370,16 @@
             "position" : {
                 "horizontal" : "right",
                 "vertical" : "0.5"
-            }
+            },
+						"badge" : {
+							"background" : {
+								"color" : "#ff0000"
+							},
+							"font" : {
+								"color" : "#ffffff",
+								"size" : "12.0"
+							}
+						}
         }
     }
 }

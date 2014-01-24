@@ -30,10 +30,14 @@ typedef enum
 @property (nonatomic, assign) id <LIODraggableButtonDelegate> delegate;
 @property (nonatomic, assign) LIOButtonMode buttonMode;
 
+@property (nonatomic, assign) NSInteger numberOfUnreadMessages;
+
 - (void)show:(BOOL)animated;
 - (void)hide:(BOOL)animated;
 
 - (void)presentMessage:(NSString *)message;
+- (void)resetUnreadMessages;
+- (void)reportUnreadMessage;
 
 - (void)resetFrame;
 - (void)updateButtonBranding;

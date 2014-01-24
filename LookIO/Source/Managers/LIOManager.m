@@ -64,6 +64,7 @@ typedef void (^LIOCompletionBlock)(void);
 
 @implementation LIOManager
 
+#pragma mark -
 #pragma mark Initialization Methods
 
 static LIOManager *sharedLookIOManager = nil;
@@ -144,6 +145,7 @@ static LIOManager *sharedLookIOManager = nil;
     [self.visit launchVisit];
 }
 
+#pragma mark -
 #pragma mark Notification handlers
 
 - (void)addNotificationHandlers
@@ -321,6 +323,7 @@ static LIOManager *sharedLookIOManager = nil;
     });
 }
 
+#pragma mark -
 #pragma mark Custom Button Methods
 
 - (void)setChatAvailable
@@ -343,6 +346,7 @@ static LIOManager *sharedLookIOManager = nil;
     [self.visit setInvitationNotShown];
 }
 
+#pragma mark -
 #pragma mark Server usage methods
 
 - (void)setProductionMode
@@ -445,6 +449,15 @@ static LIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message
+{
+    if (!self.visit.controlButtonHidden)
+    {
+        [self.controlButton presentMessage:message];
+    }
+}
+
+#pragma mark -
 #pragma mark DraggableButtonDelegate Methods
 
 - (void)draggableButtonDidBeginDragging:(LIODraggableButton *)draggableButton
@@ -462,6 +475,7 @@ static LIOManager *sharedLookIOManager = nil;
     [self beginChat];
 }
 
+#pragma mark -
 #pragma mark AlertView Delegate Methods
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
@@ -577,20 +591,26 @@ static LIOManager *sharedLookIOManager = nil;
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
  
+    // Set up the window
     self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
     self.mainWindow = self.previousKeyWindow;
     
     [self.lookioWindow makeKeyAndVisible];
 
+    // Control Button
     if (!self.visit.controlButtonHidden)
     {
         [self.controlButton hide:YES];
     }
+    [self.controlButton resetUnreadMessages];
     
+    // Blur View
     [self takeScreenshotAndSetBlurImageView];
     
+    // LookIOWindow State
     self.lookIOWindowState = LIOLookIOWindowStateVisible;
     
+    // Report chat up action
     if (self.engagement)
     {
         NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -612,6 +632,7 @@ static LIOManager *sharedLookIOManager = nil;
     {
         [self.controlButton show:YES];
     }
+    [self.controlButton resetUnreadMessages];
     
     switch (self.visit.visitState) {
         // If chat was opened but not started, we cancel the engagement
@@ -959,7 +980,15 @@ static LIOManager *sharedLookIOManager = nil;
 
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
-            [self.controlButton presentMessage:@"The agent has sent a message"];
+            [self.controlButton reportUnreadMessage];
+            if (self.visit.controlButtonHidden)
+            {
+                [self.containerViewController presentChatForEngagement:engagement];
+            }
+            else
+            {
+                [self.controlButton presentMessage:@"The agent has sent a message"];
+            }
         }
     }
     
@@ -1073,7 +1102,7 @@ static LIOManager *sharedLookIOManager = nil;
     [self.containerViewController engagementChatMessageStatusDidChange:engagement];
 }
 
-
+#pragma mark -
 #pragma mark Custom Branding Methods
 
 - (id)brandingViewWithDimensions:(NSValue *)aValue

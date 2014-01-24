@@ -54,6 +54,7 @@ typedef enum
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit;
 - (void)visitWillRelaunch:(LIOVisit *)visit;
 - (void)visitReachabilityDidChange:(LIOVisit *)visit;
+- (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
 
 @end
 

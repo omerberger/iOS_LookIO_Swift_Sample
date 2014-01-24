@@ -175,7 +175,7 @@
     NSString *localeId = [LIOStatusManager localeId];
     if ([localeId length])
         [statusDictionary setObject:localeId forKey:@"locale"];
-     
+         
     NSString *languageId = [LIOStatusManager languageId];
     if ([languageId length])
         [statusDictionary setObject:languageId forKey:@"language"];
@@ -578,6 +578,10 @@
             
             self.visitState = LIOVisitStateVisitInProgress;
 
+            if (![self chatInProgress])
+            {
+                [self.delegate visit:self wantsToShowMessage:@"Tap to chat"];
+            }
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             LIOLog(@"<LAUNCH> Request failed with response code %d and error: %d", operation.responseCode);
 
@@ -698,6 +702,12 @@
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
             
             [self updateAndReportFunnelState];
+            
+            if (![self chatInProgress])
+            {
+                [self.delegate visit:self wantsToShowMessage:@"Tap to chat"];
+            }
+            
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             self.continueCallInProgress = NO;
             

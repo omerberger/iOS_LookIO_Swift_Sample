@@ -7,10 +7,16 @@
 //
 
 #import "LIODraggableButton.h"
+
+// Managers
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
+// Helpers
 #import "LIOTimerProxy.h"
+
+// Views
+#import "LIOBadgeView.h"
 
 #define LIODraggableButtonSize 50.0
 #define LIODraggableButtonMessageTime 5.0
@@ -34,8 +40,10 @@
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @property (nonatomic, strong) UILabel *messageLabel;
+@property (nonatomic, strong) LIOBadgeView *badgeView;
 
 @property (nonatomic, strong) LIOTimerProxy *messageTimer;
+
 
 @end
 
@@ -69,6 +77,13 @@
         self.statusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, LIODraggableButtonSize - 20.0, LIODraggableButtonSize - 20.0)];
         self.statusImageView.userInteractionEnabled = NO;
         [self addSubview:self.statusImageView];
+        
+        self.numberOfUnreadMessages = 0;
+        
+        self.badgeView = [[LIOBadgeView alloc] initWithFrame:CGRectMake(30, 5, 20, 20)];
+        [self.badgeView setBadgeNumber:1];
+        self.badgeView.hidden = YES;
+        [self addSubview:self.badgeView];
         
         self.messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.messageLabel.backgroundColor = [UIColor clearColor];
@@ -318,6 +333,21 @@
         [self setHiddenFrame];
     }
 }
+
+- (void)resetUnreadMessages
+{
+    self.numberOfUnreadMessages = 0;
+    self.badgeView.hidden = YES;
+}
+
+- (void)reportUnreadMessage
+{
+    self.numberOfUnreadMessages += 1;
+
+    [self.badgeView setBadgeNumber:self.numberOfUnreadMessages];
+    self.badgeView.hidden = NO;
+}
+
 
 - (void)presentMessage:(NSString *)message
 {

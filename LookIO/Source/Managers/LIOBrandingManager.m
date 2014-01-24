@@ -78,6 +78,20 @@ static LIOBrandingManager *brandingManager = nil;
             dictionary = [visitDictionary objectForKey:@"control_button"];
     }
     
+    if (LIOBrandingElementControlButtonBadge == element)
+    {
+        if (visitDictionary)
+        {
+            NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
+            if (buttonDictionary)
+            {
+                NSDictionary *badgeDictionary = [buttonDictionary objectForKey:@"badge"];
+                if (badgeDictionary)
+                    dictionary = badgeDictionary;
+            }
+        }
+    }
+    
     if (LIOBrandingElementFont == element)
     {
         return engagementDictionary;
