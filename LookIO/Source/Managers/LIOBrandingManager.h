@@ -61,6 +61,10 @@ typedef enum
     LIOBrandingColorColor
 } LIOBrandingColor;
 
+// Defaults keys
+#define LIOBrandingManagerBrandingDictKey      @"LIOBrandingManagerBrandingDictKey"
+#define LIOBrandingManagerBrandingDictHashKey  @"LIOBrandingManagerBrandingDictHashKey"
+
 @interface LIOBrandingManager : NSObject
 
 + (LIOBrandingManager *)brandingManager;

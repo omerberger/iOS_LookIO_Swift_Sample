@@ -8,16 +8,20 @@
 
 #import "LIOVisit.h"
 
+// Managers
 #import "LIOManager.h"
 #import "LIOLogManager.h"
 #import "LIOAnalyticsManager.h"
 #import "LIOBundleManager.h"
-
-#import "LPVisitAPIClient.h"
+#import "LIOBrandingManager.h"
 #import "LIOStatusManager.h"
-#import "LPVisitAPIClient.h"
 
+// Networking
+#import "LPVisitAPIClient.h"
+#import "LPVisitAPIClient.h"
 #import "LPHTTPRequestOperation.h"
+
+// Helpers
 #import "LIOTimerProxy.h"
 
 #define LIOLookIOManagerVersion @"1.1.0"
@@ -134,6 +138,12 @@
             }
         }
         
+        // Hash the existing branding file to prepare for visit launching
+        // TODO: Actually hash this
+        // For now, only settings a fake one to trigger getting this even once
+        if (![userDefaults objectForKey:LIOBrandingManagerBrandingDictHashKey])
+            [userDefaults setObject:@"fake_hash" forKey:LIOBrandingManagerBrandingDictHashKey];
+        
         // Set up the pending events queue
         self.pendingEvents = [[NSMutableArray alloc] init];
         
@@ -219,18 +229,22 @@
     
     if ([self.requiredSkill length])
         [statusDictionary setObject:self.requiredSkill forKey:@"skill"];
-     
+    
     [statusDictionary setObject:[NSNumber numberWithBool:[LIOStatusManager statusManager].appForegrounded] forKey:@"app_foregrounded"];
-
-     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-     NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
-     if ([localizationTableHash length])
-         [statusDictionary setObject:localizationTableHash forKey:@"strings_hash"];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
+    if ([localizationTableHash length])
+        [statusDictionary setObject:localizationTableHash forKey:@"strings_hash"];
+    
+    NSString* brandingDictHash = [userDefaults objectForKey:LIOBrandingManagerBrandingDictHashKey];
+    if (brandingDictHash)
+        [statusDictionary setObject:brandingDictHash forKey:@"branding_md5"];
     
     NSString *localeId = [LIOStatusManager localeId];
     if ([localeId length])
         [statusDictionary setObject:localeId forKey:@"locale"];
-         
+    
     NSString *languageId = [LIOStatusManager languageId];
     if ([languageId length])
         [statusDictionary setObject:languageId forKey:@"language"];
@@ -434,6 +448,10 @@
     if (hideEmailChatNumber)
         [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
     
+    NSString *brandingMd5String = [settingsDict objectForKey:@"branding_md5"];
+    if (brandingMd5String)
+        [resolvedSettings setObject:brandingMd5String forKey:@"branding_md5"];
+    
     return resolvedSettings;
 }
 
@@ -580,6 +598,12 @@
         {
             [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
             self.lastKnownHideEmailChat = [hideEmailChat boolValue];
+        }
+        
+        NSString *brandingMd5 = [resolvedSettings objectForKey:@"branding_md5"];
+        if (brandingMd5)
+        {
+            [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
         }
         
         [self refreshControlButtonVisibility];
