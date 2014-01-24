@@ -37,6 +37,8 @@ static LIONetworkManager *networkManager = nil;
         self.controlEndpoint = LIOLookIOManagerDefaultControlEndpoint;
         self.usesTLS = YES;
         
+        [self resetNetworkEndpoints];
+        
         [[NSHTTPCookieStorage sharedHTTPCookieStorage]setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
     }
     return self;

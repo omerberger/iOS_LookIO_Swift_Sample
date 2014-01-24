@@ -83,6 +83,8 @@ static LIOManager *sharedLookIOManager = nil;
     
     if (self)
     {
+        // Init network manager to set the default endpoints
+        [LIONetworkManager networkManager];
     }
     
     return self;

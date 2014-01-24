@@ -160,6 +160,11 @@
 
 - (void)setVisibleFrame
 {
+    [self setVisibleFrameWithMessageWidth:0.0];
+}
+
+- (void)setVisibleFrameWithMessageWidth:(CGFloat)messageWidth
+{
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -167,33 +172,59 @@
     CGRect frame = self.frame;
     frame.size.width = LIODraggableButtonSize;
     frame.size.height = LIODraggableButtonSize;
+    
+    CGFloat messageWidthWithMargin = (messageWidth > 0.0 ? messageWidth + 10.0 : 0.0);
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
+        {
+            frame.size.width = LIODraggableButtonSize + messageWidthWithMargin;
             frame.origin.x = screenSize.width - frame.size.width + 3.0;
+        }
         else
-            frame.origin.x = -3;
+        {
+            frame.origin.x = -3.0;
+            frame.size.width = LIODraggableButtonSize + messageWidthWithMargin;
+        }
     }
     if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
         if (self.isAttachedToRight)
+        {
             frame.origin.y = -3.0;
+            frame.size.height = LIODraggableButtonSize + messageWidthWithMargin;
+        }
         else
+        {
+            frame.size.height = LIODraggableButtonSize + messageWidthWithMargin;
             frame.origin.y = screenSize.height - frame.size.height + 3.0;
+        }
     }
     if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
+        {
             frame.origin.x = -3.0;
+            frame.size.width = LIODraggableButtonSize + messageWidthWithMargin;
+        }
         else
+        {
+            frame.size.width = LIODraggableButtonSize + messageWidthWithMargin;
             frame.origin.x = screenSize.width - frame.size.width + 3.0;
+        }
     }
     if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
+        {
+            frame.size.height = LIODraggableButtonSize + messageWidthWithMargin;
             frame.origin.y = screenSize.height - frame.size.height + 3.0;
+        }
         else
+        {
             frame.origin.y = -3.0;
+            frame.size.height = LIODraggableButtonSize + messageWidthWithMargin;
+        }
     }
 
     self.frame = frame;
@@ -278,30 +309,6 @@
         [self setHiddenFrame];
 }
 
-- (void)setFrameForMessagedWithWidth:(CGFloat)width
-{
-    CGRect frame = self.frame;
-    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    UIWindow *buttonWindow = (UIWindow *)self.superview;
-    CGSize screenSize = [buttonWindow bounds].size;
-
-    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
-    {
-        if (self.isAttachedToRight)
-        {
-            frame.origin.x = screenSize.width - LIODraggableButtonSize - width - 10.0 + 3.0;
-            frame.size.width = LIODraggableButtonSize + width + 10.0;
-        }
-        else
-        {
-            frame.origin.x = -3;
-            frame.size.width = LIODraggableButtonSize + width + 10.0;
-        }
-    }
-    
-    self.frame = frame;
-}
-
 #pragma mark -
 #pragma mark Visibility Methods
 
@@ -358,6 +365,10 @@
     if (self.isHidden)
         return;
     
+    // Also don't show messages on a dragged button
+    if (self.isDragging)
+        return;
+    
     // Cancel any existing timers, in case a message is already being shown
     if (self.messageTimer)
     {
@@ -392,8 +403,13 @@
     self.messageLabel.hidden = NO;
     
     [UIView animateWithDuration:0.3 animations:^{
-        [self setFrameForMessagedWithWidth:expectedSize.width];
+        [self setVisibleFrameWithMessageWidth:expectedSize.width];
     } completion:^(BOOL finished) {
+        if (self.messageTimer)
+        {
+            [self.messageTimer stopTimer];
+            self.messageTimer = nil;
+        }
         self.messageTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIODraggableButtonMessageTime target:self selector:@selector(messageTimerDidFire)];
     }];
 }
