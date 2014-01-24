@@ -56,9 +56,6 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.buttonMode = LIOButtonModeChat;
-        [self updateButtonBranding];
-        
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 1.0;
         
@@ -95,6 +92,9 @@
         self.clipsToBounds = YES;
         
         [self resetFrame];
+        
+        self.buttonMode = LIOButtonModeChat;
+        [self updateButtonBranding];        
     }
     return self;
 }
@@ -108,7 +108,6 @@
     self.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButton];
     self.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
-    
     
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:

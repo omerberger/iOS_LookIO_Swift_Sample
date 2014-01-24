@@ -92,10 +92,8 @@
         
         self.visitState = LIOVisitStateInitialized;
         
-        self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
         self.multiskillMapping = nil;
-        self.pendingEvents = [[NSMutableArray alloc] init];
-        
+
         self.customButtonChatAvailable = NO;
         self.customButtonInvitationShown = NO;
         
@@ -114,7 +112,66 @@
                                                  selector:@selector(locationWasDetermined:)
                                                      name:LIOAnalyticsManagerLocationWasDeterminedNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        
+        // Hash the existing langauge file to prepare for visit launching
+        if (![userDefaults objectForKey:LIOBundleManagerStringTableHashKey])
+        {
+            LIOBundleManager *bundleManager = [LIOBundleManager sharedBundleManager];
+            NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
+            NSDictionary *builtInTable = [bundleManager localizedStringTableForLanguage:languageId];
+            if ([builtInTable count])
+            {
+                NSString *newHash = [bundleManager hashForLocalizedStringTable:builtInTable];
+                [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
+                
+                LIOLog(@"Hashing the bundled localization table (\"%@\") succeeded: %@", languageId, newHash);
+            }
+            else
+            {
+                LIOLog(@"Couldn't hash the bundled localization table (\"%@\"). Table might not exist for that language.", languageId);
+            }
+        }
+        
+        // Set up the pending events queue
+        self.pendingEvents = [[NSMutableArray alloc] init];
+        
+        // Restore saved pending events.
+        NSArray *savedPendingEvents = [userDefaults objectForKey:LIOLookIOManagerPendingEventsKey];
+        if ([savedPendingEvents count])
+            [self.pendingEvents addObjectsFromArray:savedPendingEvents];
+        
+        // Set up the queued launch report queue
+        self.queuedLaunchReportDates = [[userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey] mutableCopy];
+        if (nil == self.queuedLaunchReportDates)
+            self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
+        
+        // Restore control button settings
+        // TODO: Should this really be stored?
+        // if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey])
+        //    self.lastKnownButtonVisibility = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
+        // else
+            self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
+        
+        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey])
+            self.lastKnownWelcomeText = [userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
+        
+        // TODO: Should this really be stored?
+        // if ([userDefaults objectForKey:LIOLookIOManagerMultiskillMappingKey])
+        //    self.multiskillMapping = [userDefaults objectForKey:LIOLookIOManagerMultiskillMappingKey];
 
+        // TODO: This stuff is replaced by branding. Should be removed at some point.
+        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey])
+            self.lastKnownButtonText = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey];
+
+        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTintColorKey])
+            self.lastKnownButtonTintColor = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTintColorKey];
+
+        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextColorKey])
+            self.lastKnownButtonTextColor = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextColorKey];
+        
+        // TODO: This is the place to reconnect any pending engagements..
     }
     return self;
 }
@@ -152,7 +209,7 @@
         [statusDictionary setObject:self.currentVisitId forKey:@"visit_id"];
     }
     
-    // TODO Find out if should send visitor_id here?
+    // TODO: Find out if should send visitor_id here?
     
     if (includesType)
         [statusDictionary setObject:@"intro" forKey:@"type"];
@@ -165,12 +222,10 @@
      
     [statusDictionary setObject:[NSNumber numberWithBool:[LIOStatusManager statusManager].appForegrounded] forKey:@"app_foregrounded"];
 
-    /* TODO localizationTableHash
      NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
      NSString *localizationTableHash = [userDefaults objectForKey:LIOBundleManagerStringTableHashKey];
      if ([localizationTableHash length])
-     [introDict setObject:localizationTableHash forKey:@"strings_hash"];
-     */
+         [statusDictionary setObject:localizationTableHash forKey:@"strings_hash"];
     
     NSString *localeId = [LIOStatusManager localeId];
     if ([localeId length])
@@ -397,6 +452,7 @@
         
         // Delete multiskill mapping. This should force
         // the lib to report "disabled" back to the host app.
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
         
@@ -601,6 +657,11 @@
         self.visitState = LIOVisitStateQueued;
         
         [self.queuedLaunchReportDates addObject:[NSDate date]];
+        [[NSUserDefaults standardUserDefaults] setObject:self.queuedLaunchReportDates forKey:LIOLookIOManagerLaunchReportQueueKey];
+        
+        // Delete multiskill mapping. This should force
+        // the lib to report "disabled" back to the host app.
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
     }

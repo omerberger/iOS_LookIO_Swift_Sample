@@ -64,6 +64,7 @@ typedef enum
 @interface LIOBrandingManager : NSObject
 
 + (LIOBrandingManager *)brandingManager;
+- (UIColor *)colorForHexString:(NSString *)string;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element;
 - (CGFloat)alphaForElement:(LIOBrandingElement)element;
 - (CGFloat)backgroundAlphaForElement:(LIOBrandingElement)element;
