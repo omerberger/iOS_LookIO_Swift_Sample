@@ -67,6 +67,8 @@ typedef enum
 
 @interface LIOBrandingManager : NSObject
 
+@property (nonatomic, strong) NSDictionary *lastKnownBrandingDictionary;
+
 + (LIOBrandingManager *)brandingManager;
 - (UIColor *)colorForHexString:(NSString *)string;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element;

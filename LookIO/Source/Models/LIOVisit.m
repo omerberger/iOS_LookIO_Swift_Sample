@@ -448,6 +448,10 @@
     if (hideEmailChatNumber)
         [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
     
+    NSDictionary *brandingDictionary = [settingsDict objectForKey:@"branding"];
+    if (brandingDictionary)
+        [resolvedSettings setObject:brandingDictionary forKey:@"branding"];
+        
     NSString *brandingMd5String = [settingsDict objectForKey:@"branding_md5"];
     if (brandingMd5String)
         [resolvedSettings setObject:brandingMd5String forKey:@"branding_md5"];
@@ -600,12 +604,24 @@
             self.lastKnownHideEmailChat = [hideEmailChat boolValue];
         }
         
-        NSString *brandingMd5 = [resolvedSettings objectForKey:@"branding_md5"];
-        if (brandingMd5)
+        NSDictionary *brandingDictionary = [resolvedSettings objectForKey:@"branding"];
+        if (brandingDictionary)
         {
-            [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
+            // Ignore empty branding dictionaries
+            if ([brandingDictionary count])
+            {
+                [userDefaults setObject:brandingDictionary forKey:LIOBrandingManagerBrandingDictKey];
+                [LIOBrandingManager brandingManager].lastKnownBrandingDictionary = brandingDictionary;
+        
+                NSString *brandingMd5 = [resolvedSettings objectForKey:@"branding_md5"];
+                if (brandingMd5)
+                {
+                    [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
+                }
+            }
         }
         
+        [userDefaults synchronize];
         [self refreshControlButtonVisibility];
         [self.delegate controlButtonCharacteristsDidChange:self];
 //      [self applicationDidChangeStatusBarOrientation:nil];

@@ -105,11 +105,6 @@ static LIOManager *sharedLookIOManager = nil;
     
     self.lookIOWindowState = LIOLookIOWindowStateHidden;
     
-    self.containerViewController = [[LIOContainerViewController alloc] init];
-    self.containerViewController.delegate = self;
-    self.containerViewController.view.alpha = 0.0;
-    self.lookioWindow.rootViewController = self.containerViewController;
-    
     self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
     self.controlButton.delegate = self;
     [keyWindow addSubview:self.controlButton];
@@ -589,6 +584,14 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)presentLookIOWindow
 {
     self.lookIOWindowState = LIOLookIOWindowStatePresenting;
+    
+    if (self.containerViewController == nil)
+    {
+        self.containerViewController = [[LIOContainerViewController alloc] init];
+        self.containerViewController.delegate = self;
+        self.containerViewController.view.alpha = 0.0;
+        self.lookioWindow.rootViewController = self.containerViewController;
+    }
     
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];

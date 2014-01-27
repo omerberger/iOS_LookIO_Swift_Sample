@@ -8,6 +8,9 @@
 
 #import "LIOBrandingManager.h"
 
+// Managers
+#import "LIOLogManager.h"
+
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
                                      blue:((c)&0xFF)/255.0 \
@@ -15,7 +18,7 @@
 
 @interface LIOBrandingManager ()
 
-@property (nonatomic, strong) NSMutableDictionary *brandingDictionary;
+@property (nonatomic, strong) NSDictionary *originalBrandingDictionary;
 
 @end
 
@@ -50,7 +53,18 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSString *filePath = [[NSBundle mainBundle] pathForResource:@"branding" ofType:@"json"];
     NSData *data = [NSData dataWithContentsOfFile:filePath];
-    self.brandingDictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+    self.originalBrandingDictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if ([userDefaults objectForKey:LIOBrandingManagerBrandingDictKey])
+    {
+        self.lastKnownBrandingDictionary = [userDefaults objectForKey:LIOBrandingManagerBrandingDictKey];
+    }
+    else
+    {
+        self.lastKnownBrandingDictionary = nil;
+    }
+    
 }
 
 #pragma mark Helper Methods
@@ -68,429 +82,462 @@ static LIOBrandingManager *brandingManager = nil;
 - (NSDictionary *)brandingDictionaryForElement:(LIOBrandingElement)element
 {
     NSDictionary *dictionary = nil;
-    NSDictionary *visitDictionary = [self.brandingDictionary objectForKey:@"visit"];
-    NSDictionary *engagementDictionary = [self.brandingDictionary objectForKey:@"engagement"];
-    NSDictionary *surveyDictionary = [self.brandingDictionary objectForKey:@"surveys"];
-
-    if (LIOBrandingElementControlButton == element)
-    {
-        if (visitDictionary)
-            dictionary = [visitDictionary objectForKey:@"control_button"];
-    }
     
-    if (LIOBrandingElementControlButtonBadge == element)
+    NSDictionary *brandingDictionary = nil;
+    if (self.lastKnownBrandingDictionary)
     {
-        if (visitDictionary)
+        brandingDictionary = self.lastKnownBrandingDictionary;
+    }
+    else
+    {
+        brandingDictionary = self.originalBrandingDictionary;
+    }
+    @try
+    {
+        NSDictionary *visitDictionary = [brandingDictionary objectForKey:@"visit"];
+        NSDictionary *engagementDictionary = [brandingDictionary objectForKey:@"engagement"];
+        NSDictionary *surveyDictionary = [brandingDictionary objectForKey:@"surveys"];
+        
+        if (LIOBrandingElementControlButton == element)
         {
-            NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
-            if (buttonDictionary)
+            if (visitDictionary)
+                dictionary = [visitDictionary objectForKey:@"control_button"];
+        }
+        
+        if (LIOBrandingElementControlButtonBadge == element)
+        {
+            if (visitDictionary)
             {
-                NSDictionary *badgeDictionary = [buttonDictionary objectForKey:@"badge"];
-                if (badgeDictionary)
-                    dictionary = badgeDictionary;
+                NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
+                if (buttonDictionary)
+                {
+                    NSDictionary *badgeDictionary = [buttonDictionary objectForKey:@"badge"];
+                    if (badgeDictionary)
+                        dictionary = badgeDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementFont == element)
-    {
-        return engagementDictionary;
-    }
-    
-    if (LIOBrandingElementBoldFont == element)
-    {
-        return engagementDictionary;
-    }
-
-    if (LIOBrandingElementLoadingScreen == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementFont == element)
         {
-            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
-            if (loadingDictionary)
-                dictionary = loadingDictionary;
+            return engagementDictionary;
         }
-    }
-    
-    if (LIOBrandingElementLoadingScreenSubtitle == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementBoldFont == element)
         {
-            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
-            if (loadingDictionary)
+            return engagementDictionary;
+        }
+        
+        if (LIOBrandingElementLoadingScreen == element)
+        {
+            if (engagementDictionary)
             {
-                NSDictionary *subtitleDictionary = [loadingDictionary objectForKey:@"subtitle"];
-                if (subtitleDictionary)
-                    dictionary = subtitleDictionary;
+                NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+                if (loadingDictionary)
+                    dictionary = loadingDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementLoadingScreenTitle == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementLoadingScreenSubtitle == element)
         {
-            NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
-            if (loadingDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *titleDictionary = [loadingDictionary objectForKey:@"title"];
-                if (titleDictionary)
-                    dictionary = titleDictionary;
+                NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+                if (loadingDictionary)
+                {
+                    NSDictionary *subtitleDictionary = [loadingDictionary objectForKey:@"subtitle"];
+                    if (subtitleDictionary)
+                        dictionary = subtitleDictionary;
+                }
             }
         }
-    }
-
-    
-    if (LIOBrandingElementAgentChatBubble == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementLoadingScreenTitle == element)
         {
-            NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
-            if (chatBubblesDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"agent"];
-                if (agentDictionary)
-                    dictionary = agentDictionary;
+                NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+                if (loadingDictionary)
+                {
+                    NSDictionary *titleDictionary = [loadingDictionary objectForKey:@"title"];
+                    if (titleDictionary)
+                        dictionary = titleDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementVisitorChatBubble == element)
-    {
-        if (engagementDictionary)
+        
+        
+        if (LIOBrandingElementAgentChatBubble == element)
         {
-            NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
-            if (chatBubblesDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
-                if (agentDictionary)
-                    dictionary = agentDictionary;
+                NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+                if (chatBubblesDictionary)
+                {
+                    NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"agent"];
+                    if (agentDictionary)
+                        dictionary = agentDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSendBar == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementVisitorChatBubble == element)
         {
-            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
-            if (sendBarDictionary)
+            if (engagementDictionary)
             {
-                dictionary = sendBarDictionary;
+                NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+                if (chatBubblesDictionary)
+                {
+                    NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
+                    if (agentDictionary)
+                        dictionary = agentDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSendBarTextField == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSendBar == element)
         {
-            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
-            if (sendBarDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"text_field"];
-                if (textFieldDictionary)
-                    dictionary = textFieldDictionary;
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    dictionary = sendBarDictionary;
+                }
             }
         }
-    }
-
-    if (LIOBrandingElementSendBarSendButton == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSendBarTextField == element)
         {
-            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
-            if (sendBarDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *sendButtonDictionary = [sendBarDictionary objectForKey:@"send_button"];
-                if (sendButtonDictionary)
-                    dictionary = sendButtonDictionary;
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"text_field"];
+                    if (textFieldDictionary)
+                        dictionary = textFieldDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSendBarPlusButton == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSendBarSendButton == element)
         {
-            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
-            if (sendBarDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *plusButtonDictionary = [sendBarDictionary objectForKey:@"plus_button"];
-                if (plusButtonDictionary)
-                    dictionary = plusButtonDictionary;
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    NSDictionary *sendButtonDictionary = [sendBarDictionary objectForKey:@"send_button"];
+                    if (sendButtonDictionary)
+                        dictionary = sendButtonDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSendBarCharacterCount == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSendBarPlusButton == element)
         {
-            NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
-            if (sendBarDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *characterCountDictionary = [sendBarDictionary objectForKey:@"character_count"];
-                if (characterCountDictionary)
-                    dictionary = characterCountDictionary;
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    NSDictionary *plusButtonDictionary = [sendBarDictionary objectForKey:@"plus_button"];
+                    if (plusButtonDictionary)
+                        dictionary = plusButtonDictionary;
+                }
             }
         }
-    }
-
-    if (LIOBrandingElementKeyboardMenu == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSendBarCharacterCount == element)
         {
-            NSDictionary *keyboardMenuDictionary = [engagementDictionary objectForKey:@"keyboard_menu"];
-            if (keyboardMenuDictionary)
-                dictionary = keyboardMenuDictionary;
-        }
-    }
-
-    if (LIOBrandingElementBrandingBar == element)
-    {
-        if (engagementDictionary)
-        {
-            NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
-            if (brandingBarDictionary)
-                dictionary = brandingBarDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementBrandingBarNotifications == element)
-    {
-        if (engagementDictionary)
-        {
-            NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
-            if (brandingBarDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *notificationsDictionary = [brandingBarDictionary objectForKey:@"notifications"];
-                if (notificationsDictionary)
-                    dictionary = notificationsDictionary;
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    NSDictionary *characterCountDictionary = [sendBarDictionary objectForKey:@"character_count"];
+                    if (characterCountDictionary)
+                        dictionary = characterCountDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSurveyCard == element)
-    {
-        if (surveyDictionary)
+        
+        if (LIOBrandingElementKeyboardMenu == element)
         {
-            NSDictionary *surveyCardDictionary = [surveyDictionary objectForKey:@"survey_card"];
-            if (surveyCardDictionary)
-                dictionary = surveyCardDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementSurveyCardTitle == element)
-    {
-        if (surveyDictionary)
-        {
-            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
-            if (surveyPageDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *titleDictionary = [surveyPageDictionary objectForKey:@"title"];
-                if (titleDictionary)
-                    dictionary = titleDictionary;
+                NSDictionary *keyboardMenuDictionary = [engagementDictionary objectForKey:@"keyboard_menu"];
+                if (keyboardMenuDictionary)
+                    dictionary = keyboardMenuDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementSurveyCardSubtitle == element)
-    {
-        if (surveyDictionary)
+        
+        if (LIOBrandingElementBrandingBar == element)
         {
-            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
-            if (surveyPageDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *subtitleDictionary = [surveyPageDictionary objectForKey:@"subtitle"];
-                if (subtitleDictionary)
-                    dictionary = subtitleDictionary;
+                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+                if (brandingBarDictionary)
+                    dictionary = brandingBarDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementSurveyCardNextButton == element)
-    {
-        if (surveyDictionary)
+        
+        if (LIOBrandingElementBrandingBarNotifications == element)
         {
-            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
-            if (surveyPageDictionary)
+            if (engagementDictionary)
             {
-                NSDictionary *nextButtonDictionary = [surveyPageDictionary objectForKey:@"next_button"];
-                if (nextButtonDictionary)
-                    dictionary = nextButtonDictionary;
+                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+                if (brandingBarDictionary)
+                {
+                    NSDictionary *notificationsDictionary = [brandingBarDictionary objectForKey:@"notifications"];
+                    if (notificationsDictionary)
+                        dictionary = notificationsDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementSurveyCardCancelButton == element)
-    {
-        if (surveyDictionary)
+        
+        if (LIOBrandingElementSurveyCard == element)
         {
-            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
-            if (surveyPageDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *cancelButtonDictionary = [surveyPageDictionary objectForKey:@"cancel"];
-                if (cancelButtonDictionary)
-                    dictionary = cancelButtonDictionary;
+                NSDictionary *surveyCardDictionary = [surveyDictionary objectForKey:@"survey_card"];
+                if (surveyCardDictionary)
+                    dictionary = surveyCardDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementSurveyPageControl == element)
-    {
-        if (surveyDictionary)
+        
+        if (LIOBrandingElementSurveyCardTitle == element)
         {
-            NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"page_control"];
-            if (surveyPageDictionary)
-                dictionary = surveyPageDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementSurveyTextField == element)
-    {
-        if (surveyDictionary)
-        {
-            NSDictionary *surveyTextFieldDictionary = [surveyDictionary objectForKey:@"text_field"];
-            if (surveyTextFieldDictionary)
-                dictionary = surveyTextFieldDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementSurveyList == element)
-    {
-        if (surveyDictionary)
-        {
-            NSDictionary *surveyListDictionary = [surveyDictionary objectForKey:@"list"];
-            if (surveyListDictionary)
-                dictionary = surveyListDictionary;
-        }
-    }
-
-    if (LIOBrandingElementSurveyStars == element)
-    {
-        if (surveyDictionary)
-        {
-            NSDictionary *surveyStarsDictionary = [surveyDictionary objectForKey:@"stars"];
-            if (surveyStarsDictionary)
-                dictionary = surveyStarsDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementSurveyValidationAlert == element)
-    {
-        if (surveyDictionary)
-        {
-            NSDictionary *surveyValidationAlertDictionary = [surveyDictionary objectForKey:@"validation_alert"];
-            if (surveyValidationAlertDictionary)
-                dictionary = surveyValidationAlertDictionary;
-        }
-    }
-
-    if (LIOBrandingElementEmailChat == element)
-    {
-        if (engagementDictionary)
-        {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
-                dictionary = emailChatDictionary;
-        }
-    }
-    
-    if (LIOBrandingElementEmailChatCard == element)
-    {
-        if (engagementDictionary)
-        {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *emailChatCardDictionary = [emailChatDictionary objectForKey:@"email_chat_card"];
-                if (emailChatCardDictionary)
-                    dictionary = emailChatCardDictionary;
+                NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+                if (surveyPageDictionary)
+                {
+                    NSDictionary *titleDictionary = [surveyPageDictionary objectForKey:@"title"];
+                    if (titleDictionary)
+                        dictionary = titleDictionary;
+                }
             }
         }
-    }
-
-    if (LIOBrandingElementEmailChatTextField == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyCardSubtitle == element)
         {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *textFieldDictionary = [emailChatDictionary objectForKey:@"text_field"];
-                if (textFieldDictionary)
-                    dictionary = textFieldDictionary;
+                NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+                if (surveyPageDictionary)
+                {
+                    NSDictionary *subtitleDictionary = [surveyPageDictionary objectForKey:@"subtitle"];
+                    if (subtitleDictionary)
+                        dictionary = subtitleDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementEmailChatTitle == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyCardNextButton == element)
         {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *titleDictionary = [emailChatDictionary objectForKey:@"title"];
-                if (titleDictionary)
-                    dictionary = titleDictionary;
+                NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+                if (surveyPageDictionary)
+                {
+                    NSDictionary *nextButtonDictionary = [surveyPageDictionary objectForKey:@"next_button"];
+                    if (nextButtonDictionary)
+                        dictionary = nextButtonDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementEmailChatSubtitle == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyCardCancelButton == element)
         {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *subtitleDictionary = [emailChatDictionary objectForKey:@"subtitle"];
-                if (subtitleDictionary)
-                    dictionary = subtitleDictionary;
+                NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
+                if (surveyPageDictionary)
+                {
+                    NSDictionary *cancelButtonDictionary = [surveyPageDictionary objectForKey:@"cancel"];
+                    if (cancelButtonDictionary)
+                        dictionary = cancelButtonDictionary;
+                }
             }
         }
-    }
-    
-    if (LIOBrandingElementEmailChatSubmitButton == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyPageControl == element)
         {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *submitButtonDictionary = [emailChatDictionary objectForKey:@"submit_button"];
-                if (submitButtonDictionary)
-                    dictionary = submitButtonDictionary;
+                NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"page_control"];
+                if (surveyPageDictionary)
+                    dictionary = surveyPageDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementEmailChatCancelButton == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyTextField == element)
         {
-            NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
-            if (emailChatDictionary)
+            if (surveyDictionary)
             {
-                NSDictionary *cancelButtonDictionary = [emailChatDictionary objectForKey:@"cancel_button"];
-                if (cancelButtonDictionary)
-                    dictionary = cancelButtonDictionary;
+                NSDictionary *surveyTextFieldDictionary = [surveyDictionary objectForKey:@"text_field"];
+                if (surveyTextFieldDictionary)
+                    dictionary = surveyTextFieldDictionary;
             }
         }
-    }
-    
-    if (LIOBrandingElementToasterView == element)
-    {
-        if (engagementDictionary)
+        
+        if (LIOBrandingElementSurveyList == element)
         {
-            NSDictionary *toasterViewDictionary = [engagementDictionary objectForKey:@"toaster_view"];
-            if (toasterViewDictionary)
-                dictionary = toasterViewDictionary;
+            if (surveyDictionary)
+            {
+                NSDictionary *surveyListDictionary = [surveyDictionary objectForKey:@"list"];
+                if (surveyListDictionary)
+                    dictionary = surveyListDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementSurveyStars == element)
+        {
+            if (surveyDictionary)
+            {
+                NSDictionary *surveyStarsDictionary = [surveyDictionary objectForKey:@"stars"];
+                if (surveyStarsDictionary)
+                    dictionary = surveyStarsDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementSurveyValidationAlert == element)
+        {
+            if (surveyDictionary)
+            {
+                NSDictionary *surveyValidationAlertDictionary = [surveyDictionary objectForKey:@"validation_alert"];
+                if (surveyValidationAlertDictionary)
+                    dictionary = surveyValidationAlertDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementEmailChat == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                    dictionary = emailChatDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatCard == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *emailChatCardDictionary = [emailChatDictionary objectForKey:@"email_chat_card"];
+                    if (emailChatCardDictionary)
+                        dictionary = emailChatCardDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatTextField == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *textFieldDictionary = [emailChatDictionary objectForKey:@"text_field"];
+                    if (textFieldDictionary)
+                        dictionary = textFieldDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatTitle == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *titleDictionary = [emailChatDictionary objectForKey:@"title"];
+                    if (titleDictionary)
+                        dictionary = titleDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatSubtitle == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *subtitleDictionary = [emailChatDictionary objectForKey:@"subtitle"];
+                    if (subtitleDictionary)
+                        dictionary = subtitleDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatSubmitButton == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *submitButtonDictionary = [emailChatDictionary objectForKey:@"submit_button"];
+                    if (submitButtonDictionary)
+                        dictionary = submitButtonDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementEmailChatCancelButton == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *emailChatDictionary = [engagementDictionary objectForKey:@"email_chat"];
+                if (emailChatDictionary)
+                {
+                    NSDictionary *cancelButtonDictionary = [emailChatDictionary objectForKey:@"cancel_button"];
+                    if (cancelButtonDictionary)
+                        dictionary = cancelButtonDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementToasterView == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *toasterViewDictionary = [engagementDictionary objectForKey:@"toaster_view"];
+                if (toasterViewDictionary)
+                    dictionary = toasterViewDictionary;
+            }
+        }
+        
+        return dictionary;
+        
+    }
+    @catch (NSException *exception)
+    {
+        // If the error was in the original branding dictionary, we have a problem
+        if (brandingDictionary == self.originalBrandingDictionary)
+        {
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid branding payload received from the server! Using default branding. Exception: %@", exception];
+            
+            return [NSDictionary dictionary];
+        }
+        else
+        {
+            // Otherwise, let's fall back onto the original branding dictionary
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Invalid branding payload received from the server! Using default branding. Exception: %@", exception];
+            
+            self.lastKnownBrandingDictionary = self.originalBrandingDictionary;
+            return [self brandingDictionaryForElement:element];
         }
     }
-
     
     return dictionary;
 }

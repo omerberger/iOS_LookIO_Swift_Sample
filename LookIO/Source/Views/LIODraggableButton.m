@@ -84,7 +84,6 @@
         
         self.messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.messageLabel.backgroundColor = [UIColor clearColor];
-        self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
         self.messageLabel.hidden = YES;
         self.messageLabel.userInteractionEnabled = NO;
         [self addSubview:self.messageLabel];
@@ -108,7 +107,9 @@
     self.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButton];
     self.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
-    
+
+    self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:
             self.statusImageView.hidden = NO;
