@@ -92,4 +92,10 @@ typedef enum
 - (NSDictionary *)introDictionary;
 - (NSString *)welcomeText;
 
+// UDEs
+- (void)setUDE:(id)anObject forKey:(NSString *)aKey;
+- (id)UDEForKey:(NSString *)aKey;
+- (void)clearUDEs;
+- (void)addUDEs:(NSDictionary *)aDictionary;
+
 @end

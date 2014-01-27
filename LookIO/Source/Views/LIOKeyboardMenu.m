@@ -42,8 +42,6 @@
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.items = [[NSMutableArray alloc] init];
-        
-        self.delaysContentTouches = NO;
     }
     
     return self;

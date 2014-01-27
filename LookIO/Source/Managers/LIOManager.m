@@ -408,26 +408,6 @@ static LIOManager *sharedLookIOManager = nil;
     [self.controlButton updateButtonBranding];
 }
 
-- (void)reportEvent:(NSString *)anEvent
-{
-    // TODO Report Event
-}
-
-- (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
-{
-    // TODO Report Event With Data
-}
-
-- (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey
-{
-    // TODO Set custom variable
-}
-
-- (void)addCustomVariables:(NSDictionary *)aDictionary
-{
-    // TODO Add custom variables
-}
-
 - (void)visitWillRelaunch:(LIOVisit *)visit
 {
     if (self.chatInProgress)
@@ -892,6 +872,7 @@ static LIOManager *sharedLookIOManager = nil;
         [self dismissLookIOWindow];
     
     [self.controlButton setChatMode];
+    [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
 }
 
@@ -944,6 +925,7 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     [self.controlButton setChatMode];
+    [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
 }
 
@@ -1131,6 +1113,42 @@ static LIOManager *sharedLookIOManager = nil;
     }
     
     return nil;
+}
+
+#pragma mark -
+#pragma mark Custom Variables
+
+- (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey
+{
+    [self.visit setUDE:anObject forKey:aKey];
+}
+
+- (id)customVariableForKey:(NSString *)aKey
+{
+    return [self.visit UDEForKey:aKey];
+}
+
+- (void)addCustomVariables:(NSDictionary *)aDictionary
+{
+    [self.visit addUDEs:aDictionary];
+}
+
+- (void)clearCustomVariables
+{
+    [self.visit clearUDEs];
+}
+
+#pragma mark -
+#pragma mark Event Reporting
+
+- (void)reportEvent:(NSString *)anEvent
+{
+    // TODO: Report Event
+}
+
+- (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
+{
+    // TODO: Report Event With Data
 }
 
 @end

@@ -78,10 +78,11 @@
 @property (nonatomic, strong) NSMutableArray *queuedLaunchReportDates;
 @property (nonatomic, strong) NSDictionary *multiskillMapping;
 @property (nonatomic, strong) NSMutableArray *pendingEvents;
-@property (nonatomic, strong) NSMutableDictionary *sessionExtras;
+@property (nonatomic, strong) NSMutableDictionary *visitUDEs;
 
 @property (nonatomic, assign) BOOL customButtonChatAvailable;
 @property (nonatomic, assign) BOOL customButtonInvitationShown;
+
 
 @end
 
@@ -97,6 +98,7 @@
         self.visitState = LIOVisitStateInitialized;
         
         self.multiskillMapping = nil;
+        self.visitUDEs = [[NSMutableDictionary alloc] init];
 
         self.customButtonChatAvailable = NO;
         self.customButtonInvitationShown = NO;
@@ -300,8 +302,8 @@
         }
         
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
-        if ([self.sessionExtras count])
-            [extrasDict setDictionary:self.sessionExtras];
+        if ([self.visitUDEs count])
+            [extrasDict setDictionary:self.visitUDEs];
         
         if ([detectedDict count])
             [extrasDict setObject:detectedDict forKey:@"detected_settings"];
@@ -1477,6 +1479,56 @@
     return welcomeText;
 }
 
+#pragma mark -
+#pragma mark UDE Methods
 
+- (void)setUDE:(id)anObject forKey:(NSString *)aKey
+{
+    if (anObject)
+    {
+        
+        NSError *writeError = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:NSJSONWritingPrettyPrinted error:&writeError];
+
+        if (!writeError)
+        {
+            [self.visitUDEs setObject:anObject forKey:aKey];
+            [self sendContinuationReport];
+        }
+        else
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add object of class \"%@\" to session extras! Use simple classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc.", NSStringFromClass([anObject class])];
+    }
+    else
+    {
+        [self.visitUDEs removeObjectForKey:aKey];
+        [self sendContinuationReport];
+    }
+}
+
+- (id)UDEForKey:(NSString *)aKey
+{
+    return [self.visitUDEs objectForKey:aKey];
+}
+
+- (void)addUDEs:(NSDictionary *)aDictionary
+{
+    // We only allow JSONable objects.
+    NSError *writeError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:NSJSONWritingPrettyPrinted error:&writeError];
+    
+    if (!writeError)
+    {
+        [self.visitUDEs addEntriesFromDictionary:aDictionary];
+        [self sendContinuationReport];
+    }
+    else
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Can't add dictionary of objects to session extras! Use classes like NSString, NSArray, NSDictionary, NSNumber, NSDate, etc."];
+}
+
+- (void)clearUDEs
+{
+    [self.visitUDEs removeAllObjects];
+    [self sendContinuationReport];
+}
 
 @end
