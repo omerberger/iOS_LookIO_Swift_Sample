@@ -28,6 +28,7 @@
 
 #define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
 #define LIOLookIOManagerMaxContinueFailures                3
+#define LIOLookIOMAnagerMaxEventQueueSize                  100
 
 // User defaults keys
 #define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
@@ -83,6 +84,8 @@
 @property (nonatomic, assign) BOOL customButtonChatAvailable;
 @property (nonatomic, assign) BOOL customButtonInvitationShown;
 
+@property (nonatomic, strong) NSDateFormatter *dateFormatter;
+
 
 @end
 
@@ -106,6 +109,10 @@
         self.controlButtonHidden = YES;
         
         self.funnelRequestQueue = [[NSMutableArray alloc] init];
+        
+        self.dateFormatter = [[NSDateFormatter alloc] init];
+        self.dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
+        self.dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -1530,5 +1537,39 @@
     [self.visitUDEs removeAllObjects];
     [self sendContinuationReport];
 }
+
+// FIXME: Handle case where continue call is in progress and this is called.
+// Need an overflow hash.
+- (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
+{
+    id<NSObject> dataPayload = someData;
+    if (nil == dataPayload)
+        dataPayload = [NSNumber numberWithInt:1];
+    
+    NSMutableDictionary *newEvent = [NSMutableDictionary dictionary];
+    [newEvent setObject:anEvent forKey:@"name"];
+    [newEvent setObject:dataPayload forKey:@"data"];
+    [newEvent setObject:[self.dateFormatter stringFromDate:[NSDate date]] forKey:@"timestamp"];
+    
+    [self.pendingEvents addObject:newEvent];
+    
+    // Queue is capped. Remove oldest entry on overflow.
+    if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
+        [self.pendingEvents removeObjectAtIndex:0];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:self.pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
+    
+    // Immediately make a continue call, unless the event is the built-in "page view" one.
+    if (NO == [anEvent isEqualToString:kLPEventPageView])
+    {
+        [self sendContinuationReport];
+    }
+    else if ([someData isKindOfClass:[NSString class]])
+    {
+        // Okay, this IS a pageview event. Record it as the last known.
+        self.lastKnownPageViewValue = (NSString *)someData;
+    }
+}
+
 
 @end

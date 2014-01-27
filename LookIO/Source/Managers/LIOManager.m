@@ -1143,12 +1143,12 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (void)reportEvent:(NSString *)anEvent
 {
-    // TODO: Report Event
+    [self.visit reportEvent:anEvent withData:nil];
 }
 
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
 {
-    // TODO: Report Event With Data
+    [self.visit reportEvent:anEvent withData:someData];
 }
 
 @end
