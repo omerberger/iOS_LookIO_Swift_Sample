@@ -13,6 +13,9 @@
 #import "LIOBrandingManager.h"
 #import "LIOBundleManager.h"
 
+// Views
+#import "LIOChatTableViewCell.h"
+
 @interface LPChatBubbleView () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) NSMutableArray *linkButtons;
@@ -44,6 +47,7 @@
         
         self.linkMessageViews = [[NSMutableArray alloc] init];
         self.linkButtons = [[NSMutableArray alloc] init];
+        self.intraAppLinkViews = [[NSMutableArray alloc] init];
     }
     
     return self;
@@ -53,7 +57,14 @@
 {
     [self.linkMessageViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [self.linkButtons makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [self.intraAppLinkViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    for (id object in self.intraAppLinkViews)
+    {
+        if ([object isKindOfClass:[UIView class]])
+        {
+            UIView *view = (UIView *)object;
+            [view removeFromSuperview];
+        }            
+    }
     
     [self.linkMessageViews removeAllObjects];
     [self.linkButtons removeAllObjects];
@@ -97,11 +108,14 @@
     {
         if (currentLink.isIntraAppLink)
         {
-            id linkView = [[LIOManager sharedLookIOManager] performSelector:@selector(linkViewForURL) withObject:currentLink.URL];
+            id linkView = [[LIOManager sharedLookIOManager] performSelector:@selector(linkViewForURL:) withObject:currentLink.URL];
             if (linkView && ([linkView isKindOfClass:[UIView class]] || [linkView isKindOfClass:[NSString class]]))
             {
                 if ([linkView isKindOfClass:[UIView class]])
                 {
+                    UIView *linkViewObject = (UIView *)linkView;
+                    linkViewObject.clipsToBounds = YES;
+                    
                     [self.intraAppLinkViews addObject:linkView];
                 }
                 else
@@ -115,7 +129,7 @@
                     aLabel.text = aString;
                     aLabel.textAlignment = UITextAlignmentCenter;
                     
-                    [self.intraAppLinkViews addObject:linkView];
+                    [self.intraAppLinkViews addObject:aLabel];
                 }
             }
             else
@@ -149,7 +163,7 @@
         return mutableAttributedString;
     }];
     
-    CGSize mainMessageViewSize = [self.messageLabel sizeThatFits:maxSize];
+    CGSize mainMessageViewSize = [LIOChatTableViewCell expectedSizeForText:firstString withFont:boldNameFont forWidth:width];
     self.messageLabel.frame = CGRectMake(10.0, 8.0, mainMessageViewSize.width, mainMessageViewSize.height);
     
     for (int i=0; i < [chatMessage.links count]; i++)
@@ -180,9 +194,9 @@
             NSTextCheckingResult *nextResult = [chatMessage.textCheckingResults objectAtIndex:(i + 1)];
             NSRange rangeOfText = NSUnionRange(curResult.range, nextResult.range);
             NSString *substring = [text substringWithRange:rangeOfText];
-            substring = [substring stringByReplacingOccurrencesOfString:curLink.string withString:@""];
+            substring = [substring stringByReplacingOccurrencesOfString:curLink.originalRawString withString:@""];
             LPChatBubbleLink *nextLink = [chatMessage.links objectAtIndex:(i + 1)];
-            substring = [substring stringByReplacingOccurrencesOfString:nextLink.string withString:@""];
+            substring = [substring stringByReplacingOccurrencesOfString:nextLink.originalRawString withString:@""];
             followingText = substring;
         }
         else
@@ -245,7 +259,7 @@
         if (i < [self.linkMessageViews count])
         {
             UILabel *aMessageView = [self.linkMessageViews objectAtIndex:i];
-            CGSize aMessageViewSize = [aMessageView sizeThatFits:maxSize];
+            CGSize aMessageViewSize = [LIOChatTableViewCell expectedSizeForText:aMessageView.text withFont:aMessageView.font forWidth:maxSize.width];
             aFrame = aMessageView.frame;
             aFrame.size = aMessageViewSize;
             aFrame.origin.x = 10.0;

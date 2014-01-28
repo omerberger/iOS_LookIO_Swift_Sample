@@ -4868,6 +4868,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)isIntraLink:(NSURL *)aURL
 {
+    NSLog(@"Checking to see if %@", aURL);
     return [urlSchemes containsObject:[aURL scheme]];
 }
 

@@ -1160,7 +1160,7 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (BOOL)isIntraLink:(NSURL *)aURL
 {
-    return [self.urlSchemes containsObject:[aURL scheme]];
+    return [self.urlSchemes containsObject:[[aURL scheme] lowercaseString]];
 }
 
 - (void)setupURLSchemes
@@ -1179,7 +1179,7 @@ static LIOManager *sharedLookIOManager = nil;
                     for (NSString *aScheme in cfBundleURLSchemes)
                     {
                         if (NO == [self.urlSchemes containsObject:aScheme])
-                            [self.urlSchemes addObject:aScheme];
+                            [self.urlSchemes addObject:[aScheme lowercaseString]];
                     }
                 }
             }
@@ -1189,7 +1189,7 @@ static LIOManager *sharedLookIOManager = nil;
 
 - (id)linkViewForURL:(NSURL *)aURL
 {
-    if (NO == [self.urlSchemes containsObject:[aURL scheme]])
+    if (NO == [self.urlSchemes containsObject:[[aURL scheme] lowercaseString]])
         return nil;
     
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:linkViewForURL:)])

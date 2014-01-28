@@ -82,6 +82,7 @@
         
         LPChatBubbleLink *currentLink = [[LPChatBubbleLink alloc] init];
         currentLink.string = [text substringWithRange:result.range];
+        currentLink.originalRawString = [text substringWithRange:result.range];
         currentLink.URL = result.URL;
         
         if (NSTextCheckingTypeLink == result.resultType)

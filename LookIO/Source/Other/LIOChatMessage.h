@@ -32,6 +32,7 @@ typedef enum
 @interface LPChatBubbleLink : NSObject
 
 @property (nonatomic, copy) NSString *string;
+@property (nonatomic, copy) NSString *originalRawString;
 @property (nonatomic, strong) NSURL *URL;
 @property (nonatomic, copy) NSString *scheme;
 @property (nonatomic, assign) NSTextCheckingType* checkingType;
