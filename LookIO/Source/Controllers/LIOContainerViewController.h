@@ -29,6 +29,7 @@ typedef enum {
 
 - (void)containerViewControllerDidDismiss:(LIOContainerViewController *)containerViewController;
 - (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController;
+- (void)containerViewcontrollerDidTapIntraAppLink:(NSURL *)link;
 
 @end
 

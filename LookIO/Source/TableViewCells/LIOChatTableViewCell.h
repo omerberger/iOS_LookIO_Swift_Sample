@@ -9,8 +9,18 @@
 #import <UIKit/UIKit.h>
 #import "LIOChatMessage.h"
 
+@class LIOChatTableViewCell;
+
+@protocol LIOChatTableViewCellDelegate <NSObject>
+
+- (void)chatTableViewCell:(LIOChatTableViewCell *)cell didTapLinkButtonWithIndex:(NSInteger)index;
+
+@end
+
+
 @interface LIOChatTableViewCell : UITableViewCell
 
+@property (nonatomic, assign) id<LIOChatTableViewCellDelegate> delegate;
 @property (nonatomic, strong) UIButton *failedToSendButton;
 
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage;

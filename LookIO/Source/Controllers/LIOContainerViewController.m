@@ -201,6 +201,11 @@
     }
 }
 
+- (void)chatViewControllerDidTapIntraAppLink:(NSURL *)link
+{
+    [self.delegate containerViewcontrollerDidTapIntraAppLink:link];
+}
+
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
 {
     if (self.containerViewState != LIOContainerViewStateChat)

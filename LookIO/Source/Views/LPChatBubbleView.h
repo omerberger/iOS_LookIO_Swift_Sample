@@ -10,9 +10,21 @@
 #import "LIOChatMessage.h"
 #import "TTTAttributedLabel.h"
 
+@class LPChatBubbleView;
+
+@protocol LPChatBubbleViewDelegate <NSObject>
+
+- (void)chatBubbleView:(LPChatBubbleView *)aView didTapIntraAppLinkWithURL:(NSURL *)aURL;
+- (void)chatBubbleView:(LPChatBubbleView *)aView didTapPhoneURL:(NSURL *)aURL link:(NSString *)aLink;
+- (void)chatBubbleView:(LPChatBubbleView *)aView didTapWebLinkWithURL:(NSURL *)aURL;
+
+@end
+
 @interface LPChatBubbleView : UIView
 
+@property (nonatomic, assign) id<LPChatBubbleViewDelegate> delegate;
 @property (nonatomic, strong) TTTAttributedLabel_LIO *messageLabel;
+@property (nonatomic, strong) NSMutableArray *linkButtons;
 
 - (CGFloat)populateLinksChatBubbleViewWithMessage:(LIOChatMessage *)chatMessage forWidth:(CGFloat)width;
 - (void)prepareForReuse;

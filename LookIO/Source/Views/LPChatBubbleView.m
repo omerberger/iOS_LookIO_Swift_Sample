@@ -18,7 +18,6 @@
 
 @interface LPChatBubbleView () <UIGestureRecognizerDelegate>
 
-@property (nonatomic, strong) NSMutableArray *linkButtons;
 @property (nonatomic, strong) NSMutableArray *linkMessageViews;
 @property (nonatomic, strong) NSMutableArray *intraAppLinkViews;
 
@@ -345,5 +344,7 @@
 {
     return YES;
 }
+
+
 
 @end

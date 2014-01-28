@@ -29,11 +29,13 @@
 
 #define LIOChatViewControllerMaximumAttachmentActualSize 800.0
 
-#define LIOChatViewControllerEndChatAlertViewTag 1001
+#define LIOChatViewControllerEndChatAlertViewTag          1001
+#define LIOChatViewControllerOpenExtraAppLinkAlertViewTag 1002
+#define LIOChatViewControllerOpenWebLinkAlertViewTag      1003
 
 #define LIOChatViewControllerPhotoSourceActionSheetTag 2001
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate, LIOChatTableViewCellDelegate>
 
 @property (nonatomic, assign) LIOChatState chatState;
 
@@ -61,6 +63,8 @@
 @property (nonatomic, strong) UIImage *pendingImageAttachment;
 
 @property (nonatomic, strong) LIOToasterView *toasterView;
+
+@property (nonatomic, strong) NSURL *urlBeingLaunched;
 
 @end
 
@@ -138,6 +142,11 @@
     cell.frame = frame;
 
     [cell layoutSubviewsForChatMessage:chatMessage];
+    // Setup the chat view as delegate for clicking link buttons
+    if (chatMessage.isShowingLinks)
+        cell.delegate = self;
+    else
+        cell.delegate = nil;
 
     return cell;
 }
@@ -412,6 +421,22 @@
 
             }
             break;
+            
+        case LIOChatViewControllerOpenExtraAppLinkAlertViewTag:
+            if (buttonIndex == 1)
+            {
+                [[UIApplication sharedApplication] openURL:self.urlBeingLaunched];
+                self.urlBeingLaunched = nil;
+            }
+            break;
+            
+        case LIOChatViewControllerOpenWebLinkAlertViewTag:
+            if (buttonIndex == 1)
+            {
+                [self openWebLinkURL:self.urlBeingLaunched];
+                self.urlBeingLaunched = nil;
+            }
+            
             
         default:
             break;
@@ -1132,6 +1157,79 @@
     }
 }
 
+#pragma mark -
+#pragma mark LIOChatTableViewCellDelegate Methods
 
+- (void)chatTableViewCell:(LIOChatTableViewCell *)cell didTapLinkButtonWithIndex:(NSInteger)index
+{
+    NSIndexPath *messageIndex = [self.tableView indexPathForCell:cell];
+    LIOChatMessage *chatMessage = [self.engagement.messages objectAtIndex:messageIndex.row];
+    
+    LPChatBubbleLink *link = [chatMessage.links objectAtIndex:index];
+    if (NSTextCheckingTypeLink == link.checkingType)
+    {
+        if (link.isIntraAppLink)
+        {
+            // Intra-app links don't require a warning.
+            [self.delegate chatViewControllerDidTapIntraAppLink:link.URL];
+        }
+        else {
+            NSString *alertMessage = nil;
+            NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
+            NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
+
+            if ([[link.scheme lowercaseString] hasPrefix:@"http"])
+            {
+                [self openWebLinkURL:link.URL];
+            }
+            else if ([[link.scheme lowercaseString] hasPrefix:@"mailto"])
+            {
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), link.string];
+            }
+            else if ([[link.scheme lowercaseString] hasPrefix:@"tel"])
+            {
+                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), link.string];
+                alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone");
+                alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone");
+            }
+
+            self.urlBeingLaunched = link.URL;
+            
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                   message:alertMessage
+                                                  delegate:self
+                                         cancelButtonTitle:nil
+                                         otherButtonTitles:alertCancel, alertOpen, nil];
+            alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
+            [alertView show];
+        }
+    }
+    else if (NSTextCheckingTypePhoneNumber == link.checkingType)
+    {
+        self.urlBeingLaunched = link.URL;
+        
+        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), link.string];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                               message:alertMessage
+                                              delegate:self
+                                     cancelButtonTitle:nil
+                                     otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
+        alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
+        [alertView show];
+    }
+}
+
+#pragma mark -
+#pragma mark Link opening methods
+
+- (void)didTapIntraAppLinkWithURL:(NSURL*)url
+{
+    [self.delegate chatViewControllerDidTapIntraAppLink:url];
+}
+
+- (void)openWebLinkURL:(NSURL*)url
+{
+    
+}
 
 @end

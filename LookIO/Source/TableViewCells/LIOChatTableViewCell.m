@@ -152,6 +152,13 @@
         aFrame.size.width = expectedTextSize.width + 20;
         aFrame.size.height = expectedTextSize.height + 16;
         self.chatBubbleView.frame = aFrame;
+        
+        for (int i=0; i<self.chatBubbleView.linkButtons.count; i++)
+        {
+            UIButton *linkButton = [self.chatBubbleView.linkButtons objectAtIndex:i];
+            linkButton.tag = i;
+            [linkButton addTarget:self action:@selector(didTapLinkButton:) forControlEvents:UIControlEventTouchUpInside];
+        }
     }
     else
     {        
@@ -234,6 +241,11 @@
     [super setSelected:selected animated:animated];
     
     // Configure the view for the selected state
+}
+
+- (void)didTapLinkButton:(UIButton *)button
+{
+    [self.delegate chatTableViewCell:self didTapLinkButtonWithIndex:button.tag];
 }
 
 @end

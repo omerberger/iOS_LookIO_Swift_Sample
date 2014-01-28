@@ -562,6 +562,15 @@ static LIOManager *sharedLookIOManager = nil;
     self.visit.visitState = LIOVisitStatePostChatSurvey;
 }
 
+- (void)containerViewcontrollerDidTapIntraAppLink:(NSURL *)link
+{
+    self.nextDismissalCompletionBlock = ^{
+        [[UIApplication sharedApplication] openURL:link];
+    };
+    [self.containerViewController dismissCurrentViewController];
+}
+
+
 #pragma mark -
 #pragma mark Engagement Interaction Methods
 

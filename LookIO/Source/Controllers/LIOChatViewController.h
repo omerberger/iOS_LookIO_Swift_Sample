@@ -34,6 +34,7 @@ typedef enum {
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController;
 - (void)chatViewControllerVisitorDidSendLine:(NSString *)line;
 - (void)chatViewControllerDidEndChat:(LIOChatViewController *)chatViewController;
+- (void)chatViewControllerDidTapIntraAppLink:(NSURL *)link;
 
 @end
 
