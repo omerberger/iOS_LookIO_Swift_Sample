@@ -29,6 +29,16 @@ typedef enum
     LIOChatMessageStatusCreatedLocally
 } LIOChatMessageStatus;
 
+@interface LPChatBubbleLink : NSObject
+
+@property (nonatomic, copy) NSString *string;
+@property (nonatomic, strong) NSURL *URL;
+@property (nonatomic, copy) NSString *scheme;
+@property (nonatomic, assign) NSTextCheckingType* checkingType;
+@property (nonatomic, assign) BOOL isIntraAppLink;
+
+@end
+
 @interface LIOChatMessage : NSObject
 
 @property (nonatomic, assign) LIOChatMessageKind kind;
@@ -41,5 +51,11 @@ typedef enum
 @property (nonatomic, assign) BOOL sendingFailed;
 @property (nonatomic, copy) NSString *lineId;
 @property (nonatomic, copy) NSString *clientLineId;
+
+@property (nonatomic, assign) BOOL isShowingLinks;
+@property (nonatomic, strong) NSMutableArray *links;
+@property (nonatomic, strong) NSMutableArray *textCheckingResults;
+
+- (void)detectLinks;
 
 @end

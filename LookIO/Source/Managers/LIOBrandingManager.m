@@ -181,6 +181,24 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementAgentChatBubbleLink == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+                if (chatBubblesDictionary)
+                {
+                    NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"agent"];
+                    if (agentDictionary)
+                    {
+                        NSDictionary *linksDictionary = [agentDictionary objectForKey:@"links"];
+                        if (linksDictionary)
+                            dictionary = linksDictionary;
+                    }
+                }
+            }
+        }
+        
         if (LIOBrandingElementVisitorChatBubble == element)
         {
             if (engagementDictionary)
@@ -188,9 +206,27 @@ static LIOBrandingManager *brandingManager = nil;
                 NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
                 if (chatBubblesDictionary)
                 {
-                    NSDictionary *agentDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
-                    if (agentDictionary)
-                        dictionary = agentDictionary;
+                    NSDictionary *visitorDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
+                    if (visitorDictionary)
+                        dictionary = visitorDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementVisitorChatBubbleLink == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+                if (chatBubblesDictionary)
+                {
+                    NSDictionary *visitorDictionary = [chatBubblesDictionary objectForKey:@"visitor"];
+                    if (visitorDictionary)
+                    {
+                        NSDictionary *linksDictionary = [visitorDictionary objectForKey:@"links"];
+                        if (linksDictionary)
+                            dictionary = linksDictionary;
+                    }
                 }
             }
         }

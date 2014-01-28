@@ -60,6 +60,8 @@ typedef void (^LIOCompletionBlock)(void);
 
 @property (nonatomic, copy) LIOCompletionBlock nextDismissalCompletionBlock;
 
+@property (nonatomic, strong) NSMutableArray *urlSchemes;
+
 @end
 
 @implementation LIOManager
@@ -118,6 +120,8 @@ static LIOManager *sharedLookIOManager = nil;
     statusManager.appForegrounded = YES;
     
     [self addNotificationHandlers];
+    
+    [self setupURLSchemes];
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
@@ -1149,6 +1153,49 @@ static LIOManager *sharedLookIOManager = nil;
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData
 {
     [self.visit reportEvent:anEvent withData:someData];
+}
+
+#pragma mark -
+#pragma mark Helper Methods
+
+- (BOOL)isIntraLink:(NSURL *)aURL
+{
+    return [self.urlSchemes containsObject:[aURL scheme]];
+}
+
+- (void)setupURLSchemes
+{
+    self.urlSchemes = [[NSMutableArray alloc] init];
+    NSArray *cfBundleURLTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+    if ([cfBundleURLTypes isKindOfClass:[NSArray class]])
+    {
+        for (NSDictionary *aURLType in cfBundleURLTypes)
+        {
+            if ([aURLType isKindOfClass:[NSDictionary class]])
+            {
+                NSArray *cfBundleURLSchemes = [aURLType objectForKey:@"CFBundleURLSchemes"];
+                if ([cfBundleURLSchemes isKindOfClass:[NSArray class]])
+                {
+                    for (NSString *aScheme in cfBundleURLSchemes)
+                    {
+                        if (NO == [self.urlSchemes containsObject:aScheme])
+                            [self.urlSchemes addObject:aScheme];
+                    }
+                }
+            }
+        }
+    }
+}
+
+- (id)linkViewForURL:(NSURL *)aURL
+{
+    if (NO == [self.urlSchemes containsObject:[aURL scheme]])
+        return nil;
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:linkViewForURL:)])
+        return [self.delegate lookIOManager:self linkViewForURL:aURL];
+    
+    return nil;
 }
 
 @end

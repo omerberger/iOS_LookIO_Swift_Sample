@@ -88,6 +88,7 @@
         firstMessage.date = [NSDate date];
         firstMessage.lineId = nil;
         firstMessage.text = [self.visit welcomeText];
+        [firstMessage detectLinks];
         [self.messages addObject:firstMessage];
     }
 }
@@ -528,7 +529,8 @@
         newMessage.date = [NSDate date];
         newMessage.lineId = lineId;
         newMessage.clientLineId = clientLineId;
-            
+        [newMessage detectLinks];
+        
         BOOL shouldAddMessage = YES;
         // Don't add messages which originated from the visitor and are echoed back to the client
         // but add their line_id by matching their client_line_id
@@ -1183,6 +1185,7 @@
     newMessage.lineId = nil;
     newMessage.senderName = @"Me";
     newMessage.text = text;
+    [newMessage detectLinks];
     newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
     self.lastClientLineId += 1;
     [self.messages addObject:newMessage];

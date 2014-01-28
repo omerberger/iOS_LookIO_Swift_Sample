@@ -14,4 +14,7 @@
 
 @property (nonatomic, strong) TTTAttributedLabel_LIO *messageLabel;
 
+- (CGFloat)populateLinksChatBubbleViewWithMessage:(LIOChatMessage *)chatMessage forWidth:(CGFloat)width;
+- (void)prepareForReuse;
+
 @end
