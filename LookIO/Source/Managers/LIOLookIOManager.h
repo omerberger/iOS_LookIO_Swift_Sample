@@ -1,10 +1,11 @@
 //
 //  LIOLookIOManager.h
-//  LookIO
+//  LivePerson iOS Remote Support Client v##UNKNOWN_VERSION##
 //
-//  Created by Yaron Karasik on 12/5/13.
+//  Copyright 2011-2013 LivePerson, Inc. All rights reserved.
 //
-//
+//  This header file is for use with LivePerson Mobile.
+//  Documentation and support: https://community.liveperson.com/docs/DOC-2062
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -23,16 +24,6 @@ extern NSString *const kLPEventAddedToCart;
 // Return these via the "lookIOManagerEnabledCollaborationComponents:" delegate method.
 #define kLPCollaborationComponentNone   0
 #define kLPCollaborationComponentPhoto  1
-
-// Chat UI theme constants.
-// Return these via the "lookIOManagerSelectedChatTheme:" delegate method.
-#define kLPChatThemeClassic   0
-#define kLPChatThemeFlat      1
-
-// Control Button type constants
-// Return these via the "lookIOManagerControlButtonType:" delegate method.
-#define kLPControlButtonClassic   0
-#define kLPControlButtonSquare    1
 
 @class LIOLookIOManager;
 
@@ -105,41 +96,12 @@ extern NSString *const kLPEventAddedToCart;
 - (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 
 /*!
- Implement this method to specify which UI theme you would like to use for Live Chat.
- If this method is not implemented, the default theme will be the classic theme.
- Please note that you must include the bundle asset used by the theme you are using
- in your project.
- 
- @return Constant representing the theme you would like to use.
- Return the constant kLPChatThemeClassic to use the classic LP Mobile theme.
- Return the constant kLPChatThemeFlat to use the flat LP Mobile theme.
- 
- @param aManager The LIOLookIOManager shared instance.
- */
-
-- (UInt32)lookIOManagerSelectedChatTheme:(LIOLookIOManager *)aManager;
-
-/*!
  Implement this method to specify which collaboration components you would like to enable for
  Live Chat in your app, such as photo sharing. Collaboration components are disabled by default.
  
  @return Constant representing the collaboration component you would like to enable.
  Return the constant kLPCollaborationComponentPhoto to enable photo sharing.
  Return the constant kLPCollaborationComponentNone to disable all collaboration components.
- 
- @param aManager The LIOLookIOManager shared instance.
- */
-
-- (UInt32)lookIOManagerControlButtonType:(LIOLookIOManager *)aManager;
-
-/*!
- Implement this method to specify which type of Live Chat control button you would like to use.
- The contro button appears on the middle-left of your app's view and is a call to action for
- users to chat.
- 
- @return Constant representing the control button type you would like to use.
- Return the constant kLPControlButtonClassic to use the classic control button, which is a rectangle button with a label.
- Return the constant kLPControlButtonSquare to use the square control button, which is square with a chat icon.
  
  @param aManager The LIOLookIOManager shared instance.
  */

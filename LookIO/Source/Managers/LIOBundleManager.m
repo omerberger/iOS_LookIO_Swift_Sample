@@ -148,10 +148,7 @@ BOOL LIOIsUIKitFlatMode(void) {
 }
 
 -(NSString*)bundleName {
-    if (kLPChatThemeFlat == selectedChatTheme)
-        return @"LookIO_flat.bundle";
-    else
-        return @"LookIO.bundle";
+    return @"LookIO.bundle";
 }
 
 -(void)resetBundle {
