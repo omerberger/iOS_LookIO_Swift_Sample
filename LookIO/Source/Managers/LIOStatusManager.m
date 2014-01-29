@@ -8,7 +8,7 @@
 
 #import "LIOStatusManager.h"
 
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 
 #import <AdSupport/AdSupport.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -121,11 +121,11 @@ static LIOStatusManager *statusManager = nil;
 {
     NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
     
-    LIOManager *lioManager = [LIOManager sharedLookIOManager];
+    LIOLookIOManager *lookIOManager = [LIOLookIOManager sharedLookIOManager];
     
-    if ([(NSObject *)lioManager.delegate respondsToSelector:@selector(lookIOManagerAppIdOverride:)])
+    if ([(NSObject *)lookIOManager.delegate respondsToSelector:@selector(lookIOManagerAppIdOverride:)])
     {
-        NSString *overriddenBundleId = [(NSObject *)lioManager.delegate performSelector:@selector(lookIOManagerAppIdOverride:) withObject:lioManager];
+        NSString *overriddenBundleId = [(NSObject *)lookIOManager.delegate performSelector:@selector(lookIOManagerAppIdOverride:) withObject:lookIOManager];
         if ([overriddenBundleId length])
             bundleId = overriddenBundleId;
     }

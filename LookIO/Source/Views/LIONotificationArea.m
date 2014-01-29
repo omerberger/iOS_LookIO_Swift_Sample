@@ -10,7 +10,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
@@ -57,7 +57,7 @@
             UIView *finalBrandingView = nil;
             
             CGSize brandingSize = CGSizeMake(130.0, 44.0);
-            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
+            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])
@@ -95,7 +95,7 @@
             UIView *finalBrandingView = nil;
             
             CGSize brandingSize = CGSizeMake(240.0, 17.0);
-            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
+            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])

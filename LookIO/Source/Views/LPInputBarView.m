@@ -8,7 +8,7 @@
 
 #import "LPInputBarView.h"
 
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
@@ -84,7 +84,7 @@
         if (padUI)
         {
             CGSize brandingSize = CGSizeMake(130.0, 44.0);
-            id aBrandingView = [[LIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
+            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])

@@ -9,12 +9,12 @@
 #import "LIOVisit.h"
 
 // Managers
-#import "LIOManager.h"
 #import "LIOLogManager.h"
 #import "LIOAnalyticsManager.h"
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 #import "LIOStatusManager.h"
+#import "LIOLookIOManager.h"
 
 // Networking
 #import "LPVisitAPIClient.h"

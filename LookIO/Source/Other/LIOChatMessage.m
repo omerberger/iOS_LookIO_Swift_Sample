@@ -9,7 +9,7 @@
 #import "LIOChatMessage.h"
 
 // Managers
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 
 @interface LIOChatMessage ()
 
@@ -117,7 +117,7 @@
         // Special handling for links; could be intra-app!
         if (NSTextCheckingTypeLink == result.resultType)
         {
-            currentLink.isIntraAppLink = [[LIOManager sharedLookIOManager] performSelector:@selector(isIntraLink:) withObject:currentLink.URL];
+            currentLink.isIntraAppLink = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(isIntraLink:) withObject:currentLink.URL];
         }
     }];    
 }

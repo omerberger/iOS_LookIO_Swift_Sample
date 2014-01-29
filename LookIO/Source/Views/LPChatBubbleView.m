@@ -9,7 +9,7 @@
 #import "LPChatBubbleView.h"
 
 // Managers
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 #import "LIOBrandingManager.h"
 #import "LIOBundleManager.h"
 
@@ -107,7 +107,7 @@
     {
         if (currentLink.isIntraAppLink)
         {
-            id linkView = [[LIOManager sharedLookIOManager] performSelector:@selector(linkViewForURL:) withObject:currentLink.URL];
+            id linkView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(linkViewForURL:) withObject:currentLink.URL];
             if (linkView && ([linkView isKindOfClass:[UIView class]] || [linkView isKindOfClass:[NSString class]]))
             {
                 if ([linkView isKindOfClass:[UIView class]])

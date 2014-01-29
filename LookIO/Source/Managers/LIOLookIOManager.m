@@ -1,12 +1,12 @@
 //
-//  LIOManager.m
+//  LIOLookIOManager.m
 //  LookIO
 //
 //  Created by Yaron Karasik on 12/5/13.
 //
 //
 
-#import "LIOManager.h"
+#import "LIOLookIOManager.h"
 
 #import "LIOLogManager.h"
 #import "LIOStatusManager.h"
@@ -45,7 +45,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 
 typedef void (^LIOCompletionBlock)(void);
 
-@interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
+@interface LIOLookIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
@@ -71,17 +71,17 @@ typedef void (^LIOCompletionBlock)(void);
 
 @end
 
-@implementation LIOManager
+@implementation LIOLookIOManager
 
 #pragma mark -
 #pragma mark Initialization Methods
 
-static LIOManager *sharedLookIOManager = nil;
+static LIOLookIOManager *sharedLookIOManager = nil;
 
-+ (LIOManager *) sharedLookIOManager
++ (LIOLookIOManager *) sharedLookIOManager
 {
     if (nil == sharedLookIOManager)
-        sharedLookIOManager = [[LIOManager alloc] init];
+        sharedLookIOManager = [[LIOLookIOManager alloc] init];
     
     return sharedLookIOManager;
 }

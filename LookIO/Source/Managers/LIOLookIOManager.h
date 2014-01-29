@@ -1,5 +1,5 @@
 //
-//  LIOManager.h
+//  LIOLookIOManager.h
 //  LookIO
 //
 //  Created by Yaron Karasik on 12/5/13.
@@ -9,9 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-//#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
-#define LOOKIO_VERSION_STRING @"400"
-// TODO
+#define LOOKIO_VERSION_STRING @"##UNKNOWN_VERSION##"
 
 // Event constants.
 // Use these with the "reportEvent" methods.
@@ -36,7 +34,7 @@ extern NSString *const kLPEventAddedToCart;
 #define kLPControlButtonClassic   0
 #define kLPControlButtonSquare    1
 
-@class LIOManager;
+@class LIOLookIOManager;
 
 @protocol LIOLookIOManagerDelegate
 @optional
@@ -52,28 +50,28 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  @param lookioIsEnabled Live Chat's newly updated enabled status.
  */
-- (void)lookIOManager:(LIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled;
+- (void)lookIOManager:(LIOLookIOManager *)aManager didUpdateEnabledStatus:(BOOL)lookioIsEnabled;
 
 /*!
  Called whenever LP mobile hides its own control "Live Chat" tab/button.
  
  @param aManager The LIOLookIOManager shared instance.
  */
-- (void)lookIOManagerDidHideControlButton:(LIOManager *)aManager;
+- (void)lookIOManagerDidHideControlButton:(LIOLookIOManager *)aManager;
 
 /*!
  Called whenever LP mobile shows its own control "Live Chat" tab/button.
  
  @param aManager The LIOLookIOManager shared instance.
  */
-- (void)lookIOManagerDidShowControlButton:(LIOManager *)aManager;
+- (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
 
 /*!
  Called whenever a chat session has ended.
  
  @param aManager The LIOLookIOManager shared instance.
  */
-- (void)lookIOManagerDidEndChat:(LIOManager *)aManager;
+- (void)lookIOManagerDidEndChat:(LIOLookIOManager *)aManager;
 
 ///---------------------------------------------------------------------------------------
 /// @name Customization Methods
@@ -104,7 +102,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aURL The URL for which the custom link view should be returned.
  */
 
-- (id)lookIOManager:(LIOManager *)aManager linkViewForURL:(NSURL *)aURL;
+- (id)lookIOManager:(LIOLookIOManager *)aManager linkViewForURL:(NSURL *)aURL;
 
 /*!
  Implement this method to specify which UI theme you would like to use for Live Chat.
@@ -119,7 +117,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  */
 
-- (UInt32)lookIOManagerSelectedChatTheme:(LIOManager*)aManager;
+- (UInt32)lookIOManagerSelectedChatTheme:(LIOLookIOManager *)aManager;
 
 /*!
  Implement this method to specify which collaboration components you would like to enable for
@@ -132,7 +130,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  */
 
-- (UInt32)lookIOManagerControlButtonType:(LIOManager*)aManager;
+- (UInt32)lookIOManagerControlButtonType:(LIOLookIOManager *)aManager;
 
 /*!
  Implement this method to specify which type of Live Chat control button you would like to use.
@@ -146,7 +144,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  */
 
-- (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOManager *)aManager;
+- (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOLookIOManager *)aManager;
 
 /*!
  Implement this method to specify your own branding image to be used within Live Chat, replacting the default LP Mobile
@@ -160,7 +158,7 @@ extern NSString *const kLPEventAddedToCart;
  The optimal image size is 130x44 points for iPad, and 240x17 points for iPhone.
  */
 
-- (UIImage*)lookIOManager:(LIOManager*)aManager brandingImageForDimensions:(CGSize)dimensions;
+- (UIImage*)lookIOManager:(LIOLookIOManager *)aManager brandingImageForDimensions:(CGSize)dimensions;
 
 /*!
  Implement this method to specify if a custom action should be performed when a user starts a Live Chat, but
@@ -178,7 +176,7 @@ extern NSString *const kLPEventAddedToCart;
  @see lookIOManagerCustomActionForChatNotAnswered:
  */
 
--(BOOL)lookIOManagerShouldUseCustomActionForChatNotAnswered:(LIOManager *)aManager;
+-(BOOL)lookIOManagerShouldUseCustomActionForChatNotAnswered:(LIOLookIOManager *)aManager;
 
 /*!
  Implement this method to specify the custom action to be performed when a user starts a Live Chat, but
@@ -190,7 +188,7 @@ extern NSString *const kLPEventAddedToCart;
  @see lookIOManagerShouldUseCustomActionForChatNotAnswered:
  */
 
--(void)lookIOManagerCustomActionForChatNotAnswered:(LIOManager *)aManager;
+-(void)lookIOManagerCustomActionForChatNotAnswered:(LIOLookIOManager *)aManager;
 
 ///---------------------------------------------------------------------------------------
 /// @name Troubleshooting / UI Integration Methods
@@ -208,7 +206,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  */
 
-- (UIWindow *)lookIOManagerMainWindowForHostApp:(LIOManager *)aManager;
+- (UIWindow *)lookIOManagerMainWindowForHostApp:(LIOLookIOManager *)aManager;
 
 /*!
  Like the UIViewController method with the same name, implement this method to control whether or not LookIO’s
@@ -221,7 +219,7 @@ extern NSString *const kLPEventAddedToCart;
  @param anOrientation The orientation of the app’s user interface after the rotation. The possible values are described in UIInterfaceOrientation.
  
  */
-- (BOOL)lookIOManager:(LIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
+- (BOOL)lookIOManager:(LIOLookIOManager *)aManager shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 
 /*!
  Like the UIViewController method with the same name, use this method to control whether or not LookIO’s view
@@ -233,7 +231,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  
  */
-- (BOOL)lookIOManagerShouldAutorotate:(LIOManager *)aManager;
+- (BOOL)lookIOManagerShouldAutorotate:(LIOLookIOManager *)aManager;
 
 /*!
  Like the UIViewController method with the same name, use this method to control whether or not LookIO’s view
@@ -244,11 +242,11 @@ extern NSString *const kLPEventAddedToCart;
  
  @param aManager The LIOLookIOManager shared instance.
  */
-- (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOManager *)aManager;
+- (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOLookIOManager *)aManager;
 
 @end
 
-@interface LIOManager : NSObject
+@interface LIOLookIOManager : NSObject
 
 ///---------------------------------------------------------------------------------------
 /// @name Properties
@@ -289,7 +287,7 @@ extern NSString *const kLPEventAddedToCart;
  
  @return Returns the shared LIOLookIOManager instance.
  */
-+ (LIOManager *)sharedLookIOManager;
++ (LIOLookIOManager *)sharedLookIOManager;
 
 /*!
  Initially setup LP Mobile for your app.
