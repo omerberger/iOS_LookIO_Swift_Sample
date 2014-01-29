@@ -1181,6 +1181,7 @@
             if ([[link.scheme lowercaseString] hasPrefix:@"http"])
             {
                 [self openWebLinkURL:link.URL];
+                return;
             }
             else if ([[link.scheme lowercaseString] hasPrefix:@"mailto"])
             {
@@ -1229,7 +1230,8 @@
 
 - (void)openWebLinkURL:(NSURL*)url
 {
-    
+    [self.view endEditing:YES];
+    [self.delegate chatViewControllerDidTapWebLink:url];
 }
 
 @end

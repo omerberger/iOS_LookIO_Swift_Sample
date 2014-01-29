@@ -8,16 +8,21 @@
 
 #import "LIOContainerViewController.h"
 
-#import "LIOHeaderBarView.h"
-#import "LIOBlurImageView.h"
-
+// Managers
 #import "LIOBundleManager.h"
 
+// View Controllers
 #import "LIOChatViewController.h"
 #import "LPSurveyViewController.h"
 #import "LIOLoadingViewController.h"
+#import "LIOWebViewController.h"
 
-#define LIOContainerViewControllerAlertViewNextStepDismiss 2001
+// Views
+#import "LIOHeaderBarView.h"
+#import "LIOBlurImageView.h"
+
+#define LIOContainerViewControllerAlertViewNextStepDismiss      2001
+#define LIOContainerViewControllerAlertViewNextStepOpenInSafari 2002
 
 @interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate, LIOHeaderBarViewDelegate>
 
@@ -64,6 +69,33 @@
     if (self.containerViewState == LIOContainerViewStateChat)
     {
         [self.chatViewController headerBarViewPlusButtonWasTapped];
+    }
+}
+
+- (void)headerBarViewBackToChatButtonWasTapped:(LIOHeaderBarView *)aView
+{
+    [self.headerBarView toggleWebMode:NO];
+    [self presentChatViewController:YES];
+}
+
+- (void)headerBarViewOpenInSafariButtonWasTapped:(LIOHeaderBarView *)aView
+{
+    // Let's find the current link
+    if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
+    {
+        LIOWebViewController *webViewController = (LIOWebViewController *)self.currentViewController;
+        NSURL *url = webViewController.url;
+        
+        NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
+        NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
+        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), url];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                        message:alertMessage
+                                                       delegate:self
+                                              cancelButtonTitle:nil
+                                              otherButtonTitles:alertCancel, alertOpen, nil];
+        alertView.tag = LIOContainerViewControllerAlertViewNextStepOpenInSafari;
+        [alertView show];
     }
 }
 
@@ -201,9 +233,22 @@
     }
 }
 
-- (void)chatViewControllerDidTapIntraAppLink:(NSURL *)link
+- (void)chatViewControllerDidTapIntraAppLink:(NSURL *)url
 {
-    [self.delegate containerViewcontrollerDidTapIntraAppLink:link];
+    [self.delegate containerViewcontrollerDidTapIntraAppLink:url];
+}
+
+- (void)chatViewControllerDidTapWebLink:(NSURL *)url
+{
+    self.containerViewState = LIOContainerViewStateWeb;
+    
+    [self.headerBarView hideCurrentNotification];
+    
+    [self presentHeaderBarView:YES];
+    [self.headerBarView toggleWebMode:YES];
+    
+    LIOWebViewController *webViewController = [[LIOWebViewController alloc] initWithURL:url];
+    [self swapCurrentControllerWith:webViewController animated:YES];
 }
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
@@ -342,11 +387,26 @@
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
+    LIOWebViewController *webViewController;
+    NSURL *url;
+    
     switch (alertView.tag) {
         case LIOContainerViewControllerAlertViewNextStepDismiss:
             [self dismiss];
             break;
             
+        case LIOContainerViewControllerAlertViewNextStepOpenInSafari:
+            if (buttonIndex == 1)
+            {
+                // Let's find the current link
+                if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
+                {
+                    webViewController = (LIOWebViewController *)self.currentViewController;
+                    [[UIApplication sharedApplication] openURL:webViewController.url];
+                }
+            }
+            break;
+
         default:
             break;
     }
@@ -414,6 +474,11 @@
             [self dismiss];
             break;
             
+        case LIOContainerViewStateWeb:
+            [self.headerBarView toggleWebMode:NO];
+            [self dismiss];
+            break;
+            
         default:
             break;
     }
@@ -454,6 +519,10 @@
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    // When displaying when views, we want to show the header bar all the time
+    if (LIOContainerViewStateWeb == self.containerViewState)
+        return;
+    
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
     if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)

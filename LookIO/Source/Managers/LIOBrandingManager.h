@@ -21,6 +21,8 @@ typedef enum
     LIOBrandingElementLogo,
     LIOBrandingElementBrandingBar,
     LIOBrandingElementBrandingBarNotifications,
+    LIOBrandingElementBrandingBarWebviewButtons,
+    LIOBrandingElementBrandingBarWebviewButtonsBadge,
     LIOBrandingElementAgentChatBubble,
     LIOBrandingElementAgentChatBubbleLink,
     LIOBrandingElementVisitorChatBubble,

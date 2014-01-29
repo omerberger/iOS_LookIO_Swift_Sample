@@ -26,6 +26,9 @@
 @property (nonatomic, strong) UIView *tappableBackground;
 @property (nonatomic, strong) UIView *separator;
 
+@property (nonatomic, strong) UIButton *backToChatButton;
+@property (nonatomic, strong) UIButton *openInSafariButton;
+
 @end
 
 @implementation LIOHeaderBarView
@@ -104,5 +107,46 @@
 {
     [self.delegate headerBarViewPlusButtonWasTapped:self];
 }
+
+#pragma mark WebView Methods
+
+- (void)toggleWebMode:(BOOL)webMode
+{
+    if (webMode)
+    {
+        UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarWebviewButtons];
+        self.openInSafariButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 27.0, self.bounds.size.height - 30, 18.0, 24.0)];
+        [self.openInSafariButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];
+        [self.openInSafariButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+        self.openInSafariButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        [self addSubview:self.openInSafariButton];
+        
+        self.backToChatButton = [[UIButton alloc] initWithFrame:CGRectMake(6.0, self.bounds.size.height - 23.0, 50.0, 15.0)];
+        [self.backToChatButton setTitle:@"Chat" forState:UIControlStateNormal];
+        self.backToChatButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+        self.backToChatButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+        [self.backToChatButton addTarget:self action:@selector(backToChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+        self.backToChatButton.titleLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarWebviewButtons];
+        [self.backToChatButton setTitleColor:buttonColor forState:UIControlStateNormal];
+        [self addSubview:self.backToChatButton];
+    }
+    else
+    {
+        [self.openInSafariButton removeFromSuperview];
+        [self.backToChatButton removeFromSuperview];
+    }
+}
+
+- (void)openInSafariButtonWasTapped:(id)sender
+{
+    [self.delegate headerBarViewOpenInSafariButtonWasTapped:self];
+}
+
+- (void)backToChatButtonWasTapped:(id)sender
+{
+    [self.delegate headerBarViewBackToChatButtonWasTapped:self];
+}
+
+
 
 @end

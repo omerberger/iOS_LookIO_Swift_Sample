@@ -83,6 +83,8 @@
 		A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A7D8D8641799784F005989FD /* LPMediaAPIClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7DB82151860EFA400473483 /* LIOBrandingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7DB82131860EFA400473483 /* LIOBrandingManager.h */; };
 		A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7DB82141860EFA400473483 /* LIOBrandingManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7DBE936189948B100AD300F /* LIOWebViewController.h */; };
+		A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7DBE937189948B100AD300F /* LIOWebViewController.m */; };
 		A7F4622A18771EAA00C0BD23 /* LIOLoadingViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7F4622818771EAA00C0BD23 /* LIOLoadingViewController.h */; };
 		A7F4622B18771EAA00C0BD23 /* LIOLoadingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
@@ -271,6 +273,8 @@
 		A7DB82131860EFA400473483 /* LIOBrandingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBrandingManager.h; path = Source/Managers/LIOBrandingManager.h; sourceTree = "<group>"; };
 		A7DB82141860EFA400473483 /* LIOBrandingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBrandingManager.m; path = Source/Managers/LIOBrandingManager.m; sourceTree = "<group>"; };
 		A7DB821C186397BB00473483 /* branding.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = branding.json; path = Resources/branding.json; sourceTree = "<group>"; };
+		A7DBE936189948B100AD300F /* LIOWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOWebViewController.h; path = Source/Controllers/LIOWebViewController.h; sourceTree = "<group>"; };
+		A7DBE937189948B100AD300F /* LIOWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOWebViewController.m; path = Source/Controllers/LIOWebViewController.m; sourceTree = "<group>"; };
 		A7F4622818771EAA00C0BD23 /* LIOLoadingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLoadingViewController.h; path = Source/Controllers/LIOLoadingViewController.h; sourceTree = "<group>"; };
 		A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLoadingViewController.m; path = Source/Controllers/LIOLoadingViewController.m; sourceTree = "<group>"; };
 		D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOInterstitialViewController.h; path = Source/Controllers/LIOInterstitialViewController.h; sourceTree = "<group>"; };
@@ -414,6 +418,8 @@
 				A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */,
 				A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */,
 				A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */,
+				A7DBE936189948B100AD300F /* LIOWebViewController.h */,
+				A7DBE937189948B100AD300F /* LIOWebViewController.m */,
 			);
 			name = "New View Controllers";
 			sourceTree = "<group>";
@@ -822,6 +828,7 @@
 				D4ADC7AA14F3211800713F29 /* LIOLeaveMessageViewController.h in Headers */,
 				D4ADC7B014F3215A00713F29 /* LIOAnalyticsManager.h in Headers */,
 				D4ADC7B214F3215A00713F29 /* LIOLookIOManager.h in Headers */,
+				A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */,
 				D4ADC7B814F3218300713F29 /* LIOChatMessage.h in Headers */,
 				D4ADC7BA14F3218300713F29 /* LIOTimerProxy.h in Headers */,
 				D4ADC7CC14F322B500713F29 /* LIOChatBubbleView.h in Headers */,
@@ -1045,6 +1052,7 @@
 				A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */,
 				D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */,
 				D4137A11159148F30097E385 /* LIOSurveyPickerView.m in Sources */,
+				A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */,
 				A739FA8D1864C77600CA35C4 /* LIOChatTableViewCell.m in Sources */,
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				A71187301868FE890070C22C /* LIOKeyboardMenuItem.m in Sources */,

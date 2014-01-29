@@ -15,6 +15,8 @@
 @protocol LIOHeaderBarViewDelegate
 
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
+- (void)headerBarViewOpenInSafariButtonWasTapped:(LIOHeaderBarView *)aView;
+- (void)headerBarViewBackToChatButtonWasTapped:(LIOHeaderBarView *)aView;
 
 @end
 
@@ -24,8 +26,12 @@
 @property (nonatomic, readonly) LIONotificationArea* notificationArea;
 
 - (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset;
+
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 - (void)hideCurrentNotification;
+
+- (void)toggleWebMode:(BOOL)webMode;
+
 - (void)rejiggerSubviews;
 
 @end

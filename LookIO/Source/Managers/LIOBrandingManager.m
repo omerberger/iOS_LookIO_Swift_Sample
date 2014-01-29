@@ -333,6 +333,38 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementBrandingBarWebviewButtons == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+                if (brandingBarDictionary)
+                {
+                    NSDictionary *webViewButtonsDictionary = [brandingBarDictionary objectForKey:@"webview_buttons"];
+                    if (webViewButtonsDictionary)
+                        dictionary = webViewButtonsDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementBrandingBarWebviewButtonsBadge == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+                if (brandingBarDictionary)
+                {
+                    NSDictionary *webViewButtonsDictionary = [brandingBarDictionary objectForKey:@"webview_buttons"];
+                    if (webViewButtonsDictionary)
+                    {
+                        NSDictionary *badgeDictionary = [webViewButtonsDictionary objectForKey:@"badge"];
+                        if (badgeDictionary)
+                            dictionary = badgeDictionary;
+                    }
+                }
+            }
+        }
+        
         if (LIOBrandingElementSurveyCard == element)
         {
             if (surveyDictionary)

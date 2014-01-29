@@ -20,7 +20,8 @@ typedef enum {
 typedef enum {
     LIOContainerViewStateLoading = 0,
     LIOContainerViewStateChat,
-    LIOContainerViewStateSurvey
+    LIOContainerViewStateSurvey,
+    LIOContainerViewStateWeb
 } LIOContainerViewState;
 
 @class LIOContainerViewController;
