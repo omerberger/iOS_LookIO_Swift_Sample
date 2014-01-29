@@ -10,20 +10,17 @@
 #import "LPHTTPRequestOperation.h"
 #import "LIOLogManager.h"
 
-#import "SBJSON.h"
-
 static LPAPIClient *sharedClient = nil;
 
 @interface LPAPIClient ()
 
 @property (nonatomic, retain) NSOperationQueue *operationQueue;
-@property (nonatomic, retain) SBJsonWriter_LIO* jsonWriter;
 
 @end
 
 @implementation LPAPIClient
 
-@synthesize baseURL, jsonWriter, operationQueue;
+@synthesize baseURL, operationQueue;
 
 + (LPAPIClient *) sharedClient
 {
@@ -37,20 +34,11 @@ static LPAPIClient *sharedClient = nil;
 {
     if ((self = [super init]))
     {
-        jsonWriter = [[SBJsonWriter_LIO alloc] init];
-        
         self.operationQueue = [[[NSOperationQueue alloc] init] autorelease];
         [self.operationQueue setMaxConcurrentOperationCount:NSOperationQueueDefaultMaxConcurrentOperationCount];
     }
     
     return self;
-}
-
--(void)dealloc {    
-    [jsonWriter release];
-    jsonWriter = nil;
-    
-    [super dealloc];
 }
 
 - (void)clearCookies
@@ -83,8 +71,9 @@ static LPAPIClient *sharedClient = nil;
             // TO DO - Encode parameters here
             [request setURL:url];
         } else {
-            NSString *parametersJSONEncoded = [jsonWriter stringWithObject:parameters];
-            [request setHTTPBody:[parametersJSONEncoded dataUsingEncoding:NSUTF8StringEncoding]];
+            NSError *jsonError = nil;
+            NSData *parametersJSONEncoded = [NSJSONSerialization dataWithJSONObject:parameters options:NSJSONWritingPrettyPrinted error:&jsonError];
+            [request setHTTPBody:parametersJSONEncoded];
             LIOLog(@"Request:\n%@", parametersJSONEncoded);
         }
     }

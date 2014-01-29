@@ -8,7 +8,6 @@
 
 #import "LPHTTPRequestOperation.h"
 #import "LIOLogManager.h"
-#import "SBJsonParser.h"
 
 @interface LPHTTPRequestOperation () {
     NSMutableData *responseData;
@@ -145,10 +144,8 @@
         } else {
             if (success) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    SBJsonParser_LIO* jsonParser = [[[SBJsonParser_LIO alloc] init] autorelease];
-                    NSDictionary *responseDict = [jsonParser objectWithString:responseString];
-                    [responseString release];
-
+                    NSError *jsonError = nil;
+                    NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&jsonError];
                     success(self, responseDict);
                 });
             }

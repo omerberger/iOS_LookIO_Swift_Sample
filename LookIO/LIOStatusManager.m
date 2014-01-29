@@ -19,6 +19,10 @@
 
 @interface LIOStatusManager ()
 
+@end
+
+@implementation LIOStatusManager
+
 NSString *uniqueIdentifier()
 {
     int mib[6];
@@ -77,9 +81,6 @@ NSString *uniqueIdentifier()
     return outputString;
 }
 
-@end
-
-@implementation LIOStatusManager
 
 static LIOStatusManager *statusManager = nil;
 
@@ -148,8 +149,7 @@ static LIOStatusManager *statusManager = nil;
     }
     else
     {
-        udid = uniqueIdentifier();
-        
+        udid = uniqueIdentifier();        
     }
     
     return udid;

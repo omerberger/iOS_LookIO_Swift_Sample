@@ -7,7 +7,6 @@
 //
 
 #import "LIOKeyboardMenuButton.h"
-
 #import "LIOBrandingManager.h"
 
 @interface LIOKeyboardMenuButton ()
@@ -25,10 +24,6 @@
         // Initialization code
         
         self.bottomLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
-            self.bottomLabel.textColor = [UIColor whiteColor];
-        else
-            self.bottomLabel.textColor = [UIColor colorWithRed:182.0/255.0 green:178.0/255.0 blue:174.0/255.0 alpha:1.0];
         self.bottomLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementKeyboardMenu];
         self.bottomLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementKeyboardMenu];
         self.bottomLabel.backgroundColor = [UIColor clearColor];

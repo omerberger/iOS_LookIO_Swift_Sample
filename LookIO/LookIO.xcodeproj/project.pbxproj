@@ -12,11 +12,7 @@
 		A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0481795C24A00914649 /* LPVisitAPIClient.h */; };
 		A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0491795C24A00914649 /* LPVisitAPIClient.m */; };
 		A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B676517ABFA600053A62E /* LIOBlurImageView.h */; };
-		A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676617ABFA600053A62E /* LIOBlurImageView.m */; };
-		A70B677017AC21420053A62E /* LIOChatModule.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B676E17AC21420053A62E /* LIOChatModule.h */; };
-		A70B677117AC21420053A62E /* LIOChatModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676F17AC21420053A62E /* LIOChatModule.m */; };
-		A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */ = {isa = PBXBuildFile; fileRef = A70B677217AC237A0053A62E /* LIOWebViewChatModule.h */; };
-		A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */; };
+		A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676617ABFA600053A62E /* LIOBlurImageView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A711872F1868FE890070C22C /* LIOKeyboardMenuItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A711872D1868FE890070C22C /* LIOKeyboardMenuItem.h */; };
 		A71187301868FE890070C22C /* LIOKeyboardMenuItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A711872E1868FE890070C22C /* LIOKeyboardMenuItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A721D273185136580039395E /* LIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D271185136580039395E /* LIOManager.h */; };
@@ -42,31 +38,22 @@
 		A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A73D44361856776A0030FF44 /* LIOContainerViewController.h */; };
 		A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A73D44371856776A0030FF44 /* LIOContainerViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A742967A18842D28007A0FC3 /* LPChatImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = A742967818842D28007A0FC3 /* LPChatImageView.h */; };
-		A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A742967918842D28007A0FC3 /* LPChatImageView.m */; };
+		A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A742967918842D28007A0FC3 /* LPChatImageView.m */; settings = {COMPILER_FLAGS = "-fobj-arc"; }; };
 		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
 		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */; };
-		A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */; };
-		A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
-		A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7913063187E0723001099ED /* LIOEmailChatView.h */; };
-		A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7913064187E0723001099ED /* LIOEmailChatView.m */; };
+		A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7913064187E0723001099ED /* LIOEmailChatView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A793E80D1880B49C0083B079 /* LIOChatTableViewImageCell.h in Headers */ = {isa = PBXBuildFile; fileRef = A793E80B1880B49C0083B079 /* LIOChatTableViewImageCell.h */; };
-		A793E80E1880B49C0083B079 /* LIOChatTableViewImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A793E80C1880B49C0083B079 /* LIOChatTableViewImageCell.m */; };
+		A793E80E1880B49C0083B079 /* LIOChatTableViewImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A793E80C1880B49C0083B079 /* LIOChatTableViewImageCell.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */; };
 		A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C96CB01757D40B0028F39C /* LIOSurveyView.m */; };
 		A7A397371892B7E30073A41C /* LIOBadgeView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A397351892B7E30073A41C /* LIOBadgeView.h */; };
-		A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A397361892B7E30073A41C /* LIOBadgeView.m */; };
+		A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A397361892B7E30073A41C /* LIOBadgeView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE31FE18732922002D9F23 /* LIOSurvey.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE31FC18732922002D9F23 /* LIOSurvey.h */; };
 		A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE31FD18732922002D9F23 /* LIOSurvey.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE320818735EDC002D9F23 /* LPSurveyViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */; };
-		A7B32B9118203EE300273A6C /* LIOSquareControlButtonView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B8F18203EE300273A6C /* LIOSquareControlButtonView.h */; };
-		A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B32B9018203EE300273A6C /* LIOSquareControlButtonView.m */; };
-		A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7B32B931820603A00273A6C /* LIODragToDeleteView.h */; };
-		A7B32B961820603A00273A6C /* LIODragToDeleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7B32B941820603A00273A6C /* LIODragToDeleteView.m */; };
 		A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C859371779E26B00493BF8 /* LPSSEManager.h */; };
 		A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C859381779E26B00493BF8 /* LPSSEManager.m */; };
 		A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C8593B1779E45C00493BF8 /* GCDAsyncSocket.h */; };
@@ -74,7 +61,6 @@
 		A7C85944177B3F1900493BF8 /* LPAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C85942177B3F1900493BF8 /* LPAPIClient.m */; };
 		A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */; };
 		A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C85946177B458600493BF8 /* LPHTTPRequestOperation.m */; };
-		A7C96CB11757D40B0028F39C /* LIOSurveyView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7C96CAF1757D40B0028F39C /* LIOSurveyView.h */; };
 		A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = A7CF0497177C833200AFDC5D /* LPSSEvent.h */; };
 		A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = A7CF0498177C833200AFDC5D /* LPSSEvent.m */; };
 		A7D4E845177498AB0037E47B /* LIOStarRatingView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D4E843177498AB0037E47B /* LIOStarRatingView.h */; };
@@ -84,48 +70,31 @@
 		A7DB82151860EFA400473483 /* LIOBrandingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A7DB82131860EFA400473483 /* LIOBrandingManager.h */; };
 		A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A7DB82141860EFA400473483 /* LIOBrandingManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7DBE936189948B100AD300F /* LIOWebViewController.h */; };
-		A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7DBE937189948B100AD300F /* LIOWebViewController.m */; };
+		A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7DBE937189948B100AD300F /* LIOWebViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A7DBE95518999F7A00AD300F /* LIOCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C902491549D04A00B36D68 /* LIOCacheEntry.h */; };
+		A7DBE95618999F7A00AD300F /* LIOCacheEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */; };
+		A7DBE95718999FCB00AD300F /* LIOKeyboardMenuButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A77A1EB517B2EFE600FEDD26 /* LIOKeyboardMenuButton.h */; };
+		A7DBE95818999FCB00AD300F /* LIOKeyboardMenuButton.m in Sources */ = {isa = PBXBuildFile; fileRef = A77A1EB617B2EFE700FEDD26 /* LIOKeyboardMenuButton.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7F4622A18771EAA00C0BD23 /* LIOLoadingViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A7F4622818771EAA00C0BD23 /* LIOLoadingViewController.h */; };
 		A7F4622B18771EAA00C0BD23 /* LIOLoadingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7F4622918771EAA00C0BD23 /* LIOLoadingViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */; };
-		D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */; };
 		D403F7B815335CC100101941 /* LIOLogManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D403F7B615335CC100101941 /* LIOLogManager.h */; };
 		D403F7B915335CC100101941 /* LIOLogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D403F7B715335CC100101941 /* LIOLogManager.m */; };
-		D4137A10159148F30097E385 /* LIOSurveyPickerView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4137A0E159148F30097E385 /* LIOSurveyPickerView.h */; };
-		D4137A11159148F30097E385 /* LIOSurveyPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */; };
 		D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4137A121592948E0097E385 /* LIOSurveyValidationView.h */; };
 		D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4137A131592948E0097E385 /* LIOSurveyValidationView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D41F9425158AA40E004BE9A0 /* LIOSurveyManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */; };
-		D41F9426158AA40E004BE9A0 /* LIOSurveyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */; };
 		D41F9436158AA52C004BE9A0 /* LIOSurveyQuestion.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */; };
 		D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D41F9438158AA52C004BE9A0 /* LIOSurveyTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */; };
-		D41F9439158AA52C004BE9A0 /* LIOSurveyTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */; };
 		D41F943C158AA625004BE9A0 /* LIOSurveyPickerEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */; };
 		D41F943D158AA625004BE9A0 /* LIOSurveyPickerEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */ = {isa = PBXBuildFile; fileRef = D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */; };
-		D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */ = {isa = PBXBuildFile; fileRef = D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE7981563274B006DFE81 /* LIONotificationArea.h */; };
 		D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE7991563274B006DFE81 /* LIONotificationArea.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */ = {isa = PBXBuildFile; fileRef = D42DE8031565B869006DFE81 /* LIOToasterView.h */; };
 		D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */ = {isa = PBXBuildFile; fileRef = D42DE8041565B869006DFE81 /* LIOToasterView.m */; };
 		D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */; };
 		D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */; };
-		D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D46C1540AF640045DBFF /* LIOMapBubbleView.h */; };
-		D440D46F1540AF640045DBFF /* LIOMapBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D46D1540AF640045DBFF /* LIOMapBubbleView.m */; };
-		D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D4731540BD400045DBFF /* LIOMapAnnotation.h */; };
-		D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D4741540BD400045DBFF /* LIOMapAnnotation.m */; };
 		D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = D440D47C1541E8450045DBFF /* TTTAttributedLabel.h */; };
 		D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D440D47D1541E8450045DBFF /* TTTAttributedLabel.m */; };
 		D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D447AC9917381460008919A1 /* LIOMediaManager.h */; };
 		D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D447AC9A17381460008919A1 /* LIOMediaManager.m */; };
-		D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */ = {isa = PBXBuildFile; fileRef = D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */; };
-		D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */ = {isa = PBXBuildFile; fileRef = D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */; };
-		D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */ = {isa = PBXBuildFile; fileRef = D462795915B9E98E00AEDE2D /* LIONavigationBar.h */; };
-		D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = D462795A15B9E98E00AEDE2D /* LIONavigationBar.m */; };
-		D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D463F3F91506FDAB00A7FD7F /* LIODismissalBarView.h */; };
-		D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D463F3FA1506FDAB00A7FD7F /* LIODismissalBarView.m */; };
-		D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = D479A266165B02AC0074B3EC /* LIOPlugin.h */; };
 		D4868A78155AFE800081164D /* AsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = D4868A76155AFE800081164D /* AsyncSocket.h */; };
 		D4868A79155AFE800081164D /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4868A77155AFE800081164D /* AsyncSocket.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
@@ -148,49 +117,16 @@
 		D486D7371521303B007C9AF8 /* ZipReadStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7251521303B007C9AF8 /* ZipReadStream.m */; };
 		D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7261521303B007C9AF8 /* ZipWriteStream.h */; };
 		D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7271521303B007C9AF8 /* ZipWriteStream.m */; };
-		D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */; };
-		D4ADC7A714F3211800713F29 /* LIOAltChatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */; };
-		D4ADC7A814F3211800713F29 /* LIOEmailHistoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */; };
-		D4ADC7A914F3211800713F29 /* LIOEmailHistoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7A114F3211800713F29 /* LIOEmailHistoryViewController.m */; };
-		D4ADC7AA14F3211800713F29 /* LIOLeaveMessageViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7A214F3211800713F29 /* LIOLeaveMessageViewController.h */; };
-		D4ADC7AB14F3211800713F29 /* LIOLeaveMessageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7A314F3211800713F29 /* LIOLeaveMessageViewController.m */; };
 		D4ADC7B014F3215A00713F29 /* LIOAnalyticsManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7AC14F3215900713F29 /* LIOAnalyticsManager.h */; };
 		D4ADC7B114F3215A00713F29 /* LIOAnalyticsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */; };
-		D4ADC7B214F3215A00713F29 /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */; };
-		D4ADC7B314F3215A00713F29 /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */; };
 		D4ADC7B814F3218300713F29 /* LIOChatMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7B414F3218300713F29 /* LIOChatMessage.h */; };
 		D4ADC7B914F3218300713F29 /* LIOChatMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7B514F3218300713F29 /* LIOChatMessage.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D4ADC7BA14F3218300713F29 /* LIOTimerProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */; };
 		D4ADC7BB14F3218300713F29 /* LIOTimerProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */; };
-		D4ADC7CC14F322B500713F29 /* LIOChatBubbleView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7BE14F322B500713F29 /* LIOChatBubbleView.h */; };
-		D4ADC7CD14F322B500713F29 /* LIOChatBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7BF14F322B500713F29 /* LIOChatBubbleView.m */; };
-		D4ADC7CE14F322B500713F29 /* LIOControlButtonView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C014F322B500713F29 /* LIOControlButtonView.h */; };
-		D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C114F322B500713F29 /* LIOControlButtonView.m */; };
 		D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */; };
 		D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C314F322B500713F29 /* LIOHeaderBarView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7C414F322B500713F29 /* LIOInputBarView.h */; };
-		D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7C514F322B500713F29 /* LIOInputBarView.m */; };
 		D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7DD14F322C300713F29 /* NSData+Base64.h */; };
 		D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7DE14F322C300713F29 /* NSData+Base64.m */; };
-		D4ADC7F114F322C300713F29 /* JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E014F322C300713F29 /* JSON.h */; };
-		D4ADC7F214F322C300713F29 /* NSObject+SBJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E114F322C300713F29 /* NSObject+SBJSON.h */; };
-		D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7E214F322C300713F29 /* NSObject+SBJSON.m */; };
-		D4ADC7F414F322C300713F29 /* NSString+SBJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E314F322C300713F29 /* NSString+SBJSON.h */; };
-		D4ADC7F514F322C300713F29 /* NSString+SBJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7E414F322C300713F29 /* NSString+SBJSON.m */; };
-		D4ADC7F614F322C300713F29 /* SBJSON.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E514F322C300713F29 /* SBJSON.h */; };
-		D4ADC7F714F322C300713F29 /* SBJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7E614F322C300713F29 /* SBJSON.m */; };
-		D4ADC7F814F322C300713F29 /* SBJsonBase.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E714F322C300713F29 /* SBJsonBase.h */; };
-		D4ADC7F914F322C300713F29 /* SBJsonBase.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7E814F322C300713F29 /* SBJsonBase.m */; };
-		D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7E914F322C300713F29 /* SBJsonParser.h */; };
-		D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EA14F322C300713F29 /* SBJsonParser.m */; };
-		D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */; };
-		D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */; };
-		D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = D4BB18AC1651CC52007E096F /* LIOPhotoPlugin.h */; };
-		D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = D4BB18AD1651CC52007E096F /* LIOPhotoPlugin.m */; };
-		D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = D4C902491549D04A00B36D68 /* LIOCacheEntry.h */; };
-		D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */; };
-		D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */ = {isa = PBXBuildFile; fileRef = D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */; };
-		D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -240,8 +176,8 @@
 		A7913064187E0723001099ED /* LIOEmailChatView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOEmailChatView.m; path = Source/Views/LIOEmailChatView.m; sourceTree = "<group>"; };
 		A793E80B1880B49C0083B079 /* LIOChatTableViewImageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChatTableViewImageCell.h; path = Source/Views/LIOChatTableViewImageCell.h; sourceTree = "<group>"; };
 		A793E80C1880B49C0083B079 /* LIOChatTableViewImageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOChatTableViewImageCell.m; path = Source/Views/LIOChatTableViewImageCell.m; sourceTree = "<group>"; };
-		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicItem.h; sourceTree = "<group>"; };
-		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicItem.m; sourceTree = "<group>"; };
+		A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyLogicItem.h; path = Source/Other/Survey/LIOSurveyLogicItem.h; sourceTree = "<group>"; };
+		A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyLogicItem.m; path = Source/Other/Survey/LIOSurveyLogicItem.m; sourceTree = "<group>"; };
 		A7A397351892B7E30073A41C /* LIOBadgeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBadgeView.h; path = Source/Views/LIOBadgeView.h; sourceTree = "<group>"; };
 		A7A397361892B7E30073A41C /* LIOBadgeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBadgeView.m; path = Source/Views/LIOBadgeView.m; sourceTree = "<group>"; };
 		A7AE31FC18732922002D9F23 /* LIOSurvey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurvey.h; path = Source/Models/LIOSurvey.h; sourceTree = "<group>"; };
@@ -289,12 +225,12 @@
 		D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyManager.m; path = Source/Managers/LIOSurveyManager.m; sourceTree = "<group>"; };
 		D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyQuestion.h; path = Source/Other/Survey/LIOSurveyQuestion.h; sourceTree = "<group>"; };
 		D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyQuestion.m; path = Source/Other/Survey/LIOSurveyQuestion.m; sourceTree = "<group>"; };
-		D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyTemplate.h; sourceTree = "<group>"; };
-		D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyTemplate.m; sourceTree = "<group>"; };
-		D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyPickerEntry.h; sourceTree = "<group>"; };
-		D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyPickerEntry.m; sourceTree = "<group>"; };
-		D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSurveyLogicProp.h; sourceTree = "<group>"; };
-		D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSurveyLogicProp.m; sourceTree = "<group>"; };
+		D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyTemplate.h; path = Source/Other/Survey/LIOSurveyTemplate.h; sourceTree = "<group>"; };
+		D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyTemplate.m; path = Source/Other/Survey/LIOSurveyTemplate.m; sourceTree = "<group>"; };
+		D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyPickerEntry.h; path = Source/Other/Survey/LIOSurveyPickerEntry.h; sourceTree = "<group>"; };
+		D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyPickerEntry.m; path = Source/Other/Survey/LIOSurveyPickerEntry.m; sourceTree = "<group>"; };
+		D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurveyLogicProp.h; path = Source/Other/Survey/LIOSurveyLogicProp.h; sourceTree = "<group>"; };
+		D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurveyLogicProp.m; path = Source/Other/Survey/LIOSurveyLogicProp.m; sourceTree = "<group>"; };
 		D42DE7981563274B006DFE81 /* LIONotificationArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIONotificationArea.h; path = Source/Views/LIONotificationArea.h; sourceTree = "<group>"; };
 		D42DE7991563274B006DFE81 /* LIONotificationArea.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIONotificationArea.m; path = Source/Views/LIONotificationArea.m; sourceTree = "<group>"; };
 		D42DE8031565B869006DFE81 /* LIOToasterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOToasterView.h; path = Source/Views/LIOToasterView.h; sourceTree = "<group>"; };
@@ -396,18 +332,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A70B676D17AC21010053A62E /* ChatModules */ = {
-			isa = PBXGroup;
-			children = (
-				A70B676E17AC21420053A62E /* LIOChatModule.h */,
-				A70B676F17AC21420053A62E /* LIOChatModule.m */,
-				A70B677217AC237A0053A62E /* LIOWebViewChatModule.h */,
-				A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */,
-			);
-			name = ChatModules;
-			sourceTree = "<group>";
-		};
-		A71187311869064B0070C22C /* New View Controllers */ = {
+		A71187311869064B0070C22C /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
 				A73D44361856776A0030FF44 /* LIOContainerViewController.h */,
@@ -421,10 +346,10 @@
 				A7DBE936189948B100AD300F /* LIOWebViewController.h */,
 				A7DBE937189948B100AD300F /* LIOWebViewController.m */,
 			);
-			name = "New View Controllers";
+			name = "View Controllers";
 			sourceTree = "<group>";
 		};
-		A721D27A185138980039395E /* New Managers */ = {
+		A721D27A185138980039395E /* Managers */ = {
 			isa = PBXGroup;
 			children = (
 				A7DB821C186397BB00473483 /* branding.json */,
@@ -436,25 +361,35 @@
 				A721D28518513D860039395E /* LIONetworkManager.m */,
 				A7DB82131860EFA400473483 /* LIOBrandingManager.h */,
 				A7DB82141860EFA400473483 /* LIOBrandingManager.m */,
+				D4ADC7AC14F3215900713F29 /* LIOAnalyticsManager.h */,
+				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
+				D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */,
+				D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */,
+				D403F7B615335CC100101941 /* LIOLogManager.h */,
+				D403F7B715335CC100101941 /* LIOLogManager.m */,
+				D447AC9917381460008919A1 /* LIOMediaManager.h */,
+				D447AC9A17381460008919A1 /* LIOMediaManager.m */,
 			);
-			name = "New Managers";
+			name = Managers;
 			sourceTree = "<group>";
 		};
 		A721D27B18513A090039395E /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				A7F4622F187B31A700C0BD23 /* Surveys */,
+				D4ADC7B414F3218300713F29 /* LIOChatMessage.h */,
+				D4ADC7B514F3218300713F29 /* LIOChatMessage.m */,
 				A721D27C18513A6F0039395E /* LIOVisit.h */,
 				A721D27D18513A6F0039395E /* LIOVisit.m */,
 				A721D28018513A8A0039395E /* LIOEngagement.h */,
 				A721D28118513A8A0039395E /* LIOEngagement.m */,
 				A711872D1868FE890070C22C /* LIOKeyboardMenuItem.h */,
 				A711872E1868FE890070C22C /* LIOKeyboardMenuItem.m */,
+				A7F4622F187B31A700C0BD23 /* Surveys */,
 			);
 			name = Models;
 			sourceTree = "<group>";
 		};
-		A739FA891864C6CC00CA35C4 /* New Views */ = {
+		A739FA891864C6CC00CA35C4 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				A742967718842CF9007A0FC3 /* Overlay */,
@@ -463,7 +398,7 @@
 				A742967418842CC7007A0FC3 /* Chat */,
 				A742967318842CA6007A0FC3 /* Surveys */,
 			);
-			name = "New Views";
+			name = Views;
 			sourceTree = "<group>";
 		};
 		A742967318842CA6007A0FC3 /* Surveys */ = {
@@ -501,6 +436,8 @@
 		A742967518842CDF007A0FC3 /* Container */ = {
 			isa = PBXGroup;
 			children = (
+				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,
+				D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */,
 				D42DE8031565B869006DFE81 /* LIOToasterView.h */,
 				D42DE8041565B869006DFE81 /* LIOToasterView.m */,
 				D4ADC7C214F322B500713F29 /* LIOHeaderBarView.h */,
@@ -525,6 +462,8 @@
 		A742967718842CF9007A0FC3 /* Overlay */ = {
 			isa = PBXGroup;
 			children = (
+				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,
+				A70B676617ABFA600053A62E /* LIOBlurImageView.m */,
 				A73D4432185610240030FF44 /* LIODraggableButton.h */,
 				A73D4433185610240030FF44 /* LIODraggableButton.m */,
 				A7A397351892B7E30073A41C /* LIOBadgeView.h */,
@@ -554,31 +493,68 @@
 			name = Networking;
 			sourceTree = "<group>";
 		};
+		A7DBE93A18999E2800AD300F /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */,
+				D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */,
+				D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */,
+				D4ADC7A114F3211800713F29 /* LIOEmailHistoryViewController.m */,
+				D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */,
+				D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */,
+				D4ADC7A214F3211800713F29 /* LIOLeaveMessageViewController.h */,
+				D4ADC7A314F3211800713F29 /* LIOLeaveMessageViewController.m */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
+		A7DBE93B18999E5600AD300F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */,
+				D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */,
+				D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */,
+				D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */,
+				A70B676E17AC21420053A62E /* LIOChatModule.h */,
+				A70B676F17AC21420053A62E /* LIOChatModule.m */,
+				A70B677217AC237A0053A62E /* LIOWebViewChatModule.h */,
+				A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+		A7DBE93C18999F2200AD300F /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D4C902491549D04A00B36D68 /* LIOCacheEntry.h */,
+				D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */,
+				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
+				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
+			);
+			name = Helpers;
+			sourceTree = "<group>";
+		};
+		A7DBE95A1899A24B00AD300F /* 3rd Party */ = {
+			isa = PBXGroup;
+			children = (
+				D4ADC7DF14F322C300713F29 /* SBJSON */,
+			);
+			name = "3rd Party";
+			sourceTree = "<group>";
+		};
 		A7F4622F187B31A700C0BD23 /* Surveys */ = {
 			isa = PBXGroup;
 			children = (
+				D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */,
+				D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */,
+				A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */,
+				A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */,
 				A7AE31FC18732922002D9F23 /* LIOSurvey.h */,
 				A7AE31FD18732922002D9F23 /* LIOSurvey.m */,
 				D41F9432158AA52C004BE9A0 /* LIOSurveyQuestion.h */,
 				D41F9433158AA52C004BE9A0 /* LIOSurveyQuestion.m */,
 			);
 			name = Surveys;
-			sourceTree = "<group>";
-		};
-		D41F9431158AA52C004BE9A0 /* Survey */ = {
-			isa = PBXGroup;
-			children = (
-				D41F943E158AA768004BE9A0 /* LIOSurveyLogicProp.h */,
-				D41F943F158AA768004BE9A0 /* LIOSurveyLogicProp.m */,
-				D41F943A158AA625004BE9A0 /* LIOSurveyPickerEntry.h */,
-				D41F943B158AA625004BE9A0 /* LIOSurveyPickerEntry.m */,
-				D41F9434158AA52C004BE9A0 /* LIOSurveyTemplate.h */,
-				D41F9435158AA52C004BE9A0 /* LIOSurveyTemplate.m */,
-				A7981B42176BCF6900E0FB9F /* LIOSurveyLogicItem.h */,
-				A7981B43176BCF6900E0FB9F /* LIOSurveyLogicItem.m */,
-			);
-			name = Survey;
-			path = Source/Other/Survey;
 			sourceTree = "<group>";
 		};
 		D440D47B1541E8450045DBFF /* TTTAttributedLabel */ = {
@@ -606,34 +582,24 @@
 			name = Strings;
 			sourceTree = "<group>";
 		};
-		D47C98EA14C9EFEB00E1223F /* Controllers */ = {
+		D47C98EA14C9EFEB00E1223F /* Depreceated Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D4ADC79E14F3211800713F29 /* LIOAltChatViewController.h */,
-				D4ADC79F14F3211800713F29 /* LIOAltChatViewController.m */,
-				D4ADC7A014F3211800713F29 /* LIOEmailHistoryViewController.h */,
-				D4ADC7A114F3211800713F29 /* LIOEmailHistoryViewController.m */,
-				D403F7861523CEBA00101941 /* LIOInterstitialViewController.h */,
-				D403F7871523CEBA00101941 /* LIOInterstitialViewController.m */,
-				D4ADC7A214F3211800713F29 /* LIOLeaveMessageViewController.h */,
-				D4ADC7A314F3211800713F29 /* LIOLeaveMessageViewController.m */,
+				A7DBE95A1899A24B00AD300F /* 3rd Party */,
+				D47C98ED14C9F01900E1223F /* Other */,
+				D47C98EC14C9F01000E1223F /* Views */,
+				A7DBE93B18999E5600AD300F /* Models */,
+				D47C98EB14C9EFF900E1223F /* Managers */,
+				A7DBE93A18999E2800AD300F /* ViewControllers */,
 			);
-			name = Controllers;
+			name = "Depreceated Classes";
 			sourceTree = "<group>";
 		};
 		D47C98EB14C9EFF900E1223F /* Managers */ = {
 			isa = PBXGroup;
 			children = (
-				D4ADC7AC14F3215900713F29 /* LIOAnalyticsManager.h */,
-				D4ADC7AD14F3215900713F29 /* LIOAnalyticsManager.m */,
-				D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */,
-				D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */,
-				D403F7B615335CC100101941 /* LIOLogManager.h */,
-				D403F7B715335CC100101941 /* LIOLogManager.m */,
 				D4ADC7AE14F3215900713F29 /* LIOLookIOManager.h */,
 				D4ADC7AF14F3215900713F29 /* LIOLookIOManager.m */,
-				D447AC9917381460008919A1 /* LIOMediaManager.h */,
-				D447AC9A17381460008919A1 /* LIOMediaManager.m */,
 				D41F9423158AA40E004BE9A0 /* LIOSurveyManager.h */,
 				D41F9424158AA40E004BE9A0 /* LIOSurveyManager.m */,
 			);
@@ -647,8 +613,6 @@
 				A7C96CB01757D40B0028F39C /* LIOSurveyView.m */,
 				D4CF6EA415A60BBD006B4177 /* LIOAnimatedCogView.h */,
 				D4CF6EA515A60BBD006B4177 /* LIOAnimatedCogView.m */,
-				D440D467153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h */,
-				D440D468153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m */,
 				D4ADC7BE14F322B500713F29 /* LIOChatBubbleView.h */,
 				D4ADC7BF14F322B500713F29 /* LIOChatBubbleView.m */,
 				D4ADC7C014F322B500713F29 /* LIOControlButtonView.h */,
@@ -669,8 +633,6 @@
 				D4137A0F159148F30097E385 /* LIOSurveyPickerView.m */,
 				A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */,
 				A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */,
-				A70B676517ABFA600053A62E /* LIOBlurImageView.h */,
-				A70B676617ABFA600053A62E /* LIOBlurImageView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -678,18 +640,10 @@
 		D47C98ED14C9F01900E1223F /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				A70B676D17AC21010053A62E /* ChatModules */,
-				D41F9431158AA52C004BE9A0 /* Survey */,
-				D4C902491549D04A00B36D68 /* LIOCacheEntry.h */,
-				D4C9024A1549D04A00B36D68 /* LIOCacheEntry.m */,
-				D4ADC7B414F3218300713F29 /* LIOChatMessage.h */,
-				D4ADC7B514F3218300713F29 /* LIOChatMessage.m */,
 				D440D4731540BD400045DBFF /* LIOMapAnnotation.h */,
 				D440D4741540BD400045DBFF /* LIOMapAnnotation.m */,
 				D454B7FC1576D93400CF73CC /* LIORuleViewVisible.h */,
 				D454B7FD1576D93400CF73CC /* LIORuleViewVisible.m */,
-				D4ADC7B614F3218300713F29 /* LIOTimerProxy.h */,
-				D4ADC7B714F3218300713F29 /* LIOTimerProxy.m */,
 				D4BB18AC1651CC52007E096F /* LIOPhotoPlugin.h */,
 				D4BB18AD1651CC52007E096F /* LIOPhotoPlugin.m */,
 				D479A266165B02AC0074B3EC /* LIOPlugin.h */,
@@ -740,15 +694,13 @@
 		D48ABF2D14046E4B00835205 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				A71187311869064B0070C22C /* New View Controllers */,
-				A739FA891864C6CC00CA35C4 /* New Views */,
+				A7DBE93C18999F2200AD300F /* Helpers */,
+				A71187311869064B0070C22C /* View Controllers */,
+				A739FA891864C6CC00CA35C4 /* Views */,
 				A721D27B18513A090039395E /* Models */,
-				A721D27A185138980039395E /* New Managers */,
+				A721D27A185138980039395E /* Managers */,
 				A7C859361779E23100493BF8 /* Networking */,
-				D47C98EA14C9EFEB00E1223F /* Controllers */,
-				D47C98EB14C9EFF900E1223F /* Managers */,
-				D47C98ED14C9F01900E1223F /* Other */,
-				D47C98EC14C9F01000E1223F /* Views */,
+				D47C98EA14C9EFEB00E1223F /* Depreceated Classes */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -761,7 +713,6 @@
 				D486D71D1521303B007C9AF8 /* Objective-Zip */,
 				D4ADC7D914F322C300713F29 /* CocoaAsyncSocket */,
 				D4ADC7DC14F322C300713F29 /* NSData+Base64 */,
-				D4ADC7DF14F322C300713F29 /* SBJSON */,
 			);
 			path = "3rd Party";
 			sourceTree = "<group>";
@@ -803,7 +754,8 @@
 				D4ADC7EB14F322C300713F29 /* SBJsonWriter.h */,
 				D4ADC7EC14F322C300713F29 /* SBJsonWriter.m */,
 			);
-			path = SBJSON;
+			name = SBJSON;
+			path = "3rd Party/SBJSON";
 			sourceTree = "<group>";
 		};
 		D4AF999C1404264900613B8E = {
@@ -823,35 +775,20 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4ADC7A614F3211800713F29 /* LIOAltChatViewController.h in Headers */,
-				D4ADC7A814F3211800713F29 /* LIOEmailHistoryViewController.h in Headers */,
-				D4ADC7AA14F3211800713F29 /* LIOLeaveMessageViewController.h in Headers */,
 				D4ADC7B014F3215A00713F29 /* LIOAnalyticsManager.h in Headers */,
-				D4ADC7B214F3215A00713F29 /* LIOLookIOManager.h in Headers */,
 				A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */,
 				D4ADC7B814F3218300713F29 /* LIOChatMessage.h in Headers */,
 				D4ADC7BA14F3218300713F29 /* LIOTimerProxy.h in Headers */,
-				D4ADC7CC14F322B500713F29 /* LIOChatBubbleView.h in Headers */,
-				D4ADC7CE14F322B500713F29 /* LIOControlButtonView.h in Headers */,
 				D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */,
-				D4ADC7D214F322B500713F29 /* LIOInputBarView.h in Headers */,
+				A7DBE95518999F7A00AD300F /* LIOCacheEntry.h in Headers */,
 				D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */,
-				D4ADC7F114F322C300713F29 /* JSON.h in Headers */,
 				A721D28A18513DFD0039395E /* LIOStatusManager.h in Headers */,
-				D4ADC7F214F322C300713F29 /* NSObject+SBJSON.h in Headers */,
 				A739FA901864C92500CA35C4 /* LPChatBubbleView.h in Headers */,
-				D4ADC7F414F322C300713F29 /* NSString+SBJSON.h in Headers */,
-				D4ADC7F614F322C300713F29 /* SBJSON.h in Headers */,
-				D4ADC7F814F322C300713F29 /* SBJsonBase.h in Headers */,
 				A7AE31FE18732922002D9F23 /* LIOSurvey.h in Headers */,
-				D4ADC7FA14F322C300713F29 /* SBJsonParser.h in Headers */,
 				A7DB82151860EFA400473483 /* LIOBrandingManager.h in Headers */,
-				D4ADC7FC14F322C300713F29 /* SBJsonWriter.h in Headers */,
 				A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */,
 				A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */,
-				D463F3FB1506FDAB00A7FD7F /* LIODismissalBarView.h in Headers */,
 				A739FA8C1864C77600CA35C4 /* LIOChatTableViewCell.h in Headers */,
-				A7B32B951820603A00273A6C /* LIODragToDeleteView.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
 				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
 				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
@@ -864,44 +801,29 @@
 				D486D7341521303B007C9AF8 /* ZipFile.h in Headers */,
 				D486D7361521303B007C9AF8 /* ZipReadStream.h in Headers */,
 				D486D7381521303B007C9AF8 /* ZipWriteStream.h in Headers */,
-				D403F7881523CEBA00101941 /* LIOInterstitialViewController.h in Headers */,
 				D403F7B815335CC100101941 /* LIOLogManager.h in Headers */,
 				D440D469153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.h in Headers */,
-				D440D46E1540AF640045DBFF /* LIOMapBubbleView.h in Headers */,
 				A721D27E18513A6F0039395E /* LIOVisit.h in Headers */,
 				A721D28618513D860039395E /* LIONetworkManager.h in Headers */,
-				D440D4751540BD400045DBFF /* LIOMapAnnotation.h in Headers */,
 				A711872F1868FE890070C22C /* LIOKeyboardMenuItem.h in Headers */,
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
-				D4C9024B1549D04A00B36D68 /* LIOCacheEntry.h in Headers */,
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
 				D42DE8051565B86A006DFE81 /* LIOToasterView.h in Headers */,
-				D454B7FE1576D93400CF73CC /* LIORuleViewVisible.h in Headers */,
-				D41F9425158AA40E004BE9A0 /* LIOSurveyManager.h in Headers */,
 				D41F9436158AA52C004BE9A0 /* LIOSurveyQuestion.h in Headers */,
-				D41F9438158AA52C004BE9A0 /* LIOSurveyTemplate.h in Headers */,
 				D41F943C158AA625004BE9A0 /* LIOSurveyPickerEntry.h in Headers */,
-				D41F9440158AA768004BE9A0 /* LIOSurveyLogicProp.h in Headers */,
-				D4137A10159148F30097E385 /* LIOSurveyPickerView.h in Headers */,
 				D4137A141592948F0097E385 /* LIOSurveyValidationView.h in Headers */,
 				A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */,
-				D4CF6EA615A60BBD006B4177 /* LIOAnimatedCogView.h in Headers */,
-				D462795B15B9E98E00AEDE2D /* LIONavigationBar.h in Headers */,
-				D4BB18AE1651CC52007E096F /* LIOPhotoPlugin.h in Headers */,
-				D479A267165B02AC0074B3EC /* LIOPlugin.h in Headers */,
+				A7DBE95718999FCB00AD300F /* LIOKeyboardMenuButton.h in Headers */,
 				A73D4434185610240030FF44 /* LIODraggableButton.h in Headers */,
 				D447AC9B17381460008919A1 /* LIOMediaManager.h in Headers */,
-				A7C96CB11757D40B0028F39C /* LIOSurveyView.h in Headers */,
 				A7C859391779E26B00493BF8 /* LPSSEManager.h in Headers */,
 				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
 				A7C85943177B3F1900493BF8 /* LPAPIClient.h in Headers */,
-				A7B32B9118203EE300273A6C /* LIOSquareControlButtonView.h in Headers */,
 				A742967A18842D28007A0FC3 /* LPChatImageView.h in Headers */,
 				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
 				A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */,
 				A7A397371892B7E30073A41C /* LIOBadgeView.h in Headers */,
-				A7C96CB11757D40B0028F39C /* LIOSurveyView.h in Headers */,
 				A721D273185136580039395E /* LIOManager.h in Headers */,
 				A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */,
 				A7D4E845177498AB0037E47B /* LIOStarRatingView.h in Headers */,
@@ -910,13 +832,9 @@
 				A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */,
 				A7F4622A18771EAA00C0BD23 /* LIOLoadingViewController.h in Headers */,
 				A7D8D8651799784F005989FD /* LPMediaAPIClient.h in Headers */,
-				A76DF2391799AF5800DDBC61 /* LIOImageBubbleView.h in Headers */,
 				A70B676717ABFA600053A62E /* LIOBlurImageView.h in Headers */,
 				A721D28218513A8A0039395E /* LIOEngagement.h in Headers */,
 				A721D2771851367D0039395E /* LIOChatViewController.h in Headers */,
-				A70B677017AC21420053A62E /* LIOChatModule.h in Headers */,
-				A70B677417AC237A0053A62E /* LIOWebViewChatModule.h in Headers */,
-				A77A1EB717B2EFE700FEDD26 /* LIOKeyboardMenuButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -988,37 +906,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4ADC7A714F3211800713F29 /* LIOAltChatViewController.m in Sources */,
-				D4ADC7A914F3211800713F29 /* LIOEmailHistoryViewController.m in Sources */,
-				D4ADC7AB14F3211800713F29 /* LIOLeaveMessageViewController.m in Sources */,
 				A739FA951864FE9100CA35C4 /* LPInputBarView.m in Sources */,
 				D4ADC7B114F3215A00713F29 /* LIOAnalyticsManager.m in Sources */,
-				D4ADC7B314F3215A00713F29 /* LIOLookIOManager.m in Sources */,
 				D4ADC7B914F3218300713F29 /* LIOChatMessage.m in Sources */,
 				A739FA911864C92500CA35C4 /* LPChatBubbleView.m in Sources */,
 				A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */,
 				A793E80E1880B49C0083B079 /* LIOChatTableViewImageCell.m in Sources */,
 				D4ADC7BB14F3218300713F29 /* LIOTimerProxy.m in Sources */,
-				D4ADC7CD14F322B500713F29 /* LIOChatBubbleView.m in Sources */,
-				D4ADC7CF14F322B500713F29 /* LIOControlButtonView.m in Sources */,
 				A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */,
 				D4ADC7D114F322B500713F29 /* LIOHeaderBarView.m in Sources */,
-				A7B32B9218203EE300273A6C /* LIOSquareControlButtonView.m in Sources */,
-				D4ADC7D314F322B500713F29 /* LIOInputBarView.m in Sources */,
 				D4ADC7F014F322C300713F29 /* NSData+Base64.m in Sources */,
-				D4ADC7F314F322C300713F29 /* NSObject+SBJSON.m in Sources */,
-				D4ADC7F514F322C300713F29 /* NSString+SBJSON.m in Sources */,
-				D4ADC7F714F322C300713F29 /* SBJSON.m in Sources */,
+				A7DBE95618999F7A00AD300F /* LIOCacheEntry.m in Sources */,
 				A7F4622B18771EAA00C0BD23 /* LIOLoadingViewController.m in Sources */,
 				A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */,
-				D4ADC7F914F322C300713F29 /* SBJsonBase.m in Sources */,
-				D4ADC7FB14F322C300713F29 /* SBJsonParser.m in Sources */,
 				A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */,
 				A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */,
 				A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */,
-				D4ADC7FD14F322C300713F29 /* SBJsonWriter.m in Sources */,
 				A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */,
-				D463F3FC1506FDAB00A7FD7F /* LIODismissalBarView.m in Sources */,
 				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
 				D486D7281521303B007C9AF8 /* ioapi.c in Sources */,
 				D486D72A1521303B007C9AF8 /* mztools.c in Sources */,
@@ -1029,37 +933,24 @@
 				D486D7351521303B007C9AF8 /* ZipFile.m in Sources */,
 				D486D7371521303B007C9AF8 /* ZipReadStream.m in Sources */,
 				D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */,
-				D403F7891523CEBA00101941 /* LIOInterstitialViewController.m in Sources */,
 				D403F7B915335CC100101941 /* LIOLogManager.m in Sources */,
 				D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */,
-				D440D46F1540AF640045DBFF /* LIOMapBubbleView.m in Sources */,
-				D440D4761540BD400045DBFF /* LIOMapAnnotation.m in Sources */,
 				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
-				D4C9024C1549D04A00B36D68 /* LIOCacheEntry.m in Sources */,
 				A721D2781851367D0039395E /* LIOChatViewController.m in Sources */,
 				A721D274185136580039395E /* LIOManager.m in Sources */,
 				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
 				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
 				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
 				A721D28B18513DFD0039395E /* LIOStatusManager.m in Sources */,
-				D454B7FF1576D93400CF73CC /* LIORuleViewVisible.m in Sources */,
-				D41F9426158AA40E004BE9A0 /* LIOSurveyManager.m in Sources */,
 				A721D27F18513A6F0039395E /* LIOVisit.m in Sources */,
 				D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */,
 				A721D28718513D860039395E /* LIONetworkManager.m in Sources */,
-				D41F9439158AA52C004BE9A0 /* LIOSurveyTemplate.m in Sources */,
 				D41F943D158AA625004BE9A0 /* LIOSurveyPickerEntry.m in Sources */,
 				A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */,
-				D41F9441158AA768004BE9A0 /* LIOSurveyLogicProp.m in Sources */,
-				D4137A11159148F30097E385 /* LIOSurveyPickerView.m in Sources */,
 				A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */,
 				A739FA8D1864C77600CA35C4 /* LIOChatTableViewCell.m in Sources */,
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				A71187301868FE890070C22C /* LIOKeyboardMenuItem.m in Sources */,
-				D4CF6EA715A60BBD006B4177 /* LIOAnimatedCogView.m in Sources */,
-				D462795C15B9E98E00AEDE2D /* LIONavigationBar.m in Sources */,
-				A7B32B961820603A00273A6C /* LIODragToDeleteView.m in Sources */,
-				D4BB18AF1651CC52007E096F /* LIOPhotoPlugin.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
 				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,
 				A7C85944177B3F1900493BF8 /* LPAPIClient.m in Sources */,
@@ -1067,18 +958,14 @@
 				A721D28318513A8A0039395E /* LIOEngagement.m in Sources */,
 				A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */,
 				A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */,
+				A7DBE95818999FCB00AD300F /* LIOKeyboardMenuButton.m in Sources */,
 				A7981B45176BCF6900E0FB9F /* LIOSurveyLogicItem.m in Sources */,
 				A7D4E846177498AB0037E47B /* LIOStarRatingView.m in Sources */,
-				A7A3230A179431A400436109 /* LIOSurveyView.m in Sources */,
 				A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */,
 				A703A04B1795C24A00914649 /* LPVisitAPIClient.m in Sources */,
 				A7D8D8661799784F005989FD /* LPMediaAPIClient.m in Sources */,
 				A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */,
-				A76DF23A1799AF5800DDBC61 /* LIOImageBubbleView.m in Sources */,
 				A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */,
-				A70B677117AC21420053A62E /* LIOChatModule.m in Sources */,
-				A70B677517AC237A0053A62E /* LIOWebViewChatModule.m in Sources */,
-				A77A1EB817B2EFE700FEDD26 /* LIOKeyboardMenuButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

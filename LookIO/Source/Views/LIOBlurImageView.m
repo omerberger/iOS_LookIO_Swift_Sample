@@ -27,7 +27,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        self.tintLayer = [[[CALayer alloc] init] autorelease];
+        self.tintLayer = [[CALayer alloc] init];
         self.tintLayer.frame = self.bounds;
         self.tintLayer.opacity = 0.4;
         self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
@@ -35,10 +35,6 @@
         [self.layer addSublayer:self.tintLayer];
     }
     return self;
-}
-
--(void)dealloc {
-    [super dealloc];
 }
 
 -(void)setImageAndBlur:(UIImage*)imageToBlur {

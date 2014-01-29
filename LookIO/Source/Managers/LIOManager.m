@@ -36,6 +36,13 @@ typedef enum
     LIOLookIOWindowStateDismissing
 } LIOLookIOWindowState;
 
+// Event constants.
+NSString *const kLPEventConversion  = @"LPEventConversion";
+NSString *const kLPEventPageView    = @"LPEventPageView";
+NSString *const kLPEventSignUp      = @"LPEventSignUp";
+NSString *const kLPEventSignIn      = @"LPEventSignIn";
+NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
+
 typedef void (^LIOCompletionBlock)(void);
 
 @interface LIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
