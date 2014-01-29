@@ -10,8 +10,8 @@
 
 @interface LIOWebViewController : UIViewController
 
-@property (nonatomic, strong) NSURL *url;
 
 - (id)initWithURL:(NSURL *)aURL;
+- (NSURL *)currentWebViewURL;
 
 @end

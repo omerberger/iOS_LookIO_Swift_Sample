@@ -11,6 +11,7 @@
 @interface LIOWebViewController ()
 
 @property (nonatomic, strong) UIWebView *webView;
+@property (nonatomic, strong) NSURL *url;
 
 @end
 
@@ -36,6 +37,12 @@
     [self.webView loadRequest:[NSURLRequest requestWithURL:self.url]];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.webView];
+}
+
+- (NSURL *)currentWebViewURL
+{
+    NSString *currentURL = self.webView.request.URL.absoluteString;
+    return [NSURL URLWithString:currentURL];
 }
 
 - (void)didReceiveMemoryWarning

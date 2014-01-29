@@ -84,7 +84,7 @@
     if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
     {
         LIOWebViewController *webViewController = (LIOWebViewController *)self.currentViewController;
-        NSURL *url = webViewController.url;
+        NSURL *url = [webViewController currentWebViewURL];
         
         NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
         NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
@@ -286,6 +286,10 @@
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 {
     [self.chatViewController engagement:engagement didReceiveMessage:message];
+    if (LIOContainerViewStateWeb == self.containerViewState)
+    {
+        [self.headerBarView reportUnreadChatMessageForWebView];
+    }
 }
 
 - (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
@@ -402,7 +406,7 @@
                 if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
                 {
                     webViewController = (LIOWebViewController *)self.currentViewController;
-                    [[UIApplication sharedApplication] openURL:webViewController.url];
+                    [[UIApplication sharedApplication] openURL:[webViewController currentWebViewURL]];
                 }
             }
             break;

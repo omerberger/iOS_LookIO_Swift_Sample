@@ -10,11 +10,15 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#import "LIONotificationArea.h"
-
+// Managers
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
 
+// Views
+#import "LIONotificationArea.h"
+#import "LIOBadgeView.h"
+
+// Helpers
 #import "LIOTimerProxy.h"
 
 @interface LIOHeaderBarView ()
@@ -28,6 +32,8 @@
 
 @property (nonatomic, strong) UIButton *backToChatButton;
 @property (nonatomic, strong) UIButton *openInSafariButton;
+@property (nonatomic, strong) LIOBadgeView *webBadgeView;
+@property (nonatomic, assign) NSInteger webUnreadChatMessages;
 
 @end
 
@@ -121,20 +127,39 @@
         self.openInSafariButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:self.openInSafariButton];
         
-        self.backToChatButton = [[UIButton alloc] initWithFrame:CGRectMake(6.0, self.bounds.size.height - 23.0, 50.0, 15.0)];
-        [self.backToChatButton setTitle:@"Chat" forState:UIControlStateNormal];
+        NSString *buttonText = LIOLocalizedString(@"LIOLookIOManager.WebViewBackToChatButton");
+        UIFont *buttonFont = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarWebviewButtons];
+        CGSize expectedButtonSize = [buttonText sizeWithFont:buttonFont constrainedToSize:self.bounds.size];
+        
+        self.backToChatButton = [[UIButton alloc] initWithFrame:CGRectMake(6.0, self.bounds.size.height - expectedButtonSize.height - 5.0, expectedButtonSize.width + 10.0, expectedButtonSize.height)];
+        [self.backToChatButton setTitle:buttonText forState:UIControlStateNormal];
         self.backToChatButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         self.backToChatButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
         [self.backToChatButton addTarget:self action:@selector(backToChatButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-        self.backToChatButton.titleLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarWebviewButtons];
+        self.backToChatButton.titleLabel.font = buttonFont;
         [self.backToChatButton setTitleColor:buttonColor forState:UIControlStateNormal];
         [self addSubview:self.backToChatButton];
+        
+        self.webBadgeView = [[LIOBadgeView alloc] initWithFrame:CGRectMake(7.0 + expectedButtonSize.width, self.bounds.size.height - expectedButtonSize.height - 10.0, 17, 17) forBrandingElement:LIOBrandingElementBrandingBarWebviewButtonsBadge];
+        [self.webBadgeView setBadgeNumber:1];
+        self.webBadgeView.hidden = YES;
+        [self addSubview:self.webBadgeView];
+        
+        self.webUnreadChatMessages = 0;
     }
     else
     {
         [self.openInSafariButton removeFromSuperview];
         [self.backToChatButton removeFromSuperview];
+        [self.webBadgeView removeFromSuperview];
     }
+}
+
+- (void)reportUnreadChatMessageForWebView
+{
+    self.webBadgeView.hidden = NO;
+    self.webUnreadChatMessages += 1;
+    [self.webBadgeView setBadgeNumber:self.webUnreadChatMessages];
 }
 
 - (void)openInSafariButtonWasTapped:(id)sender

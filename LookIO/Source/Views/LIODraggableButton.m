@@ -77,7 +77,7 @@
         
         self.numberOfUnreadMessages = 0;
         
-        self.badgeView = [[LIOBadgeView alloc] initWithFrame:CGRectMake(30, 5, 20, 20)];
+        self.badgeView = [[LIOBadgeView alloc] initWithFrame:CGRectMake(30, 5, 20, 20) forBrandingElement:LIOBrandingElementControlButtonBadge];
         [self.badgeView setBadgeNumber:1];
         self.badgeView.hidden = YES;
         [self addSubview:self.badgeView];

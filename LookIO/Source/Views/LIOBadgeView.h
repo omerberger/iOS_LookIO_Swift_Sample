@@ -8,8 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+// Managers
+#import "LIOBrandingManager.h"
+
 @interface LIOBadgeView : UIView
 
+- (id)initWithFrame:(CGRect)frame forBrandingElement:(LIOBrandingElement)element;
 - (void)setBadgeNumber:(NSInteger)number;
 
 @end

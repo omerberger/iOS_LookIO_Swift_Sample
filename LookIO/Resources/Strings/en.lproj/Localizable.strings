@@ -178,3 +178,5 @@
 "LIOLookIOManager.KeyboardMenuButtonHideChat" = "Hide Chat";
 "LIOLookIOManager.KeyboardMenuButtonEndSession" = "End Session";
 "LIOLookIOManager.KeyboardMenuButtonKeyboard" = "Keyboard";
+
+"LIOLookIOManager.WebViewBackToChatButton" = "Chat";

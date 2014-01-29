@@ -31,6 +31,7 @@
 - (void)hideCurrentNotification;
 
 - (void)toggleWebMode:(BOOL)webMode;
+- (void)reportUnreadChatMessageForWebView;
 
 - (void)rejiggerSubviews;
 

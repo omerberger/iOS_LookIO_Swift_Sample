@@ -7,7 +7,6 @@
 //
 
 #import "LIOBadgeView.h"
-#import "LIOBrandingManager.h"
 
 @interface LIOBadgeView ()
 
@@ -17,7 +16,7 @@
 
 @implementation LIOBadgeView
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame forBrandingElement:(LIOBrandingElement)element
 {
     self = [super initWithFrame:frame];
     if (self) {
@@ -25,9 +24,10 @@
         self.backgroundColor = [UIColor clearColor];
         
         self.label = [[UILabel alloc] initWithFrame:self.bounds];
-        self.label.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButtonBadge];
-        self.label.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButtonBadge];
+        self.label.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:element];
+        self.label.font = [[LIOBrandingManager brandingManager] fontForElement:element];
         self.label.textAlignment = NSTextAlignmentCenter;
+        self.label.backgroundColor = [UIColor clearColor];
         [self addSubview:self.label];
     }
     return self;
