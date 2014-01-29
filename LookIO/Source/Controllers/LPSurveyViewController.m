@@ -43,10 +43,12 @@
 @property (nonatomic, strong) LIOSurveyQuestionView *previousQuestionView;
 @property (nonatomic, strong) LIOSurveyQuestionView *reusableQuestionView;
 
+/*
 @property (nonatomic, strong) UIImageView *currentQuestionImageView;
 @property (nonatomic, strong) UIImageView *nextQuestionImageView;
 @property (nonatomic, strong) UIImageView *previousQuestionImageView;
 @property (nonatomic, strong) UIImageView *futureQuestionImageView;
+ */
 
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
 
@@ -54,10 +56,6 @@
 @property (nonatomic, strong) UIView* backgroundDismissableArea;
 
 @property (nonatomic, assign) BOOL isAnimatingTransition;
-/*
- BOOL isAnimatingEntrance;
- CGFloat keyboardHeight;
- */
 
 @property (nonatomic, strong) LIOSurveyValidationView *validationView;
 @property (nonatomic, strong) LIOTimerProxy *validationTimer;
@@ -270,6 +268,15 @@
     }
 }
 
+- (void)dismissExistingAlertView
+{
+    if (self.alertView)
+    {
+        [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        self.alertView = nil;
+    }
+}
+
 #pragma mark -
 #pragma mark Action Methods
 
@@ -366,13 +373,14 @@
     }
     else
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle")
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertTitle")
                                                             message:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertBody")
                                                            delegate:self
                                                   cancelButtonTitle:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertNoButton")
                                                   otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.LeaveSurveyAlertYesButton"), nil];
-        alertView.tag = LIOSurveyViewControllerAlertViewTagNextActionCancel;
-        [alertView show];
+        self.alertView.tag = LIOSurveyViewControllerAlertViewTagNextActionCancel;
+        [self.alertView show];
     }
 }
 
@@ -653,8 +661,6 @@
         
         self.nextQuestionView.tag = nextQuestionIndex;
         [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
-        
-        NSLog(@"Tag is %d for question with label %@", self.nextQuestionView.tag, question.label);
     }
     
     return YES;
@@ -921,12 +927,7 @@
                 self.reusableQuestionView = tempView;
                 self.reusableQuestionView.tag = -1000;
             }
-
-            
-            
-//            NSLog(@"Current question ")
-        }];
-        
+        }];        
     }
     
     /*

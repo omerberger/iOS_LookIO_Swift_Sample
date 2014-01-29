@@ -56,4 +56,6 @@ typedef enum {
 
 - (BOOL)shouldHideHeaderBarForLandscape;
 
+- (void)dismissExistingAlertView;
+
 @end

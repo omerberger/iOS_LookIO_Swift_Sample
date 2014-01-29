@@ -54,5 +54,7 @@ typedef enum {
 - (void)presentLoadingViewController;
 - (void)dismissCurrentViewController;
 
+- (void)dismissExistingAlertView;
+
 
 @end

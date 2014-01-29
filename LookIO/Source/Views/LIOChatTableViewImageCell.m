@@ -54,7 +54,6 @@
 
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage
 {
-    NSLog(@"Attachment id is %@", chatMessage.attachmentId);
     if ([chatMessage.attachmentId length])
     {
         NSString *mimeType = [[LIOMediaManager sharedInstance] mimeTypeFromId:chatMessage.attachmentId];

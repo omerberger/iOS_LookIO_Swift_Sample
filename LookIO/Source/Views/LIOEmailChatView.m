@@ -29,6 +29,8 @@
 @property (nonatomic, strong) UIView *emailTextFieldBackgroundView;
 @property (nonatomic, strong) UITextField *emailTextField;
 
+@property (nonatomic, strong) UIAlertView *alertView;
+
 @end
 
 @implementation LIOEmailChatView
@@ -213,11 +215,20 @@
         }
         else
         {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertButton") otherButtonTitles:nil];
-            [alertView show];
+            [self dismissExistingAlertView];
+            self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.InvalidAlertButton") otherButtonTitles:nil];
+            [self.alertView show];
         }        
     }
 }
 
+- (void)dismissExistingAlertView
+{
+    if (self.alertView)
+    {
+        [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        self.alertView = nil;
+    }
+}
 
 @end

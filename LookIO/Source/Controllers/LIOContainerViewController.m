@@ -42,6 +42,8 @@
 
 @property (nonatomic, strong) LIOBlurImageView *blurImageView;
 
+@property (nonatomic, strong) UIAlertView *alertView;
+
 @end
 
 @implementation LIOContainerViewController
@@ -99,13 +101,15 @@
         NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
         NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
         NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), url];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:nil
                                                         message:alertMessage
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:alertCancel, alertOpen, nil];
-        alertView.tag = LIOContainerViewControllerAlertViewNextStepOpenInSafari;
-        [alertView show];
+        self.alertView.tag = LIOContainerViewControllerAlertViewNextStepOpenInSafari;
+        [self.alertView show];
     }
 }
 
@@ -419,13 +423,13 @@
 
 - (void)showSurveySubmissionAlert
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertTitle")
-                                                        message:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertBody")
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertButton"), nil];
-    alertView.tag = LIOContainerViewControllerAlertViewNextStepDismiss;
-    [alertView show];
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertTitle")                                                        message:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertBody")
+                                               delegate:self
+                                      cancelButtonTitle:nil
+                                      otherButtonTitles:LIOLocalizedString(@"LIOSurveyView.SubmitOfflineSurveyAlertButton"), nil];
+    self.alertView.tag = LIOContainerViewControllerAlertViewNextStepDismiss;
+    [self.alertView show];
 }
 
 #pragma mark -
@@ -453,6 +457,32 @@
             }
             break;
 
+        default:
+            break;
+    }
+}
+
+- (void)dismissExistingAlertView
+{
+    if (self.alertView)
+    {
+        [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        self.alertView = nil;
+    }
+    
+    switch (self.containerViewState) {
+        case LIOContainerViewStateChat:
+            [self.chatViewController dismissExistingAlertView];
+            break;
+            
+        case LIOContainerViewStateSurvey:
+            [self.surveyViewController dismissExistingAlertView];
+            break;
+            
+        case LIOContainerViewStateWeb:
+            // TODO: This should be handled
+            break;
+            
         default:
             break;
     }

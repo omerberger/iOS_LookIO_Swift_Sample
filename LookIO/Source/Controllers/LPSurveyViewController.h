@@ -34,4 +34,6 @@ typedef enum {
 - (id)initWithSurvey:(LIOSurvey *)aSurvey;
 - (void)cancelSurveyImmediately:(id)sender;
 
+- (void)dismissExistingAlertView;
+
 @end

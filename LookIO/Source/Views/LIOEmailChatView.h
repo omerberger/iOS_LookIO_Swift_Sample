@@ -25,5 +25,6 @@
 - (void)present;
 - (void)dismiss;
 - (void)forceDismiss;
+- (void)dismissExistingAlertView;
 
 @end

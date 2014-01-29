@@ -192,6 +192,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.backgroundTaskId = UIBackgroundTaskInvalid;
         }];
 
+        [self dismissExistingAlertView];
+        
         if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         {
             [self.containerViewController dismissCurrentViewController];
@@ -556,6 +558,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)dismissExistingAlertView
+{
+    if (self.alertView)
+    {
+        [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        self.alertView = nil;
+    }
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+    {
+        [self.containerViewController dismissExistingAlertView];
+    }
+}
+
 #pragma mark -
 #pragma mark Container View Controller Delegate Methods
 
@@ -778,13 +793,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)showReconnectCancelAlert
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonStop"), LIOLocalizedString(@"LIOLookIOManager.ReconnectCancelAlertButtonContinue"), nil];
-    alertView.tag = LIOAlertViewNextStepCancelReconnect;
-    [alertView show];
+    self.alertView.tag = LIOAlertViewNextStepCancelReconnect;
+    [self.alertView show];
 }
 
 #pragma mark -
@@ -928,20 +944,21 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                         delegate:self
                                                cancelButtonTitle:nil
                                                otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-    alertView.tag = alertViewTag;
+    self.alertView.tag = alertViewTag;
     
     if (withAlert)
     {
-        [alertView show];
+        [self.alertView show];
     }
     else
     {
-        [self alertView:alertView didDismissWithButtonIndex:0];
+        [self alertView:self.alertView didDismissWithButtonIndex:0];
     }
     
     [self.controlButton setChatMode];
@@ -960,14 +977,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)engagementDidFailToStart:(LIOEngagement *)engagement
 {
     self.visit.visitState = LIOVisitStateVisitInProgress;
-    
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
-    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
-    [alertView show];
+    self.alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    [self.alertView show];
 }
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
@@ -1039,23 +1057,26 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonClose"), LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonReconnect"), nil];
-    alertView.tag = LIOAlertViewReconnectPrompt;
+    self.alertView.tag = LIOAlertViewReconnectPrompt;
 
+    UIAlertView *alertViewToShow = self.alertView;
+    
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
     {
         self.nextDismissalCompletionBlock = ^{
-            [alertView show];
+            [alertViewToShow show];
         };
         [self.containerViewController dismissCurrentViewController];
     }
     else
     {
-        [alertView show];
+        [self.alertView show];
     }
 }
 
@@ -1071,37 +1092,40 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.controlButton setChatMode];
     }
 
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
-    alertView.tag = LIOAlertViewReconnectSuccess;
-    [alertView show];
+    self.alertView.tag = LIOAlertViewReconnectSuccess;
+    [self.alertView show];
 }
 
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement
 {
     [self.controlButton setChatMode];
 
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectFailureAlertButton"), nil];
-    alertView.tag = LIOAlertViewNextStepEngagementDidEnd;
-    [alertView show];
+    self.alertView.tag = LIOAlertViewNextStepEngagementDidEnd;
+    [self.alertView show];
 }
 
 - (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
-    alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
-    [alertView show];
+    self.alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
+    [self.alertView show];
 }
 
 - (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement

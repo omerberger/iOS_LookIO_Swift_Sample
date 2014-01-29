@@ -204,12 +204,13 @@
 {
     if (self.engagement.messages.count <= 1)
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertTitle")
                                                             message:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertBody")
                                                            delegate:nil
                                                   cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachStartChatAlertButton")
                                                   otherButtonTitles:nil];
-        [alertView show];
+        [self.alertView show];
     }
     else
     {
@@ -225,8 +226,9 @@
     // Only allow if at least one message has been sent
     if (self.engagement.messages.count < 2)
     {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertTitle") message:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertButton") otherButtonTitles:nil];
-        [alertView show];
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertTitle") message:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.NoChatHistoryAlertButton") otherButtonTitles:nil];
+        [self.alertView show];
         return;
     }
     
@@ -286,6 +288,7 @@
 
 - (void)presentEndChatAlertView
 {
+    [self dismissExistingAlertView];
     self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertTitle")
                                                       message:LIOLocalizedString(@"LIOLookIOManager.EndSessionQuestionAlertBody")
                                                      delegate:self
@@ -384,8 +387,9 @@
     self.chatState = LIOChatStateChat;
     [self.emailChatView dismiss];
     
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
-    [alertView show];
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
+    [self.alertView show];
     
     [self.engagement sendChatHistoryPacketWithEmail:email retries:0];
 }
@@ -436,11 +440,27 @@
                 [self openWebLinkURL:self.urlBeingLaunched];
                 self.urlBeingLaunched = nil;
             }
+            break;
             
             
         default:
             break;
     }
+}
+
+- (void)dismissExistingAlertView
+{
+    if (self.alertView)
+    {
+        [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+        self.alertView = nil;
+    }
+    
+    if (self.chatState == LIOChatStateEmailChat && self.emailChatView)
+        [self.emailChatView dismissExistingAlertView];
+    
+    if (self.chatState == LIOChatStateImagePicker)
+        [self dismissModalViewControllerAnimated:YES];
 }
 
 #pragma mark -
@@ -684,6 +704,11 @@
         // Hide the chat so we can drop it when we return..
         self.keyboardState = LIOKeyboardStateIntroAnimation;
         [self updateSubviewFrames];
+    }
+    
+    if (self.chatState == LIOChatStateEmailChat)
+    {
+        [self.emailChatView removeFromSuperview];
     }
     
     // Unregister for keyboard notifications while not visible.
@@ -1231,13 +1256,14 @@
 
             self.urlBeingLaunched = link.URL;
             
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+            [self dismissExistingAlertView];
+            self.alertView = [[UIAlertView alloc] initWithTitle:nil
                                                    message:alertMessage
                                                   delegate:self
                                          cancelButtonTitle:nil
                                          otherButtonTitles:alertCancel, alertOpen, nil];
-            alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
-            [alertView show];
+            self.alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
+            [self.alertView show];
         }
     }
     else if (NSTextCheckingTypePhoneNumber == link.checkingType)
@@ -1245,13 +1271,14 @@
         self.urlBeingLaunched = link.URL;
         
         NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), link.string];
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:nil
                                                message:alertMessage
                                               delegate:self
                                      cancelButtonTitle:nil
                                      otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
-        alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
-        [alertView show];
+        self.alertView.tag = LIOChatViewControllerOpenExtraAppLinkAlertViewTag;
+        [self.alertView show];
     }
 }
 
