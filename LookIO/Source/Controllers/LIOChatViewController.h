@@ -36,6 +36,7 @@ typedef enum {
 - (void)chatViewControllerDidEndChat:(LIOChatViewController *)chatViewController;
 - (void)chatViewControllerDidTapIntraAppLink:(NSURL *)url;
 - (void)chatViewControllerDidTapWebLink:(NSURL *)url;
+- (void)chatViewControllerLandscapeWantsHeaderBarHidden:(BOOL)hidden;
 
 @end
 
@@ -52,5 +53,7 @@ typedef enum {
 
 - (void)displayToasterNotification:(NSString *)notification;
 - (void)displayToasterAgentIsTyping:(BOOL)isTyping;
+
+- (BOOL)shouldHideHeaderBarForLandscape;
 
 @end

@@ -75,6 +75,16 @@
 - (void)headerBarViewBackToChatButtonWasTapped:(LIOHeaderBarView *)aView
 {
     [self.headerBarView toggleWebMode:NO];
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI)
+        [self dismissHeaderBarView:YES withState:LIOHeaderBarStateHidden];
+    else
+    {
+        if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            [self dismissHeaderBarView:YES withState:LIOHeaderBarStateLandscapeHidden];
+    }
+
     [self presentChatViewController:YES];
 }
 
@@ -103,7 +113,12 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     if (padUI)
-        return;
+    {
+        if (LIOContainerViewStateWeb == self.containerViewState)
+            self.headerBarView.hidden = NO;
+        else
+            return;
+    }
 
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = 0;
@@ -132,7 +147,10 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     if (padUI)
-        return;
+    {
+        if (LIOContainerViewStateWeb != self.containerViewState)
+            return;
+    }
 
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = -headerBarFrame.size.height;
@@ -148,6 +166,9 @@
         [UIView animateWithDuration:0.3 animations:^{
             self.headerBarView.frame = headerBarFrame;
             self.contentView.frame = contentViewFrame;
+        } completion:^(BOOL finished) {
+            if (padUI)
+                self.headerBarView.hidden = YES;
         }];
     }
     else
@@ -249,6 +270,27 @@
     
     LIOWebViewController *webViewController = [[LIOWebViewController alloc] initWithURL:url];
     [self swapCurrentControllerWith:webViewController animated:YES];
+}
+
+- (void)chatViewControllerLandscapeWantsHeaderBarHidden:(BOOL)hidden
+{
+    // This is only relevant if we are in landscape and in chat and not on iPad
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (!padUI && (LIOContainerViewStateChat == self.containerViewState) && UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+    {
+        if (hidden)
+        {
+            if (LIOHeaderBarStateVisible == self.headerBarState)
+                [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
+        }
+        else
+        {
+            if (LIOHeaderBarStateLandscapeHidden == self.headerBarState)
+                [self presentHeaderBarView:NO];
+        }
+        
+    }
 }
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement
@@ -464,6 +506,8 @@
 
 - (void)dismissCurrentViewController
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     switch (self.containerViewState)
     {
         case LIOContainerViewStateChat:
@@ -480,6 +524,13 @@
             
         case LIOContainerViewStateWeb:
             [self.headerBarView toggleWebMode:NO];
+            if (padUI)
+                [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
+            else
+            {
+                if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+                    [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
+            }
             [self dismiss];
             break;
             
@@ -528,7 +579,13 @@
         return;
     
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
+    {
+        if (LIOContainerViewStateChat == self.containerViewState)
+            if (![self.chatViewController shouldHideHeaderBarForLandscape])
+                return;
+        
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
+    }
     if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
         [self presentHeaderBarView:NO];
 }
@@ -560,14 +617,15 @@
     self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.contentView];
     
-    if (!padUI)
-    {
-        self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
-        self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.headerBarView.delegate = self;
-        self.headerBarState = LIOHeaderBarStateHidden;
-        [self.view addSubview:self.headerBarView];
-    }
+    self.headerBarView = [[LIOHeaderBarView alloc] initWithFrame:CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset) statusBarInset:self.statusBarInset];
+    self.headerBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.headerBarView.delegate = self;
+    self.headerBarState = LIOHeaderBarStateHidden;
+    [self.view addSubview:self.headerBarView];
+    
+    // Extra precaution to not show headerbarview on iPad, other than for webview state
+    if (padUI)
+        self.headerBarView.hidden = YES;
     
     self.chatViewController = [[LIOChatViewController alloc] init];
     self.chatViewController.delegate = self;

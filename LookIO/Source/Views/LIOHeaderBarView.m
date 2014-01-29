@@ -63,9 +63,13 @@
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
         
-        self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
-        self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:self.notificationArea];
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        if (!padUI)
+        {
+            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
+            self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            [self addSubview:self.notificationArea];
+        }
         
         UITapGestureRecognizer *tapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         self.tappableBackground = [[UIView alloc] initWithFrame:self.bounds];

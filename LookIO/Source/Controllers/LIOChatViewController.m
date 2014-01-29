@@ -581,6 +581,9 @@
         }
         
         [UIView animateWithDuration:0.3 animations:^{
+            if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+                [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
+
             [self updateSubviewFrames];
         }];
     }
@@ -591,6 +594,9 @@
     self.keyboardState = LIOKeyboardStateHidden;
     
     [UIView animateWithDuration:0.3 animations:^{
+        if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:NO];
+
         [self updateSubviewFrames];
     }];
 }
@@ -740,7 +746,7 @@
     
     CGFloat inputBarHeight = padUI ? 85 : 50;
     self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - inputBarHeight, self.view.bounds.size.width, inputBarHeight)];
-    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
     self.inputBarView.textView.inputAccessoryView = [[LIOObservingInputAccessoryView alloc] init];
@@ -751,7 +757,7 @@
     self.tableView.tableFooterView = self.tableFooterView;
     
     self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
-    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
     self.keyboardMenu.delegate = self;
     [self.keyboardMenu setDefaultButtonItems];
     [self.view addSubview:self.keyboardMenu];
@@ -909,6 +915,9 @@
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
+        if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
+        
         [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:NO];
         if (introAnimation)
         {
@@ -921,6 +930,7 @@
             [self scrollToBottomDelayed:NO];
         if (introAnimation)
             self.keyboardState = LIOKeyboardStateKeyboard;
+        
     }];
 }
 
@@ -947,12 +957,16 @@
     
     [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:NO maintainTableViewOffset:YES];
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
+        if ((LIOKeyboardStateHidden == self.keyboardState) && UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:NO];
+        
         [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
     } completion:^(BOOL finished) {
         if (LIOKeyboardStateEmailChatOutroAnimation == self.keyboardState)
         {
             self.keyboardState = LIOKeyboardStateMenu;
             [self.emailChatView removeFromSuperview];
+            
         }
     }];
 }
@@ -968,6 +982,27 @@
         [self updateSubviewFrames];
     }
 }
+
+- (BOOL)shouldHideHeaderBarForLandscape
+{
+    switch (self.keyboardState) {
+        case LIOKeyboardStateHidden:
+            return NO;
+            break;
+            
+        case LIOKeyboardStateMenu:
+            return YES;
+            break;
+            
+        case LIOKeyboardStateKeyboard:
+            return YES;
+            break;
+            
+        default:
+            break;
+    }
+}
+
 
 #pragma mark -
 #pragma mark Rotation Methods
