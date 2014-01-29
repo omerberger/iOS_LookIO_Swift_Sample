@@ -31,19 +31,7 @@
 #define LIOLookIOMAnagerMaxEventQueueSize                  100
 
 // User defaults keys
-#define LIOLookIOManagerLastKnownButtonVisibilityKey    @"LIOLookIOManagerLastKnownButtonVisibilityKey"
-#define LIOLookIOManagerLastKnownButtonTextKey          @"LIOLookIOManagerLastKnownButtonTextKey"
-#define LIOLookIOManagerLastKnownButtonTintColorKey     @"LIOLookIOManagerLastKnownButtonTintColorKey"
-#define LIOLookIOManagerLastKnownButtonTextColorKey     @"LIOLookIOManagerLastKnownButtonTextColorKey"
-#define LIOLookIOManagerLastKnownWelcomeMessageKey      @"LIOLookIOManagerLastKnownWelcomeMessageKey"
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
-#define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
-#define LIOLookIOManagerLastKnownSessionIdKey           @"LIOLookIOManagerLastKnownSessionIdKey"
-#define LIOLookIOManagerLastKnownVisitorIdKey           @"LIOLookIOManagerLastKnownVisitorIdKey"
-#define LIOLookIOManagerPendingEventsKey                @"LIOLookIOManagerPendingEventsKey"
-#define LIOLookIOManagerMultiskillMappingKey            @"LIOLookIOManagerMultiskillMappingKey"
-#define LIOLookIOManagerLastKnownSurveysEnabled         @"LIOLookIOManagerLastKnownSurveysEnabled"
-#define LIOLookIOManagerLastKnownHideEmailChat          @"LIOLookIOManagerLastKnownHideEmailChat"
 
 @interface LIOVisit ()
 
@@ -156,39 +144,13 @@
         // Set up the pending events queue
         self.pendingEvents = [[NSMutableArray alloc] init];
         
-        // Restore saved pending events.
-        NSArray *savedPendingEvents = [userDefaults objectForKey:LIOLookIOManagerPendingEventsKey];
-        if ([savedPendingEvents count])
-            [self.pendingEvents addObjectsFromArray:savedPendingEvents];
-        
         // Set up the queued launch report queue
         self.queuedLaunchReportDates = [[userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey] mutableCopy];
         if (nil == self.queuedLaunchReportDates)
             self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
         
-        // Restore control button settings
-        // TODO: Should this really be stored?
-        // if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey])
-        //    self.lastKnownButtonVisibility = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
-        // else
-            self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
-        
-        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey])
-            self.lastKnownWelcomeText = [userDefaults objectForKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
-        
-        // TODO: Should this really be stored?
-        // if ([userDefaults objectForKey:LIOLookIOManagerMultiskillMappingKey])
-        //    self.multiskillMapping = [userDefaults objectForKey:LIOLookIOManagerMultiskillMappingKey];
-
-        // TODO: This stuff is replaced by branding. Should be removed at some point.
-        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey])
-            self.lastKnownButtonText = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextKey];
-
-        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTintColorKey])
-            self.lastKnownButtonTintColor = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTintColorKey];
-
-        if ([userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextColorKey])
-            self.lastKnownButtonTextColor = [userDefaults objectForKey:LIOLookIOManagerLastKnownButtonTextColorKey];
+        // Default visibility is no - until recieving a different visibility setting
+        self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
         
         // TODO: This is the place to reconnect any pending engagements..
     }
@@ -483,7 +445,6 @@
         
         // Delete multiskill mapping. This should force
         // the lib to report "disabled" back to the host app.
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
         
@@ -499,7 +460,6 @@
         if (skillsMap)
         {
             self.multiskillMapping = skillsMap;
-            [userDefaults setObject:self.multiskillMapping forKey:LIOLookIOManagerMultiskillMappingKey];
         }
         
         [self.delegate visitChatEnabledDidUpdate:self];
@@ -508,7 +468,6 @@
         if (buttonVisibility)
         {
             self.lastKnownButtonVisibility = buttonVisibility;
-            [userDefaults setObject:self.lastKnownButtonVisibility forKey:LIOLookIOManagerLastKnownButtonVisibilityKey];
             
             if (self.disableControlButtonOverride) {
                 self.previousControlButtonVisibilityValue = [self.lastKnownButtonVisibility boolValue];
@@ -521,21 +480,17 @@
         if ([buttonText length])
         {
             self.lastKnownButtonText = buttonText;
-            [userDefaults setObject:self.lastKnownButtonText forKey:LIOLookIOManagerLastKnownButtonTextKey];
         }
         
         NSString *welcomeText = [resolvedSettings objectForKey:@"welcome_text"];
         if ([welcomeText length])
         {
             self.lastKnownWelcomeText = welcomeText;
-            [userDefaults setObject:self.lastKnownWelcomeText forKey:LIOLookIOManagerLastKnownWelcomeMessageKey];
         }
         
         NSString *buttonTint = [resolvedSettings objectForKey:@"button_tint"];
         if ([buttonTint length])
         {
-            [userDefaults setObject:buttonTint forKey:LIOLookIOManagerLastKnownButtonTintColorKey];
-            
             unsigned int colorValue;
             [[NSScanner scannerWithString:buttonTint] scanHexInt:&colorValue];
             self.lastKnownButtonTintColor = buttonTint;
@@ -544,8 +499,6 @@
         NSString *buttonTextColor = [resolvedSettings objectForKey:@"button_text_color"];
         if ([buttonTextColor length])
         {
-            [userDefaults setObject:buttonTextColor forKey:LIOLookIOManagerLastKnownButtonTextColorKey];
-            
             unsigned int colorValue;
             [[NSScanner scannerWithString:buttonTextColor] scanHexInt:&colorValue];
             self.lastKnownButtonTextColor = buttonTextColor;
@@ -597,7 +550,6 @@
         NSNumber *surveysEnabled = [resolvedSettings objectForKey:@"surveys_enabled"];
         if (surveysEnabled)
         {
-            [userDefaults setObject:surveysEnabled forKey:LIOLookIOManagerLastKnownSurveysEnabled];
             self.lastKnownSurveysEnabled = [surveysEnabled boolValue];
         }
         
@@ -609,7 +561,6 @@
         NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
         if (hideEmailChat)
         {
-            [userDefaults setObject:hideEmailChat forKey:LIOLookIOManagerLastKnownHideEmailChat];
             self.lastKnownHideEmailChat = [hideEmailChat boolValue];
         }
         
@@ -710,7 +661,6 @@
         
         // Delete multiskill mapping. This should force
         // the lib to report "disabled" back to the host app.
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
     }
@@ -809,7 +759,6 @@
             
             // Continue call succeeded! Purge the event queue.
             [self.pendingEvents removeAllObjects];
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerPendingEventsKey];
             
             [self updateAndReportFunnelState];
             
@@ -848,22 +797,12 @@
                     [self.continuationTimer stopTimer];
                     self.continuationTimer = nil;
                     
-                    // TODO Check why the visitor id is here..
-                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerLastKnownVisitorIdKey];
                     self.lastKnownVisitURL = nil;
                     
-                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LIOLookIOManagerMultiskillMappingKey];
                     self.multiskillMapping = nil;
                     
                     self.visitState = LIOVisitStateFailed;
                 }
-            }
-            
-            if ([self.pendingEvents count])
-            {
-                // Oh crap, the continue call failed!
-                // Save all queued events to the user defaults store.
-                [[NSUserDefaults standardUserDefaults] setObject:self.pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
             }
         }];
     }
@@ -885,8 +824,7 @@
     }
     
     // Trump card #0: If we have no visibility information, button is hidden.
-    if (nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerLastKnownButtonVisibilityKey] ||
-        nil == [[NSUserDefaults standardUserDefaults] objectForKey:LIOLookIOManagerMultiskillMappingKey])
+    if (nil == self.lastKnownButtonVisibility || nil == self.multiskillMapping)
     {
         self.controlButtonHidden = YES;
         LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
@@ -1556,8 +1494,6 @@
     // Queue is capped. Remove oldest entry on overflow.
     if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
         [self.pendingEvents removeObjectAtIndex:0];
-    
-    [[NSUserDefaults standardUserDefaults] setObject:self.pendingEvents forKey:LIOLookIOManagerPendingEventsKey];
     
     // Immediately make a continue call, unless the event is the built-in "page view" one.
     if (NO == [anEvent isEqualToString:kLPEventPageView])
