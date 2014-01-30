@@ -42,6 +42,7 @@
 
 @property (nonatomic, strong) UIButton *nextButton;
 @property (nonatomic, strong) UIButton *cancelButton;
+@property (nonatomic, strong) NSString *nextButtonText;
 
 @property (nonatomic, strong) LIOSurveyQuestion *question;
 
@@ -65,7 +66,10 @@
         if (padUI) {
             self.scrollEnabled = NO;
         }
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        else
+        {
+            self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        }
         
         self.backgroundView = [[UIView alloc] initWithFrame:self.bounds];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -149,6 +153,7 @@
         [self.nextButton setTitleColor:[nextButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         self.nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
+        self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         [self addSubview:self.nextButton];
         
         self.cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
@@ -205,11 +210,13 @@
         {
             self.textField.returnKeyType = UIReturnKeyDone;
             buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
         }
         else
         {
             self.textField.returnKeyType = UIReturnKeyNext;
             buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         }
 
         if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
@@ -265,11 +272,13 @@
         {
             self.textView.returnKeyType = UIReturnKeyDone;
             buttonTitle = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
         }
         else
         {
             self.textView.returnKeyType = UIReturnKeyNext;
             buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         }
         self.textView.keyboardAppearance = UIKeyboardAppearanceDefault;
         
@@ -308,9 +317,15 @@
         self.nextButton.hidden = NO;
 
         if (isLastQuestion)
+        {
             [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle");
+        }
         else
+        {
             [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
+            self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
+        }
     }
 
     self.starRatingView.hidden = YES;
@@ -451,7 +466,7 @@
             self.textFieldBackground.frame = aFrame;
             
             if (!self.nextButton.hidden) {
-                CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+                CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
                 aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
                 aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
@@ -509,7 +524,7 @@
             
             if (!self.nextButton.isHidden)
             {
-                CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+                CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
                 aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
                 aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
@@ -568,7 +583,7 @@
         }
         
         
-        CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+        CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
         aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - expectedNextButtonSize.width - 50.0;
         if (padUI)
@@ -647,7 +662,7 @@
         
         self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : 25.0), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, padUI ? (referenceFrame.size.width - LIOSurveyViewSideMarginiPad*2) : (self.bounds.size.width - 50), tableViewContentHeight);
         
-        CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+        CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
         aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
         if (padUI)
@@ -656,6 +671,7 @@
             aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 15.0;
         aFrame.size = expectedNextButtonSize;
         self.nextButton.frame = aFrame;
+        NSLog(@"Button text is %@ and frame is %@", self.nextButton.titleLabel.text, self.nextButton);
         
         if (!padUI)
         {

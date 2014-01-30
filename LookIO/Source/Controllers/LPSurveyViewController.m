@@ -43,17 +43,9 @@
 @property (nonatomic, strong) LIOSurveyQuestionView *previousQuestionView;
 @property (nonatomic, strong) LIOSurveyQuestionView *reusableQuestionView;
 
-/*
-@property (nonatomic, strong) UIImageView *currentQuestionImageView;
-@property (nonatomic, strong) UIImageView *nextQuestionImageView;
-@property (nonatomic, strong) UIImageView *previousQuestionImageView;
-@property (nonatomic, strong) UIImageView *futureQuestionImageView;
- */
-
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
 
 @property (nonatomic, strong) UIPageControl* pageControl;
-@property (nonatomic, strong) UIView* backgroundDismissableArea;
 
 @property (nonatomic, assign) BOOL isAnimatingTransition;
 
@@ -77,21 +69,47 @@
     return self;
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    // Animate in the survey view
+
+    NSLog(@"Frame for view did appear is %@", self.view);
+
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect frame = self.scrollView.frame;
+        frame.origin.y = 0;
+        frame.origin.x = 0;
+        self.scrollView.frame = frame;
+        
+        frame = self.pageControl.frame;
+        frame.origin.y = self.view.bounds.size.height - frame.size.height;
+        self.pageControl.frame = frame;
+    }];
+}
+
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
-    // Animate in the survey view
-    
-    CGRect frame = self.scrollView.frame;
-    frame.origin.y = 0;
-    self.scrollView.frame = frame;
-    
-    frame = self.pageControl.frame;
-    frame.origin.y = self.view.bounds.size.height - frame.size.height;
-    self.pageControl.frame = frame;
-    
     [self updateScrollView];
+    [self updateSubviewFrames];
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    CGRect frame;
+    if (padUI)
+    {
+        frame = self.scrollView.frame;
+        frame.origin.x = frame.size.width;
+        self.scrollView.frame = frame;
+    }
+    else
+    {
+        frame = self.scrollView.frame;
+        frame.origin.y = -frame.size.height;
+        self.scrollView.frame = frame;
+    }
 }
 
 - (void)viewDidLoad
@@ -104,12 +122,9 @@
     self.scrollView.pagingEnabled = YES;
     self.scrollView.delegate = self;
     self.scrollView.scrollEnabled = NO;
+    self.scrollView.clipsToBounds = NO;
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.scrollView];
-    
-    CGRect frame = self.scrollView.frame;
-    frame.origin.y = -frame.size.height;
-    self.scrollView.frame = frame;
     
     UISwipeGestureRecognizer *swipeLeftGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeLeft:)];
     swipeLeftGestureRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
@@ -118,6 +133,29 @@
     UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
     swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [self.scrollView addGestureRecognizer:swipeRightGestureRecognizer];
+    
+    CGRect frame;
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI)
+    {
+        UIView *iPadTappableBackground = [[UIView alloc] initWithFrame:self.scrollView.bounds];
+        iPadTappableBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self.scrollView addSubview:iPadTappableBackground];
+        
+        UITapGestureRecognizer *iPadBackgroundTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(surveyQuestionViewDidTapCancelButton:)];
+        [iPadTappableBackground addGestureRecognizer:iPadBackgroundTapGestureRecognizer];
+
+        frame = self.scrollView.frame;
+        frame.origin.x = frame.size.width;
+        self.scrollView.frame = frame;
+    }
+    else
+    {
+        frame = self.scrollView.frame;
+        frame.origin.y = -frame.size.height;
+        self.scrollView.frame = frame;
+    }
     
     LIOSurveyQuestion *currentQuestion = nil;
     self.currentQuestionIndex = self.survey.lastSeenQuestionIndex;
@@ -159,6 +197,8 @@
     // Set up the next question; If we get a FALSE response, we're at the last question
     self.isLastQuestion = ![self setupNextQuestionScrollView];
     [self setupPreviousQuestionScrollView];
+    
+    [self updateScrollView];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -436,44 +476,42 @@
             }];
         }];
     }
-   /*
     else {
         [UIView animateWithDuration:0.15 animations:^{
-            CGRect aFrame = currentScrollView.frame;
+            CGRect aFrame = self.currentQuestionView.frame;
             aFrame.origin.x += 70;
-            currentScrollView.frame = aFrame;
-            if (nextQuestionImageView) {
-                CGRect aFrame = nextQuestionImageView.frame;
+            self.currentQuestionView.frame = aFrame;
+            if (self.nextQuestionView) {
+                CGRect aFrame = self.nextQuestionView.frame;
                 aFrame.origin.x += 35;
-                nextQuestionImageView.frame = aFrame;
+                self.nextQuestionView.frame = aFrame;
             }
-            if (previousQuestionImageView) {
-                CGRect aFrame = previousQuestionImageView.frame;
+            if (self.previousQuestionView) {
+                CGRect aFrame = self.previousQuestionView.frame;
                 aFrame.origin.x += 35;
-                previousQuestionImageView.frame = aFrame;
+                self.previousQuestionView.frame = aFrame;
             }
         } completion:^(BOOL finished) {
             [UIView animateWithDuration:0.2 delay:0.05 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                CGRect aFrame = currentScrollView.frame;
+                CGRect aFrame = self.currentQuestionView.frame;
                 aFrame.origin.x -= 70;
-                currentScrollView.frame = aFrame;
-                if (nextQuestionImageView) {
-                    CGRect aFrame = nextQuestionImageView.frame;
+                self.currentQuestionView.frame = aFrame;
+                if (self.nextQuestionView) {
+                    CGRect aFrame = self.nextQuestionView.frame;
                     aFrame.origin.x -= 35;
-                    nextQuestionImageView.frame = aFrame;
+                    self.nextQuestionView.frame = aFrame;
                 }
-                if (previousQuestionImageView) {
-                    CGRect aFrame = previousQuestionImageView.frame;
+                if (self.previousQuestionView) {
+                    CGRect aFrame = self.previousQuestionView.frame;
                     aFrame.origin.x -= 35;
-                    previousQuestionImageView.frame = aFrame;
+                    self.previousQuestionView.frame = aFrame;
                 }
                 
             } completion:^(BOOL finished) {
-                isAnimatingTransition = NO;
+                self.isAnimatingTransition = NO;
             }];
         }];
     }
-    */
 }
 
 - (void)bounceViewRight
@@ -510,45 +548,42 @@
             }];
         }];
     }
-    
-    /*
-     else {
-     [UIView animateWithDuration:0.15 animations:^{
-     CGRect aFrame = currentScrollView.frame;
-     aFrame.origin.x -= 70;
-     currentScrollView.frame = aFrame;
-     if (nextQuestionImageView) {
-     CGRect aFrame = nextQuestionImageView.frame;
-     aFrame.origin.x -= 35;
-     nextQuestionImageView.frame = aFrame;
-     }
-     if (previousQuestionImageView) {
-     CGRect aFrame = previousQuestionImageView.frame;
-     aFrame.origin.x -= 35;
-     previousQuestionImageView.frame = aFrame;
-     }
-     } completion:^(BOOL finished) {
-     [UIView animateWithDuration:0.2 delay:0.05 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-     CGRect aFrame = currentScrollView.frame;
-     aFrame.origin.x += 70;
-     currentScrollView.frame = aFrame;
-     if (nextQuestionImageView) {
-     CGRect aFrame = nextQuestionImageView.frame;
-     aFrame.origin.x += 35;
-     nextQuestionImageView.frame = aFrame;
-     }
-     if (previousQuestionImageView) {
-     CGRect aFrame = previousQuestionImageView.frame;
-     aFrame.origin.x += 35;
-     previousQuestionImageView.frame = aFrame;
-     }
-     
-     } completion:^(BOOL finished) {
-     isAnimatingTransition = NO;
-     }];
-     }];
-     }
-     */
+    else {
+        [UIView animateWithDuration:0.15 animations:^{
+            CGRect aFrame = self.currentQuestionView.frame;
+            aFrame.origin.x -= 70;
+            self.currentQuestionView.frame = aFrame;
+            if (self.nextQuestionView) {
+                CGRect aFrame = self.nextQuestionView.frame;
+                aFrame.origin.x -= 35;
+                self.nextQuestionView.frame = aFrame;
+            }
+            if (self.previousQuestionView) {
+                CGRect aFrame = self.previousQuestionView.frame;
+                aFrame.origin.x -= 35;
+                self.previousQuestionView.frame = aFrame;
+            }
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.2 delay:0.05 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                CGRect aFrame = self.currentQuestionView.frame;
+                aFrame.origin.x += 70;
+                self.currentQuestionView.frame = aFrame;
+                if (self.nextQuestionView) {
+                    CGRect aFrame = self.nextQuestionView.frame;
+                    aFrame.origin.x += 35;
+                    self.nextQuestionView.frame = aFrame;
+                }
+                if (self.previousQuestionView) {
+                    CGRect aFrame = self.previousQuestionView.frame;
+                    aFrame.origin.x += 35;
+                    self.previousQuestionView.frame = aFrame;
+                }
+                
+            } completion:^(BOOL finished) {
+                self.isAnimatingTransition = NO;
+            }];
+        }];
+    }
 }
 
 - (BOOL)setupPreviousQuestionScrollView
