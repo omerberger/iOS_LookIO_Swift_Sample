@@ -80,6 +80,12 @@
     [self rebuildLogicDictionary];
 }
 
+- (void)clearAnswerForQuestionIndex:(NSInteger)anIndex
+{
+    [self.responses removeObjectForKey:[NSNumber numberWithInteger:anIndex]];
+    [self rebuildLogicDictionary];
+}
+
 - (void)rebuildLogicDictionary
 {
     for (int i=0; i < self.questions.count; i++)
@@ -117,6 +123,12 @@
                         if ([pickerEntry.label isEqualToString:answer])
                             for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
                                 logicItem.enabled = YES;
+            }
+            else
+            {
+                for (LIOSurveyPickerEntry* pickerEntry in question.pickerEntries)
+                    for (LIOSurveyLogicItem* logicItem in pickerEntry.logicItems)
+                        logicItem.enabled = NO;
             }
         }
     }

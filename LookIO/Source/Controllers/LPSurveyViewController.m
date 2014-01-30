@@ -342,7 +342,9 @@
     self.isLastQuestion = ![self setupNextQuestionScrollView];
     
     [self updateScrollView];
-    
+    if (self.nextQuestionView)
+        [self.nextQuestionView setNeedsLayout];
+        
     // We also need to reset the page control pages
     self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
     
@@ -660,6 +662,7 @@
         // If we're at the last question, finish the survey
         if (nextQuestionIndex == numberOfQuestions - 1)
         {
+            [self.nextQuestionView removeFromSuperview];
             self.nextQuestionView = nil;
             return NO;
         }
@@ -1182,6 +1185,7 @@
         // We have to make an exception for checkbox type questions, because they can be submitted without an answer
         if (currentQuestion.mandatory && 0 == [currentQuestion.selectedIndices count] && currentQuestion.displayType != LIOSurveyQuestionDisplayTypeMultiselect)
         {
+            [self.survey clearAnswerForQuestionIndex:self.currentQuestionIndex];
             if (showAlert)
                 [self showAlertWithMessage:LIOLocalizedString(@"LIOSurveyViewController.ResponseAlertBody")];
             return NO;
@@ -1214,6 +1218,10 @@
                     NSIndexPath* indexPath = (NSIndexPath*)[currentQuestion.selectedIndices objectAtIndex:0];
                     LIOSurveyPickerEntry* selectedPickerEntry = (LIOSurveyPickerEntry*)[currentQuestion.pickerEntries objectAtIndex:indexPath.row];
                     [self.survey registerAnswerObject:selectedPickerEntry.label withQuestionIndex:self.currentQuestionIndex];
+                }
+                else
+                {
+                    [self.survey clearAnswerForQuestionIndex:self.currentQuestionIndex];
                 }
             }
             

@@ -32,6 +32,8 @@ typedef enum
 - (id)initWithDefaultOfflineSurveyWithResponse:(NSString *)response;
 
 - (void)registerAnswerObject:(id)anAnswerObj withQuestionIndex:(NSInteger)anIndex;
+- (void)clearAnswerForQuestionIndex:(NSInteger)anIndex;
+
 - (id)answerObjectForQuestionIndex:(NSInteger)anIndex;
 - (BOOL)allMandatoryQuestionsAnswered;
 - (int)nextQuestionWithResponseRequired;
