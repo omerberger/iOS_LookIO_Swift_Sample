@@ -75,8 +75,6 @@
     
     // Animate in the survey view
 
-    NSLog(@"Frame for view did appear is %@", self.view);
-
     [UIView animateWithDuration:0.3 animations:^{
         CGRect frame = self.scrollView.frame;
         frame.origin.y = 0;
@@ -810,15 +808,15 @@
             
         case LIOIpadSurveyQuestionNextNext:
             aFrame.origin.y = landscape ? 80 : 215;
-            aFrame.size.width = (landscape ? 400 : 450) * 0.2;
-            aFrame.size.height = (landscape ? 350 : 460) * 0.2;
+            aFrame.size.width = (landscape ? 400 : 450) * LIOSurveyViewiPadNextQuestionScale;
+            aFrame.size.height = (landscape ? 350 : 460) * LIOSurveyViewiPadNextQuestionScale;
             aFrame.origin.x = self.view.bounds.size.width + aFrame.size.width;
             break;
             
         case LIOIpadSurveyQuestionPreviousPrevious:
             aFrame.origin.y = landscape ? 80 : 215;
-            aFrame.size.width = (landscape ? 400 : 450) * 0.2;
-            aFrame.size.height = (landscape ? 350 : 460) * 0.2;
+            aFrame.size.width = (landscape ? 400 : 450) * LIOSurveyViewiPadNextQuestionScale;
+            aFrame.size.height = (landscape ? 350 : 460) * LIOSurveyViewiPadNextQuestionScale;
             aFrame.origin.x = -self.view.bounds.size.width - aFrame.size.width;
             break;
             
@@ -843,36 +841,79 @@
     [self.previousQuestionView setNeedsLayout];
     [self.previousQuestionView becomeFirstResponder];
     
-    [UIView animateWithDuration:0.3 animations:^{
-        CGPoint contentOffset = self.scrollView.contentOffset;
-        contentOffset.x = 0;
-        self.scrollView.contentOffset = contentOffset;
-    } completion:^(BOOL finished) {
-        self.currentQuestionIndex = self.previousQuestionView.tag;
-        self.pageControl.currentPage -= 1;
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (!padUI)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            CGPoint contentOffset = self.scrollView.contentOffset;
+            contentOffset.x = 0;
+            self.scrollView.contentOffset = contentOffset;
+        } completion:^(BOOL finished) {
+            self.currentQuestionIndex = self.previousQuestionView.tag;
+            self.pageControl.currentPage -= 1;
+            
+            LIOSurveyQuestionView *tempView = nil;
+            if (self.nextQuestionView)
+            {
+                [self.nextQuestionView removeFromSuperview];
+                tempView = self.nextQuestionView;
+            }
+            self.nextQuestionView = self.currentQuestionView;
+            self.currentQuestionView = self.previousQuestionView;
+            self.previousQuestionView = nil;
+            [self setupPreviousQuestionScrollView];
+            
+            [self updateScrollView];
+            
+            if (tempView)
+            {
+                self.reusableQuestionView = tempView;
+                self.reusableQuestionView.tag = -1000;
+                
+            }
+            
+            [self.nextQuestionView questionViewDidDisappear];
+            self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
+        }];
+    }
+    else
+    {
+        [self.view bringSubviewToFront:self.currentQuestionView];
         
-        LIOSurveyQuestionView *tempView = nil;
-        if (self.nextQuestionView)
-        {
-            [self.nextQuestionView removeFromSuperview];
-            tempView = self.nextQuestionView;
-        }
+        LIOSurveyQuestionView *tempView = self.nextQuestionView;
         self.nextQuestionView = self.currentQuestionView;
         self.currentQuestionView = self.previousQuestionView;
         self.previousQuestionView = nil;
+        
+        self.pageControl.currentPage -= 1;
+        
+        self.currentQuestionIndex = self.currentQuestionView.tag;
         [self setupPreviousQuestionScrollView];
+        self.previousQuestionView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionPreviousPrevious];
+        [self.view addSubview:self.previousQuestionView];
         
-        [self updateScrollView];
-        
-        if (tempView)
-        {
-            self.reusableQuestionView = tempView;
-            self.reusableQuestionView.tag = -1000;
-
-        }
-
-        self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
-    }];
+        [UIView animateWithDuration:0.3 animations:^{
+            [self updateScrollView];
+            tempView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionNextNext];
+        } completion:^(BOOL finished) {
+            self.previousQuestionView.userInteractionEnabled = NO;
+            self.currentQuestionView.userInteractionEnabled = YES;
+            self.nextQuestionView.userInteractionEnabled = NO;
+            
+            [self.nextQuestionView questionViewDidDisappear];
+            self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
+            
+            if (tempView)
+            {
+                [tempView removeFromSuperview];
+                self.reusableQuestionView = tempView;
+                self.reusableQuestionView.tag = -1000;
+            }
+        }];
+    }
+    
+    NSLog(@"<< SURVEY QUESTION IS NOW %d >>", self.currentQuestionIndex);
 }
 
 - (void)switchToNextQuestion
@@ -926,6 +967,7 @@
             }
             
             [self.currentQuestionView questionViewDidAppear];
+            [self.previousQuestionView questionViewDidDisappear];
             self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
         }];
     }
@@ -954,6 +996,7 @@
             self.nextQuestionView.userInteractionEnabled = NO;
 
             [self.currentQuestionView questionViewDidAppear];
+            [self.previousQuestionView questionViewDidDisappear];
             self.survey.lastSeenQuestionIndex = self.currentQuestionIndex;
 
             if (tempView)
@@ -965,326 +1008,8 @@
         }];        
     }
     
-    /*
-     
-     if (padUI) {
-     isAnimatingTransition = YES;
-     
-     CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
-     CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
-     nextQuestionScrollView.transform = CGAffineTransformConcat(scale, translate);
-     nextQuestionScrollView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
-     
-     if (nextQuestionImageView) {
-     [nextQuestionImageView removeFromSuperview];
-     nextQuestionImageView = nil;
-     }
-     
-     if (currentQuestionIndex < currentSurvey.questions.count) {
-     int futureQuestionIndex = currentQuestionIndex;
-     BOOL foundFutureQuestion = NO;
-     
-     while (futureQuestionIndex < currentSurvey.questions.count - 1 && !foundFutureQuestion) {
-     futureQuestionIndex += 1;
-     if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:futureQuestionIndex surveyType:currentSurveyType])
-     foundFutureQuestion = YES;
-     }
-     
-     if (foundFutureQuestion) {
-     UIScrollView* futureQuestionScrollView = [self scrollViewForQuestionAtIndex:futureQuestionIndex];
-     
-     nextQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
-     CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
-     CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
-     nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
-     nextQuestionImageView.alpha = 0.0;
-     [self addSubview:nextQuestionImageView];
-     [nextQuestionImageView release];
-     
-     UIGraphicsBeginImageContext(futureQuestionScrollView.frame.size);
-     [[futureQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
-     nextQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
-     UIGraphicsEndImageContext();
-     }
-     }
-     
-     if (currentQuestionImageView) {
-     [currentQuestionImageView removeFromSuperview];
-     currentQuestionImageView = nil;
-     }
-     currentQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
-     
-     UIGraphicsBeginImageContext(currentScrollView.frame.size);
-     [[currentScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
-     currentQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
-     UIGraphicsEndImageContext();
-     
-     [currentScrollView removeFromSuperview];
-     currentScrollView = nil;
-     
-     [self addSubview:currentQuestionImageView];
-     [currentQuestionImageView release];
-     
-     [UIView animateWithDuration:0.3 animations:^{
-     nextQuestionScrollView.transform = CGAffineTransformIdentity;
-     nextQuestionScrollView.alpha = 1.0;
-     
-     CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
-     CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
-     currentQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
-     currentQuestionImageView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
-     
-     if (previousQuestionImageView) {
-     CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
-     CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
-     previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
-     previousQuestionImageView.alpha = 0.0;
-     }
-     
-     if (nextQuestionImageView) {
-     CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
-     CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
-     nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
-     nextQuestionImageView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
-     }
-     
-     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
-     pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-     
-     [self rejiggerPageControlFrame];
-     
-     } completion:^(BOOL finished) {
-     currentScrollView = nextQuestionScrollView;
-     isAnimatingTransition = NO;
-     
-     [previousQuestionImageView removeFromSuperview];
-     previousQuestionImageView = nil;
-     
-     previousQuestionImageView = currentQuestionImageView;
-     currentQuestionImageView = nil;
-     
-     LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
-     if (currentQuestion.shouldUseStarRatingView) {
-     LIOStarRatingView* starRatingView = (LIOStarRatingView*)[currentScrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
-     if (starRatingView)
-     [starRatingView showIntroAnimation];
-     }
-     }];
-     } else {
-     isAnimatingTransition = YES;
-     [UIView animateWithDuration:0.3 animations:^{
-     [currentScrollView endEditing:YES];
-     
-     nextQuestionScrollView.transform = CGAffineTransformIdentity;
-     currentScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
-     
-     pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
-     pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
-     
-     [self rejiggerPageControlFrame];
-     
-     } completion:^(BOOL finished) {
-     [currentScrollView removeFromSuperview];
-     currentScrollView = nil;
-     currentScrollView = nextQuestionScrollView;
-     
-     isAnimatingTransition = NO;
-     
-     LIOSurveyQuestion *currentQuestion = [currentSurvey.questions objectAtIndex:currentQuestionIndex];
-     if (currentQuestion.shouldUseStarRatingView) {
-     LIOStarRatingView* starRatingView = (LIOStarRatingView*)[currentScrollView viewWithTag:LIOSurveyViewStarRatingViewTag];
-     if (starRatingView)
-     [starRatingView showIntroAnimation];
-     }
-     }];
-     }
-     }
-     }
-     
-     */
+    NSLog(@"<< SURVEY QUESTION IS NOW %d >>", self.currentQuestionIndex);
 }
-
-/*
- 
- -(void)switchToPreviousQuestion {
- BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
- BOOL foundPreviousPage = NO;
- 
- while (!foundPreviousPage) {
- // If we're at the intro screen, just bounce the screen
- if (currentQuestionIndex == LIOIndexForSurveyIntroPage) {
- [self bounceViewLeft];
- return;
- }
- 
- // Mode to the previous question, but check if we should show it taking into account logic issues
- currentQuestionIndex -= 1;
- 
- if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
- foundPreviousPage = YES;
- else
- if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:currentQuestionIndex surveyType:currentSurveyType])
- foundPreviousPage = YES;
- }
- 
- if (validationView) {
- [validationTimer stopTimer];
- [self validationTimerDidFire];
- }
- 
- UIScrollView* previousQuestionScrollView;
- 
- if (LIOIndexForSurveyIntroPage == currentQuestionIndex) {
- previousQuestionScrollView = [self scrollViewForIntroView];
- }
- else
- previousQuestionScrollView = [self scrollViewForQuestionAtIndex:currentQuestionIndex];
- 
- previousQuestionScrollView.transform = CGAffineTransformMakeTranslation(-self.bounds.size.width, 0.0);
- [self addSubview:previousQuestionScrollView];
- 
- if (padUI) {
- isAnimatingTransition = YES;
- 
- CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
- CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
- previousQuestionScrollView.transform = CGAffineTransformConcat(scale, translate);
- previousQuestionScrollView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
- 
- if (previousQuestionImageView) {
- [previousQuestionImageView removeFromSuperview];
- previousQuestionImageView = nil;
- }
- 
- if (currentQuestionIndex > -1) {
- BOOL foundPastQuestion = NO;
- int pastQuestionIndex = currentQuestionIndex;
- while (!foundPastQuestion && pastQuestionIndex >= -1) {
- pastQuestionIndex -= 1;
- 
- // If we're at the intro screen, just bounce the screen
- if (pastQuestionIndex == LIOIndexForSurveyIntroPage) {
- foundPastQuestion = YES;
- }
- else {
- if ([[LIOSurveyManager sharedSurveyManager] shouldShowQuestion:pastQuestionIndex surveyType:currentSurveyType])
- foundPastQuestion = YES;
- }
- }
- 
- if (foundPastQuestion) {
- UIScrollView* pastQuestionScrollView;
- if (pastQuestionIndex == -1)
- pastQuestionScrollView = [self scrollViewForIntroView];
- else
- pastQuestionScrollView = [self scrollViewForQuestionAtIndex:pastQuestionIndex];
- 
- previousQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
- CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
- CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
- previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
- previousQuestionImageView.alpha = 0.0;
- [self addSubview:previousQuestionImageView];
- [previousQuestionImageView release];
- 
- UIGraphicsBeginImageContext(pastQuestionScrollView.frame.size);
- [[pastQuestionScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
- previousQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
- UIGraphicsEndImageContext();
- }
- }
- 
- if (currentQuestionImageView) {
- [currentQuestionImageView removeFromSuperview];
- currentQuestionImageView = nil;
- }
- currentQuestionImageView = [[UIImageView alloc] initWithFrame:currentScrollView.frame];
- 
- UIGraphicsBeginImageContext(currentScrollView.frame.size);
- [[currentScrollView layer] renderInContext:UIGraphicsGetCurrentContext()];
- currentQuestionImageView.image = UIGraphicsGetImageFromCurrentImageContext();
- UIGraphicsEndImageContext();
- 
- [currentScrollView removeFromSuperview];
- currentScrollView = nil;
- 
- [self addSubview:currentQuestionImageView];
- [currentQuestionImageView release];
- 
- [UIView animateWithDuration:0.3 animations:^{
- previousQuestionScrollView.transform = CGAffineTransformIdentity;
- previousQuestionScrollView.alpha = 1.0;
- 
- CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
- CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
- currentQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
- currentQuestionImageView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
- 
- if (previousQuestionImageView) {
- CGAffineTransform scale = CGAffineTransformMakeScale(LIOSurveyViewiPadNextQuestionScale, LIOSurveyViewiPadNextQuestionScale);
- CGAffineTransform translate = CGAffineTransformMakeTranslation(-self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
- previousQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
- previousQuestionImageView.alpha = LIOSurveyViewiPadNextQuestionAlpha;
- }
- 
- if (nextQuestionImageView) {
- CGAffineTransform scale = CGAffineTransformMakeScale(0.2, 0.2);
- CGAffineTransform translate = CGAffineTransformMakeTranslation(self.bounds.size.width*LIOSurveyViewiPadNextQuestionOffset, 0.0);
- nextQuestionImageView.transform = CGAffineTransformConcat(scale, translate);
- nextQuestionImageView.alpha = 0.0;
- }
- 
- pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
- 
- if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
- pageControl.currentPage = 0;
- else
- pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
- 
- [self rejiggerPageControlFrame];
- 
- 
- } completion:^(BOOL finished) {
- currentScrollView = previousQuestionScrollView;
- isAnimatingTransition = NO;
- 
- [nextQuestionImageView removeFromSuperview];
- nextQuestionImageView = nil;
- 
- nextQuestionImageView = currentQuestionImageView;
- currentQuestionImageView = nil;
- 
- 
- }];
- }
- else {
- 
- isAnimatingTransition = YES;
- [UIView animateWithDuration:0.3 animations:^{
- [currentScrollView endEditing:YES];
- 
- previousQuestionScrollView.transform = CGAffineTransformIdentity;
- currentScrollView.transform = CGAffineTransformMakeTranslation(self.bounds.size.width, 0.0);
- 
- pageControl.numberOfPages = [[LIOSurveyManager sharedSurveyManager] numberOfQuestionsWithLogicForSurveyType:currentSurveyType] + 1;
- 
- if (currentQuestionIndex == LIOIndexForSurveyIntroPage)
- pageControl.currentPage = 0;
- else
- pageControl.currentPage = [[LIOSurveyManager sharedSurveyManager] realIndexWithLogicOfQuestionAtIndex:currentQuestionIndex forSurveyType:currentSurveyType] + 1;
- 
- [self rejiggerPageControlFrame];
- } completion:^(BOOL finished) {
- [currentScrollView removeFromSuperview];
- currentScrollView = nil;
- currentScrollView = previousQuestionScrollView;
- 
- isAnimatingTransition = NO;
- }];
- }
- }
- 
- */
 
 #pragma mark
 #pragma mark Validation view methods

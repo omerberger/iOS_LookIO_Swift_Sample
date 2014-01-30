@@ -203,8 +203,7 @@
             if (index < 4 && self.isAnimating)
                 [self showIntroAnimationForAnswerAtIndex:index+1];
             else {
-                self.isAnimating = NO;
-                [self setNeedsLayout];
+                [self stopAnimation];
             }
         }];
     }];
@@ -260,6 +259,12 @@
         NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
         [self.valueLabelArray addObject:valueLabel];
     }
+}
+
+- (void)stopAnimation
+{
+    self.isAnimating = NO;
+    [self setNeedsLayout];
 }
 
 @end

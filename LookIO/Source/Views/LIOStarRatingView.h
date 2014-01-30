@@ -27,5 +27,6 @@
 - (void)setRating:(NSInteger)newRating;
 - (void)setValueLabels:(NSArray*)newValueLabelsArray;
 - (void)showIntroAnimation;
+- (void)stopAnimation;
 
 @end

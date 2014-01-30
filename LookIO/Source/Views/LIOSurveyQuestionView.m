@@ -671,7 +671,6 @@
             aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 15.0;
         aFrame.size = expectedNextButtonSize;
         self.nextButton.frame = aFrame;
-        NSLog(@"Button text is %@ and frame is %@", self.nextButton.titleLabel.text, self.nextButton);
         
         if (!padUI)
         {
@@ -721,6 +720,12 @@
 {
     if (!self.starRatingView.hidden)
         [self.starRatingView showIntroAnimation];
+}
+
+- (void)questionViewDidDisappear
+{
+    if (!self.starRatingView.hidden)
+        [self.starRatingView stopAnimation];
 }
 
 

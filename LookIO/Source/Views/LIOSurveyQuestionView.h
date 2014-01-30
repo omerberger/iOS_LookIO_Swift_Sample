@@ -31,5 +31,6 @@
 
 - (void)becomeFirstResponder;
 - (void)questionViewDidAppear;
+- (void)questionViewDidDisappear;
 
 @end
