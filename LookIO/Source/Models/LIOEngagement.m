@@ -959,7 +959,9 @@
 
 - (void)sendAdvisoryPacketWithDict:(NSDictionary*)advisoryDict retries:(NSInteger)retries
 {
-    // Submit the request if network is available, otherwise, queue it
+    // Don't report advisories if the session is ending
+    if (LIOSSEChannelStateEnding == self.sseChannelState)
+        return;
     
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)

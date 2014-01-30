@@ -702,10 +702,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.lookIOWindowState = LIOLookIOWindowStateHidden;
     
-    NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
+    // Only send chat_down if the engagement is still active at this point
+    if (self.engagement) {
+        NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
                             @"chat_down", @"action",
                             nil];
-    [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
+        [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
+    }
     
     [self.visit refreshControlButtonVisibility];
     
