@@ -15,6 +15,12 @@ typedef enum
     LIOButtonModeSurvey
 } LIOButtonMode;
 
+typedef enum
+{
+    LIOButtonKindText = 0,
+    LIOButtonKindIcon
+} LIOButtonKind;
+
 @class LIODraggableButton;
 
 @protocol LIODraggableButtonDelegate <NSObject>

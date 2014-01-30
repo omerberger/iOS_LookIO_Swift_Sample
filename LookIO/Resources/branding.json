@@ -65,6 +65,7 @@
 									"color" : "#ffffff",
 									"size" : "12.0"
 								} 											 							   
+						  }
 						}
         },
         "chat_bubbles" : {
@@ -388,12 +389,12 @@
 						"badge" : {
 							"background" : {
 								"color" : "#ff0000"
-							},
-							"font" : {
-								"color" : "#ffffff",
-								"size" : "12.0"
-							} 
-					 }
+							}
+						},
+						"font" : {
+							"color" : "#ffffff",
+							"size" : "16.0"
+						} 
         }
     }
 }
