@@ -386,7 +386,7 @@
             aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
         }
         self.subtitleLabel.frame = aFrame;
-        
+
         self.nextButton.hidden = NO;
         aFrame.origin.x = referenceFrame.size.width/2 + LIOSurveyViewIntroButtonMargin;
         aFrame.origin.y = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height + 20;
@@ -451,10 +451,11 @@
             self.textFieldBackground.frame = aFrame;
             
             if (!self.nextButton.hidden) {
-                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - 92.0;
-                aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
-                aFrame.size.width = 92.0;
-                aFrame.size.height = 44.0;
+                CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+
+                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
+                aFrame.size = expectedNextButtonSize;
                 self.nextButton.frame = aFrame;
                 
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -508,10 +509,11 @@
             
             if (!self.nextButton.isHidden)
             {
-                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - 92.0;
-                aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
-                aFrame.size.width = 92.0;
-                aFrame.size.height = 44.0;
+                CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+
+                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
+                aFrame.size = expectedNextButtonSize;
                 self.nextButton.frame = aFrame;
                 
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -565,23 +567,25 @@
             self.starRatingView.frame = aFrame;
         }
         
-        aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
+        
+        CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+
+        aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - expectedNextButtonSize.width - 50.0;
         if (padUI)
         {
-            aFrame.origin.y = referenceFrame.size.height - 44.0 - 27.0;
+            aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
+            aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
         }
         else
         {
+            aFrame.origin.x = referenceFrame.size.width - expectedNextButtonSize.width - 35.0;
             if (landscape) {
-                aFrame.origin.x = referenceFrame.size.width - 95.0;
                 aFrame.origin.y = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height - 5;
             } else {
-                aFrame.origin.x = referenceFrame.size.width - 95.0;
                 aFrame.origin.y = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height + 25;
             }
         }
-        aFrame.size.width = 92.0;
-        aFrame.size.height = 44.0;
+        aFrame.size = expectedNextButtonSize;
         self.nextButton.frame = aFrame;
         
         if (!padUI)
@@ -643,16 +647,14 @@
         
         self.tableView.frame = CGRectMake((padUI ? LIOSurveyViewSideMarginiPad : 25.0), self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 15.0, padUI ? (referenceFrame.size.width - LIOSurveyViewSideMarginiPad*2) : (self.bounds.size.width - 50), tableViewContentHeight);
         
-        aFrame.origin.x = referenceFrame.size.width - (padUI ? LIOSurveyViewSideMarginiPad : LIOSurveyViewSideMargin*2) - 92.0;
-        if (landscape) {
-            aFrame.origin.x = referenceFrame.size.width - 95.0;
-            aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height;
-        } else {
-            aFrame.origin.x = referenceFrame.size.width - 95.0;
-            aFrame.origin.y = self.tableView.frame.origin.y + self.tableView.frame.size.height + 2;
-        }
-        aFrame.size.width = 92.0;
-        aFrame.size.height = 44.0;
+        CGSize expectedNextButtonSize = [self.nextButton.titleLabel.text sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+
+        aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
+        if (padUI)
+            aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
+        else
+            aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 15.0;
+        aFrame.size = expectedNextButtonSize;
         self.nextButton.frame = aFrame;
         
         if (!padUI)

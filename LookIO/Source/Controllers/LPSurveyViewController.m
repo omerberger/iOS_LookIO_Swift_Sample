@@ -753,14 +753,14 @@
         case LIOIpadSurveyQuestionCurrent:
             aFrame.origin.y = landscape ? 20 : 135;
             aFrame.size.width = landscape ? 400 : 450;
-            aFrame.size.height = landscape ? 360 : 460;
+            aFrame.size.height = landscape ? 350 : 460;
             aFrame.origin.x = (self.view.bounds.size.width - aFrame.size.width)/2;
             break;
             
         case LIOIpadSurveyQuestionNext:
             aFrame.origin.y = landscape ? 50 : 175;
             aFrame.size.width = (landscape ? 400 : 450) * LIOSurveyViewiPadNextQuestionScale;
-            aFrame.size.height = (landscape ? 360 : 460) * LIOSurveyViewiPadNextQuestionScale;
+            aFrame.size.height = (landscape ? 350 : 460) * LIOSurveyViewiPadNextQuestionScale;
             offset = landscape ? LIOSurveyViewiPadNextQuestionOffsetLandscape : LIOSurveyViewiPadNextQuestionOffsetPortrait;
             aFrame.origin.x = (self.view.bounds.size.width - aFrame.size.width)/2 + self.view.bounds.size.width*offset;
             break;
@@ -768,7 +768,7 @@
         case LIOIpadSurveyQuestionPrevious:
             aFrame.origin.y = landscape ? 50 : 175;
             aFrame.size.width = (landscape ? 400 : 450) * LIOSurveyViewiPadNextQuestionScale;
-            aFrame.size.height = (landscape ? 360 : 460) * LIOSurveyViewiPadNextQuestionScale;
+            aFrame.size.height = (landscape ? 350 : 460) * LIOSurveyViewiPadNextQuestionScale;
             offset = landscape ? LIOSurveyViewiPadNextQuestionOffsetLandscape : LIOSurveyViewiPadNextQuestionOffsetPortrait;
             aFrame.origin.x = (self.view.bounds.size.width - aFrame.size.width)/2 - self.view.bounds.size.width*offset;
             break;
@@ -776,14 +776,14 @@
         case LIOIpadSurveyQuestionNextNext:
             aFrame.origin.y = landscape ? 80 : 215;
             aFrame.size.width = (landscape ? 400 : 450) * 0.2;
-            aFrame.size.height = (landscape ? 360 : 460) * 0.2;
+            aFrame.size.height = (landscape ? 350 : 460) * 0.2;
             aFrame.origin.x = self.view.bounds.size.width + aFrame.size.width;
             break;
             
         case LIOIpadSurveyQuestionPreviousPrevious:
             aFrame.origin.y = landscape ? 80 : 215;
             aFrame.size.width = (landscape ? 400 : 450) * 0.2;
-            aFrame.size.height = (landscape ? 360 : 460) * 0.2;
+            aFrame.size.height = (landscape ? 350 : 460) * 0.2;
             aFrame.origin.x = -self.view.bounds.size.width - aFrame.size.width;
             break;
             
@@ -1270,9 +1270,9 @@
     aFrame.size.width = self.view.bounds.size.width;
     if (padUI)
     {
-        aFrame.size.width = self.currentQuestionView.bounds.size.width - 15;
-        aFrame.origin.x = self.currentQuestionView.bounds.origin.x + 8;
-        aFrame.origin.y = self.currentQuestionView.bounds.origin.y + 4;
+        aFrame.size.width = self.currentQuestionView.bounds.size.width - 2.0;
+        aFrame.origin.x = 1.0;
+        aFrame.origin.y = 1.0;
     }
     
     self.validationView.frame = aFrame;
@@ -1281,7 +1281,7 @@
     if (padUI)
     {
         [self.currentQuestionView addSubview:self.validationView];
-        self.validationView.layer.cornerRadius = 5.0;
+        self.validationView.layer.cornerRadius = 3.0;
         self.validationView.clipsToBounds = YES;
     }
     else
