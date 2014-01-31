@@ -794,6 +794,18 @@
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
     tapGestureRecognizer.delegate = self;
     [self.tableView addGestureRecognizer:tapGestureRecognizer];
+
+    if (padUI)
+    {
+        UIView *iPadTappableBackView = [[UIView alloc] initWithFrame:self.view.bounds];
+        iPadTappableBackView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self.view addSubview:iPadTappableBackView];
+        [self.view sendSubviewToBack:iPadTappableBackView];
+
+        UITapGestureRecognizer *iPadBackTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissChat:)];
+        tapGestureRecognizer.delegate = self;
+        [iPadTappableBackView addGestureRecognizer:iPadBackTapGestureRecognizer];
+    }
     
     UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(tableViewDidPan:)];
     panGestureRecognizer.delegate = self;
