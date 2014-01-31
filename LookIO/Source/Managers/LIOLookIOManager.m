@@ -1015,8 +1015,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
             [self.controlButton reportUnreadMessage];
-            if (self.visit.controlButtonHidden)
+            // TODO: Disable this when receiving settings from server
+            if (self.visit.controlButtonHidden || 1 == 1)
             {
+                [self presentLookIOWindow];
                 [self.containerViewController presentChatForEngagement:engagement];
             }
             else

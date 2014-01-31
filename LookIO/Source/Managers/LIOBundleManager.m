@@ -549,6 +549,13 @@ BOOL LIOIsUIKitFlatMode(void) {
     return [englishBundle localizedStringForKey:aKey value:@"<LOCALIZATION MISSING>" table:nil];
 }
 
+- (NSDictionary *)brandingDictionary
+{
+    NSString *bundlePath = [lioBundle pathForResource:@"branding" ofType:@"json" inDirectory:nil];
+    NSData *data = [NSData dataWithContentsOfFile:bundlePath];
+    return [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+}
+
 - (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable
 {
     NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];

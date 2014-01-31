@@ -23,10 +23,3 @@ k.set_contents_from_filename(filename)
 k.set_metadata('Cache-Control', 'max-age=15, must-revalidate');
 k.set_acl('public-read')
 
-filename = "bundle_flat.zip"
-k = Key(bucket)
-k.key = "ios/" + options.version + "/" + filename
-k.set_contents_from_filename(filename)
-k.set_metadata('Cache-Control', 'max-age=15, must-revalidate');
-k.set_acl('public-read')
-

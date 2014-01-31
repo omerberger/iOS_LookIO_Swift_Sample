@@ -50,6 +50,7 @@ BOOL LIOIsUIKitFlatMode(void);
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
 - (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color;
+- (NSDictionary *)brandingDictionary;
 - (BOOL)isAvailable;
 - (void)pruneImageCache;
 - (NSString *)localizedStringWithKey:(NSString *)aKey;

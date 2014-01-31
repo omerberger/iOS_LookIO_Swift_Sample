@@ -26,9 +26,9 @@ then
     COMMIT_DESCRIPTION="Unstable Enterprise version $1"
 fi
 
-if [ $2 == "pre_surveys_v2" ]
+if [ $2 == "nextgen" ]
 then
-    COMMIT_DESCRIPTION="Pre surveys version $1"
+    COMMIT_DESCRIPTION="Nextgen version $1"
 fi
 
 cd /Users/marc/Development/ios_lib
@@ -49,12 +49,11 @@ rm -rf iOS/*
 git fetch
 git checkout $2
 rm -rf iOS/*
-cp -v -f -R  ../ios_lib/_LOOKIO_$1_/libLookIO.a ../ios_lib/_LOOKIO_$1_/LookIO.bundle ../ios_lib/_LOOKIO_$1_/LookIO_flat.bundle ../ios_lib/_LOOKIO_$1_/LIOLookIOManager.h iOS
+cp -v -f -R  ../ios_lib/_LOOKIO_$1_/libLookIO.a ../ios_lib/_LOOKIO_$1_/LookIO.bundle ../ios_lib/_LOOKIO_$1_/LIOLookIOManager.h iOS
 rm -rf ../ios_lib/_LOOKIO_$1_
 git add iOS/libLookIO.a
 git add iOS/LIOLookIOManager.h
 git add iOS/LookIO.bundle/*
-git add iOS/LookIO_flat.bundle/*
 git commit -a -m "${COMMIT_DESCRIPTION}"
 git push origin $2
 
@@ -65,14 +64,12 @@ otool -f iOS/libLookIO.a
 #
 if [ $2 == "master" ]
 then
-    echo "Uploading LookIO.bundle (as bundle.zip) and LookIO_flat.bundle (as bundle_flat.zip) to CDN..."
+    echo "Uploading LookIO.bundle (as bundle.zip) and to CDN..."
     popd
     # Standard bundle
 	zip -j ./bundle.zip ~/Development/LookIO-Libraries/iOS/LookIO.bundle/*
-    zip -j ./bundle_flat.zip ~/Development/LookIO-Libraries/iOS/LookIO_flat.bundle/*	
-    python ./upload_bundle.py --version $1 --key AKIAIKCREXYCWO5PI2AA --secret 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
-    rm -rf ./bundle.zip
-	rm -rf ./bundle_flat.zip
+  python ./upload_bundle.py --version $1 --key AKIAIKCREXYCWO5PI2AA --secret 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
+  rm -rf ./bundle.zip
 fi
 
 echo Build script finished.

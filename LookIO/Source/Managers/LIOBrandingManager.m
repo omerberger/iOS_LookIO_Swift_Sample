@@ -10,6 +10,7 @@
 
 // Managers
 #import "LIOLogManager.h"
+#import "LIOBundleManager.h"
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
@@ -51,9 +52,7 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (void)loadDefaults
 {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"branding" ofType:@"json"];
-    NSData *data = [NSData dataWithContentsOfFile:filePath];
-    self.originalBrandingDictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+    self.originalBrandingDictionary = [[LIOBundleManager sharedBundleManager] brandingDictionary];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([userDefaults objectForKey:LIOBrandingManagerBrandingDictKey])

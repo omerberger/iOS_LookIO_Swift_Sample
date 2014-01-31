@@ -39,11 +39,7 @@ fi
 mkdir -p $TARGET_DIR/LookIO.bundle
 cp LookIO/Resources/Images/LIO* $TARGET_DIR/LookIO.bundle
 cp -R LookIO/Resources/Strings/* $TARGET_DIR/LookIO.bundle
-# Flat bundle
-mkdir -p $TARGET_DIR/LookIO_flat.bundle
-cp LookIO/Resources/ImagesFlat/LIO* $TARGET_DIR/LookIO_flat.bundle
-cp -R LookIO/Resources/Strings/* $TARGET_DIR/LookIO_flat.bundle
-
+cp -R LookIO/Resources/Branding/* $TARGET_DIR/LookIO.bundle
 cp LookIO/Source/Managers/LIOLookIOManager.h $TARGET_DIR
 
 #
