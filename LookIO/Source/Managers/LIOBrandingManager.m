@@ -761,7 +761,23 @@ static LIOBrandingManager *brandingManager = nil;
     CGFloat size = [self fontSizeForElement:element];
     
     if ([self fontNameForElement:LIOBrandingElementFont])
-        font = [UIFont fontWithName:[self fontNameForElement:LIOBrandingElementFont] size:size];
+    {
+        NSString *fontName = [self fontNameForElement:LIOBrandingElementFont];
+        // Check if branding defined a System font instead of a specific one
+        if ([fontName isEqualToString:@"System"])
+        {
+            font = [UIFont systemFontOfSize:size];
+        }
+        else
+        {
+            font = [UIFont fontWithName:[self fontNameForElement:LIOBrandingElementFont] size:size];
+        }
+        
+        // If the specified font was not found, let's fall back to system font
+        if (!font)
+            font = [UIFont systemFontOfSize:size];
+
+    }
     else
         font = [UIFont systemFontOfSize:size];
     
@@ -774,9 +790,25 @@ static LIOBrandingManager *brandingManager = nil;
     CGFloat size = [self fontSizeForElement:element];
     
     if ([self boldFontNameForElement:LIOBrandingElementBoldFont])
-        font = [UIFont fontWithName:[self boldFontNameForElement:LIOBrandingElementBoldFont] size:size];
+    {
+        // Check if branding defined a System font instead of a specific one
+        NSString *boldFontName = [self boldFontNameForElement:LIOBrandingElementBoldFont];
+        if ([boldFontName isEqualToString:@"System"])
+        {
+            font = [UIFont boldSystemFontOfSize:size];
+        }
+        else
+        {
+            font = [UIFont fontWithName:[self boldFontNameForElement:LIOBrandingElementBoldFont] size:size];
+        }
+
+        // If the specified font was not found, let's fall back to system font
+        if (!font)
+            font = [UIFont boldSystemFontOfSize:size];
+    }
     else
         font = [UIFont boldSystemFontOfSize:size];
+    
     
     return font;
 }
