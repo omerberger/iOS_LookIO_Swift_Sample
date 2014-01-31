@@ -67,6 +67,7 @@ typedef enum
 
 @property (nonatomic, copy) NSString *lastKnownButtonTintColor;
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
+@property (nonatomic, copy) NSString *lastKnownButtonText;
 
 - (void)refreshControlButtonVisibility;
 

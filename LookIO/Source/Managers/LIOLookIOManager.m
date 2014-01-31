@@ -418,6 +418,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
 {
+    self.controlButton.buttonTitle = self.visit.lastKnownButtonText;
     [self.controlButton updateButtonBranding];
 }
 

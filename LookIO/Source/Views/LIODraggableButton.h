@@ -38,6 +38,8 @@ typedef enum
 
 @property (nonatomic, assign) NSInteger numberOfUnreadMessages;
 
+@property (nonatomic, strong) NSString *buttonTitle;
+
 - (void)show:(BOOL)animated;
 - (void)hide:(BOOL)animated;
 

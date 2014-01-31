@@ -48,7 +48,6 @@
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
 @property (nonatomic, assign) BOOL *previousControlButtonVisibilityValue;
-@property (nonatomic, copy) NSString *lastKnownButtonText;
 
 @property (nonatomic, copy) NSString *lastKnownWelcomeText;
 

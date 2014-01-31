@@ -64,6 +64,8 @@
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 1.0;
         
+        self.buttonTitle = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
+        
         [self addTarget:self action:@selector(draggableButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         
         UIPanGestureRecognizer *surveyTabPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(buttonDidPan:)];
@@ -94,18 +96,15 @@
         }
         if (LIOButtonKindText == self.buttonKind)
         {
-            NSString *title = @"Live Help";
             UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
-            CGSize expectedSize = [title sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+            CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
             
             self.buttonTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, expectedSize.width, expectedSize.height)];
             self.buttonTitleLabel.backgroundColor = [UIColor clearColor];
-            self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
-            self.buttonTitleLabel.text = title;
+            self.buttonTitleLabel.text = self.buttonTitle;
             self.buttonTitleLabel.font = font;
             self.buttonTitleLabel.userInteractionEnabled = NO;
             self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
-            [self resetTitleLabelRotation];
             [self addSubview:self.buttonTitleLabel];
             
             self.baseSize = CGSizeMake(expectedSize.height*2, expectedSize.width + 20.0);
@@ -120,10 +119,8 @@
         
         self.clipsToBounds = YES;
         
-        [self resetFrame];
-        
         self.buttonMode = LIOButtonModeChat;
-        [self updateButtonBranding];        
+        [self updateButtonBranding];
     }
     return self;
 }
@@ -139,6 +136,20 @@
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
 
     self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+    self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
+    
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
+    self.buttonTitleLabel.font = font;
+    self.buttonTitleLabel.text = self.buttonTitle;
+    
+    CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+    self.baseSize = CGSizeMake(expectedSize.height*2, expectedSize.width + 20.0);
+    CGRect bounds = self.buttonTitleLabel.bounds;
+    bounds.size = expectedSize;
+    self.buttonTitleLabel.bounds = bounds;
+    
+    [self resetFrame];
+    [self resetTitleLabelRotation];
 
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:
@@ -354,9 +365,8 @@
     if (LIOButtonKindText != self.buttonKind)
         return;
     
-    NSString *title = @"Live Help";
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
-    CGSize expectedSize = [title sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+    CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
     
     if (self.isAttachedToRight)
     {

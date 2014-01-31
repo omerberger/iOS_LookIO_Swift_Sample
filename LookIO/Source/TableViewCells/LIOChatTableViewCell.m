@@ -60,7 +60,7 @@
         expectedTextSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(width, 9999) lineBreakMode:UILineBreakModeWordWrap];
     }
     
-    expectedTextSize = CGSizeMake(ceil(expectedTextSize.width), ceil(expectedTextSize.height));
+    expectedTextSize = CGSizeMake(ceil(expectedTextSize.width) + 2.0, ceil(expectedTextSize.height) + 2.0);
     
     return expectedTextSize;
 }
