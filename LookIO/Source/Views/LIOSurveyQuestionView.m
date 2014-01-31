@@ -234,7 +234,10 @@
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            numberToolbar.barStyle = UIBarStyleDefault;
+            if (LIOIsUIKitFlatMode())
+                numberToolbar.barStyle = UIBarStyleDefault;
+            else
+                numberToolbar.barStyle = UIBarStyleBlack;
             
             UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
             nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
@@ -297,7 +300,10 @@
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            numberToolbar.barStyle = UIBarStyleDefault;
+            if (LIOIsUIKitFlatMode())
+                numberToolbar.barStyle = UIBarStyleDefault;
+            else
+                numberToolbar.barStyle = UIBarStyleBlack;
             
             UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
             nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
@@ -369,6 +375,12 @@
 
 #pragma mark
 #pragma mark Question view setup methods
+
+- (void)reloadTableViewDataIfNeeded
+{
+    if (!self.tableView.hidden)
+        [self.tableView reloadData];
+}
 
 - (void)layoutSubviews
 {
@@ -635,8 +647,6 @@
     
     if (!self.tableView.isHidden)
     {
-        [self.tableView reloadData];
-
         // We need to set the tableView width ahead of time, because it's used for the calculation of the row height
         CGRect frame = self.tableView.frame;
         frame.size.width = padUI ? (referenceFrame.size.width - LIOSurveyViewSideMarginiPad + 2) : (self.bounds.size.width - 50);

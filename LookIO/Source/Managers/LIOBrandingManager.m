@@ -831,6 +831,49 @@ static LIOBrandingManager *brandingManager = nil;
     return value;    
 }
 
+- (BOOL)attachedToRightForElement:(LIOBrandingElement)element
+{
+    BOOL attachedToRight = YES;
+
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
+        if (positionDictionary)
+        {
+            NSString *attachedToRightString = [positionDictionary objectForKey:@"horizontal"];
+            if (attachedToRightString)
+            {
+                if ([attachedToRightString isEqualToString:@"right"])
+                    attachedToRight = YES;
+                if ([attachedToRightString isEqualToString:@"left"])
+                    attachedToRight = NO;
+            }
+        }
+    }
+    
+    return attachedToRight;
+}
+
+- (CGFloat)verticalPositionForElement:(LIOBrandingElement)element
+{
+    CGFloat verticalPosition = 0.5;
+
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
+        if (positionDictionary)
+        {
+            NSNumber *verticalPositionNumber = [positionDictionary objectForKey:@"vertical"];
+            if (verticalPositionNumber)
+                verticalPosition = [verticalPositionNumber floatValue];
+        }
+    }
+
+    return verticalPosition;
+}
+
 
 
 

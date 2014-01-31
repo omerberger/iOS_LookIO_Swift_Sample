@@ -32,5 +32,6 @@
 - (void)becomeFirstResponder;
 - (void)questionViewDidAppear;
 - (void)questionViewDidDisappear;
+- (void)reloadTableViewDataIfNeeded;
 
 @end

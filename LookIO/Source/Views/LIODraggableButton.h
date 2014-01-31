@@ -49,6 +49,7 @@ typedef enum
 
 - (void)resetFrame;
 - (void)updateButtonBranding;
+- (void)updateBaseValues;
 
 - (void)setLoadingMode;
 - (void)setChatMode;

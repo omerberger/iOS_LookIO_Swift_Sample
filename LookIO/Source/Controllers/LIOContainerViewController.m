@@ -671,7 +671,16 @@
     [self.loadingViewController didMoveToParentViewController:self];
     
     [self.loadingViewController hideBezel];
+}
 
+- (BOOL)shouldAutorotate
+{
+    return YES;
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return YES;
 }
 
 @end

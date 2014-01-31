@@ -633,6 +633,8 @@
             
             self.visitState = LIOVisitStateVisitInProgress;
 
+            [self.delegate visitDidLaunch:self];
+            
             if (![self chatInProgress])
             {
                 [self.delegate visit:self wantsToShowMessage:@"Tap to chat"];

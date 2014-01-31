@@ -83,6 +83,8 @@ typedef enum
 - (UIFont *)fontForElement:(LIOBrandingElement)element;
 - (CGFloat)fontSizeForElement:(LIOBrandingElement)element;
 - (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element;
+- (BOOL)attachedToRightForElement:(LIOBrandingElement)element;
+- (CGFloat)verticalPositionForElement:(LIOBrandingElement)element;
 
 @end
 

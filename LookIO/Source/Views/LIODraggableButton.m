@@ -20,6 +20,7 @@
 
 #define LIODraggableButtonSize 50.0
 #define LIODraggableButtonMessageTime 5.0
+#define LIODraggableButtonTextHeightRatio 1.5
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                      green:((c>>8)&0xFF)/255.0 \
@@ -107,7 +108,7 @@
             self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
             [self addSubview:self.buttonTitleLabel];
             
-            self.baseSize = CGSizeMake(expectedSize.height*2, expectedSize.width + 20.0);
+            self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
         }
         
         self.numberOfUnreadMessages = 0;
@@ -120,13 +121,32 @@
         self.clipsToBounds = YES;
         
         self.buttonMode = LIOButtonModeChat;
-        [self updateButtonBranding];
+        [self updateBaseValues];
     }
     return self;
 }
 
 #pragma mark -
 #pragma mark Setup Methods
+
+- (void)updateBaseValues
+{
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
+    self.buttonTitleLabel.font = font;
+    self.buttonTitleLabel.text = self.buttonTitle;
+
+    CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+    self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
+    CGRect bounds = self.buttonTitleLabel.bounds;
+    bounds.size = expectedSize;
+    self.buttonTitleLabel.bounds = bounds;
+    
+    self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
+
+    [self resetFrame];
+    [self resetTitleLabelRotation];
+    [self updateButtonBranding];
+}
 
 - (void)updateButtonBranding
 {
@@ -138,19 +158,6 @@
     self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
     self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
     
-    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
-    self.buttonTitleLabel.font = font;
-    self.buttonTitleLabel.text = self.buttonTitle;
-    
-    CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
-    self.baseSize = CGSizeMake(expectedSize.height*2, expectedSize.width + 20.0);
-    CGRect bounds = self.buttonTitleLabel.bounds;
-    bounds.size = expectedSize;
-    self.buttonTitleLabel.bounds = bounds;
-    
-    [self resetFrame];
-    [self resetTitleLabelRotation];
-
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:
             self.statusImageView.hidden = NO;
@@ -269,7 +276,7 @@
         else
         {
             frame.origin.y = -3.0;
-            frame.size.height = LIODraggableButtonSize + messageWidthWithMargin;
+            frame.size.height = self.baseSize.width + messageWidthWithMargin;
             frame.size.width = self.baseSize.height;
         }
     }
@@ -327,28 +334,29 @@
     
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
-
-    if (UIInterfaceOrientationIsPortrait(actualInterfaceOrientation))
-        frame.size = self.baseSize;
-    else
-        frame.size = CGSizeMake(self.baseSize.height, self.baseSize.width);
+    
+    CGFloat verticalPosition = [[LIOBrandingManager brandingManager] verticalPositionForElement:LIOBrandingElementControlButton];
     
     CGPoint position = frame.origin;
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
-        position.y = (screenSize.height / 2.0) - (frame.size.height / 2.0);
+        frame.size = self.baseSize;
+        position.y = (screenSize.height * verticalPosition) - (frame.size.height / 2.0);
     }
     if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
     {
-        position.x = (screenSize.width / 2.0) - (frame.size.width / 2.0);
+        frame.size = CGSizeMake(self.baseSize.height, self.baseSize.width);
+        position.x = (screenSize.width * verticalPosition) - (frame.size.width / 2.0);
     }
     if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
     {
-        position.y = (screenSize.height / 2.0) - (frame.size.height / 2.0);
+        frame.size = self.baseSize;
+        position.y = (screenSize.height * verticalPosition) - (frame.size.height / 2.0);
     }
     if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
     {
-        position.x = (screenSize.width / 2.0) - (frame.size.width / 2.0);
+        frame.size = CGSizeMake(self.baseSize.height, self.baseSize.width);
+        position.x = (screenSize.width * (1 - verticalPosition)) - (frame.size.width / 2.0);
     }
     frame.origin = position;
     
@@ -370,12 +378,12 @@
     
     if (self.isAttachedToRight)
     {
-        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.95, expectedSize.width/2 + 10.0);
+        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.7, expectedSize.width/2 + 10.0);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
     }
     else
     {
-        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*1.05, expectedSize.width/2 + 10.0);
+        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.8, expectedSize.width/2 + 10.0);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(M_PI/2);
     }
 }

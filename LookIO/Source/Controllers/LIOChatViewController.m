@@ -328,6 +328,10 @@
     imagePickerController.allowsEditing = NO;
     imagePickerController.delegate = self;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI && !withCamera)
+        return;
+    
     [self presentModalViewController:imagePickerController animated:YES];
 }
 

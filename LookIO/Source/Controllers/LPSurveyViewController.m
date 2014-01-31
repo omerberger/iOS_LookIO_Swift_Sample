@@ -928,6 +928,7 @@
     }
     
     [self.currentQuestionView endEditing:YES];
+    [self.nextQuestionView reloadTableViewDataIfNeeded];
     [self.nextQuestionView setNeedsLayout];
     [self.nextQuestionView becomeFirstResponder];
     
@@ -1328,12 +1329,12 @@
             if (isRowSelected)
             {
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
-                textLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+                textLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyList];
             }
             else
             {
                 cell.accessoryType = UITableViewCellAccessoryNone;
-                textLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:17.0];
+                textLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyList];
             }
         }
     }

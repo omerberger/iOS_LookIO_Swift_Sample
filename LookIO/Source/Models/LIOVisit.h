@@ -55,6 +55,7 @@ typedef enum
 - (void)visitWillRelaunch:(LIOVisit *)visit;
 - (void)visitReachabilityDidChange:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
+- (void)visitDidLaunch:(LIOVisit *)visit;
 
 @end
 
