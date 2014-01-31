@@ -24,7 +24,9 @@
         self.backgroundColor = [UIColor clearColor];
         
         self.label = [[UILabel alloc] initWithFrame:self.bounds];
-        self.label.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:element];
+//        self.label.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:element];
+    // TODO: This should be brandable
+        self.label.textColor = [UIColor whiteColor];
         self.label.font = [[LIOBrandingManager brandingManager] fontForElement:element];
         self.label.textAlignment = NSTextAlignmentCenter;
         self.label.backgroundColor = [UIColor clearColor];

@@ -79,7 +79,7 @@
         self.activityIndicatorView.userInteractionEnabled = NO;
         [self addSubview:self.activityIndicatorView];
         
-        self.buttonKind = LIOButtonKindText;
+        self.buttonKind = LIOButtonKindIcon;
         
         if (LIOButtonKindIcon == self.buttonKind)
         {
@@ -135,11 +135,14 @@
     self.buttonTitleLabel.font = font;
     self.buttonTitleLabel.text = self.buttonTitle;
 
-    CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
-    self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
-    CGRect bounds = self.buttonTitleLabel.bounds;
-    bounds.size = expectedSize;
-    self.buttonTitleLabel.bounds = bounds;
+    if (LIOButtonKindText == self.buttonKind)
+    {
+        CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+        self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
+        CGRect bounds = self.buttonTitleLabel.bounds;
+        bounds.size = expectedSize;
+        self.buttonTitleLabel.bounds = bounds;
+    }
     
     self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
 
