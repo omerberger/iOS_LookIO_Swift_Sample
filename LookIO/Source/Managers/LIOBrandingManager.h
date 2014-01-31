@@ -16,6 +16,7 @@ typedef enum
     LIOBrandingElementLoadingScreenTitle,
     LIOBrandingElementLoadingScreenSubtitle,
     LIOBrandingElementChatBackground,
+    LIOBrandingElementChatBackgroundBlur,
     LIOBrandingElementFont,
     LIOBrandingElementBoldFont,
     LIOBrandingElementLogo,
@@ -85,6 +86,9 @@ typedef enum
 - (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element;
 - (BOOL)attachedToRightForElement:(LIOBrandingElement)element;
 - (CGFloat)verticalPositionForElement:(LIOBrandingElement)element;
+- (CGFloat)floatValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
+- (NSInteger)integerValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
+
 
 @end
 

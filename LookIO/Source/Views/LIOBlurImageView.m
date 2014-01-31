@@ -7,10 +7,14 @@
 //
 
 #import "LIOBlurImageView.h"
-#import <QuartzCore/QuartzCore.h>
+
+// Core Libraries
 #import <Accelerate/Accelerate.h>
 #import <float.h>
+
+// Managers
 #import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
 @interface LIOBlurImageView ()
 
@@ -30,7 +34,11 @@
         self.tintLayer = [[CALayer alloc] init];
         self.tintLayer.frame = self.bounds;
         self.tintLayer.opacity = 0.4;
-        self.tintLayer.backgroundColor = [[UIColor colorWithWhite:0.85 alpha:1.0] CGColor];
+        
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementChatBackground];
+        CGFloat backgroundColorAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementChatBackground];
+        
+        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];        
         
         [self.layer addSublayer:self.tintLayer];
     }
@@ -39,10 +47,14 @@
 
 -(void)setImageAndBlur:(UIImage*)imageToBlur {
     self.tintLayer.frame = self.bounds;
-
+    
+    CGFloat blurRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"radius" forElement:LIOBrandingElementChatBackgroundBlur];
+    NSInteger blurIterations = [[LIOBrandingManager brandingManager] integerValueForField:@"iterations" forElement:LIOBrandingElementChatBackgroundBlur];
+    CGFloat saturationFactor = [[LIOBrandingManager brandingManager] floatValueForField:@"saturation_factor" forElement:LIOBrandingElementChatBackgroundBlur];
+    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0")) {
         UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
-        self.image = [self blurImage:imageToBlur withRadius:24 iterations:8 tintColor:tintColor saturationDeltaFactor:3.0];
+        self.image = [self blurImage:imageToBlur withRadius:blurRadius iterations:blurIterations tintColor:tintColor saturationDeltaFactor:saturationFactor];
     } else {
         self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
     }

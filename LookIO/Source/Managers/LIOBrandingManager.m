@@ -137,6 +137,30 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementChatBackground == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *backgroundDictionary = [engagementDictionary objectForKey:@"chat_background"];
+                if (backgroundDictionary)
+                    dictionary = backgroundDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementChatBackgroundBlur == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *backgroundDictionary = [engagementDictionary objectForKey:@"chat_background"];
+                if (backgroundDictionary)
+                {
+                    NSDictionary *blurDictionary = [backgroundDictionary objectForKey:@"blur"];
+                    if (blurDictionary)
+                        dictionary = blurDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementLoadingScreenSubtitle == element)
         {
             if (engagementDictionary)
@@ -874,6 +898,35 @@ static LIOBrandingManager *brandingManager = nil;
 }
 
 
+- (CGFloat)floatValueForField:(NSString *)field forElement:(LIOBrandingElement)element
+{
+    CGFloat value = 0.0;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSNumber *valueObject = [elementDictionary objectForKey:field];
+        if (valueObject)
+            value = [valueObject floatValue];
+    }
+    
+    return value;
+}
+
+- (NSInteger)integerValueForField:(NSString *)field forElement:(LIOBrandingElement)element
+{
+    NSInteger value = 0;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSNumber *valueObject = [elementDictionary objectForKey:field];
+        if (valueObject)
+            value = [valueObject integerValue];
+    }
+    
+    return value;
+}
 
 
 @end
