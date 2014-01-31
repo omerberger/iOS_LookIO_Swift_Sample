@@ -299,11 +299,22 @@
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             numberToolbar.barStyle = UIBarStyleDefault;
             
+            UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
+            nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
+            [nextBarButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+            nextBarButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardNextButton];
+            UIColor *nextButtonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyCardNextButton];
+            [nextBarButton setTitleColor:nextButtonColor forState:UIControlStateNormal];
+            [nextBarButton setTitleColor:[nextButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+            [nextBarButton setTitle:buttonTitle forState:UIControlStateNormal];
+            [nextBarButton sizeToFit];
+            
             numberToolbar.items = [NSArray arrayWithObjects:
-                                   [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                                   [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:self action:@selector(nextButtonWasTapped:)],
+                                   [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                                   [[UIBarButtonItem alloc] initWithCustomView:nextBarButton],
                                    nil];
             [numberToolbar sizeToFit];
+
             self.textView.inputAccessoryView = numberToolbar;
         }
 
