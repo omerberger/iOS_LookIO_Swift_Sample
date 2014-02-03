@@ -573,12 +573,12 @@
         
         UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
         if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
-            if (self.frame.origin.x + self.frame.size.width > self.superview.bounds.size.width - 10)
+            if (self.center.x > superview.bounds.size.width/2)
             {
                 self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);
                 self.isAttachedToRight = YES;
             }
-            if (self.frame.origin.x < 10)
+            if (self.center.x < superview.bounds.size.width/2)
             {
                 self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = NO;
@@ -594,12 +594,12 @@
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
         {
-            if (self.frame.origin.y + self.frame.size.width > self.superview.bounds.size.height - 10)
+            if (self.center.y > self.superview.bounds.size.height/2)
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, self.superview.bounds.size.height - self.bounds.size.width + 3);
                 self.isAttachedToRight = NO;
             }
-            if (self.frame.origin.y < 10)
+            if (self.center.y < superview.bounds.size.height/2)
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
                 self.isAttachedToRight = YES;
@@ -615,25 +615,28 @@
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
         {
-            if (self.frame.origin.x + self.frame.size.width > self.superview.bounds.size.width - 10)
+            NSLog(@"center x is %f and half screen is %f", self.center.x, superview.bounds.size.width/2);
+            
+            if (self.center.x > superview.bounds.size.width/2)
             {
                 self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);
                 self.isAttachedToRight = NO;
             }
-            if (self.frame.origin.x < 10)
+            if (self.center.x < superview.bounds.size.width/2)
             {
                 self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = YES;
             }
+            // TODO: Handle limits for upside down iPad orientation
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
         {
-            if (self.frame.origin.y + self.frame.size.width > self.superview.bounds.size.height - 10)
+            if (self.center.y > superview.frame.size.height/2)
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, self.superview.bounds.size.height - self.bounds.size.width + 3);
                 self.isAttachedToRight = YES;
             }
-            if (self.frame.origin.y < 10)
+            if (self.center.y < superview.frame.size.height/2)
             {
                 self.preDragPosition = CGPointMake(self.frame.origin.x, -3);
                 self.isAttachedToRight = NO;
