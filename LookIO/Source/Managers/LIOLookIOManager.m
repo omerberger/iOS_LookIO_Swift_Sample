@@ -946,8 +946,37 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (LIOVisitStateChatStarted == self.visit.visitState)
     {
-        self.visit.visitState = LIOVisitStateOfflineSurvey;
-        [self.containerViewController presentOfflineSurveyForEngagement:engagement];
+        // Let's check if the developer has defined a custom action to use
+        BOOL callChatNotAnsweredAfterDismissal = NO;
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerShouldUseCustomActionForChatNotAnswered:)])
+            if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerCustomActionForChatNotAnswered:)])
+                callChatNotAnsweredAfterDismissal = [self.delegate lookIOManagerShouldUseCustomActionForChatNotAnswered:self];
+        
+        if (callChatNotAnsweredAfterDismissal)
+        {
+            // First let's end the engagement
+            if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+            {
+                id delegate = self.delegate;
+                LIOEngagement *engagement = self.engagement;
+                self.nextDismissalCompletionBlock = ^{
+                    [engagement endEngagement];
+                    [delegate lookIOManagerCustomActionForChatNotAnswered:[LIOLookIOManager sharedLookIOManager]];
+                };
+                [self.containerViewController dismissCurrentViewController];
+            }
+            else
+            {
+                if (self.engagement)
+                    [self.engagement endEngagement];
+                [self.delegate lookIOManagerCustomActionForChatNotAnswered:self];
+            }
+        }
+        else
+        {
+            self.visit.visitState = LIOVisitStateOfflineSurvey;
+            [self.containerViewController presentOfflineSurveyForEngagement:engagement];
+        }
     }
 }
 
