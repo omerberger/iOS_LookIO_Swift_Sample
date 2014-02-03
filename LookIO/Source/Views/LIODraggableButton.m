@@ -624,10 +624,17 @@
             }
             if (self.center.x < superview.bounds.size.width/2)
             {
-                self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
+                self	.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = YES;
             }
-            // TODO: Handle limits for upside down iPad orientation
+            if (self.frame.origin.y < self.frame.size.height)
+            {
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.frame.size.height);
+            }
+            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height)
+            {
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height*2);
+            }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
         {
@@ -643,11 +650,11 @@
             }
             if (self.frame.origin.x < self.frame.size.height)
             {
-                self.preDragPosition = CGPointMake(self.frame.size.height, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(self.frame.size.width, self.preDragPosition.y);
             }
             if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width)
             {
-                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.height*2, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width*2, self.preDragPosition.y);
             }
         }
         
