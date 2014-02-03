@@ -24,9 +24,10 @@
 #define LIOAlertViewNextStepShowPostChatSurvey  2002
 #define LIOAlertViewNextStepEngagementDidEnd    2003
 #define LIOAlertViewNextStepCancelReconnect     2004
+#define LIOAlertViewNextStepEndEngagement       2005
 
-#define LIOAlertViewReconnectPrompt             2005
-#define LIOAlertViewReconnectSuccess            2006
+#define LIOAlertViewReconnectPrompt             2010
+#define LIOAlertViewReconnectSuccess            2011
 
 typedef enum
 {
@@ -562,6 +563,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (buttonIndex == 0)
             [self.engagement cancelReconnect];
     }
+    
+    if (LIOAlertViewNextStepEndEngagement == alertView.tag)
+    {
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            LIOEngagement *engagement = self.engagement;
+            self.nextDismissalCompletionBlock = ^{
+                [engagement endEngagement];
+            };
+            [self.containerViewController dismissCurrentViewController];
+        }
+        else
+        {
+            if (self.engagement)
+                [self.engagement endEngagement];
+        }
+    }
 }
 
 - (void)dismissExistingAlertView
@@ -755,7 +773,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)endChatAndShowAlert:(BOOL)showAlert
 {
-    // TODO End chat
+    if (![self chatInProgress])
+        return;
+    
+    if (showAlert)
+    {
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                          message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                         delegate:self
+                                                cancelButtonTitle:nil                                              otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+        self.alertView.tag = LIOAlertViewNextStepEndEngagement;
+        [self.alertView show];
+    }
+    else
+    {
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            LIOEngagement *engagement = self.engagement;
+            self.nextDismissalCompletionBlock = ^{
+                [engagement endEngagement];
+            };
+            [self.containerViewController dismissCurrentViewController];
+        }
+        else
+        {
+            if (self.engagement)
+                [self.engagement endEngagement];
+        }
+    }
+
 }
 
 - (void)beginChat
