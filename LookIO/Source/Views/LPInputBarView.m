@@ -53,7 +53,6 @@
 @interface LPInputBarView () <UITextViewDelegate>
 
 @property (nonatomic, strong) UIView *textViewBackgroundView;
-@property (nonatomic, strong) UIButton *plusButton;
 @property (nonatomic, strong) UIButton *sendButton;
 
 @property (nonatomic, assign) NSInteger previousTextLength;

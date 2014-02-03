@@ -38,6 +38,7 @@ static NSString * const LIOObservingInputAccessoryViewSuperviewFrameDidChangeNot
 
 @property (nonatomic, assign) id <LPInputBarViewDelegte> delegate;
 @property (nonatomic, strong) UITextView *textView;
+@property (nonatomic, strong) UIButton *plusButton;
 
 - (void)rotatePlusButton;
 - (void)unrotatePlusButton;

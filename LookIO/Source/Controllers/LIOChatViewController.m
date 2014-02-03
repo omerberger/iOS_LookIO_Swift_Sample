@@ -57,6 +57,7 @@
 @property (nonatomic, assign) CGFloat keyboardMenuDragStartPoint;
 
 @property (nonatomic, strong) UIAlertView *alertView;
+@property (nonatomic, strong) UIPopoverController *popover;
 
 @property (nonatomic, strong) LIOEmailChatView *emailChatView;
 
@@ -330,9 +331,14 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     if (padUI && !withCamera)
-        return;
-    
-    [self presentModalViewController:imagePickerController animated:YES];
+    {
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:imagePickerController];
+        [self.popover presentPopoverFromRect:self.inputBarView.plusButton.bounds inView:self.inputBarView.plusButton permittedArrowDirections:UIPopoverArrowDirectionDown animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController:imagePickerController animated:YES];
+    }
 }
 
 - (void)presentPhotoSourceActionSheet
@@ -354,7 +360,17 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    [self dismissModalViewControllerAnimated:YES];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if ((picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary || picker.sourceType == UIImagePickerControllerSourceTypeSavedPhotosAlbum) && padUI)
+    {
+        [self.popover dismissPopoverAnimated:YES];
+        self.popover = nil;
+    }
+    else
+    {
+        [self dismissModalViewControllerAnimated:YES];
+    }
+    
     self.chatState = LIOChatStateChat;
     
     UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
@@ -378,7 +394,16 @@
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-    [self dismissModalViewControllerAnimated:YES];
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if ((picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary || picker.sourceType == UIImagePickerControllerSourceTypeSavedPhotosAlbum) && padUI)
+    {
+        [self.popover dismissPopoverAnimated:YES];
+        self.popover = nil;
+    }
+    else
+    {
+        [self dismissModalViewControllerAnimated:YES];
+    }
     self.chatState = LIOChatStateChat;
 }
 
@@ -459,6 +484,12 @@
         [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
         self.alertView = nil;
     }
+    
+    if (self.popover)
+    {
+        [self.popover dismissPopoverAnimated:NO];
+        self.popover = nil;
+    }        
     
     if (self.chatState == LIOChatStateEmailChat && self.emailChatView)
         [self.emailChatView dismissExistingAlertView];
