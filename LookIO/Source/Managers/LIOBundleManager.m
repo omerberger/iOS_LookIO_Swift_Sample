@@ -553,6 +553,10 @@ BOOL LIOIsUIKitFlatMode(void) {
 {
     NSString *bundlePath = [lioBundle pathForResource:@"branding" ofType:@"json" inDirectory:nil];
     NSData *data = [NSData dataWithContentsOfFile:bundlePath];
+    
+    if (data == nil)
+        return nil;
+    
     return [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
 }
 

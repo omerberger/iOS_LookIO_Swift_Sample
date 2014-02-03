@@ -87,7 +87,7 @@
         self.emailTextFieldBackgroundView.layer.cornerRadius = 5.0;
         [self.backgroundView addSubview:self.emailTextFieldBackgroundView];
         
-        self.emailTextField = [[UITextField alloc] initWithFrame:CGRectMake(10, 0, self.emailTextFieldBackgroundView.bounds.size.width - 20, self.emailTextFieldBackgroundView.bounds.size.height)];
+        self.emailTextField = [[UITextField alloc] initWithFrame:self.emailTextFieldBackgroundView.bounds];
         self.emailTextField.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementEmailChatTextField];
         self.emailTextField.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementEmailChatTextField];
         self.emailTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -97,6 +97,13 @@
         self.emailTextField.keyboardType = UIKeyboardTypeEmailAddress;
         self.emailTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         [self.emailTextFieldBackgroundView addSubview:self.emailTextField];
+        
+        if (!LIOIsUIKitFlatMode())
+        {
+            CGRect frame = self.emailTextField.frame;
+            frame.origin.y = 8.0;
+            self.emailTextField.frame = frame;
+        }
         
         self.submitButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.submitButton setTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SubmitButton") forState:UIControlStateNormal];
