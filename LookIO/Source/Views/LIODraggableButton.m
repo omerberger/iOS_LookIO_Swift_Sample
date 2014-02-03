@@ -446,6 +446,9 @@
 
 - (void)presentMessage:(NSString *)message
 {
+    if (!self.isVisible)
+        return;
+    
     if (LIOButtonKindText == self.buttonKind)
         return;
     
