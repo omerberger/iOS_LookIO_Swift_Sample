@@ -85,23 +85,29 @@
         {
             CGSize brandingSize = CGSizeMake(130.0, 44.0);
             id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
+            UIImage *brandingImage = nil;
             if (aBrandingView)
             {
                 if ([aBrandingView isKindOfClass:[UIImage class]])
                 {
-                    UIImage *anImage = (UIImage *)aBrandingView;
-                    UIImageView *brandingImageView = [[UIImageView alloc] initWithImage:anImage];
-                    brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
-                    brandingImageView.frame = CGRectMake(10.0, 20.0, 130.0, 44.0);
-                    brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-                    [self addSubview:brandingImageView];
-                    
-                    self.hasCustomBranding = YES;
+                    brandingImage = (UIImage *)aBrandingView;
                 }
             }
+
+            if (brandingImage == nil)
+                brandingImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"];
+            UIImageView *brandingImageView = [[UIImageView alloc] initWithImage:brandingImage];
+            brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
+            brandingImageView.frame = CGRectMake(10.0, 20.0, 130.0, 44.0);
+            brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            [self addSubview:brandingImageView];
+            
+            self.hasCustomBranding = YES;
         }
-        
-        self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(self.hasCustomBranding ? 130.0 : 0.0, (self.frame.size.height - inputBarHeight)/2, inputBarHeight, inputBarHeight)];
+
+        CGFloat plusButtonXMargin = padUI ? 12.0 : 0.0;
+        CGFloat plusButtonYMargin = padUI ? 19.0 : 5.0;
+        self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(self.hasCustomBranding ? 150.0 : plusButtonXMargin, plusButtonYMargin + (padUI ? 2.0 : 0.0), inputBarHeight - plusButtonXMargin, self.frame.size.height - 2*plusButtonYMargin)];
         UIColor *buttonTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSendBarPlusButton];
         if (padUI)
             [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIconBig" withTint:buttonTintColor] forState:UIControlStateNormal];
@@ -112,6 +118,27 @@
         [self.plusButton addTarget:self action:@selector(plusButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.plusButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [self addSubview:self.plusButton];
+        
+        if (padUI)
+        {
+            self.plusButton.layer.borderWidth = 1.0;
+            self.plusButton.layer.cornerRadius = 5.0;
+            self.plusButton.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBarPlusButton] CGColor];
+            
+            // Create the path (with only the top-left corner rounded)
+            UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.plusButton.bounds
+                                                           byRoundingCorners:UIRectCornerAllCorners
+                                                                 cornerRadii:CGSizeMake(5.0, 5.0)];
+            
+            // Create the shape layer and set its path
+            CAShapeLayer *maskLayer = [CAShapeLayer layer];
+            maskLayer.frame = self.plusButton.bounds;
+            maskLayer.path = maskPath.CGPath;
+            
+            // Set the newly created shape layer as the mask for the image view's layer
+            self.plusButton.layer.mask = maskLayer;
+
+        }
         
         self.textViewBackgroundView = [[UIView alloc] initWithFrame:CGRectMake(self.plusButton.frame.origin.x + inputBarHeight, padUI ? 10 : 5, self.bounds.size.width - 2*inputBarHeight - 15.0 - self.plusButton.frame.origin.x, self.frame.size.height - 10)];
         self.textViewBackgroundView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSendBarTextField];
