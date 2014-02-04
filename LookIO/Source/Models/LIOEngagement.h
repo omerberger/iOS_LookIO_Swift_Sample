@@ -30,7 +30,8 @@ typedef enum
     LIOQueuedRequestTypeCapabilities,
     LIOQueuedRequestTypeSurvey,
     LIOQueuedRequestTypeAdvisory,
-    LIOQueuedRequestTypeChatHistory
+    LIOQueuedRequestTypeChatHistory,
+    LIOQueuedRequestTypePermission
 } LIOQueuedRequestType;
 
 @class LIOEngagement;
@@ -57,6 +58,8 @@ typedef enum
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement;
 - (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
+- (void)engagementWantsScreenshare:(LIOEngagement *)engagement;
+- (UIImage *)engagementWantsScreenshot:(LIOEngagement *)engagement;
 
 @end
 
@@ -91,6 +94,7 @@ typedef enum
 - (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries;
 - (void)sendChatHistoryPacketWithEmail:(NSString *)email retries:(NSInteger)retries;
 - (void)sendAdvisoryPacketWithDict:(NSDictionary *)advisoryDict retries:(NSInteger)retries;
+- (void)sendPermissionPacketWithDict:(NSDictionary *)permissionDict retries:(NSInteger)retries;
 
 - (BOOL)shouldPresentPostChatSurvey;
 
@@ -100,5 +104,9 @@ typedef enum
 - (void)reachabilityDidChange;
 
 + (LIOEngagement *)loadExistingEngagement;
+
+- (void)startScreenshare;
+- (void)stopScreenshare;
+
 
 @end

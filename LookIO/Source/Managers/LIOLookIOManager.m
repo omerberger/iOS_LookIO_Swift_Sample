@@ -34,6 +34,7 @@
 #define LIOAlertViewRegularReconnectPrompt      2010
 #define LIOAlertViewRegularReconnectSuccess     2011
 #define LIOAlertViewCrashReconnectPrompt        2012
+#define LIOAlertViewScreenshotPermission        2013
 
 typedef enum
 {
@@ -635,6 +636,34 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self.engagement attemptReconnectionWithVisit:self.visit];
         }
     }
+    
+    if (LIOAlertViewScreenshotPermission == alertView.tag)
+    {
+        if (0 == buttonIndex)
+        {
+            [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"revoked", @"asset" : @"screenshare"}
+                                                  retries:0];
+        }
+
+        if (1 == buttonIndex) // "Yes"
+        {
+            [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"granted", @"asset" : @"screenshare"}
+                                                  retries:0];
+            
+            // TODO: Advacned screenshare stuff
+            // screenshotsAllowed = YES;
+            // statusBarUnderlay.hidden = NO;
+            // if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+            //    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+            // screenSharingStartedDate = [[NSDate date] retain];
+            
+            if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+            {
+                [self.containerViewController dismissCurrentViewController];
+            }
+            [self.engagement startScreenshare];
+        }
+    }
 }
 
 - (void)dismissExistingAlertView
@@ -800,14 +829,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)takeScreenshotAndSetBlurImageView {
     dispatch_async(dispatch_get_main_queue(), ^{
-        LIOLog(@"Previous window is %@", self.previousKeyWindow);
-
+        /*
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
         [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        [self.containerViewController setBlurImage:viewImage];
+         */
+        [self.containerViewController setBlurImage:[self captureScreenFromPreviousOnly:YES]];
 
         /*
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
@@ -841,13 +870,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         LIOLog(@"Previous window is %@", self.previousKeyWindow);
-        
+
+        /*
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
         [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
-        [self.containerViewController updateBlurImage:viewImage];
+         */
+        [self.containerViewController setBlurImage:[self captureScreenFromPreviousOnly:YES]];
 
         /*
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
@@ -874,6 +905,52 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
          */
     });
+}
+
+- (UIImage *)captureScreenFromPreviousOnly:(BOOL)previousOnly;
+{
+    // CAUTION: Called on a non-main thread!
+//    statusBarUnderlayBlackout.hidden = NO;
+    
+    CGSize screenSize = [[UIScreen mainScreen] bounds].size;
+    UIGraphicsBeginImageContextWithOptions(screenSize, NO, [[UIScreen mainScreen] scale]);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    NSArray *windows = previousOnly ? @[self.previousKeyWindow] : [[UIApplication sharedApplication] windows];
+    
+    // Iterate over every window from back to front
+    for (UIWindow *window in windows)
+    {
+        if (![window respondsToSelector:@selector(screen)] || [window screen] == [UIScreen mainScreen])
+        {
+            // -renderInContext: renders in the coordinate space of the layer,
+            // so we must first apply the layer's geometry to the graphics context
+            CGContextSaveGState(context);
+            // Center the context around the window's anchor point
+            CGContextTranslateCTM(context, [window center].x, [window center].y);
+            // Apply the window's transform about the anchor point
+            CGContextConcatCTM(context, [window transform]);
+            // Offset by the portion of the bounds left of and above the anchor point
+            CGContextTranslateCTM(context,
+                                  -[window bounds].size.width * [[window layer] anchorPoint].x,
+                                  -[window bounds].size.height * [[window layer] anchorPoint].y);
+            
+            // Render the layer hierarchy to the current context
+            [[window layer] renderInContext:context];
+            
+            // Restore the context
+            CGContextRestoreGState(context);
+        }
+    }
+    
+    // Retrieve the screenshot image
+    UIImage *screenshotImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    // CAUTION: Called on a non-main thread!
+//    statusBarUnderlayBlackout.hidden = YES;
+    
+    return screenshotImage;
 }
 
 - (void)beginSession
@@ -1329,6 +1406,40 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [self.containerViewController engagementChatMessageStatusDidChange:engagement];
 }
+
+- (void)engagementWantsScreenshare:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
+    {
+        
+        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        {
+            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+            localNotification.soundName = @"LookIODing.caf";
+            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
+            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+        }
+    }
+    
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertTitle")
+                                                message:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertBody")
+                                               delegate:self
+                                      cancelButtonTitle:nil
+                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonDisallow"), LIOLocalizedString(@"LIOLookIOManager.ScreenshareAlertButtonAllow"), nil];
+    self.alertView.tag = LIOAlertViewScreenshotPermission;
+    [self.alertView show];
+}
+
+- (UIImage *)engagementWantsScreenshot:(LIOEngagement *)engagement
+{
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        return nil;
+
+    return [self captureScreenFromPreviousOnly:NO];
+}
+
 
 #pragma mark -
 #pragma mark Custom Branding Methods

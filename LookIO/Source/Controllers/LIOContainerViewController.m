@@ -19,7 +19,6 @@
 
 // Views
 #import "LIOHeaderBarView.h"
-#import "LIOBlurImageView.h"
 
 #define LIOContainerViewControllerAlertViewNextStepDismiss      2001
 #define LIOContainerViewControllerAlertViewNextStepOpenInSafari 2002
@@ -40,7 +39,6 @@
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
-@property (nonatomic, strong) LIOBlurImageView *blurImageView;
 
 @property (nonatomic, strong) UIAlertView *alertView;
 

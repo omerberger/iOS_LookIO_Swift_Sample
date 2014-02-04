@@ -10,6 +10,7 @@
 #import "LIOEngagement.h"
 #import "LPSurveyViewController.h"
 #import "LIOChatViewController.h"
+#import "LIOBlurImageView.h"
 
 typedef enum {
     LIOHeaderBarStateHidden = 0,
@@ -37,6 +38,7 @@ typedef enum {
 @interface LIOContainerViewController : UIViewController
 
 @property (nonatomic, assign) id <LIOContainerViewControllerDelegate> delegate;
+@property (nonatomic, strong) LIOBlurImageView *blurImageView;
 
 - (void)setBlurImage:(UIImage *)image;
 - (void)updateBlurImage:(UIImage *)image;

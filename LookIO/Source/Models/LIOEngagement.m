@@ -14,7 +14,9 @@
 #import "LIOMediaManager.h"
 #import "LIOStatusManager.h"
 #import "LPHTTPRequestOperation.h"
+
 #import "NSData+Base64.h"
+#import <zlib.h>
 
 #import "LIOLogManager.h"
 
@@ -31,6 +33,9 @@
 
 #define LIOChatAPIRequestRetries                        3
 #define LIOEngagementReconnectionAfterCrashTimeLimit    60.0 // 1 minutes
+#define LIOLookIOManagerMessageSeparator                @"!look.io!"
+#define LIOLookIOManagerScreenCaptureInterval           0.5
+
 
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
@@ -52,6 +57,12 @@
 @property (nonatomic, assign) LIOSSEChannelState retryAfterPreviousSSEChannelState;
 
 @property (nonatomic, strong) NSMutableArray *failedRequestQueue;
+
+@property (nonatomic, assign) BOOL isScreenShareActive;
+@property (nonatomic, strong) NSTimer *screenshareTimer;
+@property (nonatomic, assign) BOOL isScreenShareRequestInProgress;
+@property (nonatomic, assign) unsigned long previousScreenshotHash;
+@property (nonatomic, strong) NSDate *screenSharingStartedDate;
 
 @end
 
@@ -116,6 +127,9 @@
     [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
     
     [userDefaults synchronize];
+    
+    if (self.isScreenShareActive)
+        [self stopScreenshare];
 }
 
 - (void)startEngagement
@@ -717,6 +731,13 @@
     {
         self.sseChannelState = LIOSSEChannelStateDisconnecting;
     }
+    
+    if ([type isEqualToString:@"permission"])
+    {
+        NSString *asset = [aPacket objectForKey:@"asset"];
+        if ([asset isEqualToString:@"screenshare"])
+            [self.delegate engagementWantsScreenshare:self];
+    }
 
 }
 
@@ -1030,6 +1051,38 @@
     }
 }
 
+- (void)sendPermissionPacketWithDict:(NSDictionary *)permissionDict retries:(NSInteger)retries
+{
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+    {
+        
+        NSString* permissionRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatPermissionRequestURL, self.engagementId];
+        
+        [[LPChatAPIClient sharedClient] postPath:permissionRequestUrl parameters:permissionDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject)
+                LIOLog(@"<PERMISSION> with data %@ response: %@", permissionDict, responseObject);
+            else
+                LIOLog(@"<PERMISSION> with data %@ success", permissionDict);
+        } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+            LIOLog(@"<PERMISSION> with data %@ failure: %@", permissionDict, error);
+            
+            if (operation.responseCode == 404)
+            {
+                [self engagementNotFound];
+            }
+            else
+            {
+                [self addQueuedRequestWithType:LIOQueuedRequestTypePermission payload:permissionDict retries:retries + 1];
+                [self handleRequestQueueIfNeeded];
+            }
+        }];
+    }
+    else
+    {
+        [self addQueuedRequestWithType:LIOQueuedRequestTypePermission payload:permissionDict retries:retries];
+    }
+}
 
 - (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries
 {
@@ -1158,6 +1211,13 @@
                     [self submitSurvey:payloadSurvey retries:retries];
                 }
                 break;
+                
+            case LIOQueuedRequestTypePermission:
+                if ([payload isKindOfClass:[NSDictionary class]])
+                {
+                    NSDictionary *payloadDictionary = (NSDictionary *)payload;
+                    [self sendPermissionPacketWithDict:payloadDictionary retries:retries];
+                }
                 
             default:
                 break;
@@ -1332,6 +1392,96 @@
     [encoder encodeObject:self.postUrlString forKey:@"postUrlString"];
     [encoder encodeObject:self.mediaUrlString forKey:@"mediaUrlString"];
     [encoder encodeObject:self.lastSSEventId forKey:@"lastSSEventId"];
+}
+
+#pragma mark -
+#pragma mark Screensharing Methods
+
+- (void)startScreenshare
+{
+    self.isScreenShareActive = YES;
+    self.screenSharingStartedDate = [NSDate date];
+    self.screenshareTimer = [NSTimer scheduledTimerWithTimeInterval:LIOLookIOManagerScreenCaptureInterval
+                                                          target:self
+                                                        selector:@selector(screenCaptureTimerDidFire:)
+                                                        userInfo:nil
+                                                         repeats:YES];
+}
+
+- (void)stopScreenshare
+{
+    self.isScreenShareActive = NO;
+    if (self.screenshareTimer)
+    {
+        [self.screenshareTimer invalidate];
+        self.screenshareTimer = nil;
+    }
+        
+}
+
+- (void)screenCaptureTimerDidFire:(NSTimer *)aTimer
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        UIImage *screenshotImage = [self.delegate engagementWantsScreenshot:self];
+        if (screenshotImage != nil)
+        {
+            NSData *screenshotData = UIImageJPEGRepresentation(screenshotImage, 0.0);
+
+            unsigned long currentHash = crc32(0L, Z_NULL, 0);
+            currentHash = crc32(currentHash, [screenshotData bytes], [screenshotData length]);
+            
+            if (0 == self.previousScreenshotHash || currentHash != self.previousScreenshotHash)
+            {
+                self.previousScreenshotHash = currentHash;
+                
+                UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+                NSString *orientationString = @"???";
+                if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+                    orientationString = @"portrait";
+                else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+                    orientationString = @"portrait_upsidedown";
+                else if (UIInterfaceOrientationLandscapeRight == actualInterfaceOrientation)
+                    orientationString = @"landscape";
+                else
+                    orientationString = @"landscape_upsidedown";
+                
+                NSTimeInterval timeSinceSharingStarted = [[NSDate date] timeIntervalSinceDate:self.screenSharingStartedDate];
+                
+                // screenshot:ver:time:orientation:w:h:datalen:[blarghle]
+                NSString *header = [NSString stringWithFormat:@"screenshot:2:%f:%@:%d:%d:%lu:", timeSinceSharingStarted, orientationString, (int)screenshotImage.size.width, (int)screenshotImage.size.height, (unsigned long)[screenshotData length]];
+                NSData *headerData = [header dataUsingEncoding:NSUTF8StringEncoding];
+                
+                NSMutableData *dataToSend = [NSMutableData data];
+                [dataToSend appendData:headerData];
+                [dataToSend appendData:screenshotData];
+                [dataToSend appendData:[LIOLookIOManagerMessageSeparator dataUsingEncoding:NSUTF8StringEncoding]];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self sendScreenshotPacketWithData:dataToSend];
+                    LIOLog(@"\n\n[SCREENSHOT] Sent %dx%d %@ screenshot (%u bytes).\nHeader: %@\n\n", (int)screenshotImage.size.width, (int)screenshotImage.size.height, orientationString, [dataToSend length], header);
+                });
+            }
+        }
+    });
+}
+
+- (void)sendScreenshotPacketWithData:(NSData*)screenshotData {
+    // Don't send screenshot while previous screenshot is being sent
+    if (self.isScreenShareRequestInProgress)
+        return;
+    
+    NSString* screenshotRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerChatScreenshotRequestURL, self.engagementId];
+    [[LPChatAPIClient sharedClient] postPath:screenshotRequestUrl data:screenshotData success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        self.isScreenShareRequestInProgress = NO;
+        if (responseObject)
+            LIOLog(@"<SCREENSHOT> with response: %@", responseObject);
+        else
+            LIOLog(@"<SCREENSHOT> success");
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        self.isScreenShareRequestInProgress = NO;
+        
+        LIOLog(@"<SCREENSHOT> with data %@ failure: %@", screenshotData, error);
+    }];
 }
 
 
