@@ -382,6 +382,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.controlButton show:YES];
         }
     });
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
+    {
+    }
+    else if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation)
+    {
+        transform = CGAffineTransformRotate(transform, -90.0 / 180.0 * M_PI);
+    }
+    else if (UIInterfaceOrientationPortraitUpsideDown == actualInterfaceOrientation)
+    {
+        transform = CGAffineTransformRotate(transform, -180.0 / 180.0 * M_PI);
+    }
+    else // Landscape, home button right
+    {
+        transform = CGAffineTransformRotate(transform, -270.0 / 180.0 * M_PI);
+    }
+    
+    self.clickView.transform = transform;
+    self.cursorView.transform = transform;
 }
 
 #pragma mark -
@@ -1450,6 +1472,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (UIImage *)engagementWantsScreenshot:(LIOEngagement *)engagement
 {
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        return nil;
+    
+    if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         return nil;
 
     return [self captureScreenFromPreviousOnly:NO];
