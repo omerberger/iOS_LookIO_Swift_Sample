@@ -273,7 +273,6 @@
     CGRect keyboardRect;
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
     
-    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = 0;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
@@ -588,7 +587,6 @@
 
 - (BOOL)setupPreviousQuestionScrollView
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     BOOL foundPreviousPage = NO;
 
     NSInteger previousQuestionIndex = self.currentQuestionIndex;
@@ -645,8 +643,6 @@
 
 - (BOOL)setupNextQuestionScrollView
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
     NSInteger numberOfQuestions = [self.survey.questions count];
     if (self.currentQuestionIndex > numberOfQuestions - 1)
     {
@@ -915,8 +911,6 @@
             }
         }];
     }
-    
-    NSLog(@"<< SURVEY QUESTION IS NOW %d >>", self.currentQuestionIndex);
 }
 
 - (void)switchToNextQuestion
@@ -1011,8 +1005,6 @@
             }
         }];        
     }
-    
-    NSLog(@"<< SURVEY QUESTION IS NOW %d >>", self.currentQuestionIndex);
 }
 
 #pragma mark
@@ -1021,9 +1013,6 @@
 - (void)showAlertWithMessage:(NSString *)aMessage
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     
     [self.validationView removeFromSuperview];
     self.validationView = nil;

@@ -1436,7 +1436,7 @@
         NSError *writeError = nil;
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:NSJSONWritingPrettyPrinted error:&writeError];
 
-        if (!writeError)
+        if (!writeError && jsonData)
         {
             [self.visitUDEs setObject:anObject forKey:aKey];
             [self sendContinuationReport];
@@ -1462,7 +1462,7 @@
     NSError *writeError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:NSJSONWritingPrettyPrinted error:&writeError];
     
-    if (!writeError)
+    if (!writeError && jsonData)
     {
         [self.visitUDEs addEntriesFromDictionary:aDictionary];
         [self sendContinuationReport];

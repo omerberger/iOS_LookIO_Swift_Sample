@@ -53,8 +53,6 @@
             [self.starButtonArray addObject:starButton];
         }
         
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
         self.ratingLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.ratingLabel.backgroundColor = [UIColor clearColor];
         self.ratingLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyStars];

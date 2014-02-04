@@ -1073,6 +1073,8 @@
         default:
             break;
     }
+    
+    return YES;
 }
 
 

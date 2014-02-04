@@ -187,7 +187,6 @@
 
 - (void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    CGFloat inputBarHeight = padUI ? LIOInputBarViewHeightIpad : LIOInputBarViewHeightIpad;
     
     CGSize singleLineSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     

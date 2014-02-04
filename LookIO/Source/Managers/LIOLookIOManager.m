@@ -131,6 +131,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self setupURLSchemes];
     
+    LIOEngagement *engagement = [LIOEngagement loadExistingEngagement];
+    
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
@@ -746,11 +748,39 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)takeScreenshotAndSetBlurImageView {
     dispatch_async(dispatch_get_main_queue(), ^{
         LIOLog(@"Previous window is %@", self.previousKeyWindow);
+
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
         [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.containerViewController setBlurImage:viewImage];
+
+        /*
+        self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+
+        switch (actualOrientation) {
+            case UIInterfaceOrientationPortrait:
+                self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+                break;
+
+            case UIInterfaceOrientationLandscapeLeft:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
+                break;
+                
+            case UIInterfaceOrientationLandscapeRight:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
+                break;
+                
+            case UIInterfaceOrientationPortraitUpsideDown:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
+                break;
+                
+            default:
+                break;
+        }
+         */
+        
     });
 }
 
@@ -758,11 +788,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         LIOLog(@"Previous window is %@", self.previousKeyWindow);
+        
+        UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
         [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
         UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         [self.containerViewController updateBlurImage:viewImage];
+
+        /*
+        self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+        
+        switch (actualOrientation) {
+            case UIInterfaceOrientationPortrait:
+                self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+                break;
+                
+            case UIInterfaceOrientationLandscapeLeft:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
+                break;
+                
+            case UIInterfaceOrientationLandscapeRight:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(+M_PI/2);
+                break;
+                
+            case UIInterfaceOrientationPortraitUpsideDown:
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
+                break;
+                
+            default:
+                break;
+        }
+         */
     });
 }
 

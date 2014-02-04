@@ -438,7 +438,6 @@
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     LIOWebViewController *webViewController;
-    NSURL *url;
     
     switch (alertView.tag) {
         case LIOContainerViewControllerAlertViewNextStepDismiss:

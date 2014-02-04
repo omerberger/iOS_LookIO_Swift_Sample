@@ -32,7 +32,6 @@ typedef enum {
 @protocol LIOChatViewControllerDelegate <NSObject>
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController;
-- (void)chatViewControllerVisitorDidSendLine:(NSString *)line;
 - (void)chatViewControllerDidEndChat:(LIOChatViewController *)chatViewController;
 - (void)chatViewControllerDidTapIntraAppLink:(NSURL *)url;
 - (void)chatViewControllerDidTapWebLink:(NSURL *)url;

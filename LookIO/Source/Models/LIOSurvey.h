@@ -36,10 +36,10 @@ typedef enum
 
 - (id)answerObjectForQuestionIndex:(NSInteger)anIndex;
 - (BOOL)allMandatoryQuestionsAnswered;
-- (int)nextQuestionWithResponseRequired;
+- (NSInteger)nextQuestionWithResponseRequired;
 - (void)clearAllResponses;
-- (int)realIndexWithLogicOfQuestionAtIndex:(NSInteger)anIndex;
-- (int)numberOfQuestionsWithLogic;
+- (NSInteger)realIndexWithLogicOfQuestionAtIndex:(NSInteger)anIndex;
+- (NSInteger)numberOfQuestionsWithLogic;
 - (BOOL)shouldShowQuestion:(NSInteger)index;
 - (NSDictionary*)responseDict;
 - (LIOSurveyQuestion *)questionForIntroView;
