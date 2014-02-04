@@ -362,6 +362,8 @@
 
 - (void)presentPostchatSurveyForEngagement:(LIOEngagement *)anEngagement
 {
+    self.engagement = anEngagement;
+    
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         [self presentHeaderBarView:YES];
     else

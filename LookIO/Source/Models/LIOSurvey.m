@@ -465,7 +465,7 @@
 
 - (id)initWithCoder:(NSCoder *)decoder {
     if (self = [super init]) {
-        self.surveyType = [decoder decodeIntegerForKey:@"lastClientLineId"];
+        self.surveyType = [decoder decodeIntegerForKey:@"surveyType"];
         self.questions = [NSKeyedUnarchiver unarchiveObjectWithData:[decoder decodeObjectForKey:@"questions"]];
 
         self.lastCompletedQuestionIndex = [decoder decodeIntegerForKey:@"lastCompletedQuestionIndex"];

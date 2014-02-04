@@ -74,6 +74,7 @@ typedef enum
 - (id)initWithVisit:(LIOVisit *)aVisit;
 
 - (void)startEngagement;
+- (void)attemptReconnectionWithVisit:(LIOVisit *)aVisit;
 - (void)cancelEngagement;
 - (void)endEngagement;
 - (void)declineEngagementReconnect;

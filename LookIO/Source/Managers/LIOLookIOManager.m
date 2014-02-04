@@ -8,16 +8,21 @@
 
 #import "LIOLookIOManager.h"
 
+// Managers
 #import "LIOLogManager.h"
 #import "LIOStatusManager.h"
 #import "LIONetworkManager.h"
 #import "LIOBundleManager.h"
+#import "LIOMediaManager.h"
 
-#import "LIOContainerViewController.h"
-
+// Models
 #import "LIOVisit.h"
 #import "LIOEngagement.h"
 
+// View Controllers
+#import "LIOContainerViewController.h"
+
+// Views
 #import "LIODraggableButton.h"
 
 #define LIOAlertViewNextStepDismissLookIOWindow 2001
@@ -26,8 +31,9 @@
 #define LIOAlertViewNextStepCancelReconnect     2004
 #define LIOAlertViewNextStepEndEngagement       2005
 
-#define LIOAlertViewReconnectPrompt             2010
-#define LIOAlertViewReconnectSuccess            2011
+#define LIOAlertViewRegularReconnectPrompt      2010
+#define LIOAlertViewRegularReconnectSuccess     2011
+#define LIOAlertViewCrashReconnectPrompt        2012
 
 typedef enum
 {
@@ -69,6 +75,8 @@ typedef void (^LIOCompletionBlock)(void);
 @property (nonatomic, copy) LIOCompletionBlock nextDismissalCompletionBlock;
 
 @property (nonatomic, strong) NSMutableArray *urlSchemes;
+
+@property (nonatomic, strong) LIOEngagement *disconnectedEngagement;
 
 @end
 
@@ -120,6 +128,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [keyWindow addSubview:self.controlButton];
     [self.controlButton resetFrame];
     
+    self.engagement = nil;
+    self.disconnectedEngagement = nil;
+    
     self.visit = [[LIOVisit alloc] init];
     self.visit.delegate = self;
     [self.visit launchVisit];
@@ -130,9 +141,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self addNotificationHandlers];
     
     [self setupURLSchemes];
-    
-    LIOEngagement *engagement = [LIOEngagement loadExistingEngagement];
-    
+        
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
@@ -154,6 +163,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.visit = [[LIOVisit alloc] init];
     self.visit.delegate = self;
     [self.visit launchVisit];
+}
+
+- (void)checkAndReconnectDisconnectedEngagement
+{
+    LIOEngagement *engagement = [LIOEngagement loadExistingEngagement];
+    
+    if (engagement == nil)
+    {
+        [[LIOMediaManager sharedInstance] purgeAllMedia];
+        return;
+    }
+    
+    LIOLog(@"Found a saved engagement id! Trying to reconnect...");
+    self.disconnectedEngagement = engagement;
+    
+    
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertTitle")
+                                                message:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertBody")
+                                               delegate:self
+                                      cancelButtonTitle:nil
+                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonClose"), LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonReconnect"), nil];
+    self.alertView.tag = LIOAlertViewCrashReconnectPrompt;
+    [self.alertView show];
 }
 
 #pragma mark -
@@ -428,6 +460,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     self.controlButton.buttonTitle = self.visit.lastKnownButtonText;
     [self.controlButton updateBaseValues];
+    
+    [self checkAndReconnectDisconnectedEngagement];
 }
 
 - (void)visitWillRelaunch:(LIOVisit *)visit
@@ -498,7 +532,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
     }
 
-    if (LIOAlertViewReconnectPrompt == alertView.tag)
+    if (LIOAlertViewRegularReconnectPrompt == alertView.tag)
     {
         switch (buttonIndex) {
             case 0:
@@ -516,7 +550,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
     
-    if (LIOAlertViewReconnectSuccess == alertView.tag)
+    if (LIOAlertViewRegularReconnectSuccess == alertView.tag)
     {
         switch (buttonIndex) {
             case 0:
@@ -580,6 +614,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (self.engagement)
                 [self.engagement endEngagement];
+        }
+    }
+    
+    if (LIOAlertViewCrashReconnectPrompt == alertView.tag)
+    {
+        if (buttonIndex == 0)
+        {
+            self.disconnectedEngagement = nil;
+        }
+        if (buttonIndex == 1)
+        {
+            self.engagement = self.disconnectedEngagement;
+            self.disconnectedEngagement = nil;
+            self.engagement.delegate = self;
+            
+            self.visit.visitState = LIOVisitStateChatActive;
+            [self.engagement attemptReconnectionWithVisit:self.visit];
         }
     }
 }
@@ -1207,7 +1258,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonClose"), LIOLocalizedString(@"LIOLookIOManager.ReconnectQuestionAlertButtonReconnect"), nil];
-    self.alertView.tag = LIOAlertViewReconnectPrompt;
+    self.alertView.tag = LIOAlertViewRegularReconnectPrompt;
 
     UIAlertView *alertViewToShow = self.alertView;
     
@@ -1242,7 +1293,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                        delegate:self
                                               cancelButtonTitle:nil
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonHide"), LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertButtonOpen"), nil];
-    self.alertView.tag = LIOAlertViewReconnectSuccess;
+    self.alertView.tag = LIOAlertViewRegularReconnectSuccess;
     [self.alertView show];
 }
 

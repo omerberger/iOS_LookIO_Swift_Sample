@@ -23,13 +23,15 @@
 
 #import "LIOTimerProxy.h"
 
-#define LIOLookIOManagerLastKnownEngagementKey           @"LIOLookIOManagerLastKnownEngagementKey"
-#define LIOLookIOManagerLastKnownEngagementMessagesKey   @"LIOLookIOManagerLastKnownEngagementMessagesKey"
-#define LIOLookIOManagerLastActivityDateKey              @"LIOLookIOManagerLastActivityDateKey"
+#define LIOLookIOManagerLastKnownEngagementKey            @"LIOLookIOManagerLastKnownEngagementKey"
+#define LIOLookIOManagerLastKnownEngagementMessagesKey    @"LIOLookIOManagerLastKnownEngagementMessagesKey"
+#define LIOLookIOManagerLastKnownEngagementActivityDate   @"LIOLookIOManagerLastKnownEngagementActivityDate"
 
 // TODO: Save last activity dates for when returning from background
 
 #define LIOChatAPIRequestRetries                        3
+#define LIOEngagementReconnectionAfterCrashTimeLimit    60.0 // 1 minutes
+
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
 
@@ -74,6 +76,17 @@
     return self;
 }
 
+- (void)attemptReconnectionWithVisit:(LIOVisit *)aVisit
+{
+    self.visit = aVisit;
+    
+    [self setupAPIClientBaseURL];
+    
+    self.sseChannelState = LIOSSEChannelStateReconnectPrompt;
+    [self connectSSESocket];
+}
+
+
 - (void)populateFirstChatMessage
 {
     if (self.messages.count == 0)
@@ -95,8 +108,15 @@
 - (void)cleanUpEngagement
 {
     self.sseManager.delegate = nil;
-}
 
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementKey];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementActivityDate];
+    [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+    
+    [userDefaults synchronize];
+}
 
 - (void)startEngagement
 {
@@ -489,7 +509,6 @@
     if ([type isEqualToString:@"line"])
     {
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastActivityDateKey];
         [userDefaults synchronize];
             
         NSString *text = [aPacket objectForKey:@"text"];
@@ -1223,8 +1242,24 @@
 + (LIOEngagement *)loadExistingEngagement
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (![userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementKey])
+    if (![userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementKey] || ![userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementActivityDate])
         return nil;
+    
+    NSDate *lastActivityDate = [userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementActivityDate];
+    NSTimeInterval timeSinceLastActivity = [lastActivityDate timeIntervalSinceNow];
+    if (timeSinceLastActivity < -LIOEngagementReconnectionAfterCrashTimeLimit)
+    {
+        // Too much time has passed.
+        LIOLog(@"Found a saved engagement id, but it's old. Discarding...");
+
+        [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementKey];
+        [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementActivityDate];
+        [userDefaults removeObjectForKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+        
+        [userDefaults synchronize];
+        
+        return nil;
+    }
 
     LIOEngagement *engagement = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementKey]];
     
@@ -1244,6 +1279,7 @@
 {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
     [userDefaults synchronize];
 }
 
@@ -1300,20 +1336,3 @@
 
 
 @end
-
-/*
- @property (nonatomic, assign) id <LIOEngagementDelegate> delegate;
-
- @property (nonatomic, strong) LPSSEManager *sseManager;
- @property (nonatomic, assign) LIOSSEChannelState sseChannelState;
-
- @property (nonatomic, strong) LIOVisit *visit;
-
- 
- 
- @property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
- @property (nonatomic, assign) LIOSSEChannelState retryAfterPreviousSSEChannelState;
- 
- @property (nonatomic, strong) NSMutableArray *failedRequestQueue;
- 
- */
