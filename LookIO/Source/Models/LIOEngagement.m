@@ -23,15 +23,11 @@
 
 #import "LIOTimerProxy.h"
 
-#define LIOLookIOManagerLastKnownChatCookiesKey         @"LIOLookIOManagerLastKnownChatCookiesKey"
-#define LIOLookIOManagerLastKnownEngagementIdKey        @"LIOLookIOManagerLastKnownEngagementIdKey"
-#define LIOLookIOManagerLastKnownSSEUrlStringKey        @"LIOLookIOManagerLastKnownSSEUrlStringKey"
-#define LIOLookIOManagerLastKnownPostUrlString          @"LIOLookIOManagerLastKnownPostUrlString"
-#define LIOLookIOManagerLastKnownMediaUrlString         @"LIOLookIOManagerLastKnownMediaUrlString"
-#define LIOLookIOManagerLastSSEventIdString             @"LIOLookIOManagerLastSSEventIdString"
-#define LIOLookIOManagerLastKnownChatLastEventIdString  @"LIOLookIOManagerLastKnownChatLastEventIdString"
-#define LIOLookIOManagerLastActivityDateKey             @"LIOLookIOManagerLastActivityDateKey"
-#define LIOLookIOManagerLastKnownChatHistoryKey         @"LIOLookIOManagerLastKnownChatHistoryKey"
+#define LIOLookIOManagerLastKnownEngagementKey           @"LIOLookIOManagerLastKnownEngagementKey"
+#define LIOLookIOManagerLastKnownEngagementMessagesKey   @"LIOLookIOManagerLastKnownEngagementMessagesKey"
+#define LIOLookIOManagerLastActivityDateKey              @"LIOLookIOManagerLastActivityDateKey"
+
+// TODO: Save last activity dates for when returning from background
 
 #define LIOChatAPIRequestRetries                        3
 
@@ -167,12 +163,6 @@
         [self.chatCookies addObject:cookie];
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
     }
-    
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSData *cookieData = [NSKeyedArchiver archivedDataWithRootObject:self.chatCookies];
-
-    [userDefaults setObject:cookieData forKey:LIOLookIOManagerLastKnownChatCookiesKey];
-    [userDefaults synchronize];
 }
 
 - (NSDictionary *)resolveEngagementPayload:(NSDictionary *)params
@@ -222,14 +212,6 @@
         self.mediaUrlString = [resolvedPayload objectForKey:@"media_url"];
         
         [self setupAPIClientBaseURL];
-        
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        [userDefaults setObject:self.engagementId forKey:LIOLookIOManagerLastKnownEngagementIdKey];
-        [userDefaults setObject:self.SSEUrlString forKey:LIOLookIOManagerLastKnownSSEUrlStringKey];
-        [userDefaults setObject:self.postUrlString forKey:LIOLookIOManagerLastKnownPostUrlString];
-        [userDefaults setObject:self.mediaUrlString forKey:LIOLookIOManagerLastKnownMediaUrlString];
-        
-        [userDefaults synchronize];
         
         self.sseChannelState = LIOSSEChannelStateConnecting;
         [self connectSSESocket];
@@ -433,10 +415,6 @@
         if (![anEvent.eventId isEqualToString:@""])
             self.lastSSEventId = anEvent.eventId;
     
-    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:self.lastSSEventId forKey:LIOLookIOManagerLastKnownChatLastEventIdString];
-    [userDefaults synchronize];
-    
     LIOLog(@"<LPSSEManager> Dispatch event with data:\n%@\n", aPacket);
     
     NSString *type = [aPacket objectForKey:@"type"];
@@ -562,12 +540,8 @@
             if (shouldAddMessage)
             {
                 [self.messages addObject:newMessage];
-
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                NSData *chatHistoryData = [NSKeyedArchiver archivedDataWithRootObject:self.messages];
-                [userDefaults setObject:chatHistoryData forKey:LIOLookIOManagerLastKnownChatHistoryKey];
-                [userDefaults synchronize];
-
+                [self saveEngagementMessages];
+                
                 [self.delegate engagement:self didReceiveMessage:newMessage];
             }
         }
@@ -610,6 +584,7 @@
             {
                 self.postchatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:postSurveyDict surveyType:LIOSurveyTypePostchat];
             }
+            [self saveEngagement];
         }
         
         if ([aPacket objectForKey:@"prechat"]) {
@@ -626,6 +601,9 @@
                     self.prechatSurvey = [[LIOSurvey alloc] initWithSurveyDictionary:preSurveyDict surveyType:LIOSurveyTypePrechat];
                     [self.delegate engagementDidReceivePrechatSurvey:self];
                 }
+                
+                [self saveEngagement];
+                [self saveEngagementMessages];
             }
         }
     }
@@ -711,6 +689,8 @@
         if ([action isEqualToString:@"engagement_started"])
         {
             [self.delegate engagementDidStart:self];
+            [self saveEngagement];
+            [self saveEngagementMessages];
         }
     }
     
@@ -1194,6 +1174,8 @@
     
     [self sendLineWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
+    
+    [self saveEngagementMessages];
 }
 
 - (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId
@@ -1209,6 +1191,8 @@
     
     [self sendMediaPacketWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
+    
+    [self saveEngagementMessages];
 }
 
 #pragma mark -
@@ -1233,6 +1217,103 @@
     return [self.delegate engagementShouldShowSendPhotoKeyboardItem:self];
 }
 
+#pragma mark - 
+#pragma mark Save Methods
+
++ (LIOEngagement *)loadExistingEngagement
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if (![userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementKey])
+        return nil;
+
+    LIOEngagement *engagement = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementKey]];
+    
+    [engagement loadEngagementMessages];
+    
+    return engagement;
+}
+
+- (void)saveEngagement
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self] forKey:LIOLookIOManagerLastKnownEngagementKey];
+    [userDefaults synchronize];
+}
+
+- (void)saveEngagementMessages
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+    [userDefaults synchronize];
+}
+
+- (void)loadEngagementMessages
+{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    if ([userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementMessagesKey])
+    {
+        self.messages = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:LIOLookIOManagerLastKnownEngagementMessagesKey]];
+    }
+}
+
+#pragma mark -
+#pragma mark NSCopying Methods
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    if (self = [super init]) {
+        self.lastClientLineId = [decoder decodeIntegerForKey:@"lastClientLineId"];
+        
+        self.prechatSurvey = [decoder decodeObjectForKey:@"prechatSurvey"];
+        self.postchatSurvey = [decoder decodeObjectForKey:@"postchatSurvey"];
+        self.offlineSurvey = [decoder decodeObjectForKey:@"offlineSurvey"];
+        
+        self.chatCookies = [decoder decodeObjectForKey:@"chatCookies"];
+        
+        self.engagementId = [decoder decodeObjectForKey:@"engagementId"];
+        self.SSEUrlString = [decoder decodeObjectForKey:@"SSEUrlString"];
+        self.postUrlString = [decoder decodeObjectForKey:@"postUrlString"];
+        self.mediaUrlString = [decoder decodeObjectForKey:@"mediaUrlString"];
+        self.lastSSEventId = [decoder decodeObjectForKey:@"lastSSEventId"];
+        
+        self.sseChannelState = LIOSSEChannelStateInitialized;
+        self.failedRequestQueue = [[NSMutableArray alloc] init];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+    
+    [encoder encodeInteger:self.lastClientLineId forKey:@"lastClientLineId"];
+
+    [encoder encodeObject:self.prechatSurvey forKey:@"prechatSurvey"];
+    [encoder encodeObject:self.postchatSurvey forKey:@"postchatSurvey"];
+    [encoder encodeObject:self.offlineSurvey forKey:@"offlineSurvey"];
+    
+    [encoder encodeObject:self.chatCookies forKey:@"chatCookies"];
+    
+    [encoder encodeObject:self.engagementId forKey:@"engagementId"];
+    [encoder encodeObject:self.SSEUrlString forKey:@"SSEUrlString"];
+    [encoder encodeObject:self.postUrlString forKey:@"postUrlString"];
+    [encoder encodeObject:self.mediaUrlString forKey:@"mediaUrlString"];
+    [encoder encodeObject:self.lastSSEventId forKey:@"lastSSEventId"];
+}
 
 
 @end
+
+/*
+ @property (nonatomic, assign) id <LIOEngagementDelegate> delegate;
+
+ @property (nonatomic, strong) LPSSEManager *sseManager;
+ @property (nonatomic, assign) LIOSSEChannelState sseChannelState;
+
+ @property (nonatomic, strong) LIOVisit *visit;
+
+ 
+ 
+ @property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
+ @property (nonatomic, assign) LIOSSEChannelState retryAfterPreviousSSEChannelState;
+ 
+ @property (nonatomic, strong) NSMutableArray *failedRequestQueue;
+ 
+ */

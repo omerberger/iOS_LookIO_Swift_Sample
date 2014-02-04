@@ -19,7 +19,7 @@
 @property (nonatomic, copy) NSString *header;
 @property (nonatomic, strong) NSMutableDictionary *responses;
 @property (nonatomic, assign) BOOL wasSubmitted;
-@property (nonatomic, strong) NSNumber *surveyId;
+@property (nonatomic, strong) NSString *surveyId;
 @property (nonatomic, strong) NSDictionary *logicDictionary;
 
 @end
@@ -309,7 +309,7 @@
     messageQuestion.displayType = LIOSurveyQuestionDisplayTypeTextArea;
     emailQuestion.validationType = LIOSurveyQuestionValidationTypeAlphanumeric;
     
-    self.surveyId = [NSNumber numberWithInt:0];
+    self.surveyId = @"0";
     self.questions = [NSArray arrayWithObjects:emailQuestion, messageQuestion, nil];
     self.logicDictionary = [[NSMutableDictionary alloc] init];
     
@@ -458,6 +458,44 @@
         return NO;
 
     return YES;
+}
+
+#pragma mark -
+#pragma mark NSCopying Methods
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    if (self = [super init]) {
+        self.surveyType = [decoder decodeIntegerForKey:@"lastClientLineId"];
+        self.questions = [NSKeyedUnarchiver unarchiveObjectWithData:[decoder decodeObjectForKey:@"questions"]];
+
+        self.lastCompletedQuestionIndex = [decoder decodeIntegerForKey:@"lastCompletedQuestionIndex"];
+        self.lastSeenQuestionIndex = [decoder decodeIntegerForKey:@"lastSeenQuestionIndex"];
+        
+        self.header = [decoder decodeObjectForKey:@"header"];
+        self.responses = [decoder decodeObjectForKey:@"responses"];
+        
+        self.wasSubmitted = [decoder decodeBoolForKey:@"wasSubmitted"];
+        self.surveyId = [decoder decodeObjectForKey:@"surveyId"];
+        
+        self.logicDictionary = [decoder decodeObjectForKey:@"logicDictionary"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+    [encoder encodeInteger:self.surveyType forKey:@"surveyType"];
+    [encoder encodeObject:[NSKeyedArchiver archivedDataWithRootObject:self.questions] forKey:@"questions"];
+    
+    [encoder encodeInteger:self.lastCompletedQuestionIndex forKey:@"lastCompletedQuestionIndex"];
+    [encoder encodeInteger:self.lastSeenQuestionIndex forKey:@"lastSeenQuestionIndex"];
+    
+    [encoder encodeObject:self.header forKey:@"header"];
+    [encoder encodeObject:self.responses forKey:@"responses"];
+    
+    [encoder encodeBool:self.wasSubmitted forKey:@"wasSubmitted"];
+    [encoder encodeObject:self.surveyId forKey:@"surveyId"];
+    
+    [encoder encodeObject:self.logicDictionary forKey:@"logicDictionary"];
 }
 
 @end

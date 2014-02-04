@@ -98,4 +98,6 @@ typedef enum
 
 - (void)reachabilityDidChange;
 
++ (LIOEngagement *)loadExistingEngagement;
+
 @end
