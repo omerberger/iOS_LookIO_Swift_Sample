@@ -38,6 +38,7 @@ typedef enum
 
 @protocol LIOEngagementDelegate <NSObject>
 
+// Engagement Lifecycle
 - (void)engagementDidStart:(LIOEngagement *)engagement;
 - (void)engagementDidConnect:(LIOEngagement *)engagement;
 - (void)engagementAgentIsReady:(LIOEngagement *)engagement;
@@ -45,21 +46,34 @@ typedef enum
 - (void)engagementDidCancel:(LIOEngagement *)engagement;
 - (void)engagementDidEnd:(LIOEngagement *)engagement;
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement withAlert:(BOOL)withAlert;
+- (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement;
+
+// Messages and Notifications
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification;
+- (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
+- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
+
+// Surveys
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
-- (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;
+
+// Others
 - (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;
+
+// Reconnectiongs
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement;
 - (void)engagementDidReconnect:(LIOEngagement *)engagement;
 - (void)engagementDidFailToReconnect:(LIOEngagement *)engagement;
-- (void)engagementDidDisconnectWhileInPostOrOfflineSurvey:(LIOEngagement *)engagement;
-- (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
+
+// Screensharing
 - (void)engagementWantsScreenshare:(LIOEngagement *)engagement;
 - (UIImage *)engagementWantsScreenshot:(LIOEngagement *)engagement;
+- (void)engagement:(LIOEngagement *)engagement wantsCursor:(BOOL)cursor;
+- (void)engagement:(LIOEngagement *)engagement screenshareCursorMoveToPoint:(CGPoint)point;
+- (void)engagement:(LIOEngagement *)engagement screenshareDidClickAtPoint:(CGPoint)point;
 
 @end
 

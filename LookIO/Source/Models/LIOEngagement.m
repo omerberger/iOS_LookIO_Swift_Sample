@@ -738,6 +738,32 @@
         if ([asset isEqualToString:@"screenshare"])
             [self.delegate engagementWantsScreenshare:self];
     }
+    
+    if ([type isEqualToString:@"screen_cursor"])
+    {
+        if (self.isScreenShareActive)
+        {
+            NSNumber *xObject = [aPacket objectForKey:@"x"];
+            NSNumber *yObject = [aPacket objectForKey:@"y"];
+
+            [self.delegate engagement:self screenshareCursorMoveToPoint:CGPointMake([xObject floatValue], [yObject floatValue])];
+        }
+    }
+    if ([type isEqualToString:@"screen_cursor_start"])
+    {
+        [self.delegate engagement:self wantsCursor:YES];
+    }
+    if ([type isEqualToString:@"screen_cursor_stop"])
+    {
+        [self.delegate engagement:self wantsCursor:NO];
+    }
+    if ([type isEqualToString:@"screen_click"])
+    {
+        NSNumber *xObject = [aPacket objectForKey:@"x"];
+        NSNumber *yObject = [aPacket objectForKey:@"y"];
+
+        [self.delegate engagement:self screenshareDidClickAtPoint:CGPointMake([xObject floatValue], [yObject floatValue])];
+    }
 
 }
 
@@ -1416,7 +1442,7 @@
         [self.screenshareTimer invalidate];
         self.screenshareTimer = nil;
     }
-        
+    [self.delegate engagement:self wantsCursor:NO];        
 }
 
 - (void)screenCaptureTimerDidFire:(NSTimer *)aTimer

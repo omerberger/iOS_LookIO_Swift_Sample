@@ -79,6 +79,9 @@ typedef void (^LIOCompletionBlock)(void);
 
 @property (nonatomic, strong) LIOEngagement *disconnectedEngagement;
 
+@property (nonatomic, strong) UIImageView *cursorView;
+@property (nonatomic, strong) UIImageView *clickView;
+
 @end
 
 @implementation LIOLookIOManager
@@ -142,7 +145,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self addNotificationHandlers];
     
     [self setupURLSchemes];
-        
+    
+    // Setup Screenshare Elements
+    
+    self.cursorView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIODefaultTouch"]];
+    self.cursorView.frame = CGRectMake(-self.cursorView.frame.size.width, -self.cursorView.frame.size.height, self.cursorView.frame.size.width, self.cursorView.frame.size.height);
+    self.cursorView.hidden = YES;
+    [keyWindow addSubview:self.cursorView];
+    
+    self.clickView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOClickIndicator"]];
+    self.clickView.frame = CGRectMake(-self.clickView.frame.size.width, -self.clickView.frame.size.height, self.clickView.frame.size.width, self.clickView.frame.size.height);
+    self.clickView.hidden = YES;
+    [keyWindow addSubview:self.clickView];
+    
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
 
@@ -1440,6 +1455,126 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return [self captureScreenFromPreviousOnly:NO];
 }
 
+- (void)engagement:(LIOEngagement *)engagement screenshareCursorMoveToPoint:(CGPoint)point
+{
+    self.cursorView.hidden = NO;
+    
+    CGRect aFrame = self.cursorView.frame;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = point.y;
+        aFrame.origin.y = applicationFrame.size.height - point.x - aFrame.size.height;
+    } else if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = applicationFrame.size.width - point.y - aFrame.size.width/2;
+        aFrame.origin.y = point.x;
+    } else
+    {
+        aFrame.origin.x = point.x;
+        aFrame.origin.y = point.y;
+    }
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        self.cursorView.frame = aFrame;
+    }];
+}
+
+- (void)engagement:(LIOEngagement *)engagement wantsCursor:(BOOL)cursor
+{
+    if (cursor)
+    {
+        self.cursorView.hidden = NO;
+        self.clickView.hidden = NO;
+
+        UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+        
+        CGRect aFrame = CGRectZero;
+        aFrame.size.width = self.cursorView.image.size.width * 8.0;
+        aFrame.size.height = self.cursorView.image.size.height * 8.0;
+        aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+        self.cursorView.frame = aFrame;
+        self.cursorView.alpha = 0.0;
+        
+        aFrame.size.width = self.cursorView.image.size.width;
+        aFrame.size.height = self.cursorView.image.size.height;
+        aFrame.origin.x = (keyWindow.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
+        aFrame.origin.y = (keyWindow.frame.size.height / 2.0) - (aFrame.size.height / 2.0);
+        
+        [UIView animateWithDuration:0.25 animations:^{
+            self.cursorView.frame = aFrame;
+            self.cursorView.alpha = 1.0;
+        }];
+    }
+    else
+    {
+        self.cursorView.hidden = YES;
+        self.clickView.hidden = YES;
+    }
+}
+
+- (void)engagement:(LIOEngagement *)engagement screenshareDidClickAtPoint:(CGPoint)point
+{
+    CGRect aFrame = CGRectZero;
+    aFrame.size.width = self.clickView.image.size.width;
+    aFrame.size.height = self.clickView.image.size.height;
+    self.clickView.bounds = aFrame;
+    self.clickView.alpha = 0.0;
+    
+    self.clickView.center = CGPointMake(point.x, point.y);
+    
+    aFrame = CGRectZero;
+    aFrame.size.width = self.clickView.image.size.width * 3.0;
+    aFrame.size.height = self.clickView.image.size.height * 3.0;
+    
+    
+    CGRect correctFrame = [self clickViewFrameForPoint:point];
+    aFrame.origin.x = correctFrame.origin.x;
+    aFrame.origin.y = correctFrame.origin.y;
+    
+    [UIView animateWithDuration:0.1
+                          delay:0.0
+                        options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseOut)
+                     animations:^{
+                         self.clickView.frame = aFrame;
+                         self.clickView.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.1
+                                               delay:0.2
+                                             options:(UIViewAnimationOptionAllowUserInteraction | UIViewAnimationOptionCurveEaseIn)
+                                          animations:^{
+                                              self.clickView.alpha = 0.0;
+                                          }
+                                          completion:nil];
+                     }];
+}
+
+- (CGRect)clickViewFrameForPoint:(CGPoint)point
+{
+    CGRect aFrame = self.clickView.frame;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
+    {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        
+        aFrame.origin.x = point.y - aFrame.size.width*1.5;
+        aFrame.origin.y = applicationFrame.size.height - point.x - aFrame.size.height*1.5;
+    } else if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
+    {
+        CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
+        aFrame.origin.x = applicationFrame.size.width - point.y - aFrame.size.width*1;
+        aFrame.origin.y = point.x - aFrame.size.height*1.5;
+    } else
+    {
+        aFrame.origin.x = point.x - aFrame.size.width*1.5;
+        aFrame.origin.y = point.y - aFrame.size.height*1.5;
+    }
+    return aFrame;
+}
 
 #pragma mark -
 #pragma mark Custom Branding Methods
