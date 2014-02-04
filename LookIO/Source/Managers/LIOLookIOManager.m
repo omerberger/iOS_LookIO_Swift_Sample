@@ -630,6 +630,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.engagement.delegate = self;
             
             self.visit.visitState = LIOVisitStateChatActive;
+            [self.controlButton setLoadingMode];
+            
             [self.engagement attemptReconnectionWithVisit:self.visit];
         }
     }

@@ -449,6 +449,9 @@
     if (!self.isVisible)
         return;
     
+    if (LIOButtonModeLoading == self.buttonMode)
+        return;
+    
     if (LIOButtonKindText == self.buttonKind)
         return;
     
@@ -525,6 +528,9 @@
 
 - (void)setLoadingMode
 {
+    if (self.isShowingMessage)
+        [self messageTimerDidFire];
+    
     self.buttonMode = LIOButtonModeLoading;
     [self updateButtonBranding];
 }
