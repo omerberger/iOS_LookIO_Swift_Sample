@@ -41,8 +41,6 @@
 #import "LPSSEvent.h"
 #import "LPHTTPRequestOperation.h"
 
-#import <AdSupport/AdSupport.h>
-
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                                     green:((c>>8)&0xFF)/255.0 \
                                      blue:((c)&0xFF)/255.0 \
