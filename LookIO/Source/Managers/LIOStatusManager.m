@@ -10,7 +10,6 @@
 
 #import "LIOLookIOManager.h"
 
-#import <AdSupport/AdSupport.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <sys/sysctl.h>
 #import <sys/socket.h>
@@ -145,7 +144,7 @@ static LIOStatusManager *statusManager = nil;
     
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
-        udid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+        udid = [self vendorDeviceId];
     }
     else
     {
@@ -155,21 +154,7 @@ static LIOStatusManager *statusManager = nil;
     return udid;
 }
 
-+ (NSNumber *)limitAdTracking
-{
-    NSNumber *limitAdTracking = nil;
-
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-    {
-        ASIdentifierManager *sharedIndentifierManager = [ASIdentifierManager sharedManager];
-        BOOL limitAdTracking = !sharedIndentifierManager.advertisingTrackingEnabled;
-        limitAdTracking = [NSNumber numberWithBool:limitAdTracking];
-    }
-    
-    return limitAdTracking;
-}
-
-+ (NSString *)alternateUdid
++ (NSString *)vendorDeviceId
 {
     NSString *vendorDeviceId = nil;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))

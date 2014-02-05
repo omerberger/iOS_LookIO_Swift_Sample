@@ -23,8 +23,7 @@
 + (NSString *)bundleId;
 + (NSString *)systemVersion;
 + (NSString *)udid;
-+ (NSString *)alternateUdid;
-+ (NSNumber *)limitAdTracking;
++ (NSString *)vendorDeviceId;
 + (NSString *)localeId;
 + (NSString *)languageId;
 

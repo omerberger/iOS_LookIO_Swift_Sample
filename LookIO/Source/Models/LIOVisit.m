@@ -206,12 +206,6 @@
 
     // Device UDIDs
     [statusDictionary setObject:[LIOStatusManager udid] forKey:@"device_id"];
-    NSNumber *limitAdTracking = [LIOStatusManager limitAdTracking];
-    if (limitAdTracking)
-        [statusDictionary setObject:limitAdTracking forKey:@"limit_ad_tracking"];
-    NSString *alternateUdid = [LIOStatusManager alternateUdid];
-    if (alternateUdid)
-        [statusDictionary setObject:alternateUdid forKey:@"alternate_device_id"];
     
     // Pending Events
     if (includeEvents && [self.pendingEvents count])
