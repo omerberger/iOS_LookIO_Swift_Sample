@@ -70,6 +70,11 @@ typedef enum
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
 @property (nonatomic, copy) NSString *lastKnownButtonText;
 
+- (void)disableControlButton;
+- (void)undisableControlButton;
+- (void)disableSurveys;
+- (void)undisableSurveys;
+
 - (void)refreshControlButtonVisibility;
 
 - (void)updateAndReportFunnelState;

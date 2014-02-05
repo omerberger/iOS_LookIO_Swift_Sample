@@ -204,6 +204,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.alertView show];
 }
 
+- (void)disableSurveys
+{
+    [self.visit disableSurveys];
+}
+
+- (void)undisableSurveys
+{
+    [self.visit undisableSurveys];
+}
+
+- (void)disableControlButton
+{
+    if (self.visit == nil)
+        LIOLog(@"No visit yet to disable");
+    
+    [self.visit disableControlButton];
+}
+
+- (void)undisableControlButton
+{
+    if (self.visit == nil)
+        LIOLog(@"No visit yet to disable");
+
+    [self.visit undisableControlButton];
+}
+
 #pragma mark -
 #pragma mark Notification handlers
 

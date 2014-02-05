@@ -47,7 +47,7 @@
 
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
-@property (nonatomic, assign) BOOL *previousControlButtonVisibilityValue;
+@property (nonatomic, assign) NSNumber *previousControlButtonVisibilityValue;
 
 @property (nonatomic, copy) NSString *lastKnownWelcomeText;
 
@@ -155,6 +155,39 @@
         // TODO: This is the place to reconnect any pending engagements..
     }
     return self;
+}
+
+- (void)disableControlButton
+{
+    if (self.disableControlButtonOverride)
+        return;
+    
+    self.disableControlButtonOverride = YES;
+    self.previousControlButtonVisibilityValue = self.lastKnownButtonVisibility;
+    self.lastKnownButtonVisibility = [NSNumber numberWithInteger:0];
+    
+    [self refreshControlButtonVisibility];
+}
+
+- (void)undisableControlButton {
+    if (!self.disableControlButtonOverride)
+        return;
+    
+    self.disableControlButtonOverride = NO;
+    self.lastKnownButtonVisibility = self.previousControlButtonVisibilityValue;
+    
+    [self refreshControlButtonVisibility];
+}
+
+- (void)disableSurveys {
+    self.disableSurveysOverride = YES;
+    self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
+    self.lastKnownSurveysEnabled = NO;
+}
+
+- (void)undisableSurveys {
+    self.disableSurveysOverride = NO;
+    self.lastKnownSurveysEnabled = self.previousSurveysEnabledValue;
 }
 
 #pragma mark -
@@ -469,9 +502,10 @@
         {
             self.lastKnownButtonVisibility = buttonVisibility;
             
-            if (self.disableControlButtonOverride) {
-                self.previousControlButtonVisibilityValue = [self.lastKnownButtonVisibility boolValue];
-                self.lastKnownButtonVisibility = [NSNumber numberWithBool:NO];
+            if (self.disableControlButtonOverride)
+            {
+                self.previousControlButtonVisibilityValue = self.lastKnownButtonVisibility;
+                self.lastKnownButtonVisibility = [NSNumber numberWithBool:0];
             }
             
         }
