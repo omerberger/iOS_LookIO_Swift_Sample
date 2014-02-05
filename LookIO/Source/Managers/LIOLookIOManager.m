@@ -507,7 +507,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSString *udid = @"";
 
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
-        udid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+        udid = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     } else {
         udid = uniqueIdentifier();
     }
@@ -3871,15 +3871,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                       nil];
     
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
-        NSString *udid = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
         NSString *vendorDeviceId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-        ASIdentifierManager *sharedIndentifierManager = [ASIdentifierManager sharedManager];
-        BOOL limitAdTracking = !sharedIndentifierManager.advertisingTrackingEnabled;
 
-        [introDict setObject:udid forKey:@"device_id"];
-        [introDict setObject:vendorDeviceId forKey:@"alternate_device_id"];
-        [introDict setObject:[NSNumber numberWithBool:limitAdTracking] forKey:@"limit_ad_tracking"];
-
+        [introDict setObject:vendorDeviceId forKey:@"device_id"];
     } else {
         NSString *udid = uniqueIdentifier();
         
