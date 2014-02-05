@@ -570,8 +570,28 @@ BOOL LIOIsUIKitFlatMode(void) {
         NSString *aKey = [sortedKeys objectAtIndex:i];
         [stringResult appendString:[aTable objectForKey:aKey]];
     }
+    return [self md5StringForString:stringResult];
+}
+
+- (NSString *)hashForLocalBrandingFile
+{
+    NSString *bundlePath = [lioBundle pathForResource:@"branding" ofType:@"json" inDirectory:nil];
+    NSData *data = [NSData dataWithContentsOfFile:bundlePath];
+    if (data == nil)
+        return @"no_local_file";
     
-    const char *cString = [stringResult UTF8String];
+    NSString *brandingFileString = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@" " withString:@""];
+    brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+
+    NSLog(@"<<<STRING>>>%@<<<STRING>>>", brandingFileString);
+    
+    return [self md5StringForString:brandingFileString];
+}
+
+- (NSString *)md5StringForString:(NSString *)inputString
+{
+    const char *cString = [inputString UTF8String];
     unsigned char result[16];
     CC_MD5(cString, strlen(cString), result);
     NSMutableString *md5String = [NSMutableString string];

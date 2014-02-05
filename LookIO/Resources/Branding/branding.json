@@ -146,7 +146,7 @@
             "background": {
                 "color": "#666666",
                 "alpha": "0.5",
-                "linear-gradient": "{ start : \"#333333\", stop : \"#000000\"}"
+                "linear-gradient": "{start:\"#333333\",stop:\"#000000\"}"
             },
             "plus_button": {
                 "color": "#ffffff",
@@ -170,7 +170,7 @@
             "send_button": {
                 "background": {
                     "color": "",
-                    "linear-gradient": "{ start : \"#555555\", stop : \"#000000\"}"
+                    "linear-gradient": "{start:\"#555555\",stop:\"#000000\"}"
                 },
                 "font": {
                     "color": "#ffffff",

@@ -135,10 +135,11 @@
         }
         
         // Hash the existing branding file to prepare for visit launching
-        // TODO: Actually hash this
-        // For now, only settings a fake one to trigger getting this even once
         if (![userDefaults objectForKey:LIOBrandingManagerBrandingDictHashKey])
-            [userDefaults setObject:@"fake_hash" forKey:LIOBrandingManagerBrandingDictHashKey];
+        {
+            NSString *brandingMd5 = [[LIOBundleManager sharedBundleManager] hashForLocalBrandingFile];
+            [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
+        }
         
         // Set up the pending events queue
         self.pendingEvents = [[NSMutableArray alloc] init];

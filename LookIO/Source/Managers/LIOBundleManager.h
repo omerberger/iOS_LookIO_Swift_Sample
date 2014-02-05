@@ -55,6 +55,7 @@ BOOL LIOIsUIKitFlatMode(void);
 - (void)pruneImageCache;
 - (NSString *)localizedStringWithKey:(NSString *)aKey;
 - (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable;
+- (NSString *)hashForLocalBrandingFile;
 - (NSDictionary *)localizedStringTableForLanguage:(NSString *)aLangCode;
 - (void)resetBundle;
 
