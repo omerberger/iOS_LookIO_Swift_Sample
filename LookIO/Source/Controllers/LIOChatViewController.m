@@ -233,8 +233,10 @@
         return;
     }
     
-    CGFloat emailChatHeight = self.view.bounds.size.height - self.keyboardMenu.bounds.size.height;
-    self.emailChatView = [[LIOEmailChatView alloc] initWithFrame:CGRectMake(0, -emailChatHeight, self.view.bounds.size.width, emailChatHeight)];
+    self.emailChatView = [[LIOEmailChatView alloc] initWithFrame:self.view.bounds];
+    CGRect frame = self.emailChatView.frame;
+    frame.origin.y = -self.emailChatView.frame.size.height;
+    self.emailChatView.frame = frame;
     self.emailChatView.delegate = self;
     self.emailChatView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.emailChatView];
@@ -250,10 +252,17 @@
 - (void)hideChatAndKeyboardWithCompletion:(void (^)(void))completionBlock
 {
 
-    [self dismissKeyboardMenu];
-
-    if (completionBlock != nil)
-        completionBlock();
+    self.keyboardState = LIOKeyboardstateCompletelyHidden;
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
+        
+        [self updateSubviewFrames];
+    } completion:^(BOOL finished) {
+        if (completionBlock != nil)
+            completionBlock();
+    }];
 }
 
 
@@ -426,33 +435,29 @@
 
 - (void)emailChatView:(LIOEmailChatView *)emailChatView didSubmitEmail:(NSString *)email
 {
-    self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
-    self.chatState = LIOChatStateChat;
-    [self.emailChatView dismiss];
-    
-    [self dismissExistingAlertView];
-    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
-    [self.alertView show];
+//    [self dismissExistingAlertView];
+//    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
+//    [self.alertView show];
     
     [self.engagement sendChatHistoryPacketWithEmail:email retries:0];
 }
 
 - (void)emailChatViewDidCancel:(LIOEmailChatView *)emailChatView
 {
-    self.keyboardState = LIOKeyboardStateEmailChatOutroAnimation;
-    self.chatState = LIOChatStateChat;
     [self.emailChatView dismiss];
+}
+
+- (void)emailChatViewDidFinishDismissAnimation:(LIOEmailChatView *)emailChatView
+{
+    [self registerForKeyboardNotifications];
+    self.keyboardState = LIOKeyboardStateIntroAnimation;
+    [self.inputBarView.textView becomeFirstResponder];
 }
 
 - (void)emailChatViewDidForceDismiss:(LIOEmailChatView *)emailChatView
 {
     self.keyboardState = LIOKeyboardStateMenu;
     [self.emailChatView removeFromSuperview];
-}
-
-- (void)emailChatViewDidFinishDismissAnimation:(LIOEmailChatView *)emailChatView
-{
-    
 }
 
 #pragma mark -
@@ -606,7 +611,8 @@
 {
     self.inputBarViewDesiredHeight = height;
     [UIView animateWithDuration:0.2 animations:^{
-        [self updateSubviewFrames];
+        if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+            [self updateSubviewFrames];
     }];
 }
 
@@ -746,6 +752,7 @@
     if (self.chatState == LIOChatStateEmailChat)
     {
         [self.emailChatView removeFromSuperview];
+        self.emailChatView = nil;
     }
  
     [self unregisterForKeyboardNotifications];
@@ -858,9 +865,12 @@
     CGRect inputBarViewFrame = self.inputBarView.frame;
     CGRect tableFooterViewFrame = self.tableFooterView.frame;
     CGRect keyboardMenuFrame = self.keyboardMenu.frame;
+    CGRect emailChatViewFrame = self.emailChatView.frame;
 
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
-    
+    emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
+    NSLog(@"Setting email origin at %f", -emailChatViewFrame.size.height);
+
     if (self.keyboardState != LIOKeyboardStateMenuDragging)
         keyboardMenuFrame.size.height = self.lastKeyboardHeight;
 
@@ -896,7 +906,13 @@
             break;
             
         case LIOKeyboardStateEmailChatOutroAnimation:
-//            emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
+            break;
+            
+        case LIOKeyboardstateCompletelyHidden:
+            tableViewFrame.origin.y = - self.view.bounds.size.height;
+            inputBarViewFrame.origin.y = self.view.bounds.size.height;
+            if (saveOtherFrames)
+                [self.inputBarView unrotatePlusButton];
             break;
             
         default:
@@ -906,6 +922,8 @@
     keyboardMenuFrame.origin.y = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
+
+    self.emailChatView.frame = emailChatViewFrame;
 
     if (saveOtherFrames)
     {
@@ -1031,6 +1049,14 @@
         if (introAnimation)
             self.keyboardState = LIOKeyboardStateKeyboard;
         
+        if (self.emailChatView)
+        {
+            [self.emailChatView removeFromSuperview];
+            [self.emailChatView cleanup];
+            self.emailChatView = nil;
+        }
+
+        
     }];
 }
 
@@ -1062,12 +1088,6 @@
         
         [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
     } completion:^(BOOL finished) {
-        if (LIOKeyboardStateEmailChatOutroAnimation == self.keyboardState)
-        {
-            self.keyboardState = LIOKeyboardStateMenu;
-            [self.emailChatView removeFromSuperview];
-            
-        }
     }];
 }
 
@@ -1116,8 +1136,11 @@
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    [self.tableView reloadData];
-    [self updateSubviewFrames];
+    if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+    {
+        [self.tableView reloadData];
+        [self updateSubviewFrames];
+    }
 }
 
 #pragma mark -

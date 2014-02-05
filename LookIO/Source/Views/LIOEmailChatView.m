@@ -38,6 +38,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChat];
         CGFloat alpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementEmailChat];
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:alpha];
@@ -189,19 +190,30 @@
 
 - (void)present
 {
+    self.emailChatViewResult = LIOEmailChatViewResultNone;
+    
     [self registerForKeyboardNotifications];
     [self.emailTextField becomeFirstResponder];
 }
 
 - (void)dismiss
 {
+    self.emailChatViewResult = LIOEmailChatViewResultCancel;
+
     [self.emailTextField resignFirstResponder];
 }
 
 - (void)forceDismiss
 {
+    self.emailChatViewResult = LIOEmailChatViewResultCancel;
+    
     [self.emailTextField resignFirstResponder];
     [self.delegate emailChatViewDidForceDismiss:self];
+}
+
+- (void)cleanup
+{
+    [self unregisterForKeyboardNotifications];
 }
 
 - (void)cancelButtonWasTapped:(id)sender
@@ -213,6 +225,8 @@
 {
     if (self.emailTextField.text.length == 0)
     {
+        self.emailChatViewResult = LIOEmailChatViewResultCancel;
+        
         [self.delegate emailChatViewDidCancel:self];
     }
     else
@@ -225,7 +239,10 @@
         NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
         if ([emailTest evaluateWithObject:self.emailTextField.text])
         {
+            self.emailChatViewResult = LIOEmailChatViewResultSubmit;
+            
             [self.delegate emailChatView:self didSubmitEmail:self.emailTextField.text];
+            [self dismiss];
         }
         else
         {
@@ -315,8 +332,11 @@
         frame.origin.y = -frame.size.height;
         self.frame = frame;
     } completion:^(BOOL finished) {
-        [self unregisterForKeyboardNotifications];
-        [self.delegate emailChatViewDidFinishDismissAnimation:self];
+        if (LIOEmailChatViewResultNone != self.emailChatViewResult)
+        {
+            [self unregisterForKeyboardNotifications];
+            [self.delegate emailChatViewDidFinishDismissAnimation:self];
+        }
     }];
 }
 

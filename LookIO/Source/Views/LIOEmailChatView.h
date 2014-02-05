@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum
+{
+    LIOEmailChatViewResultNone,
+    LIOEmailChatViewResultCancel,
+    LIOEmailChatViewResultSubmit
+} LIOEmailChatViewResult;
+
 @class LIOEmailChatView;
 
 @protocol LIOEmailChatViewDelegate <NSObject>
@@ -22,10 +29,12 @@
 @interface LIOEmailChatView : UIView
 
 @property (nonatomic, assign) id<LIOEmailChatViewDelegate> delegate;
+@property (nonatomic, assign) LIOEmailChatViewResult emailChatViewResult;
 
 - (void)present;
 - (void)dismiss;
 - (void)forceDismiss;
 - (void)dismissExistingAlertView;
+- (void)cleanup;
 
 @end
