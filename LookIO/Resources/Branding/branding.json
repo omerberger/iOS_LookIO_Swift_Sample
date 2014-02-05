@@ -202,13 +202,9 @@
             }
         },
         "email_chat": {
-            "background": {
-                "color": "#999999",
-                "alpha": "0.8"
-            },
             "email_chat_card": {
                 "background": {
-                    "color": "#f9f9f9",
+                    "color": "#eeeeee",
                     "alpha": "1.0"
                 },
                 "border": {
@@ -230,19 +226,13 @@
             "title": {
                 "font": {
                     "color": "#666666",
-                    "size": "18.0"
-                }
-            },
-            "subtitle": {
-                "font": {
-                    "color": "#666666",
-                    "size": "14.0"
+                    "size": "16.0"
                 }
             },
             "cancel_button": {
                 "font": {
                     "color": "#007df5",
-                    "size": "15.0"
+                    "size": "17.0"
                 }
             },
             "submit_button": {
@@ -285,7 +275,7 @@
         },
         "survey_card": {
             "background": {
-                "color": "#f9f9f9",
+                "color": "#eeeeee",
                 "alpha": "0.9"
             },
             "border": {

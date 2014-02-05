@@ -15,6 +15,7 @@
 - (void)emailChatViewDidCancel:(LIOEmailChatView *)emailChatView;
 - (void)emailChatView:(LIOEmailChatView *)emailChatView didSubmitEmail:(NSString *)email;
 - (void)emailChatViewDidForceDismiss:(LIOEmailChatView *)emailChatView;
+- (void)emailChatViewDidFinishDismissAnimation:(LIOEmailChatView *)emailChatView;
 
 @end
 

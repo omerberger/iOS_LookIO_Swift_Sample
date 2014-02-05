@@ -238,12 +238,26 @@
     self.emailChatView.delegate = self;
     self.emailChatView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.emailChatView];
-    
-    self.keyboardState = LIOKeyboardStateEmailChatIntroAnimation;
-    self.chatState = LIOChatStateEmailChat;
-    [self.emailChatView present];
+
+    [self hideChatAndKeyboardWithCompletion:^{
+        [self unregisterForKeyboardNotifications];
+        
+        self.chatState = LIOChatStateEmailChat;
+        [self.emailChatView present];
+    }];
 }
 
+- (void)hideChatAndKeyboardWithCompletion:(void (^)(void))completionBlock
+{
+
+    [self dismissKeyboardMenu];
+
+    if (completionBlock != nil)
+        completionBlock();
+}
+
+
+     
 - (void)sendLineWithText:(NSString *)text
 {
     [self.engagement sendVisitorLineWithText:text];
@@ -434,6 +448,11 @@
 {
     self.keyboardState = LIOKeyboardStateMenu;
     [self.emailChatView removeFromSuperview];
+}
+
+- (void)emailChatViewDidFinishDismissAnimation:(LIOEmailChatView *)emailChatView
+{
+    
 }
 
 #pragma mark -
@@ -710,24 +729,7 @@
     
     [self scrollToBottomDelayed:NO];
     
-    // Register for keyboard notifications
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
-    
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-    {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(keyboardDidChangeFrame:)
-                                                     name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
-                                                   object:nil];
-    }
+    [self registerForKeyboardNotifications];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -745,24 +747,10 @@
     {
         [self.emailChatView removeFromSuperview];
     }
-    
-    // Unregister for keyboard notifications while not visible.
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIKeyboardWillShowNotification
-                                                  object:nil];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIKeyboardWillHideNotification
-                                                  object:nil];
-    
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-    {
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
-                                                      object:nil];
-    }
-    
+ 
+    [self unregisterForKeyboardNotifications];
 }
+
 
 - (void)viewDidLoad
 {
@@ -870,8 +858,7 @@
     CGRect inputBarViewFrame = self.inputBarView.frame;
     CGRect tableFooterViewFrame = self.tableFooterView.frame;
     CGRect keyboardMenuFrame = self.keyboardMenu.frame;
-    CGRect emailChatViewFrame = self.emailChatView.frame;
-    
+
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
     
     if (self.keyboardState != LIOKeyboardStateMenuDragging)
@@ -906,11 +893,11 @@
             break;
             
         case LIOKeyboardStateEmailChatIntroAnimation:
-            emailChatViewFrame.origin.y = 0;
             break;
             
         case LIOKeyboardStateEmailChatOutroAnimation:
-            emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
+//            emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
+            break;
             
         default:
             break;
@@ -924,7 +911,6 @@
     {
         self.inputBarView.frame = inputBarViewFrame;
         self.keyboardMenu.frame = keyboardMenuFrame;
-        self.emailChatView.frame = emailChatViewFrame;
     }
     
     if (saveTableViewFrames)
@@ -961,6 +947,48 @@
 
 #pragma mark -
 #pragma mark Keyboard Methods
+
+
+- (void)registerForKeyboardNotifications
+{
+    // Register for keyboard notifications
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(keyboardDidChangeFrame:)
+                                                     name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
+                                                   object:nil];
+    }
+}
+
+- (void)unregisterForKeyboardNotifications
+{
+    // Unregister for keyboard notifications while not visible.
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardWillShowNotification
+                                                  object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardWillHideNotification
+                                                  object:nil];
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
+                                                      object:nil];
+    }
+}
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
