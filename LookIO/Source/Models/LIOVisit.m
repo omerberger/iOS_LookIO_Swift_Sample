@@ -151,8 +151,6 @@
         
         // Default visibility is no - until recieving a different visibility setting
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
-        
-        // TODO: This is the place to reconnect any pending engagements..
     }
     return self;
 }

@@ -523,6 +523,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)visitDidLaunch:(LIOVisit *)visit
 {
     self.controlButton.buttonTitle = self.visit.lastKnownButtonText;
+    self.controlButton.buttonKind = [self.visit.lastKnownButtonType integerValue];
     [self.controlButton updateBaseValues];
     
     [self checkAndReconnectDisconnectedEngagement];

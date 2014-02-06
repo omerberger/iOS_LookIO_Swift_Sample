@@ -18,7 +18,7 @@ typedef enum
 typedef enum
 {
     LIOButtonKindText = 0,
-    LIOButtonKindIcon
+    LIOButtonKindIcon = 1
 } LIOButtonKind;
 
 @class LIODraggableButton;
@@ -35,6 +35,7 @@ typedef enum
 
 @property (nonatomic, assign) id <LIODraggableButtonDelegate> delegate;
 @property (nonatomic, assign) LIOButtonMode buttonMode;
+@property (nonatomic, assign) LIOButtonKind buttonKind;
 
 @property (nonatomic, assign) NSInteger numberOfUnreadMessages;
 

@@ -29,8 +29,6 @@
 
 @interface LIODraggableButton ()
 
-@property (nonatomic, assign) LIOButtonKind buttonKind;
-
 @property (nonatomic, assign) CGSize baseSize;
 
 @property (nonatomic, assign) BOOL isDragging;
@@ -80,36 +78,27 @@
         [self addSubview:self.activityIndicatorView];
         
         self.buttonKind = LIOButtonKindIcon;
+
+        self.statusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, LIODraggableButtonSize - 20.0, LIODraggableButtonSize - 20.0)];
+        self.statusImageView.userInteractionEnabled = NO;
+        [self addSubview:self.statusImageView];
+
+        self.messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.messageLabel.backgroundColor = [UIColor clearColor];
+        self.messageLabel.hidden = YES;
+        self.messageLabel.userInteractionEnabled = NO;
+        [self addSubview:self.messageLabel];
+
+        UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
+        CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
         
-        if (LIOButtonKindIcon == self.buttonKind)
-        {
-            self.statusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, LIODraggableButtonSize - 20.0, LIODraggableButtonSize - 20.0)];
-            self.statusImageView.userInteractionEnabled = NO;
-            [self addSubview:self.statusImageView];
-            
-            self.baseSize = CGSizeMake(LIODraggableButtonSize, LIODraggableButtonSize);
-            
-            self.messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-            self.messageLabel.backgroundColor = [UIColor clearColor];
-            self.messageLabel.hidden = YES;
-            self.messageLabel.userInteractionEnabled = NO;
-            [self addSubview:self.messageLabel];
-        }
-        if (LIOButtonKindText == self.buttonKind)
-        {
-            UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
-            CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
-            
-            self.buttonTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, expectedSize.width, expectedSize.height)];
-            self.buttonTitleLabel.backgroundColor = [UIColor clearColor];
-            self.buttonTitleLabel.text = self.buttonTitle;
-            self.buttonTitleLabel.font = font;
-            self.buttonTitleLabel.userInteractionEnabled = NO;
-            self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
-            [self addSubview:self.buttonTitleLabel];
-            
-            self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
-        }
+        self.buttonTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, expectedSize.width, expectedSize.height)];
+        self.buttonTitleLabel.backgroundColor = [UIColor clearColor];
+        self.buttonTitleLabel.text = self.buttonTitle;
+        self.buttonTitleLabel.font = font;
+        self.buttonTitleLabel.userInteractionEnabled = NO;
+        self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
+        [self addSubview:self.buttonTitleLabel];
         
         self.numberOfUnreadMessages = 0;
         
@@ -131,17 +120,33 @@
 
 - (void)updateBaseValues
 {
-    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
-    self.buttonTitleLabel.font = font;
-    self.buttonTitleLabel.text = self.buttonTitle;
+    if (LIOButtonKindIcon == self.buttonKind)
+    {
+        self.baseSize = CGSizeMake(LIODraggableButtonSize, LIODraggableButtonSize);
+        
+        self.statusImageView.hidden = NO;
+        self.messageLabel.hidden = NO;
+        self.buttonTitleLabel.hidden = YES;
 
+    }
     if (LIOButtonKindText == self.buttonKind)
     {
+        
+        UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
+        self.buttonTitleLabel.font = font;
+        self.buttonTitleLabel.text = self.buttonTitle;
+
         CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
         self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
         CGRect bounds = self.buttonTitleLabel.bounds;
         bounds.size = expectedSize;
         self.buttonTitleLabel.bounds = bounds;
+        
+        self.baseSize = CGSizeMake(expectedSize.height*LIODraggableButtonTextHeightRatio, expectedSize.width + 20.0);
+        
+        self.statusImageView.hidden = YES;
+        self.messageLabel.hidden = YES;
+        self.buttonTitleLabel.hidden = NO;
     }
     
     self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
@@ -163,19 +168,22 @@
     
     switch (self.buttonMode) {
         case LIOButtonModeSurvey:
-            self.statusImageView.hidden = NO;
+            if (LIOButtonKindIcon == self.buttonKind)
+                self.statusImageView.hidden = NO;
             [self.activityIndicatorView stopAnimating];
             [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyIcon" withTint:contentColor]];
             break;
             
         case LIOButtonModeChat:
-            self.statusImageView.hidden = NO;
+            if (LIOButtonKindIcon == self.buttonKind)
+                self.statusImageView.hidden = NO;
             [self.activityIndicatorView stopAnimating];
             [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor]];
             break;
             
         case LIOButtonModeLoading:
-            self.statusImageView.hidden = YES;
+            if (LIOButtonKindIcon == self.buttonKind)
+                self.statusImageView.hidden = YES;
             self.activityIndicatorView.frame = self.bounds;
             [self.activityIndicatorView startAnimating];
             break;
