@@ -152,7 +152,7 @@
     self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
 
     [self resetFrame];
-    [self resetTitleLabelRotation];
+    [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
     [self updateButtonBranding];
 }
 
@@ -379,7 +379,7 @@
         [self setHiddenFrame];
 }
 
-- (void)resetTitleLabelRotation
+- (void)resetTitleLabelRotationForAttachedToRight:(BOOL)attachedToRight
 {
     if (LIOButtonKindText != self.buttonKind)
         return;
@@ -387,7 +387,7 @@
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
     CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
     
-    if (self.isAttachedToRight)
+    if (attachedToRight)
     {
         self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.7, expectedSize.width/2 + 10.0);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
@@ -582,6 +582,70 @@
     translatedPoint = CGPointMake(self.panPoint.x + translatedPoint.x, self.panPoint.y + translatedPoint.y);
     [[sender view] setCenter:translatedPoint];
     
+    // Toggle text button alpha when dragging
+    if (LIOButtonKindText == self.buttonKind)
+    {
+        BOOL goingToAttachToRight = self.isAttachedToRight;
+        UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
+            CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
+            if (verticalPercent < 0.5)
+            {
+                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                goingToAttachToRight = NO;
+            }
+            else
+            {
+                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                goingToAttachToRight = YES;
+            }
+        }
+        if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown ) {
+            CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
+            if (verticalPercent < 0.5)
+            {
+                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                goingToAttachToRight = YES;
+            }
+            else
+            {
+                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                goingToAttachToRight = NO;
+            }
+        }
+        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+            CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
+            if (verticalPercent < 0.5)
+            {
+                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                goingToAttachToRight = YES;
+            }
+            else
+            {
+                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                goingToAttachToRight = NO;
+            }
+        }
+        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+            CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
+            if (verticalPercent < 0.5)
+            {
+                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                goingToAttachToRight = NO;
+            }
+            else
+            {
+                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                goingToAttachToRight = YES;
+            }
+        }
+
+        
+        
+        [self resetTitleLabelRotationForAttachedToRight:goingToAttachToRight];
+    }
+    
+    
     if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
         self.isDragging = NO;
         
@@ -673,8 +737,11 @@
         [UIView animateWithDuration:0.3 animations:^{
             CGRect frame = self.frame;
             frame.origin = self.preDragPosition;
-            [self resetTitleLabelRotation];
+            [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
             self.frame = frame;
+            
+            if (LIOButtonKindText == self.buttonKind)
+                self.buttonTitleLabel.alpha = 1.0;
         }];
         
         [self.delegate draggableButtonDidEndDragging:self];
