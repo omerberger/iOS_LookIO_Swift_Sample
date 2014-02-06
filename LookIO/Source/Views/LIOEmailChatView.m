@@ -38,6 +38,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChat];
         CGFloat alpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementEmailChat];
@@ -97,7 +98,6 @@
         [self.cancelButton setTitleColor:[cancelButtonColor colorWithAlphaComponent:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
         UIFont *buttonFont = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementEmailChatCancelButton];
         self.cancelButton.titleLabel.font = buttonFont;
-        [self.backgroundView addSubview:self.cancelButton];
 
         CGRect frame = self.cancelButton.frame;
         frame.size = [self.cancelButton.titleLabel.text sizeWithFont:buttonFont];
@@ -115,19 +115,28 @@
         frame.size = [self.submitButton.titleLabel.text sizeWithFont:   buttonFont];
         self.submitButton.frame = frame;
         
-        UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
-        numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        if (LIOIsUIKitFlatMode())
-            numberToolbar.barStyle = UIBarStyleDefault;
+        if (!padUI)
+        {
+            
+            UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            if (LIOIsUIKitFlatMode())
+                numberToolbar.barStyle = UIBarStyleDefault;
+            else
+                numberToolbar.barStyle = UIBarStyleBlack;
+            
+            numberToolbar.items = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:self.cancelButton],
+                                   [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                                   [[UIBarButtonItem alloc] initWithCustomView:self.submitButton],
+                                   nil];
+            [numberToolbar sizeToFit];
+            self.emailTextField.inputAccessoryView = numberToolbar;
+        }
         else
-            numberToolbar.barStyle = UIBarStyleBlack;
-        
-        numberToolbar.items = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:self.cancelButton],
-                               [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                               [[UIBarButtonItem alloc] initWithCustomView:self.submitButton],
-                               nil];
-        [numberToolbar sizeToFit];
-        self.emailTextField.inputAccessoryView = numberToolbar;
+        {
+            [self.backgroundView addSubview:self.cancelButton];
+            [self.backgroundView addSubview:self.submitButton];
+        }
     }
     
     return self;
@@ -140,10 +149,21 @@
     BOOL landscape = UIInterfaceOrientationIsLandscape(actualInterfaceOrientation);
 
     CGRect frame = self.backgroundView.frame;
-    frame.origin.x = LIOEmailChatViewOuterMarginPhone;
-    frame.origin.y = landscape ? 10.0 : 25.0;
-    frame.size.width = self.bounds.size.width - 2*LIOEmailChatViewOuterMarginPhone;
+    if (padUI)
+    {
+        frame.origin.y = landscape ? 20 : 135;
+        frame.size.width = landscape ? 400 : 450;
+        frame.size.height = landscape ? 350 : 460;
+        frame.origin.x = (self.superview.frame.size.width - frame.size.width)/2;
+    }
+    else
+    {
+        frame.origin.x = LIOEmailChatViewOuterMarginPhone;
+        frame.origin.y = landscape ? 10.0 : 25.0;
+        frame.size.width = self.bounds.size.width - 2*LIOEmailChatViewOuterMarginPhone;
+    }
     self.backgroundView.frame = frame;
+
     
     frame = self.titleLabel.frame;
     CGSize expectedSize = [self.titleLabel.text sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(self.backgroundView.bounds.size.width - 2*LIOEmailChatViewInnerMargin, self.backgroundView.bounds.size.height - 2*LIOEmailChatViewInnerMargin) lineBreakMode:UILineBreakModeWordWrap];
@@ -174,6 +194,38 @@
         }
         self.backgroundView.frame = frame;
     }
+    
+    
+    if (padUI)
+    {
+        CGFloat contentHeight = self.emailTextFieldBackgroundView.frame.origin.y + self.emailTextFieldBackgroundView.frame.size.height;
+        CGFloat startPoint = self.backgroundView.frame.size.height/2 - contentHeight/2;
+        
+        frame = self.titleLabel.frame;
+        frame.origin.y = startPoint;
+        self.titleLabel.frame = frame;
+        
+        frame = self.emailTextFieldBackgroundView.frame;
+        frame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + (landscape ? 12.0 : 15.0);
+        self.emailTextFieldBackgroundView.frame = frame;
+        
+        frame = self.submitButton.frame;
+        CGSize expectedSubmitButtonSize = [LIOLocalizedString(@"LIOEmailHistoryViewController.SubmitButton") sizeWithFont:self.submitButton.titleLabel.font];
+        
+        frame.origin.x = self.backgroundView.frame.size.width - expectedSubmitButtonSize.width - 33.0;
+        frame.origin.y = self.backgroundView.frame.size.height - expectedSubmitButtonSize.height - 40.0;
+        frame.size = expectedSubmitButtonSize;
+        self.submitButton.frame = frame;
+        
+        frame = self.cancelButton.frame;
+        CGSize expectedCancelButtonSize = [LIOLocalizedString(@"LIOEmailHistoryViewController.NavLeftButton") sizeWithFont:self.cancelButton.titleLabel.font];
+        
+        frame.origin.x = 33.0;
+        frame.origin.y = self.backgroundView.frame.size.height - expectedCancelButtonSize.height - 40.0;
+        frame.size = expectedCancelButtonSize;
+        self.cancelButton.frame = frame;
+    }
+    
 }
 
 #pragma mark -
