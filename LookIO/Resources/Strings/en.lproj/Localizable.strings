@@ -40,6 +40,7 @@
 "LIOEmailHistoryViewController.NavTitle" = "Email Conversation";
 "LIOEmailHistoryViewController.NavLeftButton" = "Close";
 "LIOEmailHistoryViewController.HeaderText" = "Need a copy of this chat? No problem!";
+"LIOEmailHistoryViewController.HeaderTextLong" = "Please provide your email address for a copy of this chat transcript.";
 "LIOEmailHistoryViewController.EmailHeader" = "Your Email Address:";
 "LIOEmailHistoryViewController.SubmitButton" = "Submit";
 "LIOEmailHistoryViewController.SuccessAlertTitle" = "Thank you!";

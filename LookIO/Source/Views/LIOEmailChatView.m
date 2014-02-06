@@ -12,7 +12,7 @@
 #import "LIOBundleManager.h"
 
 #define LIOEmailChatViewOuterMarginPhone 10
-#define LIOEmailChatViewInnerMargin 10
+#define LIOEmailChatViewInnerMargin 25
 #define LIOEmailChatViewTextFieldMargin 30
 
 
@@ -40,6 +40,11 @@
     if (self) {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
+        UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
+        tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:tappableDismissBackgroundButton];        
+        
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChat];
         CGFloat alpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementEmailChat];
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:alpha];
@@ -56,7 +61,7 @@
         self.titleLabel.backgroundColor = [UIColor clearColor];
         self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementEmailChatTitle];
         self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementEmailChatTitle];
-        self.titleLabel.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderText");
+        self.titleLabel.text = LIOLocalizedString(@"LIOEmailHistoryViewController.HeaderTextLong");
         self.titleLabel.textAlignment = UITextAlignmentCenter;
         self.titleLabel.lineBreakMode = UILineBreakModeWordWrap;
         [self.backgroundView addSubview:self.titleLabel];
