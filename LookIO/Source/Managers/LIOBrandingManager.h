@@ -12,6 +12,7 @@ typedef enum
 {
     LIOBrandingElementControlButton = 0,
     LIOBrandingElementControlButtonBadge,
+    LIOBrandingElementControlButtonMessageLabel,
     LIOBrandingElementLoadingScreen,
     LIOBrandingElementLoadingScreenTitle,
     LIOBrandingElementLoadingScreenSubtitle,

@@ -375,6 +375,9 @@
             "content": {
                 "color": "#ffffff"
             },
+						"border": {
+							"color": "#cccccc"
+						},
             "position": {
                 "horizontal": "right",
                 "vertical": "0.5"
@@ -386,7 +389,19 @@
             },
             "font": {
                 "color": "#ffffff",
-                "size": "16.0"
+                "size": "17.0"
+            },
+            "message_label": {
+                "font": {
+                    "color": "#ffffff",
+                    "size": "14.0"
+                },
+                "background": {
+                   "color": "#666666"
+                },
+								"border": {
+									"color": "#cccccc"
+								}
             }
         }
     }

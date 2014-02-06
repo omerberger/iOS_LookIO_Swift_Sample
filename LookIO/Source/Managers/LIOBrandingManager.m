@@ -117,6 +117,20 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementControlButtonMessageLabel == element)
+        {
+            if (visitDictionary)
+            {
+                NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
+                if (buttonDictionary)
+                {
+                    NSDictionary *messageLabelDictionary = [buttonDictionary objectForKey:@"message_label"];
+                    if (messageLabelDictionary)
+                        dictionary = messageLabelDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementFont == element)
         {
             return engagementDictionary;

@@ -42,8 +42,10 @@
 @property (nonatomic, strong) UIImageView *statusImageView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
+@property (nonatomic, strong) UIView *borderView;
 @property (nonatomic, strong) UILabel *buttonTitleLabel;
 @property (nonatomic, strong) UILabel *messageLabel;
+@property (nonatomic, strong) UILabel *externalMessageLabel;
 @property (nonatomic, strong) LIOBadgeView *badgeView;
 
 @property (nonatomic, strong) LIOTimerProxy *messageTimer;
@@ -61,8 +63,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.layer.cornerRadius = 5.0;
-        self.layer.borderWidth = 1.0;
-        
+        self.layer.borderWidth = 0.0;
         self.buttonTitle = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
         
         [self addTarget:self action:@selector(draggableButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -72,6 +73,13 @@
         
         self.isVisible = NO;
         self.isAttachedToRight = YES;
+        
+        self.borderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width + 1, self.bounds.size.height + 1.0)];
+        self.borderView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.borderView.layer.borderWidth = 1.0;
+        self.borderView.layer.cornerRadius = 5.0;
+        self.borderView.userInteractionEnabled = NO;
+        [self addSubview:self.borderView];
         
         self.activityIndicatorView = [[UIActivityIndicatorView alloc] initWithFrame:self.bounds];
         self.activityIndicatorView.userInteractionEnabled = NO;
@@ -88,6 +96,19 @@
         self.messageLabel.hidden = YES;
         self.messageLabel.userInteractionEnabled = NO;
         [self addSubview:self.messageLabel];
+        
+        self.externalMessageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.externalMessageLabel.layer.cornerRadius = 3.0;
+        self.externalMessageLabel.textAlignment = UITextAlignmentCenter;
+        self.externalMessageLabel.layer.borderWidth = 1.0;
+        self.externalMessageLabel.hidden = YES;
+        self.externalMessageLabel.userInteractionEnabled = YES;
+        [self addSubview:self.externalMessageLabel];
+        
+        UIButton *externalMessageLabelButton = [[UIButton alloc] init];
+        externalMessageLabelButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        [externalMessageLabelButton addTarget:self action:@selector(messageLabelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.externalMessageLabel addSubview:externalMessageLabelButton];
 
         UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
         CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
@@ -107,7 +128,7 @@
         self.badgeView.hidden = YES;
         [self addSubview:self.badgeView];
         
-        self.clipsToBounds = YES;
+        self.clipsToBounds = NO;
         
         self.buttonMode = LIOButtonModeChat;
         [self updateBaseValues];
@@ -125,11 +146,8 @@
         self.baseSize = CGSizeMake(LIODraggableButtonSize, LIODraggableButtonSize);
         
         self.statusImageView.hidden = NO;
-        self.messageLabel.hidden = NO;
+//        self.messageLabel.hidden = NO;
         self.buttonTitleLabel.hidden = YES;
-        
-        self.badgeView.frame = CGRectMake(30, 5, 20, 20);
-
     }
     if (LIOButtonKindText == self.buttonKind)
     {
@@ -148,9 +166,12 @@
         self.statusImageView.hidden = YES;
         self.messageLabel.hidden = YES;
         self.buttonTitleLabel.hidden = NO;
-        
-        self.badgeView.frame = CGRectMake(self.baseSize.width - 20.0, 0, 20, 20);
     }
+    
+    if (self.isAttachedToRight)
+        self.badgeView.frame = CGRectMake(-10, -10, 20, 20);
+    else
+        self.badgeView.frame = CGRectMake(self.baseSize.width - 10.0, -10.0, 20, 20);
     
     self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
 
@@ -163,10 +184,14 @@
 {
     self.alpha = [[LIOBrandingManager brandingManager] alphaForElement:LIOBrandingElementControlButton];
     self.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButton];
-    self.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
+    self.borderView.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButton].CGColor;
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
 
     self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+    self.externalMessageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButtonMessageLabel];
+    self.externalMessageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButtonMessageLabel];
+    self.externalMessageLabel.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButtonMessageLabel];
+    self.externalMessageLabel.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButtonMessageLabel].CGColor;
     self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
     
     switch (self.buttonMode) {
@@ -300,6 +325,11 @@
 
 - (void)setHiddenFrame
 {
+    if (self.isShowingMessage)
+    {
+        [self messageTimerDidFire];
+    }
+    
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -384,9 +414,6 @@
 
 - (void)resetTitleLabelRotationForAttachedToRight:(BOOL)attachedToRight
 {
-    if (LIOButtonKindText != self.buttonKind)
-        return;
-    
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
     CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
     
@@ -394,11 +421,15 @@
     {
         self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.7, expectedSize.width/2 + 10.0);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
+        
+        self.badgeView.frame = CGRectMake(-10, -10, 20, 20);
     }
     else
     {
         self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.8, expectedSize.width/2 + 10.0);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(M_PI/2);
+        
+        self.badgeView.frame = CGRectMake(self.baseSize.width - 10.0, -10.0, 20, 20);
     }
 }
 
@@ -460,11 +491,8 @@
     if (LIOButtonModeLoading == self.buttonMode)
         return;
     
-    if (LIOButtonKindText == self.buttonKind)
-        return;
-    
     // Just to make sure, don't display a message from a hidden button
-    if (self.isHidden)
+    if (self.hidden)
         return;
     
     // Also don't show messages on a dragged button
@@ -481,6 +509,7 @@
     self.isShowingMessage = YES;
     
     self.messageLabel.text = message;
+    self.externalMessageLabel.text = message;
     
     CGSize expectedSize;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
@@ -502,10 +531,25 @@
     frame.size.width = expectedSize.width;
     frame.size.height = LIODraggableButtonSize;
     self.messageLabel.frame = frame;
-    self.messageLabel.hidden = NO;
     
-    [UIView animateWithDuration:0.3 animations:^{
-        [self setVisibleFrameWithMessageWidth:expectedSize.width];
+    frame = self.externalMessageLabel.frame;
+    if (self.isAttachedToRight)
+        frame.origin.x = -expectedSize.width - 20.0;
+    else
+        frame.origin.x = self.baseSize.width + 10.0;
+    frame.origin.y = (self.baseSize.height - expectedSize.height - 10.0)/2;
+    frame.size.width = expectedSize.width + 10.0;
+    frame.size.height = expectedSize.height + 10.0;
+    self.externalMessageLabel.frame = frame;
+    
+    CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
+    
+    self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
+    self.externalMessageLabel.hidden = NO;
+    
+    [UIView animateWithDuration:0.5 animations:^{
+        self.externalMessageLabel.transform = CGAffineTransformIdentity;
+//        [self setVisibleFrameWithMessageWidth:expectedSize.width];
     } completion:^(BOOL finished) {
         if (self.messageTimer)
         {
@@ -524,10 +568,15 @@
         self.messageTimer = nil;
     }
 
-    [UIView animateWithDuration:0.3 animations:^{
-        [self setVisibleFrame];
+    CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
+    
+    [UIView animateWithDuration:0.5 animations:^{
+
+        self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
     } completion:^(BOOL finished) {
         self.isShowingMessage = NO;
+        self.externalMessageLabel.hidden = YES;
+        self.externalMessageLabel.transform = CGAffineTransformIdentity;
     }];
 }
 
@@ -563,6 +612,11 @@
     [self.delegate draggableButtonWasTapped:self];
 }
 
+- (void)messageLabelButtonWasTapped:(id)sender
+{
+    [self sendActionsForControlEvents: UIControlEventTouchUpInside];
+}
+
 #pragma mark -
 #pragma mark Gesture Recognizer Methods
 
@@ -577,81 +631,82 @@
         self.panPoint = CGPointMake([[sender view] center].x, [[sender view] center].y);
         
         [self.delegate draggableButtonDidBeginDragging:self];
+        
+        if (self.isShowingMessage)
+        {
+            [self messageTimerDidFire];
+        }
+        
     }
     
     translatedPoint = CGPointMake(self.panPoint.x + translatedPoint.x, self.panPoint.y + translatedPoint.y);
     [[sender view] setCenter:translatedPoint];
     
     // Toggle text button alpha when dragging
-    if (LIOButtonKindText == self.buttonKind)
-    {
-        BOOL goingToAttachToRight = self.isAttachedToRight;
-        UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-        if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
-            CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
-            if (verticalPercent < 0.5)
-            {
-                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-                self.badgeView.alpha = 1 - (verticalPercent*2);
-                goingToAttachToRight = NO;
-            }
-            else
-            {
-                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-                self.badgeView.alpha = (verticalPercent*2) - 1;
-                goingToAttachToRight = YES;
-            }
+    BOOL goingToAttachToRight = self.isAttachedToRight;
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
+        CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
+        if (verticalPercent < 0.5)
+        {
+            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+            self.badgeView.alpha = 1 - (verticalPercent*2);
+            goingToAttachToRight = NO;
         }
-        if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown ) {
-            CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
-            if (verticalPercent < 0.5)
-            {
-                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-                self.badgeView.alpha = 1 - (verticalPercent*2);
-                goingToAttachToRight = YES;
-            }
-            else
-            {
-                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-                self.badgeView.alpha = (verticalPercent*2) - 1;
-                goingToAttachToRight = NO;
-            }
+        else
+        {
+            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+            self.badgeView.alpha = (verticalPercent*2) - 1;
+            goingToAttachToRight = YES;
         }
-        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
-            CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
-            if (verticalPercent < 0.5)
-            {
-                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-                self.badgeView.alpha = 1 - (verticalPercent*2);
-                goingToAttachToRight = YES;
-            }
-            else
-            {
-                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-                self.badgeView.alpha = (verticalPercent*2) - 1;
-                goingToAttachToRight = NO;
-            }
-        }
-        if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
-            CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
-            if (verticalPercent < 0.5)
-            {
-                self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-                self.badgeView.alpha = 1 - (verticalPercent*2);
-                goingToAttachToRight = NO;
-            }
-            else
-            {
-                self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-                self.badgeView.alpha = (verticalPercent*2) - 1;
-                goingToAttachToRight = YES;
-            }
-        }
-
-        
-        
-        [self resetTitleLabelRotationForAttachedToRight:goingToAttachToRight];
     }
+    if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown ) {
+        CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
+        if (verticalPercent < 0.5)
+        {
+            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+            self.badgeView.alpha = 1 - (verticalPercent*2);
+            goingToAttachToRight = YES;
+        }
+        else
+        {
+            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+            self.badgeView.alpha = (verticalPercent*2) - 1;
+            goingToAttachToRight = NO;
+        }
+    }
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft) {
+        CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
+        if (verticalPercent < 0.5)
+        {
+            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+            self.badgeView.alpha = 1 - (verticalPercent*2);
+            goingToAttachToRight = YES;
+        }
+        else
+        {
+            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+            self.badgeView.alpha = (verticalPercent*2) - 1;
+            goingToAttachToRight = NO;
+        }
+    }
+    if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight) {
+        CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
+        if (verticalPercent < 0.5)
+        {
+            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+            self.badgeView.alpha = 1 - (verticalPercent*2);
+            goingToAttachToRight = NO;
+        }
+        else
+        {
+            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+            self.badgeView.alpha = (verticalPercent*2) - 1;
+            goingToAttachToRight = YES;
+        }
+    }
+    
+    [self resetTitleLabelRotationForAttachedToRight:goingToAttachToRight];
     
     
     if ([panGestureRecognizer state] == UIGestureRecognizerStateEnded) {
@@ -748,11 +803,8 @@
             [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
             self.frame = frame;
             
-            if (LIOButtonKindText == self.buttonKind)
-            {
-                self.buttonTitleLabel.alpha = 1.0;
-                self.badgeView.alpha = 1.0;
-            }
+            self.buttonTitleLabel.alpha = 1.0;
+            self.badgeView.alpha = 1.0;
         }];
         
         [self.delegate draggableButtonDidEndDragging:self];
