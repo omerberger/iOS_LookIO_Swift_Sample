@@ -402,6 +402,23 @@
         }
     }
     
+    NSDictionary *buttonDictionary = [settingsDict objectForKey:@"button"];
+    if (buttonDictionary)
+    {
+        NSMutableDictionary *resolvedButtonDictionary = [[NSMutableDictionary alloc] init];
+        
+        NSNumber *buttonType = [buttonDictionary objectForKey:@"button_type"];
+        if (buttonType)
+            [resolvedButtonDictionary setObject:buttonType forKey:@"button_type"];
+        
+        NSNumber *popupChat = [buttonDictionary objectForKey:@"popup_chat"];
+        if (popupChat)
+            [resolvedButtonDictionary setObject:popupChat forKey:@"popup_chat"];
+        
+        if (resolvedButtonDictionary.allKeys.count > 0)
+            [resolvedSettings setObject:resolvedButtonDictionary forKey:@"button"];
+    }
+    
     NSNumber *buttonVisibility = [settingsDict objectForKey:@"button_visibility"];
     if (buttonVisibility)
         [resolvedSettings setObject:buttonVisibility forKey:@"button_visibility"];
@@ -501,7 +518,22 @@
                 self.previousControlButtonVisibilityValue = self.lastKnownButtonVisibility;
                 self.lastKnownButtonVisibility = [NSNumber numberWithBool:0];
             }
+        }
+        
+        NSDictionary *buttonDictionary = [resolvedSettings objectForKey:@"button"];
+        if (buttonDictionary)
+        {
+            NSNumber *buttonType = [buttonDictionary objectForKey:@"button_type"];
+            if (buttonType)
+            {
+                self.lastKnownButtonType = buttonType;
+            }
             
+            NSNumber *popupChat = [buttonDictionary objectForKey:@"popup_chat"];
+            if (popupChat)
+            {
+                self.lastKnownButtonPopupChat = [popupChat boolValue];
+            }            
         }
         
         NSString *buttonText = [resolvedSettings objectForKey:@"button_text"];

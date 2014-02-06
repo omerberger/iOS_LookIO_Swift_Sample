@@ -621,8 +621,6 @@
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
         {
-            NSLog(@"center x is %f and half screen is %f", self.center.x, superview.bounds.size.width/2);
-            
             if (self.center.x > superview.bounds.size.width/2)
             {
                 self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.bounds.size.width + 3, self.frame.origin.y);

@@ -1340,16 +1340,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
-            [self.controlButton reportUnreadMessage];
-            // TODO: Disable this when receiving settings from server
-            if (self.visit.controlButtonHidden)
+            if (self.visit.lastKnownButtonPopupChat)
             {
                 [self presentLookIOWindow];
                 [self.containerViewController presentChatForEngagement:engagement];
             }
             else
             {
+                [self.controlButton reportUnreadMessage];
                 [self.controlButton presentMessage:@"The agent has sent a message"];
+                
+                // TODO: Send a delegate message with this content
             }
         }
     }

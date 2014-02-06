@@ -868,7 +868,6 @@
 
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
     emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
-    NSLog(@"Setting email origin at %f", -emailChatViewFrame.size.height);
 
     if (self.keyboardState != LIOKeyboardStateMenuDragging)
         keyboardMenuFrame.size.height = self.lastKeyboardHeight;
