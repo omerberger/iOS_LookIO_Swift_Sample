@@ -127,11 +127,12 @@
         self.statusImageView.hidden = NO;
         self.messageLabel.hidden = NO;
         self.buttonTitleLabel.hidden = YES;
+        
+        self.badgeView.frame = CGRectMake(30, 5, 20, 20);
 
     }
     if (LIOButtonKindText == self.buttonKind)
     {
-        
         UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
         self.buttonTitleLabel.font = font;
         self.buttonTitleLabel.text = self.buttonTitle;
@@ -147,6 +148,8 @@
         self.statusImageView.hidden = YES;
         self.messageLabel.hidden = YES;
         self.buttonTitleLabel.hidden = NO;
+        
+        self.badgeView.frame = CGRectMake(self.baseSize.width - 20.0, 0, 20, 20);
     }
     
     self.isAttachedToRight = [[LIOBrandingManager brandingManager] attachedToRightForElement:LIOBrandingElementControlButton];
@@ -442,9 +445,6 @@
 
 - (void)reportUnreadMessage
 {
-    if (LIOButtonKindText == self.buttonKind)
-        return;
-        
     self.numberOfUnreadMessages += 1;
 
     [self.badgeView setBadgeNumber:self.numberOfUnreadMessages];
@@ -592,11 +592,13 @@
             if (verticalPercent < 0.5)
             {
                 self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                self.badgeView.alpha = 1 - (verticalPercent*2);
                 goingToAttachToRight = NO;
             }
             else
             {
                 self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                self.badgeView.alpha = (verticalPercent*2) - 1;
                 goingToAttachToRight = YES;
             }
         }
@@ -605,11 +607,13 @@
             if (verticalPercent < 0.5)
             {
                 self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                self.badgeView.alpha = 1 - (verticalPercent*2);
                 goingToAttachToRight = YES;
             }
             else
             {
                 self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                self.badgeView.alpha = (verticalPercent*2) - 1;
                 goingToAttachToRight = NO;
             }
         }
@@ -618,11 +622,13 @@
             if (verticalPercent < 0.5)
             {
                 self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                self.badgeView.alpha = 1 - (verticalPercent*2);
                 goingToAttachToRight = YES;
             }
             else
             {
                 self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                self.badgeView.alpha = (verticalPercent*2) - 1;
                 goingToAttachToRight = NO;
             }
         }
@@ -631,11 +637,13 @@
             if (verticalPercent < 0.5)
             {
                 self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
+                self.badgeView.alpha = 1 - (verticalPercent*2);
                 goingToAttachToRight = NO;
             }
             else
             {
                 self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
+                self.badgeView.alpha = (verticalPercent*2) - 1;
                 goingToAttachToRight = YES;
             }
         }
@@ -741,7 +749,10 @@
             self.frame = frame;
             
             if (LIOButtonKindText == self.buttonKind)
+            {
                 self.buttonTitleLabel.alpha = 1.0;
+                self.badgeView.alpha = 1.0;
+            }
         }];
         
         [self.delegate draggableButtonDidEndDragging:self];

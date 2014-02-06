@@ -30,6 +30,7 @@
         self.label.font = [[LIOBrandingManager brandingManager] fontForElement:element];
         self.label.textAlignment = NSTextAlignmentCenter;
         self.label.backgroundColor = [UIColor clearColor];
+        self.label.adjustsFontSizeToFitWidth = YES;
         [self addSubview:self.label];
     }
     return self;
