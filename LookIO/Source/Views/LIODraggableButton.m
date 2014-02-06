@@ -17,6 +17,7 @@
 
 // Views
 #import "LIOBadgeView.h"
+#import "LIOPopupLabel.h"
 
 #define LIODraggableButtonSize 50.0
 #define LIODraggableButtonMessageTime 5.0
@@ -45,7 +46,7 @@
 @property (nonatomic, strong) UIView *borderView;
 @property (nonatomic, strong) UILabel *buttonTitleLabel;
 @property (nonatomic, strong) UILabel *messageLabel;
-@property (nonatomic, strong) UILabel *externalMessageLabel;
+@property (nonatomic, strong) LIOPopupLabel *externalMessageLabel;
 @property (nonatomic, strong) LIOBadgeView *badgeView;
 
 @property (nonatomic, strong) LIOTimerProxy *messageTimer;
@@ -97,10 +98,8 @@
         self.messageLabel.userInteractionEnabled = NO;
         [self addSubview:self.messageLabel];
         
-        self.externalMessageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        self.externalMessageLabel.layer.cornerRadius = 3.0;
+        self.externalMessageLabel = [[LIOPopupLabel alloc] initWithFrame:CGRectZero];
         self.externalMessageLabel.textAlignment = UITextAlignmentCenter;
-        self.externalMessageLabel.layer.borderWidth = 1.0;
         self.externalMessageLabel.hidden = YES;
         self.externalMessageLabel.userInteractionEnabled = YES;
         [self addSubview:self.externalMessageLabel];
@@ -188,10 +187,13 @@
     UIColor *contentColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
 
     self.messageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorContent forElement:LIOBrandingElementControlButton];
+
     self.externalMessageLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButtonMessageLabel];
     self.externalMessageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButtonMessageLabel];
     self.externalMessageLabel.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButtonMessageLabel];
+    self.externalMessageLabel.arrowLayer.fillColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementControlButtonMessageLabel] CGColor];
     self.externalMessageLabel.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButtonMessageLabel].CGColor;
+    self.externalMessageLabel.borderLayer.strokeColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButtonMessageLabel].CGColor;
     self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
     
     switch (self.buttonMode) {
@@ -506,10 +508,13 @@
         self.messageTimer = nil;
     }
     
+    BOOL wasPreviouslyShowingMessage = self.isShowingMessage;
+    
     self.isShowingMessage = YES;
     
     self.messageLabel.text = message;
     self.externalMessageLabel.text = message;
+    self.externalMessageLabel.isPointingRight = self.isAttachedToRight;
     
     CGSize expectedSize;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
@@ -540,15 +545,22 @@
     frame.origin.y = (self.baseSize.height - expectedSize.height - 10.0)/2;
     frame.size.width = expectedSize.width + 10.0;
     frame.size.height = expectedSize.height + 10.0;
-    self.externalMessageLabel.frame = frame;
     
-    CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
+    if (!wasPreviouslyShowingMessage)
+    {
+        self.externalMessageLabel.frame = frame;
+
+        CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
+        self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
+        self.externalMessageLabel.hidden = NO;
+    }
     
-    self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
-    self.externalMessageLabel.hidden = NO;
+    [self.externalMessageLabel setNeedsLayout];
     
     [UIView animateWithDuration:0.5 animations:^{
         self.externalMessageLabel.transform = CGAffineTransformIdentity;
+        if (wasPreviouslyShowingMessage)
+            self.externalMessageLabel.frame = frame;
 //        [self setVisibleFrameWithMessageWidth:expectedSize.width];
     } completion:^(BOOL finished) {
         if (self.messageTimer)
