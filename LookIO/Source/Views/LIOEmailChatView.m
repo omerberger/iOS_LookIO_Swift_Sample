@@ -259,7 +259,7 @@
 {
     self.emailChatViewResult = LIOEmailChatViewResultCancel;
     
-    [self.emailTextField resignFirstResponder];
+    [self unregisterForKeyboardNotifications];
     [self.delegate emailChatViewDidForceDismiss:self];
 }
 

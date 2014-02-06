@@ -301,8 +301,11 @@
 - (void)engagement:(LIOEngagement *)engagement didReceiveMessage:(LIOChatMessage *)message
 {
     [self.tableView reloadData];
-    [self updateSubviewFrames];
-    [self scrollToBottomDelayed:YES];
+    if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+    {
+        [self updateSubviewFrames];
+        [self scrollToBottomDelayed:YES];
+    }
 }
 
 - (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement
@@ -435,10 +438,6 @@
 
 - (void)emailChatView:(LIOEmailChatView *)emailChatView didSubmitEmail:(NSString *)email
 {
-//    [self dismissExistingAlertView];
-//    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertTitle") message:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertBody") delegate:nil cancelButtonTitle:LIOLocalizedString(@"LIOEmailHistoryViewController.SuccessAlertButton") otherButtonTitles:nil];
-//    [self.alertView show];
-    
     [self.engagement sendChatHistoryPacketWithEmail:email retries:0];
 }
 
@@ -456,7 +455,7 @@
 
 - (void)emailChatViewDidForceDismiss:(LIOEmailChatView *)emailChatView
 {
-    self.keyboardState = LIOKeyboardStateMenu;
+    self.keyboardState = LIOKeyboardStateIntroAnimation;
     [self.emailChatView removeFromSuperview];
 }
 
@@ -902,12 +901,6 @@
             tableViewFrame.origin.y = - (inputBarViewFrame.origin.y + inputBarViewFrame.size.height);
             break;
             
-        case LIOKeyboardStateEmailChatIntroAnimation:
-            break;
-            
-        case LIOKeyboardStateEmailChatOutroAnimation:
-            break;
-            
         case LIOKeyboardstateCompletelyHidden:
             tableViewFrame.origin.y = - self.view.bounds.size.height;
             inputBarViewFrame.origin.y = self.view.bounds.size.height;
@@ -1026,9 +1019,8 @@
     if (LIOKeyboardStateIntroAnimation == self.keyboardState)
         introAnimation = YES;
     
-    // Set new keyboard state and size
-    if (self.keyboardState != LIOKeyboardStateEmailChatIntroAnimation)
-        self.keyboardState = LIOKeyboardStateKeyboard;
+    self.keyboardState = LIOKeyboardStateKeyboard;
+    
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
