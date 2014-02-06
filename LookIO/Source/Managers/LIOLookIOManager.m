@@ -1375,6 +1375,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
     [self.containerViewController engagement:engagement didReceiveNotification:notification];
+    if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+        [self.controlButton presentMessage:notification];
 }
 
 - (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;

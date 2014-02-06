@@ -516,10 +516,12 @@
     self.externalMessageLabel.text = message;
     self.externalMessageLabel.isPointingRight = self.isAttachedToRight;
     
+    CGFloat maxWidth = 260.0;
+
     CGSize expectedSize;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
     {
-        CGRect expectedTextRect = [message boundingRectWithSize:CGSizeMake(self.superview.bounds.size.width, self.bounds.size.height)
+        CGRect expectedTextRect = [message boundingRectWithSize:CGSizeMake(maxWidth, self.bounds.size.height)
                                                      options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
                                                   attributes:@{NSFontAttributeName:self.messageLabel.font}
                                                      context:nil];
@@ -527,7 +529,7 @@
     }
     else
     {
-        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(self.superview.bounds.size.width, self.bounds.size.height) lineBreakMode:UILineBreakModeTailTruncation];
+        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(maxWidth, self.bounds.size.height) lineBreakMode:UILineBreakModeTailTruncation];
     }
     
     CGRect frame = self.messageLabel.frame;
@@ -537,6 +539,7 @@
     frame.size.height = LIODraggableButtonSize;
     self.messageLabel.frame = frame;
     
+    
     frame = self.externalMessageLabel.frame;
     if (self.isAttachedToRight)
         frame.origin.x = -expectedSize.width - 20.0;
@@ -545,11 +548,12 @@
     frame.origin.y = (self.baseSize.height - expectedSize.height - 10.0)/2;
     frame.size.width = expectedSize.width + 10.0;
     frame.size.height = expectedSize.height + 10.0;
-    
+    self.externalMessageLabel.numberOfLines = 0;
+    self.externalMessageLabel.frame = frame;
+
     if (!wasPreviouslyShowingMessage)
     {
-        self.externalMessageLabel.frame = frame;
-
+        
         CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
         self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
         self.externalMessageLabel.hidden = NO;
@@ -559,8 +563,6 @@
     
     [UIView animateWithDuration:0.5 animations:^{
         self.externalMessageLabel.transform = CGAffineTransformIdentity;
-        if (wasPreviouslyShowingMessage)
-            self.externalMessageLabel.frame = frame;
 //        [self setVisibleFrameWithMessageWidth:expectedSize.width];
     } completion:^(BOOL finished) {
         if (self.messageTimer)
