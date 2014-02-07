@@ -52,6 +52,11 @@ typedef enum
     LIOBrandingElementEmailChatTextField,
     LIOBrandingElementEmailChatSubmitButton,
     LIOBrandingElementEmailChatCancelButton,
+    LIOBrandingElementApprovePhoto,
+    LIOBrandingElementApprovePhotoCard,
+    LIOBrandingElementApprovePhotoTitle,
+    LIOBrandingElementApprovePhotoSubmitButton,
+    LIOBrandingElementApprovePhotoCancelButton,
     LIOBrandingElementToasterView
 } LIOBrandingElement;
 

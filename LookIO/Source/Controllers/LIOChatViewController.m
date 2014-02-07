@@ -8,21 +8,22 @@
 
 #import "LIOChatViewController.h"
 
+// Managers
+#import "LIOBundleManager.h"
+#import "LIOMediaManager.h"
+
+// Table View Cells
 #import "LIOChatTableViewCell.h"
 #import "LIOChatTableViewImageCell.h"
-
-#import "LPInputBarView.h"
-#import "LIOKeyboardMenu.h"
-
 #import "LPChatBubbleView.h"
 #import "LPChatImageView.h"
 
+// Other Views
+#import "LPInputBarView.h"
+#import "LIOKeyboardMenu.h"
 #import "LIOToasterView.h"
-
 #import "LIOEmailChatView.h"
-
-#import "LIOBundleManager.h"
-#import "LIOMediaManager.h"
+#import "LIOApprovePhotoView.h"
 
 #define LIOChatViewControllerChatTableViewCellIdentifier        @"LIOChatViewControllerChatTableViewCellIdentifier"
 #define LIOChatViewControllerChatTableViewImageCellIdentifier   @"LIOChatViewControllerChatTableViewImageCellIdentifier"
@@ -35,7 +36,7 @@
 
 #define LIOChatViewControllerPhotoSourceActionSheetTag 2001
 
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate, LIOChatTableViewCellDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate, LIOChatTableViewCellDelegate, LIOApprovePhotoViewDelegate>
 
 @property (nonatomic, assign) LIOChatState chatState;
 
@@ -60,8 +61,7 @@
 @property (nonatomic, strong) UIPopoverController *popover;
 
 @property (nonatomic, strong) LIOEmailChatView *emailChatView;
-
-@property (nonatomic, strong) UIImage *pendingImageAttachment;
+@property (nonatomic, strong) LIOApprovePhotoView *approvePhotoView;
 
 @property (nonatomic, strong) LIOToasterView *toasterView;
 
@@ -190,9 +190,18 @@
 
 - (void)dismissChat:(id)sender
 {
+    [self unregisterForKeyboardNotifications];
+
     if (self.emailChatView)
     {
         [self.emailChatView forceDismiss];
+    }
+    
+    if (self.approvePhotoView)
+    {
+        self.keyboardState = LIOKeyboardStateIntroAnimation;
+        [self.approvePhotoView removeFromSuperview];
+        self.approvePhotoView = nil;
     }
     
     [self.delegate chatViewControllerDidDismissChat:self];
@@ -289,9 +298,9 @@
     }
 }
 
-- (void)sendLineWithPendingImage
+- (void)sendLineWithImage:(UIImage *)image
 {
-    NSString *attachmentId = [[LIOMediaManager sharedInstance] commitImageMedia:self.pendingImageAttachment];
+    NSString *attachmentId = [[LIOMediaManager sharedInstance] commitImageMedia:image];
 
     [self.engagement sendVisitorLineWithAttachmentId:attachmentId];
     [self.tableView reloadData];
@@ -412,9 +421,25 @@
             resizedImageSize.width = targetSize;
             resizedImageSize.height = targetSize*(image.size.height/image.size.width);
         }
-        self.pendingImageAttachment = [[LIOMediaManager sharedInstance] scaleImage:image toSize:resizedImageSize];
+        self.chatState = LIOChatStateImageApprove;
         
-        [self sendLineWithPendingImage];
+        self.approvePhotoView = [[LIOApprovePhotoView alloc] initWithFrame:self.view.bounds];
+        self.approvePhotoView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        self.approvePhotoView.imageView.image = [[LIOMediaManager sharedInstance] scaleImage:image toSize:resizedImageSize];
+        CGRect frame = self.approvePhotoView.frame;
+        frame.origin.y = -self.approvePhotoView.frame.size.height;
+        self.approvePhotoView.frame = frame;
+        self.approvePhotoView.delegate = self;
+        [self.view addSubview:self.approvePhotoView];
+        [self.approvePhotoView setNeedsLayout];
+        
+        [self hideChatAndKeyboardWithCompletion:^{
+            [UIView animateWithDuration:0.3 animations:^{
+                CGRect frame = self.approvePhotoView.frame;
+                frame.origin.y = 0;
+                self.approvePhotoView.frame = frame;
+            }];
+        }];
     }
 }
 
@@ -431,6 +456,39 @@
         [self dismissModalViewControllerAnimated:YES];
     }
     self.chatState = LIOChatStateChat;
+}
+
+#pragma mark -
+#pragma mark ApprovePhotoView Delegate Methods
+
+- (void)approvePhotoViewDidApprove:(LIOApprovePhotoView *)approvePhotoView
+{
+    if (approvePhotoView)
+    {
+        [self sendLineWithImage:approvePhotoView.imageView.image];
+    }
+    [self dismissApprovePhotoView];
+}
+
+- (void)approvePhotoViewDidCancel:(LIOApprovePhotoView *)approvePhotoView
+{
+    [self dismissApprovePhotoView];
+}
+
+- (void)dismissApprovePhotoView
+{
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect frame = self.approvePhotoView.frame;
+        frame.origin.y = -self.approvePhotoView.frame.size.height;
+        self.approvePhotoView.frame = frame;
+    } completion:^(BOOL finished) {
+        self.chatState = LIOChatStateChat;
+        [self.approvePhotoView removeFromSuperview];
+        self.approvePhotoView = nil;
+        
+        self.keyboardState = LIOKeyboardStateIntroAnimation;
+        [self.inputBarView.textView becomeFirstResponder];
+    }];
 }
 
 #pragma mark -
@@ -519,6 +577,9 @@
     
     if (self.chatState == LIOChatStateImagePicker)
         [self dismissModalViewControllerAnimated:YES];
+    
+    if (self.chatState == LIOChatStateImageApprove)
+        [self dismissApprovePhotoView];
 }
 
 #pragma mark -
@@ -725,7 +786,8 @@
     [super viewDidAppear:animated];
     
     [self.tableView reloadData];
-    [self.inputBarView.textView becomeFirstResponder];
+    if (self.chatState != LIOChatStateImagePicker && self.chatState != LIOChatStateImageApprove)
+        [self.inputBarView.textView becomeFirstResponder];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -752,6 +814,12 @@
     {
         [self.emailChatView removeFromSuperview];
         self.emailChatView = nil;
+    }
+    
+    if (self.chatState == LIOChatStateImageApprove)
+    {
+        [self.approvePhotoView removeFromSuperview];
+        self.approvePhotoView = nil;
     }
  
     [self unregisterForKeyboardNotifications];
@@ -868,7 +936,7 @@
 
     inputBarViewFrame.size.height = self.inputBarViewDesiredHeight;
     emailChatViewFrame.origin.y = -emailChatViewFrame.size.height;
-
+    
     if (self.keyboardState != LIOKeyboardStateMenuDragging)
         keyboardMenuFrame.size.height = self.lastKeyboardHeight;
 
@@ -901,7 +969,7 @@
             break;
             
         case LIOKeyboardstateCompletelyHidden:
-            tableViewFrame.origin.y = - self.view.bounds.size.height;
+            tableViewFrame.origin.y = - self.view.bounds.size.height*1.3;
             inputBarViewFrame.origin.y = self.view.bounds.size.height;
             if (saveOtherFrames)
                 [self.inputBarView unrotatePlusButton];

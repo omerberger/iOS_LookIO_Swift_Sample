@@ -52,6 +52,8 @@
 		A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A397361892B7E30073A41C /* LIOBadgeView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7A4CB2D18A43B7100D05C1D /* LIOPopupLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A4CB2B18A43B7100D05C1D /* LIOPopupLabel.h */; };
 		A7A4CB2E18A43B7100D05C1D /* LIOPopupLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB2C18A43B7100D05C1D /* LIOPopupLabel.m */; };
+		A7A4CB3118A527EB00D05C1D /* LIOApprovePhotoView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A4CB2F18A527EB00D05C1D /* LIOApprovePhotoView.h */; };
+		A7A4CB3218A527EB00D05C1D /* LIOApprovePhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB3018A527EB00D05C1D /* LIOApprovePhotoView.m */; };
 		A7AE31FE18732922002D9F23 /* LIOSurvey.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE31FC18732922002D9F23 /* LIOSurvey.h */; };
 		A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE31FD18732922002D9F23 /* LIOSurvey.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -185,6 +187,8 @@
 		A7A397361892B7E30073A41C /* LIOBadgeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBadgeView.m; path = Source/Views/LIOBadgeView.m; sourceTree = "<group>"; };
 		A7A4CB2B18A43B7100D05C1D /* LIOPopupLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOPopupLabel.h; path = Source/Views/LIOPopupLabel.h; sourceTree = "<group>"; };
 		A7A4CB2C18A43B7100D05C1D /* LIOPopupLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOPopupLabel.m; path = Source/Views/LIOPopupLabel.m; sourceTree = "<group>"; };
+		A7A4CB2F18A527EB00D05C1D /* LIOApprovePhotoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOApprovePhotoView.h; path = Source/Views/LIOApprovePhotoView.h; sourceTree = "<group>"; };
+		A7A4CB3018A527EB00D05C1D /* LIOApprovePhotoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOApprovePhotoView.m; path = Source/Views/LIOApprovePhotoView.m; sourceTree = "<group>"; };
 		A7AE31FC18732922002D9F23 /* LIOSurvey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOSurvey.h; path = Source/Models/LIOSurvey.h; sourceTree = "<group>"; };
 		A7AE31FD18732922002D9F23 /* LIOSurvey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOSurvey.m; path = Source/Models/LIOSurvey.m; sourceTree = "<group>"; };
 		A7AE3200187343A0002D9F23 /* LPSurveyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPSurveyViewController.h; path = Source/Controllers/LPSurveyViewController.h; sourceTree = "<group>"; };
@@ -432,6 +436,8 @@
 				A7913064187E0723001099ED /* LIOEmailChatView.m */,
 				A739FA921864FE9100CA35C4 /* LPInputBarView.h */,
 				A739FA931864FE9100CA35C4 /* LPInputBarView.m */,
+				A7A4CB2F18A527EB00D05C1D /* LIOApprovePhotoView.h */,
+				A7A4CB3018A527EB00D05C1D /* LIOApprovePhotoView.m */,
 			);
 			name = Chat;
 			sourceTree = "<group>";
@@ -794,6 +800,7 @@
 				A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */,
 				D4ADC7B814F3218300713F29 /* LIOChatMessage.h in Headers */,
 				D4ADC7BA14F3218300713F29 /* LIOTimerProxy.h in Headers */,
+				A7A4CB3118A527EB00D05C1D /* LIOApprovePhotoView.h in Headers */,
 				D4ADC7D014F322B500713F29 /* LIOHeaderBarView.h in Headers */,
 				A7DBE95518999F7A00AD300F /* LIOCacheEntry.h in Headers */,
 				D4ADC7EF14F322C300713F29 /* NSData+Base64.h in Headers */,
@@ -941,6 +948,7 @@
 				A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */,
 				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
 				D486D7281521303B007C9AF8 /* ioapi.c in Sources */,
+				A7A4CB3218A527EB00D05C1D /* LIOApprovePhotoView.m in Sources */,
 				D486D72A1521303B007C9AF8 /* mztools.c in Sources */,
 				D486D72C1521303B007C9AF8 /* unzip.c in Sources */,
 				D486D72E1521303B007C9AF8 /* zip.c in Sources */,

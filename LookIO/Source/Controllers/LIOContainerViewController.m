@@ -183,7 +183,7 @@
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
-    if (LIOContainerViewStateChat == self.containerViewState)
+    if (LIOContainerViewStateChat == self.containerViewState || LIOContainerViewStateLoading == self.containerViewState)
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 

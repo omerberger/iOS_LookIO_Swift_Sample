@@ -516,7 +516,7 @@
     self.externalMessageLabel.text = message;
     self.externalMessageLabel.isPointingRight = self.isAttachedToRight;
     
-    CGFloat maxWidth = 260.0;
+    CGFloat maxWidth = 240.0;
 
     CGSize expectedSize;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
@@ -553,10 +553,12 @@
 
     if (!wasPreviouslyShowingMessage)
     {
-        
-        CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
-        self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
-        self.externalMessageLabel.hidden = NO;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+        {
+            CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
+            self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
+            self.externalMessageLabel.hidden = NO;
+        }
     }
     
     [self.externalMessageLabel setNeedsLayout];

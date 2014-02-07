@@ -612,6 +612,72 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementApprovePhoto == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *approvePhotoDictionary = [engagementDictionary objectForKey:@"approve_photo"];
+                if (approvePhotoDictionary)
+                    dictionary = approvePhotoDictionary;
+            }
+        }
+        
+        if (LIOBrandingElementApprovePhotoCard == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *approvePhotoDictionary = [engagementDictionary objectForKey:@"approve_photo"];
+                if (approvePhotoDictionary)
+                {
+                    NSDictionary *approvePhotoCardDictionary = [approvePhotoDictionary objectForKey:@"approve_photo_card"];
+                    if (approvePhotoCardDictionary)
+                        dictionary = approvePhotoCardDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementApprovePhotoTitle == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *approvePhotoDictionary = [engagementDictionary objectForKey:@"approve_photo"];
+                if (approvePhotoDictionary)
+                {
+                    NSDictionary *approvePhotoTitleDictionary = [approvePhotoDictionary objectForKey:@"title"];
+                    if (approvePhotoTitleDictionary)
+                        dictionary = approvePhotoTitleDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementApprovePhotoCancelButton == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *approvePhotoDictionary = [engagementDictionary objectForKey:@"approve_photo"];
+                if (approvePhotoDictionary)
+                {
+                    NSDictionary *approvePhotoCancelButtonDictionary = [approvePhotoDictionary objectForKey:@"cancel_button"];
+                    if (approvePhotoCancelButtonDictionary)
+                        dictionary = approvePhotoCancelButtonDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementApprovePhotoSubmitButton == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *approvePhotoDictionary = [engagementDictionary objectForKey:@"approve_photo"];
+                if (approvePhotoDictionary)
+                {
+                    NSDictionary *approvePhotoSubmitButtonDictionary = [approvePhotoDictionary objectForKey:@"submit_button"];
+                    if (approvePhotoSubmitButtonDictionary)
+                        dictionary = approvePhotoSubmitButtonDictionary;
+                }
+            }
+        }
+
         if (LIOBrandingElementToasterView == element)
         {
             if (engagementDictionary)

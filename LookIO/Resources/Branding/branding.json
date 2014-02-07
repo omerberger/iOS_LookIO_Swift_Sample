@@ -242,6 +242,39 @@
                 }
             }
         },
+        "approve_photo": {
+            "background": {
+                "color": "#999999",
+                "alpha": "0.5"
+            },
+            "approve_photo_card": {
+                "background": {
+                    "color": "#eeeeee",
+                    "alpha": "1.0"
+                },
+                "border": {
+                    "color": "#aaaaaa"
+                }
+            },
+            "title": {
+                "font": {
+                    "color": "#666666",
+                    "size": "16.0"
+                }
+            },
+            "cancel_button": {
+                "font": {
+                    "color": "#007df5",
+                    "size": "17.0"
+                }
+            },
+            "submit_button": {
+                "font": {
+                    "color": "#007df5",
+                    "size": "17.0"
+                }
+            }
+        },
         "keyboard_menu": {
             "background": {
                 "color": "#4c4c4c",
@@ -375,9 +408,9 @@
             "content": {
                 "color": "#ffffff"
             },
-						"border": {
-							"color": "#cccccc"
-						},
+            "border": {
+                "color": "#cccccc"
+            },
             "position": {
                 "horizontal": "right",
                 "vertical": "0.5"
@@ -397,11 +430,11 @@
                     "size": "14.0"
                 },
                 "background": {
-                   "color": "#666666"
+                    "color": "#666666"
                 },
-								"border": {
-									"color": "#cccccc"
-								}
+                "border": {
+                    "color": "#cccccc"
+                }
             }
         }
     }
