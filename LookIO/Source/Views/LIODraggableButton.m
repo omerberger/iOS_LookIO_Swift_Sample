@@ -212,14 +212,23 @@
             break;
             
         case LIOButtonModeLoading:
-            if (LIOButtonKindIcon == self.buttonKind)
-                self.statusImageView.hidden = YES;
-            self.activityIndicatorView.frame = self.bounds;
             [self.activityIndicatorView startAnimating];
+            if (LIOButtonKindIcon == self.buttonKind)
+            {
+                self.activityIndicatorView.frame = self.bounds;
+                self.statusImageView.hidden = YES;
+            }
             break;
             
         default:
             break;
+    }
+    
+    if (LIOButtonKindText == self.buttonKind && self.isVisible)
+    {
+        [UIView animateWithDuration:0.2 animations:^{
+            [self setVisibleFrame];
+        }];
     }
 }
 
@@ -259,21 +268,25 @@
     CGSize screenSize = [buttonWindow bounds].size;
 
     CGRect frame = self.frame;
+    CGRect buttonTitleFrame = self.buttonTitleLabel.frame;
     
     CGFloat messageWidthWithMargin = (messageWidth > 0.0 ? messageWidth + 10.0 : 0.0);
+    CGFloat messageHeightMargin = ((LIOButtonModeLoading == self.buttonMode && LIOButtonKindText == self.buttonKind) ? self.baseSize.width*0.7 : 0.0);
+    
     if (UIInterfaceOrientationPortrait == actualInterfaceOrientation)
     {
         if (self.isAttachedToRight)
         {
             frame.size.width = self.baseSize.width + messageWidthWithMargin;
-            frame.size.height = self.baseSize.height;
+            frame.size.height = self.baseSize.height + messageHeightMargin;
             frame.origin.x = screenSize.width - frame.size.width + 3.0;
+
         }
         else
         {
             frame.origin.x = -3.0;
             frame.size.width = self.baseSize.width + messageWidthWithMargin;
-            frame.size.height = self.baseSize.height;
+            frame.size.height = self.baseSize.height + messageHeightMargin;
         }
     }
     if (UIInterfaceOrientationLandscapeLeft == actualInterfaceOrientation) // Home button left
@@ -282,12 +295,12 @@
         {
             frame.origin.y = -3.0;
             frame.size.height = self.baseSize.width + messageWidthWithMargin;
-            frame.size.width = self.baseSize.height;
+            frame.size.width = self.baseSize.height + messageHeightMargin;
         }
         else
         {
             frame.size.height = self.baseSize.width + messageWidthWithMargin;
-            frame.size.width = self.baseSize.height;
+            frame.size.width = self.baseSize.height + messageHeightMargin;
             frame.origin.y = screenSize.height - frame.size.height + 3.0;
         }
     }
@@ -297,12 +310,12 @@
         {
             frame.origin.x = -3.0;
             frame.size.width = self.baseSize.width + messageWidthWithMargin;
-            frame.size.height = self.baseSize.height;
+            frame.size.height = self.baseSize.height + messageHeightMargin;
         }
         else
         {
             frame.size.width = self.baseSize.width + messageWidthWithMargin;
-            frame.size.height = self.baseSize.height;
+            frame.size.height = self.baseSize.height + messageHeightMargin;
             frame.origin.x = screenSize.width - frame.size.width + 3.0;
         }
     }
@@ -311,18 +324,19 @@
         if (self.isAttachedToRight)
         {
             frame.size.height = self.baseSize.width + messageWidthWithMargin;
-            frame.size.width = self.baseSize.height;
+            frame.size.width = self.baseSize.height + messageHeightMargin;
             frame.origin.y = screenSize.height - frame.size.height + 3.0;
         }
         else
         {
             frame.origin.y = -3.0;
             frame.size.height = self.baseSize.width + messageWidthWithMargin;
-            frame.size.width = self.baseSize.height;
+            frame.size.width = self.baseSize.height + messageHeightMargin;
         }
     }
 
     self.frame = frame;
+    [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
 }
 
 - (void)setHiddenFrame
@@ -416,8 +430,10 @@
 
 - (void)resetTitleLabelRotationForAttachedToRight:(BOOL)attachedToRight
 {
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
     CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
+    CGFloat loadingExtra = LIOButtonModeLoading == self.buttonMode ? self.baseSize.width*0.7 : 0.0;
     
     if (attachedToRight)
     {
@@ -425,13 +441,20 @@
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(-M_PI/2);
         
         self.badgeView.frame = CGRectMake(-10, -10, 20, 20);
+
+        if (LIOButtonKindText == self.buttonKind)
+            self.activityIndicatorView.frame = CGRectMake(0, (UIInterfaceOrientationIsPortrait(actualInterfaceOrientation) ? self.frame.size.height : self.frame.size.width) - self.baseSize.width, self.baseSize.width, self.baseSize.width);
     }
     else
     {
-        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.8, expectedSize.width/2 + 10.0);
+        self.buttonTitleLabel.center = CGPointMake(expectedSize.height*0.8, expectedSize.width/2 + 10.0 + loadingExtra);
         self.buttonTitleLabel.transform = CGAffineTransformMakeRotation(M_PI/2);
         
         self.badgeView.frame = CGRectMake(self.baseSize.width - 10.0, -10.0, 20, 20);
+        
+        if (LIOButtonKindText == self.buttonKind)
+            self.activityIndicatorView.frame = CGRectMake(0, 0, self.baseSize.width, self.baseSize.width);
+
     }
 }
 
@@ -636,6 +659,14 @@
 #pragma mark -
 #pragma mark Gesture Recognizer Methods
 
+- (void)setAlphaForDraggedElements:(CGFloat)alpha
+{
+    self.buttonTitleLabel.alpha = alpha;
+    self.badgeView.alpha = alpha;
+    if (LIOButtonKindText == self.buttonKind)
+        self.activityIndicatorView.alpha = alpha;
+}
+
 - (void)buttonDidPan:(id)sender {
     UIView *superview = [self superview];
     UIPanGestureRecognizer *panGestureRecognizer = (UIPanGestureRecognizer*)sender;
@@ -665,14 +696,12 @@
         CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
         if (verticalPercent < 0.5)
         {
-            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-            self.badgeView.alpha = 1 - (verticalPercent*2);
+            [self setAlphaForDraggedElements:1 - (verticalPercent*2)];
             goingToAttachToRight = NO;
         }
         else
         {
-            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-            self.badgeView.alpha = (verticalPercent*2) - 1;
+            [self setAlphaForDraggedElements:(verticalPercent*2) - 1];
             goingToAttachToRight = YES;
         }
     }
@@ -680,14 +709,12 @@
         CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
         if (verticalPercent < 0.5)
         {
-            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-            self.badgeView.alpha = 1 - (verticalPercent*2);
+            [self setAlphaForDraggedElements:1 - (verticalPercent*2)];
             goingToAttachToRight = YES;
         }
         else
         {
-            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-            self.badgeView.alpha = (verticalPercent*2) - 1;
+            [self setAlphaForDraggedElements:(verticalPercent*2) - 1];
             goingToAttachToRight = NO;
         }
     }
@@ -695,14 +722,12 @@
         CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
         if (verticalPercent < 0.5)
         {
-            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-            self.badgeView.alpha = 1 - (verticalPercent*2);
+            [self setAlphaForDraggedElements:1 - (verticalPercent*2)];
             goingToAttachToRight = YES;
         }
         else
         {
-            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-            self.badgeView.alpha = (verticalPercent*2) - 1;
+            [self setAlphaForDraggedElements:(verticalPercent*2) - 1];
             goingToAttachToRight = NO;
         }
     }
@@ -710,14 +735,12 @@
         CGFloat verticalPercent = self.center.y/superview.bounds.size.height;
         if (verticalPercent < 0.5)
         {
-            self.buttonTitleLabel.alpha = 1 - (verticalPercent*2);
-            self.badgeView.alpha = 1 - (verticalPercent*2);
+            [self setAlphaForDraggedElements:1 - (verticalPercent*2)];
             goingToAttachToRight = NO;
         }
         else
         {
-            self.buttonTitleLabel.alpha = (verticalPercent*2) - 1;
-            self.badgeView.alpha = (verticalPercent*2) - 1;
+            [self setAlphaForDraggedElements:(verticalPercent*2) - 1];
             goingToAttachToRight = YES;
         }
     }
@@ -819,10 +842,9 @@
             [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
             self.frame = frame;
             
-            self.buttonTitleLabel.alpha = 1.0;
-            self.badgeView.alpha = 1.0;
+            [self setAlphaForDraggedElements:1.0];
         }];
-        
+
         [self.delegate draggableButtonDidEndDragging:self];
     }
 }
