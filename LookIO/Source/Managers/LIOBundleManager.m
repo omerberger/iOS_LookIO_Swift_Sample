@@ -530,13 +530,13 @@ BOOL LIOIsUIKitFlatMode(void) {
 {
     // First, check to see if we've got a string for this key in
     // the downloaded tables.
-    NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
+    NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *downloadedStrings = [userDefaults objectForKey:LIOBundleManagerStringTableDictKey];
     NSString *downloadedLocale = [downloadedStrings objectForKey:@"locale"];
-    if ([downloadedLocale length] && NO == [downloadedLocale isEqualToString:localeId])
+    if ([downloadedLocale length] && NO == [downloadedLocale isEqualToString:languageId])
     {
-        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The downloaded localized string table's locale (%@) does not match this device's locale (%@).", downloadedLocale, localeId];
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The downloaded localized string table's locale (%@) does not match this device's locale (%@).", downloadedLocale, languageId];
     }
     
     NSDictionary *stringTable = [downloadedStrings objectForKey:@"strings"];
@@ -583,8 +583,6 @@ BOOL LIOIsUIKitFlatMode(void) {
     NSString *brandingFileString = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
     brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@" " withString:@""];
     brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-
-    NSLog(@"<<<STRING>>>%@<<<STRING>>>", brandingFileString);
     
     return [self md5StringForString:brandingFileString];
 }
@@ -638,8 +636,7 @@ BOOL LIOIsUIKitFlatMode(void) {
             {
                 NSString *aKey = [aLine substringWithRange:keyRange];
                 
-                // Get the value from the i18n subsystem.
-                NSString *aValue = [self localizedStringWithKey:aKey];
+                NSString *aValue = [aLine substringWithRange:valueRange];
                 
                 [result setObject:aValue forKey:aKey];
             }

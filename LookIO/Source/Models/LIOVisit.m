@@ -123,6 +123,10 @@
             NSDictionary *builtInTable = [bundleManager localizedStringTableForLanguage:languageId];
             if ([builtInTable count])
             {
+                
+                NSDictionary *localizedStrings = [NSDictionary dictionaryWithObject:builtInTable forKey:@"strings"];
+                [userDefaults setObject:localizedStrings forKey:LIOBundleManagerStringTableDictKey];
+                
                 NSString *newHash = [bundleManager hashForLocalizedStringTable:builtInTable];
                 [userDefaults setObject:newHash forKey:LIOBundleManagerStringTableHashKey];
                 

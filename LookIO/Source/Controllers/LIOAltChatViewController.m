@@ -2806,11 +2806,15 @@
 - (void)switchModuleView:(id)sender {
     UIButton* button = (UIButton*)sender;
     UIButton* previousButton = (UIButton*)[topButtonsView viewWithTag:100 + activeChatModuleIndex];
-    if (previousButton)
-        previousButton.layer.borderColor = [UIColor grayColor].CGColor;
+    if (previousButton) {
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat) {
+            previousButton.layer.borderColor = [UIColor grayColor].CGColor;
+        }
+        else {
+            previousButton.layer.borderColor = [UIColor darkGrayColor].CGColor;
+        }
+    }
     
-    NSLog(@"button tag is %d, prev button tag is %d", button.tag, previousButton.tag);
-
     [UIView animateWithDuration:0.15 animations:^{
         [UIView animateWithDuration:0.15 animations:^{
             button.transform = CGAffineTransformMakeScale(1.1, 1.1);
@@ -2822,8 +2826,6 @@
             }];
         }];
     }];
-    
-    NSLog(@"Active chat module index is %d, button tag is %d", activeChatModuleIndex, button.tag);
     
     if (button.tag == 100 + activeChatModuleIndex)
         return;
