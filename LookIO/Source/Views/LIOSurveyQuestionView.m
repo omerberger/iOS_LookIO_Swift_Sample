@@ -491,9 +491,10 @@
             if (!self.nextButton.hidden) {
                 CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
-                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
-                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
-                aFrame.size = expectedNextButtonSize;
+                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 18.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 50.0;
+                aFrame.size.width = expectedNextButtonSize.width + 20.0;
+                aFrame.size.height = expectedNextButtonSize.height + 20.0;
                 self.nextButton.frame = aFrame;
                 
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -549,9 +550,10 @@
             {
                 CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
-                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
-                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
-                aFrame.size = expectedNextButtonSize;
+                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 18.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 50.0;
+                aFrame.size.width = expectedNextButtonSize.width + 20.0;
+                aFrame.size.height = expectedNextButtonSize.height + 20.0;
                 self.nextButton.frame = aFrame;
                 
                 // Set up the scroll view to allow scrolling down to the text field if needed
@@ -620,10 +622,11 @@
             if (landscape) {
                 aFrame.origin.y = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height - 5;
             } else {
-                aFrame.origin.y = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height + 25;
+                aFrame.origin.y = self.starRatingView.frame.origin.y + self.starRatingView.frame.size.height + 15;
             }
         }
-        aFrame.size = expectedNextButtonSize;
+        aFrame.size.width = expectedNextButtonSize.width + 20.0;
+        aFrame.size.height = expectedNextButtonSize.width + 20.0;
         self.nextButton.frame = aFrame;
         
         if (!padUI)
@@ -685,12 +688,13 @@
         
         CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
 
-        aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 8.0;
+        aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 18.0;
         if (padUI)
-            aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 40.0;
+            aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 50.0;
         else
-            aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 15.0;
-        aFrame.size = expectedNextButtonSize;
+            aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 5.0;
+        aFrame.size.width = expectedNextButtonSize.width + 20.0;
+        aFrame.size.height = expectedNextButtonSize.height + 20.0;
         self.nextButton.frame = aFrame;
         
         if (!padUI)
