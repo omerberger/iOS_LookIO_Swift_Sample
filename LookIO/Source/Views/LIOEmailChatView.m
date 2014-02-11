@@ -83,6 +83,7 @@
         self.emailTextField.delegate = self;
         self.emailTextField.textAlignment = UITextAlignmentCenter;
         self.emailTextField.keyboardType = UIKeyboardTypeEmailAddress;
+        self.emailTextField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
         self.emailTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         [self.emailTextFieldBackgroundView addSubview:self.emailTextField];
         self.emailTextField.placeholder = LIOLocalizedString(@"LIOEmailPlaceholder");
@@ -125,10 +126,22 @@
             
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            if (LIOIsUIKitFlatMode())
-                numberToolbar.barStyle = UIBarStyleDefault;
-            else
+            if (!LIOIsUIKitFlatMode())
+            {
                 numberToolbar.barStyle = UIBarStyleBlack;
+            }
+            else
+            {
+                
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                {
+                    numberToolbar.barStyle = UIBarStyleDefault;
+                }
+                else
+                {
+                    numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+                }
+            }
             
             numberToolbar.items = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:self.cancelButton],
                                    [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],

@@ -135,7 +135,10 @@ static LIOBrandingManager *brandingManager = nil;
         {
             return engagementDictionary;
         }
-        
+        if (LIOBrandingElementKeyboardType == element)
+        {
+            return engagementDictionary;
+        }
         if (LIOBrandingElementBoldFont == element)
         {
             return engagementDictionary;
@@ -1007,6 +1010,27 @@ static LIOBrandingManager *brandingManager = nil;
     
     return value;
 }
+
+- (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element
+{
+    UIKeyboardAppearance appearance = UIKeyboardAppearanceLight;
+
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSString *keyboardString = [elementDictionary objectForKey:@"keyboard_type"];
+        if (keyboardString)
+        {
+            if ([keyboardString isEqualToString:@"light"])
+                appearance = UIKeyboardAppearanceLight;
+            if ([keyboardString isEqualToString:@"dark"])
+                appearance = UIKeyboardAppearanceDark;
+        }
+    }
+    
+    return appearance;
+}
+
 
 
 @end

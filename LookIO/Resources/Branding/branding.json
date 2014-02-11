@@ -68,6 +68,7 @@
                 }
             }
         },
+        "keyboard_type": "light",
         "chat_bubbles": {
             "agent": {
                 "background": {

@@ -118,7 +118,7 @@
         self.textField.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
         self.textField.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
-        self.textField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        self.textField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
         [self.textFieldBackground addSubview:self.textField];
         
         self.textView = [[UITextView alloc] init];
@@ -128,10 +128,11 @@
         self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
         self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textView.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
         [self.textFieldBackground addSubview:self.textView];
         
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
-        // TODO Star rating customization
+        // TODO: Star color rating customization
         [self addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -234,10 +235,22 @@
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            if (LIOIsUIKitFlatMode())
-                numberToolbar.barStyle = UIBarStyleDefault;
-            else
+            if (!LIOIsUIKitFlatMode())
+            {
                 numberToolbar.barStyle = UIBarStyleBlack;
+            }
+            else
+            {
+                
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                {
+                    numberToolbar.barStyle = UIBarStyleDefault;
+                }
+                else
+                {
+                    numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+                }
+            }
             
             UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
             nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
@@ -283,8 +296,6 @@
             buttonTitle = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
             self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
         }
-        self.textView.keyboardAppearance = UIKeyboardAppearanceDefault;
-        
         if (LIOSurveyQuestionValidationTypeEmail == question.validationType)
         {
             self.textView.keyboardType = UIKeyboardTypeEmailAddress;
@@ -300,10 +311,22 @@
         {
             UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-            if (LIOIsUIKitFlatMode())
-                numberToolbar.barStyle = UIBarStyleDefault;
-            else
+            if (!LIOIsUIKitFlatMode())
+            {
                 numberToolbar.barStyle = UIBarStyleBlack;
+            }
+            else
+            {
+                
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                {
+                    numberToolbar.barStyle = UIBarStyleDefault;
+                }
+                else
+                {
+                    numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+                }
+            }
             
             UIButton *nextBarButton = [[UIButton alloc] initWithFrame:CGRectZero];
             nextBarButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleHeight;
