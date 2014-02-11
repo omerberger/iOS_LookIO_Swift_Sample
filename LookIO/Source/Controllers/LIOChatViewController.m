@@ -267,7 +267,7 @@
         if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
             [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
         
-        [self updateSubviewFrames];
+        [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:YES];
     } completion:^(BOOL finished) {
         if (completionBlock != nil)
             completionBlock();
@@ -506,6 +506,8 @@
 
 - (void)emailChatViewDidFinishDismissAnimation:(LIOEmailChatView *)emailChatView
 {
+    self.chatState = LIOChatStateChat;
+    
     [self registerForKeyboardNotifications];
     self.keyboardState = LIOKeyboardStateIntroAnimation;
     [self.inputBarView.textView becomeFirstResponder];
@@ -670,7 +672,7 @@
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
 {
     self.inputBarViewDesiredHeight = height;
-    [UIView animateWithDuration:0.2 animations:^{
+    [UIView animateWithDuration:0.5 animations:^{
         if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
             [self updateSubviewFrames];
     }];
@@ -980,7 +982,8 @@
     }
 
     keyboardMenuFrame.origin.y = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
-    tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
+    if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+        tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
 
     self.emailChatView.frame = emailChatViewFrame;
