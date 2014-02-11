@@ -73,6 +73,7 @@
         [self addGestureRecognizer:surveyTabPanGestureRecognizer];
         
         self.isVisible = NO;
+        self.hidden = YES;
         self.isAttachedToRight = YES;
         
         self.borderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width + 1, self.bounds.size.height + 1.0)];
@@ -226,6 +227,7 @@
     
     if (LIOButtonKindText == self.buttonKind && self.isVisible)
     {
+        self.hidden = NO;
         [UIView animateWithDuration:0.2 animations:^{
             [self setVisibleFrame];
         }];
@@ -423,9 +425,15 @@
     self.frame = frame;
 
     if (self.isVisible)
+    {
+        self.hidden = NO;
         [self setVisibleFrame];
+    }
     else
+    {
         [self setHiddenFrame];
+        self.hidden = YES;
+    }
 }
 
 - (void)resetTitleLabelRotationForAttachedToRight:(BOOL)attachedToRight
@@ -467,12 +475,14 @@
  
     if (animated)
     {
+        self.hidden = NO;
         [UIView animateWithDuration:0.3 animations:^{
             [self setVisibleFrame];
         }];
     }
     else
     {
+        self.hidden = NO;
         [self setVisibleFrame];
     }
 }
@@ -485,11 +495,14 @@
     {
         [UIView animateWithDuration:0.5 animations:^{
             [self setHiddenFrame];
+        } completion:^(BOOL finished) {
+            self.hidden = YES;
         }];
     }
     else
     {
         [self setHiddenFrame];
+        self.hidden = YES;
     }
 }
 
