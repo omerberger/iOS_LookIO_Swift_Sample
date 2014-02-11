@@ -1346,7 +1346,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatActive == self.visit.visitState)
     {
         [self.containerViewController engagement:engagement didReceiveMessage:message];
-
+        
         if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
         {
             if (self.visit.lastKnownButtonPopupChat)
@@ -1356,14 +1356,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
             else
             {
-                [self.controlButton reportUnreadMessage];
-                [self.controlButton presentMessage:@"The agent has sent a message"];
-                
-                // TODO: Send a delegate message with this content
+                if (!self.visit.controlButtonHidden)
+                {
+                    [self.controlButton reportUnreadMessage];
+                    [self.controlButton presentMessage:LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody")];
+                }
+                // If the button is hidden, let's send this information through a delegate method
+                else
+                {
+                    [self.controlButton reportUnreadMessage];
+                    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didSendNotification:withUnreadMessagesCount:)])
+                    {
+                        [self.delegate lookIOManager:self didSendNotification:LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody") withUnreadMessagesCount:self.controlButton.numberOfUnreadMessages];
+                    }
+                }
             }
         }
     }
-    
+
     if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
     {
         
@@ -1384,7 +1394,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [self.containerViewController engagement:engagement didReceiveNotification:notification];
     if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
-        [self.controlButton presentMessage:notification];
+    {
+        if (!self.visit.controlButtonHidden)
+        {
+            [self.controlButton presentMessage:notification];
+        }
+        // If the button is hidden, let's send this information through a delegate method
+        else
+        {
+            if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didSendNotification:withUnreadMessagesCount:)])
+            {
+                [self.delegate lookIOManager:self didSendNotification:notification withUnreadMessagesCount:self.controlButton.numberOfUnreadMessages];
+            }
+        }
+    }
 }
 
 - (void)engagement:(LIOEngagement *)engagement agentDidUpdateTypingStatus:(BOOL)isTyping;

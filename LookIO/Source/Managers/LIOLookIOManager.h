@@ -64,6 +64,21 @@ extern NSString *const kLPEventAddedToCart;
  */
 - (void)lookIOManagerDidEndChat:(LIOLookIOManager *)aManager;
 
+
+/*!
+ LP Mobile's control button will display pop up messages for certain events, such as when
+ a message has been received from the agent, and a badge showing the number of unread messages
+ sent from the agent. If the button is hidden for your app and the chat window is not being
+ displayed, this delegate method will be called ith a message and an unread messages count, 
+ so that the app can present this information to visitors in a custom manner.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ @param notification The notification sent down as part of the engagement.
+ @param count The current number of unread messages sent by the agent.
+ */
+
+- (void)lookIOManager:(LIOLookIOManager *)aManager didSendNotification:(NSString *)notification withUnreadMessagesCount:(NSInteger)count;
+
 ///---------------------------------------------------------------------------------------
 /// @name Customization Methods
 ///---------------------------------------------------------------------------------------
