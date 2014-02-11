@@ -672,14 +672,23 @@
     [self.loadingViewController hideBezel];
 }
 
+// iOS >= 6.0
 - (BOOL)shouldAutorotate
 {
-    return YES;
+    return [self.delegate containerViewControllerShouldAutorotate:self];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+// iOS >= 6.0
+- (NSUInteger)supportedInterfaceOrientations
 {
-    return YES;
+    return [self.delegate containerViewControllerSupportedInterfaceOrientations:self];
+}
+
+
+// iOS < 6.0
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return [self.delegate containerViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
 }
 
 @end

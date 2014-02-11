@@ -33,6 +33,12 @@ typedef enum {
 - (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController;
 - (void)containerViewcontrollerDidTapIntraAppLink:(NSURL *)link;
 
+// Rotation methodw
+- (BOOL)containerViewController:(LIOContainerViewController *)containerViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
+- (BOOL)containerViewControllerShouldAutorotate:(LIOContainerViewController *)containerViewController;
+- (NSInteger)containerViewControllerSupportedInterfaceOrientations:(LIOContainerViewController *)containerViewController;
+
+
 @end
 
 @interface LIOContainerViewController : UIViewController

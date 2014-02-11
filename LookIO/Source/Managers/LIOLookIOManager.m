@@ -82,6 +82,8 @@ typedef void (^LIOCompletionBlock)(void);
 @property (nonatomic, strong) UIImageView *cursorView;
 @property (nonatomic, strong) UIImageView *clickView;
 
+@property (nonatomic, strong) NSArray *supportedOrientations;
+
 @end
 
 @implementation LIOLookIOManager
@@ -157,6 +159,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.clickView.frame = CGRectMake(-self.clickView.frame.size.width, -self.clickView.frame.size.height, self.clickView.frame.size.width, self.clickView.frame.size.height);
     self.clickView.hidden = YES;
     [keyWindow addSubview:self.clickView];
+    
+    // Setup list of plist based backup orientations
+    
+    // Try to get supported orientation information from plist.
+    NSArray *plistOrientations = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
+    if (plistOrientations)
+    {
+        NSMutableArray *orientationNumbers = [NSMutableArray array];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationPortrait"])
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationPortrait]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationPortraitUpsideDown"])
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationPortraitUpsideDown]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeLeft"])
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationLandscapeLeft]];
+        
+        if ([plistOrientations containsObject:@"UIInterfaceOrientationLandscapeRight"])
+            [orientationNumbers addObject:[NSNumber numberWithInteger:UIInterfaceOrientationLandscapeRight]];
+        
+        self.supportedOrientations = orientationNumbers;
+    }
+    else
+    {
+        self.supportedOrientations = [[NSArray alloc] init];
+    }
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
 }
@@ -881,6 +910,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
             
         case LIOVisitStateChatActive:
+            [self.controlButton presentMessage:@"Tap to continue chat"];
+            break;
+            
+        case LIOVisitStateChatStarted:
             [self.controlButton presentMessage:@"Tap to continue chat"];
             break;
             
@@ -1765,6 +1798,64 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return [self.delegate lookIOManager:self linkViewForURL:aURL];
     
     return nil;
+}
+
+#pragma mark -
+#pragma mark Autorotation Methods
+
+- (BOOL)containerViewController:(LIOContainerViewController *)containerViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (self.previousKeyWindow && self.previousKeyWindow != hostAppWindow)
+        hostAppWindow = self.previousKeyWindow;
+    
+    // Ask delegate.
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:shouldRotateToInterfaceOrientation:)])
+        return [self.delegate lookIOManager:self shouldRotateToInterfaceOrientation:anOrientation];
+    
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController shouldAutorotateToInterfaceOrientation:anOrientation];
+    
+    // Fall back on plist settings.
+    [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Using .plist keys to determine rotation behavior. This may not be accurate. You may want to make use of the following LIOLookIOManagerDelegate method: lookIOManager:shouldRotateToInterfaceOrientation:"];
+
+    return [self.supportedOrientations containsObject:[NSNumber numberWithInteger:anOrientation]];
+}
+
+-(BOOL)containerViewControllerShouldAutorotate:(LIOContainerViewController *)containerViewController
+{
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (self.previousKeyWindow && self.previousKeyWindow != hostAppWindow)
+        hostAppWindow = self.previousKeyWindow;
+    
+    // Ask delegate.
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerShouldAutorotate:)])
+        return [self.delegate lookIOManagerShouldAutorotate:self];
+    
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController shouldAutorotate];
+    
+    return NO;
+}
+
+- (NSInteger)containerViewControllerSupportedInterfaceOrientations:(LIOContainerViewController *)containerViewController
+{
+    UIWindow *hostAppWindow = [[UIApplication sharedApplication] keyWindow];
+    if (self.previousKeyWindow && self.previousKeyWindow != hostAppWindow)
+        hostAppWindow = self.previousKeyWindow;
+    
+    // Ask delegate.
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSupportedInterfaceOrientations:)])
+        return [self.delegate lookIOManagerSupportedInterfaceOrientations:self];
+    
+    // Ask root view controller.
+    if (hostAppWindow.rootViewController)
+        return [hostAppWindow.rootViewController supportedInterfaceOrientations];
+    
+    // UIInterfaceOrientationMaskPortrait is 2 as of 10/18/12.
+    return 2;
 }
 
 @end
