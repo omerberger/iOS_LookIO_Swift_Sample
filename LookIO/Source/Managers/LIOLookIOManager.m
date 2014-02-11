@@ -507,12 +507,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
 }
 
-- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden
+- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden notifyDelegate:(BOOL)notifyDelegate
 {
     if (isHidden)
+    {
         [self.controlButton hide:YES];
+        
+        if (notifyDelegate)
+        {
+            if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
+                [self.delegate lookIOManagerDidHideControlButton:self];
+        }
+    }
     else
+    {
         [self.controlButton show:YES];
+        
+        if (notifyDelegate)
+        {
+            if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
+                [self.delegate lookIOManagerDidShowControlButton:self];
+        }
+    }
 }
 
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit
@@ -1225,6 +1241,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.engagement cleanUpEngagement];
     self.engagement = nil;
     
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+        [self.delegate lookIOManagerDidEndChat:self];
+    
     self.visit.visitState = LIOVisitStateVisitInProgress;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self dismissLookIOWindow];
@@ -1255,6 +1274,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self.engagement cleanUpEngagement];
         self.engagement = nil;
+        
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+            [self.delegate lookIOManagerDidEndChat:self];
         
         if ([LIOStatusManager statusManager].appForegrounded)
         {

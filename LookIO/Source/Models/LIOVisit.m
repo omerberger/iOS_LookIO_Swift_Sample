@@ -882,7 +882,7 @@
         self.controlButtonHidden = YES;
 
         LIOLog(@"<<CONTROL>> Hiding. Reason: Visit ending.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
         
         return;
     }
@@ -892,7 +892,7 @@
     {
         self.controlButtonHidden = YES;
         LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
         
         return;
     }
@@ -903,7 +903,7 @@
     {
         self.controlButtonHidden = YES;
         LIOLog(@"<<CONTROL>> Hiding. Reason: [self enabled] == NO.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:YES];
         return;
     }
     
@@ -954,14 +954,15 @@
         LIOLog(@"<<CONTROL>> Hiding. Reason: %@", aReason);
         
         self.controlButtonHidden = YES;
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:YES];
+        
     }
     else if (willShow)
     {
         LIOLog(@"<<CONTROL>> Showing. Reason: %@", aReason);
         
         self.controlButtonHidden = NO;
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden];
+        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:YES];
     }
 }
 

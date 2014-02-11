@@ -49,7 +49,7 @@ typedef enum
 @protocol LIOVisitDelegate <NSObject>
 
 - (void)visitSkillMappingDidChange:(LIOVisit *)visit;
-- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden;
+- (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden notifyDelegate:(BOOL)notifyDelegate;
 - (void)controlButtonCharacteristsDidChange:(LIOVisit *)visit;
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit;
 - (void)visitWillRelaunch:(LIOVisit *)visit;
