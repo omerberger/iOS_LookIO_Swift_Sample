@@ -893,16 +893,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)takeScreenshotAndSetBlurImageView {
     dispatch_async(dispatch_get_main_queue(), ^{
-        /*
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-        UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
-        [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
-        UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-         */
         [self.containerViewController setBlurImage:[self captureScreenFromPreviousOnly:YES]];
 
-        /*
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
 
         switch (actualOrientation) {
@@ -924,27 +917,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 
             default:
                 break;
+                
         }
-         */
-        
+        self.containerViewController.blurImageView.frame = self.containerViewController.view.bounds;
     });
 }
 
 - (void)updateBlurImageView
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        LIOLog(@"Previous window is %@", self.previousKeyWindow);
-
-        /*
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-        UIGraphicsBeginImageContext(self.previousKeyWindow.bounds.size);
-        [self.previousKeyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
-        UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-         */
         [self.containerViewController setBlurImage:[self captureScreenFromPreviousOnly:YES]];
 
-        /*
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
         
         switch (actualOrientation) {
@@ -957,7 +941,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 break;
                 
             case UIInterfaceOrientationLandscapeRight:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(+M_PI/2);
+                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
                 break;
                 
             case UIInterfaceOrientationPortraitUpsideDown:
@@ -967,11 +951,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             default:
                 break;
         }
-         */
+        
+        self.containerViewController.blurImageView.frame = self.containerViewController.view.bounds;
     });
 }
 
-- (UIImage *)captureScreenFromPreviousOnly:(BOOL)previousOnly;
+- (UIImage *)captureScreenFromPreviousOnly:(BOOL)previousOnly
 {
     // CAUTION: Called on a non-main thread!
 //    statusBarUnderlayBlackout.hidden = NO;
@@ -990,6 +975,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             // -renderInContext: renders in the coordinate space of the layer,
             // so we must first apply the layer's geometry to the graphics context
             CGContextSaveGState(context);
+            
             // Center the context around the window's anchor point
             CGContextTranslateCTM(context, [window center].x, [window center].y);
             // Apply the window's transform about the anchor point
@@ -998,7 +984,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             CGContextTranslateCTM(context,
                                   -[window bounds].size.width * [[window layer] anchorPoint].x,
                                   -[window bounds].size.height * [[window layer] anchorPoint].y);
-            
+              
             // Render the layer hierarchy to the current context
             [[window layer] renderInContext:context];
             

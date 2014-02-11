@@ -38,14 +38,15 @@
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementChatBackground];
         CGFloat backgroundColorAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementChatBackground];
         
-        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];        
+        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];
         
         [self.layer addSublayer:self.tintLayer];
     }
     return self;
 }
 
--(void)setImageAndBlur:(UIImage*)imageToBlur {
+-(void)setImageAndBlur:(UIImage*)imageToBlur
+{
     self.tintLayer.frame = self.bounds;
     
     CGFloat blurRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"radius" forElement:LIOBrandingElementChatBackgroundBlur];
@@ -58,6 +59,11 @@
     } else {
         self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
     }
+}
+
+- (void)layoutSubviews
+{
+    self.tintLayer.frame = self.bounds;
 }
 
 - (UIImage *)blurImage:(UIImage*)image withRadius:(CGFloat)radius iterations:(NSUInteger)iterations tintColor:(UIColor *)tintColor saturationDeltaFactor:(CGFloat)saturationDeltaFactor
