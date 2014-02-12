@@ -133,10 +133,10 @@
     self.headerBarState = LIOHeaderBarStateVisible;
     if (animated)
     {
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.headerBarView.frame = headerBarFrame;
             self.contentView.frame = contentViewFrame;
-        }];
+        } completion:nil];
     }
     else
     {
@@ -165,7 +165,7 @@
     self.headerBarState = state;
     if (animated)
     {
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.headerBarView.frame = headerBarFrame;
             self.contentView.frame = contentViewFrame;
         } completion:^(BOOL finished) {

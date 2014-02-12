@@ -263,7 +263,7 @@
 
     self.keyboardState = LIOKeyboardstateCompletelyHidden;
     
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
             [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
         
@@ -434,11 +434,11 @@
         [self.approvePhotoView setNeedsLayout];
         
         [self hideChatAndKeyboardWithCompletion:^{
-            [UIView animateWithDuration:0.3 animations:^{
+            [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
                 CGRect frame = self.approvePhotoView.frame;
                 frame.origin.y = 0;
                 self.approvePhotoView.frame = frame;
-            }];
+            } completion:nil];
         }];
     }
 }
@@ -477,7 +477,7 @@
 
 - (void)dismissApprovePhotoView
 {
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         CGRect frame = self.approvePhotoView.frame;
         frame.origin.y = -self.approvePhotoView.frame.size.height;
         self.approvePhotoView.frame = frame;
@@ -672,10 +672,10 @@
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
 {
     self.inputBarViewDesiredHeight = height;
-    [UIView animateWithDuration:0.5 animations:^{
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
             [self updateSubviewFrames];
-    }];
+    } completion:nil    ];
 }
 
 - (void)inputBarStartedTyping:(LPInputBarView *)inputBar
@@ -722,12 +722,12 @@
             [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
         }
         
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
                 [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
 
             [self updateSubviewFrames];
-        }];
+        } completion:nil];
     }
 }
 
@@ -735,12 +735,12 @@
 {
     self.keyboardState = LIOKeyboardStateHidden;
     
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
             [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:NO];
 
         [self updateSubviewFrames];
-    }];
+    } completion:nil];
 }
 
 - (BOOL)keyboardMenuShouldShowHideEmailChatDefaultItem:(LIOKeyboardMenu *)keyboardMenu
@@ -1327,7 +1327,7 @@
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
         [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
 
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self updateSubviewFrames];
         } completion:^(BOOL finished) {
         }];

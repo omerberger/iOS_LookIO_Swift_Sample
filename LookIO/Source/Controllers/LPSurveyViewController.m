@@ -75,7 +75,7 @@
     
     // Animate in the survey view
 
-    [UIView animateWithDuration:0.3 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         CGRect frame = self.scrollView.frame;
         frame.origin.y = 0;
         frame.origin.x = 0;
@@ -84,7 +84,7 @@
         frame = self.pageControl.frame;
         frame.origin.y = self.view.bounds.size.height - frame.size.height;
         self.pageControl.frame = frame;
-    }];
+    } completion:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -456,7 +456,7 @@
     if (!padUI)
     {
         [self.view endEditing:YES];
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.scrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.scrollView.bounds.size.height/2);
             self.scrollView.alpha = 0.0;
         } completion:^(BOOL finished) {
@@ -867,7 +867,7 @@
     
     if (!padUI)
     {
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             CGPoint contentOffset = self.scrollView.contentOffset;
             contentOffset.x = 0;
             self.scrollView.contentOffset = contentOffset;
@@ -915,7 +915,7 @@
         self.previousQuestionView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionPreviousPrevious];
         [self.view addSubview:self.previousQuestionView];
         
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self updateScrollView];
             tempView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionNextNext];
         } completion:^(BOOL finished) {
@@ -958,7 +958,7 @@
 
     if (!padUI)
     {
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             CGPoint contentOffset = self.scrollView.contentOffset;
             if (self.previousQuestionView)
             {
@@ -1013,7 +1013,7 @@
         self.nextQuestionView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionNextNext];
         [self.view addSubview:self.nextQuestionView];
         
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self updateScrollView];
             tempView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionPreviousPrevious];
         } completion:^(BOOL finished) {

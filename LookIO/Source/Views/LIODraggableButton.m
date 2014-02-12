@@ -228,9 +228,9 @@
     if (LIOButtonKindText == self.buttonKind && self.isVisible)
     {
         self.hidden = NO;
-        [UIView animateWithDuration:0.2 animations:^{
+        [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self setVisibleFrame];
-        }];
+        } completion:nil];
     }
 }
 
@@ -476,9 +476,9 @@
     if (animated)
     {
         self.hidden = NO;
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self setVisibleFrame];
-        }];
+        } completion:nil];
     }
     else
     {
@@ -493,7 +493,7 @@
  
     if (animated)
     {
-        [UIView animateWithDuration:0.5 animations:^{
+        [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self setHiddenFrame];
         } completion:^(BOOL finished) {
             self.hidden = YES;
@@ -599,7 +599,7 @@
     
     [self.externalMessageLabel setNeedsLayout];
     
-    [UIView animateWithDuration:0.5 animations:^{
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.externalMessageLabel.transform = CGAffineTransformIdentity;
 //        [self setVisibleFrameWithMessageWidth:expectedSize.width];
     } completion:^(BOOL finished) {
@@ -622,7 +622,7 @@
 
     CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
     
-    [UIView animateWithDuration:0.5 animations:^{
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
 
         self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
     } completion:^(BOOL finished) {
@@ -849,14 +849,14 @@
             }
         }
         
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             CGRect frame = self.frame;
             frame.origin = self.preDragPosition;
             [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
             self.frame = frame;
             
             [self setAlphaForDraggedElements:1.0];
-        }];
+        } completion:nil];
 
         [self.delegate draggableButtonDidEndDragging:self];
     }
