@@ -12,6 +12,12 @@
 
 @class LIOSurveyQuestionView;
 
+typedef enum
+{
+    LIOSurveyQuestionViewKeyboard,
+    LIOSurveyQuestionViewNoKeyboard
+} LIOSurveyQuestionViewType;
+
 @protocol LIOSurveyQuestionViewDelegate
 
 - (void)surveyQuestionViewAnswerDidChange:(LIOSurveyQuestionView *)surveyQuestionView;
@@ -20,11 +26,14 @@
 
 @end
 
-@interface LIOSurveyQuestionView : UIScrollView
+@interface LIOSurveyQuestionView : UIView
 
 - (void)setupViewWithQuestion:(LIOSurveyQuestion *)question isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate;
 
 @property (nonatomic, assign) id <LIOSurveyQuestionViewDelegate> delegate;
+
+@property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, assign) LIOSurveyQuestionViewType questionViewType;
 
 @property (nonatomic, strong) UITextField *textField;
 @property (nonatomic, strong) UITextView *textView;

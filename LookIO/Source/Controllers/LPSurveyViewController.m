@@ -47,12 +47,12 @@
 
 @property (nonatomic, strong) UIPageControl* pageControl;
 
-@property (nonatomic, assign) BOOL isAnimatingTransition;
-
 @property (nonatomic, strong) LIOSurveyValidationView *validationView;
 @property (nonatomic, strong) LIOTimerProxy *validationTimer;
 
 @property (nonatomic, strong) UIAlertView *alertView;
+
+@property (nonatomic, assign) BOOL isAnimatingBetweenTwoKeyboardViews;
 
 
 @end
@@ -167,6 +167,7 @@
     }
 
     self.pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 20.0, self.view.bounds.size.width, 20.0)];
+    self.pageControl.userInteractionEnabled = NO;
     self.pageControl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
     self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
@@ -218,6 +219,25 @@
     frame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight - frame.size.height;
     self.pageControl.frame = frame;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+    {
+        CGRect frame = self.currentQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.currentQuestionView.scrollView.frame = frame;
+        
+        frame = self.nextQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.nextQuestionView.scrollView.frame = frame;
+
+        frame = self.previousQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.previousQuestionView.scrollView.frame = frame;
+    }
+        
     if (self.currentQuestionView)
         [self.currentQuestionView setNeedsLayout];
     if (self.nextQuestionView)
@@ -261,6 +281,12 @@
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
+    if (self.isAnimatingBetweenTwoKeyboardViews)
+    {
+        self.isAnimatingBetweenTwoKeyboardViews = NO;
+        return;
+    }
+    
     // Acquire keyboard info
     NSDictionary *info = [notification userInfo];
     
@@ -444,8 +470,6 @@
 
 -(void)bounceViewLeft
 {
-    self.isAnimatingTransition = YES;
-    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (!padUI) {
@@ -469,7 +493,6 @@
                         aFrame.origin.x -= 20;
                         self.scrollView.frame = aFrame;
                     } completion:^(BOOL finished) {
-                        self.isAnimatingTransition = NO;
                     }];
                 }];
             }];
@@ -507,7 +530,6 @@
                 }
                 
             } completion:^(BOOL finished) {
-                self.isAnimatingTransition = NO;
             }];
         }];
     }
@@ -515,8 +537,6 @@
 
 - (void)bounceViewRight
 {
-    self.isAnimatingTransition = YES;
-    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     if (!padUI)
@@ -541,7 +561,6 @@
                         aFrame.origin.x += 20;
                         self.scrollView.frame = aFrame;
                     } completion:^(BOOL finished) {
-                        self.isAnimatingTransition = NO;
                     }];
                 }];
             }];
@@ -579,7 +598,6 @@
                 }
                 
             } completion:^(BOOL finished) {
-                self.isAnimatingTransition = NO;
             }];
         }];
     }
@@ -836,6 +854,11 @@
         [self validationTimerDidFire];
     }
     
+    if (LIOSurveyQuestionViewKeyboard == self.currentQuestionView.questionViewType && LIOSurveyQuestionViewKeyboard == self.previousQuestionView.questionViewType)
+        self.isAnimatingBetweenTwoKeyboardViews = YES;
+    else
+        self.isAnimatingBetweenTwoKeyboardViews = NO;
+    
     [self.currentQuestionView endEditing:YES];
     [self.previousQuestionView setNeedsLayout];
     [self.previousQuestionView becomeFirstResponder];
@@ -920,6 +943,11 @@
         [self.validationTimer stopTimer];
         [self validationTimerDidFire];
     }
+
+    if (LIOSurveyQuestionViewKeyboard == self.currentQuestionView.questionViewType && LIOSurveyQuestionViewKeyboard == self.nextQuestionView.questionViewType)
+        self.isAnimatingBetweenTwoKeyboardViews = YES;
+    else
+        self.isAnimatingBetweenTwoKeyboardViews = NO;
     
     [self.currentQuestionView endEditing:YES];
     [self.nextQuestionView reloadTableViewDataIfNeeded];
@@ -1234,7 +1262,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[tableView superview];
+    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
@@ -1248,7 +1276,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[tableView superview];
+    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
@@ -1259,7 +1287,7 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    UIView* scrollView = tableView.superview;
+    UIView* scrollView = [[tableView superview] superview];
     NSInteger tableViewQuestionIndex = scrollView.tag;
     
     static NSString *CellIdentifier = @"TableViewCell";
@@ -1285,6 +1313,14 @@
     }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
+    
+    // This is an error check, but should not ever be a problem
+    if (indexPath.row > question.pickerEntries.count)
+    {
+        NSLog(@"Breakpoint - check this");
+        return cell;
+    }
+    
     LIOSurveyPickerEntry* pickerEntry = [question.pickerEntries objectAtIndex:indexPath.row];    
     
     UILabel* textLabel = (UILabel*)[cell.contentView viewWithTag:LIOSurveyViewTableCellLabelTag];
@@ -1340,7 +1376,7 @@
 
 - (void)starRatingView:(LIOStarRatingView *)aView didUpdateRating:(NSInteger)aRating
 {
-    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[aView superview];
+    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[[aView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
@@ -1352,7 +1388,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[tableView superview];
+    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
@@ -1423,11 +1459,45 @@
     [self updateScrollView];
     
     if (self.currentQuestionView)
+    {
+        [self.currentQuestionView reloadTableViewDataIfNeeded];
         [self.currentQuestionView setNeedsLayout];
+    }
     if (self.nextQuestionView)
+    {
+        [self.nextQuestionView reloadTableViewDataIfNeeded];
         [self.nextQuestionView setNeedsLayout];
+    }
     if (self.previousQuestionView)
+    {
+        [self.previousQuestionView reloadTableViewDataIfNeeded];
         [self.previousQuestionView setNeedsLayout];
+    }
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+    {
+        CGRect frame = self.currentQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.currentQuestionView.scrollView.frame = frame;
+        
+        frame = self.nextQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.nextQuestionView.scrollView.frame = frame;
+        
+        frame = self.previousQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.previousQuestionView.scrollView.frame = frame;
+        
+    }
+    
+    
 }
 
 

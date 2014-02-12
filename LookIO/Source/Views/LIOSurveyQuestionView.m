@@ -61,13 +61,20 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         self.tag = -1;
-        self.scrollEnabled = YES;
+
+        
+        self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+        self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.scrollView.showsHorizontalScrollIndicator = NO;
+        self.scrollView.showsVerticalScrollIndicator = NO;
+        [self addSubview:self.scrollView];
         
         if (padUI) {
-            self.scrollEnabled = NO;
+            self.scrollView.scrollEnabled = NO;
         }
         else
         {
+            self.scrollView.scrollEnabled = YES;
             self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         }
         
@@ -79,7 +86,7 @@
         self.backgroundView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyCard] CGColor];
         self.backgroundView.layer.borderWidth = 1.0;
         self.backgroundView.layer.cornerRadius = 5.0;
-        [self addSubview:self.backgroundView];
+        [self.scrollView addSubview:self.backgroundView];
         
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.titleLabel.backgroundColor = [UIColor clearColor];
@@ -88,7 +95,7 @@
         self.titleLabel.textAlignment = UITextAlignmentCenter;
         self.titleLabel.lineBreakMode = UILineBreakModeWordWrap;
         self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [self addSubview:self.titleLabel];
+        [self.scrollView addSubview:self.titleLabel];
         
         self.subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.subtitleLabel.backgroundColor = [UIColor clearColor];
@@ -98,7 +105,7 @@
         self.subtitleLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
         self.subtitleLabel.textAlignment = UITextAlignmentCenter;
         self.subtitleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        [self addSubview:self.subtitleLabel];
+        [self.scrollView addSubview:self.subtitleLabel];
         
         self.textFieldBackground = [[UIView alloc] init];
         self.textFieldBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -109,7 +116,7 @@
         self.textFieldBackground.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyTextField] CGColor];
         self.textFieldBackground.layer.borderWidth = 1.0;
         self.textFieldBackground.layer.cornerRadius = 5.0;
-        [self addSubview:self.textFieldBackground];
+        [self.scrollView addSubview:self.textFieldBackground];
         
         self.textField = [[UITextField alloc] init];
         self.textField.delegate = self;
@@ -133,7 +140,7 @@
         
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
         // TODO: Star color rating customization
-        [self addSubview:self.starRatingView];
+        [self.scrollView addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
         self.tableView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyList];
@@ -144,7 +151,7 @@
         self.tableView.backgroundView = nil;
         self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         self.tableView.showsVerticalScrollIndicator = NO;
-        [self addSubview:self.tableView];
+        [self.scrollView addSubview:self.tableView];
         
         self.nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.nextButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -155,7 +162,7 @@
         self.nextButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.NextButtonTitle") forState:UIControlStateNormal];
         self.nextButtonText = LIOLocalizedString(@"LIOSurveyView.NextButtonTitle");
-        [self addSubview:self.nextButton];
+        [self.scrollView addSubview:self.nextButton];
         
         self.cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.cancelButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -165,11 +172,11 @@
         [self.cancelButton setTitleColor:[cancelButtonColor colorWithAlphaComponent:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
         self.cancelButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.cancelButton setTitle:LIOLocalizedString(@"LIOSurveyView.CancelButtonTitle") forState:UIControlStateNormal];
-        [self addSubview:self.cancelButton];
+        [self.scrollView addSubview:self.cancelButton];
         
         UIGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTapBackground:)];
         tapGestureRecognizer.delegate = self;
-        [self addGestureRecognizer:tapGestureRecognizer];
+        [self.scrollView addGestureRecognizer:tapGestureRecognizer];
     }
     
     return self;
@@ -180,7 +187,9 @@
     self.delegate = delegate;
     self.question = question;
     
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    self.scrollView.frame = self.bounds;
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];    
     
     self.titleLabel.text = question.label;
     if (question.mandatory)
@@ -195,6 +204,8 @@
         self.subtitleLabel.hidden = NO;
         self.nextButton.hidden = NO;
         self.cancelButton.hidden = NO;
+        
+        self.questionViewType = LIOSurveyQuestionViewNoKeyboard;
     }
     
     self.textFieldBackground.hidden = YES;
@@ -205,6 +216,7 @@
     {
         self.textFieldBackground.hidden = NO;
         self.textField.hidden = NO;
+        self.questionViewType = LIOSurveyQuestionViewKeyboard;
         
         NSString* buttonTitle;
         if (isLastQuestion)
@@ -233,7 +245,7 @@
         
         if (!padUI)
         {
-            UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            UIToolbar* numberToolbar = [[UIToolbar alloc] init];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             if (!LIOIsUIKitFlatMode())
             {
@@ -282,6 +294,7 @@
     if (LIOSurveyQuestionDisplayTypeTextArea == question.displayType) {
         self.textFieldBackground.hidden = NO;
         self.textView.hidden = NO;
+        self.questionViewType = LIOSurveyQuestionViewKeyboard;
 
         NSString *buttonTitle;
         if (isLastQuestion)
@@ -309,7 +322,7 @@
         
         if (!padUI)
         {
-            UIToolbar* numberToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 50)];
+            UIToolbar* numberToolbar = [[UIToolbar alloc] init];
             numberToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             if (!LIOIsUIKitFlatMode())
             {
@@ -355,7 +368,6 @@
     if ((LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType) || padUI)
     {
         self.nextButton.hidden = NO;
-
         if (isLastQuestion)
         {
             [self.nextButton setTitle:LIOLocalizedString(@"LIOSurveyView.DoneButtonTitle") forState:UIControlStateNormal];
@@ -373,6 +385,8 @@
     
     if (LIOSurveyQuestionDisplayTypePicker == question.displayType || LIOSurveyQuestionDisplayTypeMultiselect == question.displayType)
     {
+        self.questionViewType = LIOSurveyQuestionViewNoKeyboard;
+
         if (question.shouldUseStarRatingView)
         {
             self.starRatingView.hidden = NO;
@@ -465,7 +479,7 @@
         CGSize aSize;
         aSize.width = self.frame.size.width;
         aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + (landscape ? 20.0 : 45.0);
-        self.contentSize = aSize;
+        self.scrollView.contentSize = aSize;
     }
     
     if (!self.textField.hidden)
@@ -497,7 +511,7 @@
         CGSize aSize;
         aSize.width = self.frame.size.width;
         aSize.height = self.textFieldBackground.frame.origin.y + self.textFieldBackground.frame.size.height + 65.0;
-        self.contentSize = aSize;
+        self.scrollView.contentSize = aSize;
         
         if (padUI) {
             CGFloat contentHeight = self.textFieldBackground.frame.origin.y + self.textFieldBackground.frame.size.height;
@@ -524,7 +538,7 @@
                 CGSize aSize;
                 aSize.width = self.frame.size.width;
                 aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + 30.0;
-                self.contentSize = aSize;
+                self.scrollView.contentSize = aSize;
             }
         }
     }
@@ -554,7 +568,7 @@
         CGSize aSize;
         aSize.width = self.frame.size.width;
         aSize.height = self.textFieldBackground.frame.origin.y + self.textFieldBackground.frame.size.height + 65.0;
-        self.contentSize = aSize;
+        self.scrollView.contentSize = aSize;
         
         if (padUI)
         {
@@ -583,7 +597,7 @@
                 CGSize aSize;
                 aSize.width = self.frame.size.width;
                 aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + 30.0;
-                self.contentSize = aSize;
+                self.scrollView.contentSize = aSize;
             }
         }
     }
@@ -595,14 +609,14 @@
         {
             frame.origin.x = 10;
             frame.size.width = self.bounds.size.width - 20;
-            frame.size.height = self.contentSize.height - 70;
+            frame.size.height = self.scrollView.contentSize.height - 70;
             frame.origin.y = 25;
         }
         else
         {
             frame.origin.x = 10;
             frame.size.width = self.bounds.size.width - 20;
-            frame.size.height = self.contentSize.height - 30;
+            frame.size.height = self.scrollView.contentSize.height - 30;
             frame.origin.y = 10;
         }
         self.backgroundView.frame = frame;
@@ -669,6 +683,8 @@
             }
             self.backgroundView.frame = frame;
         }
+        
+        self.scrollView.contentSize = self.backgroundView.frame.size;
     }
     
     if (!self.tableView.isHidden)
@@ -715,7 +731,7 @@
         if (padUI)
             aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 50.0;
         else
-            aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height + 8.0 : self.tableView.frame.origin.y + self.tableView.frame.size.height + 5.0;
+            aFrame.origin.y = landscape ? self.tableView.frame.origin.y + self.tableView.frame.size.height : self.tableView.frame.origin.y + self.tableView.frame.size.height + 5.0;
         aFrame.size.width = expectedNextButtonSize.width + 20.0;
         aFrame.size.height = expectedNextButtonSize.height + 20.0;
         self.nextButton.frame = aFrame;
@@ -737,7 +753,12 @@
             }
             self.backgroundView.frame = frame;
         }
+        
+        self.scrollView.contentSize = self.backgroundView.frame.size;
     }
+    
+    NSLog(@"Scroll view size is %f, %f and content size is %f, %f", self.scrollView.frame.size.width, self.scrollView.frame.size.height, self.scrollView.contentSize.width, self.scrollView.contentSize.height);
+    
 }
 
 - (CGFloat)heightForTableView:(UITableView*)tableView
@@ -813,7 +834,7 @@
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    if (touch.view == self)
+    if (touch.view == self.scrollView)
         return YES;
     
     return NO;
