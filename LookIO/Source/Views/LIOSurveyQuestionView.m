@@ -422,6 +422,8 @@
 - (void)layoutSubviews
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+ 
+    NSLog(@"Frame for layoutsubviews is %f", self.frame.size.width);
     
     UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
@@ -480,6 +482,40 @@
         aSize.width = self.frame.size.width;
         aSize.height = self.nextButton.frame.origin.y + self.nextButton.frame.size.height + (landscape ? 20.0 : 45.0);
         self.scrollView.contentSize = aSize;
+        
+        if (padUI) {
+            CGFloat contentHeight = self.subtitleLabel.frame.origin.y + self.subtitleLabel.frame.size.height;
+            CGFloat startPoint = self.bounds.size.height/2 - contentHeight/2;
+            
+            aFrame = self.titleLabel.frame;
+            aFrame.origin.y = startPoint;
+            self.titleLabel.frame = aFrame;
+            
+            aFrame = self.subtitleLabel.frame;
+            aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 10.0;
+            self.subtitleLabel.frame = aFrame;
+            
+            if (!self.nextButton.isHidden)
+            {
+                CGSize expectedNextButtonSize = [self.nextButtonText sizeWithFont:self.nextButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+                
+                aFrame.origin.x = referenceFrame.size.width - LIOSurveyViewSideMarginiPad - expectedNextButtonSize.width - 18.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedNextButtonSize.height - 50.0;
+                aFrame.size.width = expectedNextButtonSize.width + 20.0;
+                aFrame.size.height = expectedNextButtonSize.height + 20.0;
+                self.nextButton.frame = aFrame;
+            }
+            if (!self.cancelButton.isHidden)
+            {
+                CGSize expectedCancelButtonSize = [self.cancelButton.titleLabel.text sizeWithFont:self.cancelButton.titleLabel.font constrainedToSize:CGSizeMake(referenceFrame.size.width, FLT_MAX)];
+                
+                aFrame.origin.x = LIOSurveyViewSideMarginiPad - 2.0;
+                aFrame.origin.y = referenceFrame.size.height - expectedCancelButtonSize.height - 50.0;
+                aFrame.size.width = expectedCancelButtonSize.width + 20.0;
+                aFrame.size.height = expectedCancelButtonSize.height + 20.0;
+                self.cancelButton.frame = aFrame;
+            }
+        }
     }
     
     if (!self.textField.hidden)
@@ -832,6 +868,10 @@
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (padUI)
+        return NO;
+
     if (touch.view == self.scrollView)
         return YES;
     

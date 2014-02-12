@@ -122,6 +122,7 @@
     self.scrollView.delegate = self;
     self.scrollView.scrollEnabled = NO;
     self.scrollView.clipsToBounds = NO;
+    
     self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.scrollView];
     
@@ -713,6 +714,7 @@
         
         self.nextQuestionView.tag = nextQuestionIndex;
         [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
+        [self.nextQuestionView reloadTableViewDataIfNeeded];
     }
     
     return YES;
@@ -908,13 +910,11 @@
         self.currentQuestionIndex = self.currentQuestionView.tag;
         [self setupPreviousQuestionScrollView];
         self.previousQuestionView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionPreviousPrevious];
-        self.previousQuestionView.transform = CGAffineTransformMakeScale(LIOSurveyViewiPadNextNextQuestionScale, LIOSurveyViewiPadNextNextQuestionScale);
-        [self.view addSubview:self.previousQuestionView];
+        [self.scrollView addSubview:self.previousQuestionView];
         
         [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self updateScrollView];
             tempView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionNextNext];
-            tempView.transform = CGAffineTransformMakeScale(LIOSurveyViewiPadNextNextQuestionScale, LIOSurveyViewiPadNextNextQuestionScale);
         } completion:^(BOOL finished) {
             self.previousQuestionView.userInteractionEnabled = NO;
             self.currentQuestionView.userInteractionEnabled = YES;
@@ -1009,13 +1009,11 @@
         self.currentQuestionIndex = self.currentQuestionView.tag;
         self.isLastQuestion = ![self setupNextQuestionScrollView];
         self.nextQuestionView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionNextNext];
-        self.nextQuestionView.transform = CGAffineTransformMakeScale(LIOSurveyViewiPadNextNextQuestionScale, LIOSurveyViewiPadNextNextQuestionScale);
-        [self.view addSubview:self.nextQuestionView];
+        [self.scrollView addSubview:self.nextQuestionView];
         
         [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self updateScrollView];
             tempView.frame = [self frameForIpadScrollView:LIOIpadSurveyQuestionPreviousPrevious];
-            tempView.transform = CGAffineTransformMakeScale(LIOSurveyViewiPadNextNextQuestionScale, LIOSurveyViewiPadNextNextQuestionScale);
         } completion:^(BOOL finished) {
             self.previousQuestionView.userInteractionEnabled = NO;
             self.currentQuestionView.userInteractionEnabled = YES;
@@ -1279,6 +1277,12 @@
 {
     LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
+    
+    if (tableViewQuestionIndex > self.survey.questions.count)
+    {
+        NSLog(@"Breakpoint");
+        return 0;
+    }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     return question.pickerEntries.count;
