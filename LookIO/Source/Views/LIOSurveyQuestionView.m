@@ -756,9 +756,7 @@
         
         self.scrollView.contentSize = self.backgroundView.frame.size;
     }
-    
-    NSLog(@"Scroll view size is %f, %f and content size is %f, %f", self.scrollView.frame.size.width, self.scrollView.frame.size.height, self.scrollView.contentSize.width, self.scrollView.contentSize.height);
-    
+
 }
 
 - (CGFloat)heightForTableView:(UITableView*)tableView

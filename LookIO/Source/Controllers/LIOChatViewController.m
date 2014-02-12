@@ -672,10 +672,10 @@
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
 {
     self.inputBarViewDesiredHeight = height;
-    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+    [UIView animateWithDuration:0.5 animations:^{
         if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
             [self updateSubviewFrames];
-    } completion:nil    ];
+    }];
 }
 
 - (void)inputBarStartedTyping:(LPInputBarView *)inputBar
