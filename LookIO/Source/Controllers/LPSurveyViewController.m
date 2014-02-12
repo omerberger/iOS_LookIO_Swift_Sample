@@ -324,9 +324,9 @@
     {
         switch (alertView.tag) {
             case LIOSurveyViewControllerAlertViewTagNextActionCancel:
-                [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+                [self cancelSurvey];
                 break;
-            
+                
             default:
                 break;
         }
@@ -436,7 +436,7 @@
     // For a prechat survey, we allow just tapping off
     if (LIOSurveyTypePrechat == self.survey.surveyType)
     {
-        [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+        [self cancelSurvey];
     }
     else
     {
@@ -452,22 +452,28 @@
 }
 
 - (void)completeSurvey {
-    self.pageControl.alpha = 0.0;
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    
-    if (!padUI)
-    {
-        [self.view endEditing:YES];
-        [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            self.scrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.scrollView.bounds.size.height/2);
-            self.scrollView.alpha = 0.0;
-        } completion:^(BOOL finished) {
-            [self.delegate surveyViewController:self didCompleteSurvey:self.survey];
-        }];
-    } else
-    {
+    [self.view endEditing:YES];
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.pageControl.alpha = 0.0;
+
+        self.scrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.scrollView.bounds.size.height/2);
+        self.scrollView.alpha = 0.0;
+    } completion:^(BOOL finished) {
         [self.delegate surveyViewController:self didCompleteSurvey:self.survey];
-    }
+    }];
+}
+
+- (void)cancelSurvey
+{
+    [self.view endEditing:YES];
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.pageControl.alpha = 0.0;
+
+        self.scrollView.transform = CGAffineTransformMakeTranslation(0.0, -self.scrollView.bounds.size.height/2);
+        self.scrollView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [self.delegate surveyViewController:self didCancelSurvey:self.survey];
+    }];
 }
 
 -(void)bounceViewLeft
