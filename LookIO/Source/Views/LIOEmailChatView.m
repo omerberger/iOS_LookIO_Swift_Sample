@@ -44,11 +44,7 @@
         tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:tappableDismissBackgroundButton];        
-        
-        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChat];
-        CGFloat alpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementEmailChat];
-        self.backgroundColor = [backgroundColor colorWithAlphaComponent:alpha];
-        
+                
         self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         self.backgroundView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementEmailChatCard];

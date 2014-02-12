@@ -39,8 +39,8 @@
         self.starButtonArray = [[NSMutableArray alloc] init];
         for (int i=0; i<5; i++)
         {
-            UIImage* fullStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarFull"];
-            UIImage* emptyStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStarEmpty"];
+            UIImage* fullStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStar" withTint:[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyStarsSelected]];
+            UIImage* emptyStarImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyRatingStar" withTint:[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyStarsUnselected]];
 
             UIButton* starButton = [[UIButton alloc] initWithFrame:CGRectZero];
             [starButton setImage:emptyStarImage forState:UIControlStateNormal];

@@ -511,6 +511,34 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementSurveyStarsSelected == element)
+        {
+            if (surveyDictionary)
+            {
+                NSDictionary *surveyStarsDictionary = [surveyDictionary objectForKey:@"stars"];
+                if (surveyStarsDictionary)
+                {
+                    NSDictionary *surveyStarsSelectedDictionary = [surveyStarsDictionary  objectForKey:@"selected"];
+                    if (surveyStarsSelectedDictionary)
+                        dictionary = surveyStarsSelectedDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementSurveyStarsUnselected == element)
+        {
+            if (surveyDictionary)
+            {
+                NSDictionary *surveyStarsDictionary = [surveyDictionary objectForKey:@"stars"];
+                if (surveyStarsDictionary)
+                {
+                    NSDictionary *surveyStarsUnselectedDictionary = [surveyStarsDictionary objectForKey:@"unselected"];
+                    if (surveyStarsUnselectedDictionary)
+                        dictionary = surveyStarsUnselectedDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementSurveyValidationAlert == element)
         {
             if (surveyDictionary)
@@ -718,7 +746,7 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
 {
-    UIColor *backgroundColor = nil;
+    UIColor *backgroundColor = [UIColor whiteColor];
     
     NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     if (elementDictionary)

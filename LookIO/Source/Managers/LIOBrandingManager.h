@@ -45,6 +45,8 @@ typedef enum
     LIOBrandingElementSurveyTextField,
     LIOBrandingElementSurveyList,
     LIOBrandingElementSurveyStars,
+    LIOBrandingElementSurveyStarsSelected,
+    LIOBrandingElementSurveyStarsUnselected,
     LIOBrandingElementSurveyValidationAlert,
     LIOBrandingElementEmailChat,
     LIOBrandingElementEmailChatCard,
