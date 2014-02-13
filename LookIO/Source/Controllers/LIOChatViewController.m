@@ -672,7 +672,7 @@
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
 {
     self.inputBarViewDesiredHeight = height;
-    [UIView animateWithDuration:0.5 animations:^{
+    [UIView animateWithDuration:0.3 animations:^{
         if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
             [self updateSubviewFrames];
     }];

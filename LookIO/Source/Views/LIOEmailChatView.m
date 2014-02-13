@@ -20,6 +20,8 @@
 
 @property (nonatomic, strong) UIView *backgroundView;
 
+@property (nonatomic, strong) UIScrollView *scrollView;
+
 @property (nonatomic, strong) UILabel *titleLabel;
 
 @property (nonatomic, strong) UIButton *cancelButton;
@@ -29,6 +31,8 @@
 @property (nonatomic, strong) UITextField *emailTextField;
 
 @property (nonatomic, strong) UIAlertView *alertView;
+
+@property (nonatomic, assign) CGFloat lastKeyboardHeight;
 
 @end
 
@@ -43,7 +47,13 @@
         UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
         tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:tappableDismissBackgroundButton];        
+        [self addSubview:tappableDismissBackgroundButton];
+        
+        self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
+        self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.scrollView.showsHorizontalScrollIndicator = NO;
+        self.scrollView.showsVerticalScrollIndicator = NO;
+        [self addSubview:self.scrollView];
                 
         self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -51,7 +61,7 @@
         self.backgroundView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementEmailChatCard] CGColor];
         self.backgroundView.layer.borderWidth = 1.0;
         self.backgroundView.layer.cornerRadius = 5.0;
-        [self addSubview:self.backgroundView];
+        [self.scrollView addSubview:self.backgroundView];
 
         self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.titleLabel.backgroundColor = [UIColor clearColor];
@@ -240,6 +250,22 @@
         self.cancelButton.frame = frame;
     }
     
+    [self updateScrollView];
+}
+
+- (void)updateScrollView
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (!padUI)
+    {
+        self.scrollView.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height - self.lastKeyboardHeight);
+        self.scrollView.contentSize = CGSizeMake(self.bounds.size.width, self.backgroundView.frame.origin.y + self.backgroundView.bounds.size.height + 10.0);
+    }
+    else
+    {
+        self.scrollView.contentSize = self.bounds.size;
+    }
 }
 
 #pragma mark -
@@ -371,11 +397,15 @@
     CGRect keyboardRect;
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
     
+    UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         CGRect frame = self.frame;
         frame.origin.y = 0;
         self.frame = frame;
     } completion:^(BOOL finished) {
+        [self updateScrollView];
     }];
 }
 
@@ -392,6 +422,8 @@
     
     CGRect keyboardRect;
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
+    
+    self.lastKeyboardHeight = 0.0;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         CGRect frame = self.frame;
