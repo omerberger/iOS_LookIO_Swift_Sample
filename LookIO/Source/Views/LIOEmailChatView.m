@@ -44,16 +44,16 @@
     if (self) {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
-        UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
-        tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:tappableDismissBackgroundButton];
-        
         self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
         self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.scrollView.showsHorizontalScrollIndicator = NO;
         self.scrollView.showsVerticalScrollIndicator = NO;
         [self addSubview:self.scrollView];
+        
+        UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
+        tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [self.scrollView addSubview:tappableDismissBackgroundButton];
                 
         self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
         self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
