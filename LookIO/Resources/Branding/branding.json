@@ -301,6 +301,20 @@
                 "color": "#ffffff",
                 "size": "14.0"
             }
+        },
+        "webview": {
+            "header_bar": {
+                "background": {
+                    "color": "#cccccc"
+                },
+                "font": {
+                    "color": "#000000",
+                    "size": "14.0"
+                },
+                "buttons": {
+                    "color": "#47a1ff"
+                }
+            }
         }
     },
     "surveys": {

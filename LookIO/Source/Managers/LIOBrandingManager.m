@@ -373,33 +373,33 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
-        if (LIOBrandingElementBrandingBarWebviewButtons == element)
+        if (LIOBrandingElementWebViewHeaderBar == element)
         {
             if (engagementDictionary)
             {
-                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
-                if (brandingBarDictionary)
+                NSDictionary *webViewDictionary = [engagementDictionary objectForKey:@"webview"];
+                if (webViewDictionary)
                 {
-                    NSDictionary *webViewButtonsDictionary = [brandingBarDictionary objectForKey:@"webview_buttons"];
-                    if (webViewButtonsDictionary)
-                        dictionary = webViewButtonsDictionary;
+                    NSDictionary *webViewHeaderBarDictionary = [webViewDictionary objectForKey:@"header_bar"];
+                    if (webViewHeaderBarDictionary)
+                        dictionary = webViewHeaderBarDictionary;
                 }
             }
         }
         
-        if (LIOBrandingElementBrandingBarWebviewButtonsBadge == element)
+        if (LIOBrandingElementWebViewHeaderBarButtons == element)
         {
             if (engagementDictionary)
             {
-                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
-                if (brandingBarDictionary)
+                NSDictionary *webViewDictionary = [engagementDictionary objectForKey:@"webview"];
+                if (webViewDictionary)
                 {
-                    NSDictionary *webViewButtonsDictionary = [brandingBarDictionary objectForKey:@"webview_buttons"];
-                    if (webViewButtonsDictionary)
+                    NSDictionary *webViewHeaderBarDictionary = [webViewDictionary objectForKey:@"header_bar"];
+                    if (webViewHeaderBarDictionary)
                     {
-                        NSDictionary *badgeDictionary = [webViewButtonsDictionary objectForKey:@"badge"];
-                        if (badgeDictionary)
-                            dictionary = badgeDictionary;
+                        NSDictionary *buttonsDictionary = [webViewHeaderBarDictionary objectForKey:@"buttons"];
+                        if (buttonsDictionary)
+                            dictionary = buttonsDictionary;
                     }
                 }
             }

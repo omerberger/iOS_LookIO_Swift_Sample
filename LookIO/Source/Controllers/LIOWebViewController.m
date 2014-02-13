@@ -26,6 +26,8 @@
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
+@property (nonatomic, strong) UILabel *titleLabel;
+
 @end
 
 @implementation LIOWebViewController
@@ -66,12 +68,25 @@
     self.webView.delegate = self;
     [self.view addSubview:self.webView];
     
-    UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarWebviewButtons];
+    UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementWebViewHeaderBarButtons];
 
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] style:UIBarButtonItemStylePlain target:self action:@selector(closeButtonWasTapped:)];
+    UIButton *closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [closeButton addTarget:self action:@selector(closeButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [closeButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] forState:UIControlStateNormal];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:closeButton];
 
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] style:UIBarButtonItemStylePlain target:self action:@selector(openInSafariButtonWasTapped:)];
+    UIButton *shareButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [shareButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [shareButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:shareButton];
     
+    UIColor *navigationBarColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementWebViewHeaderBar];
+    
+    if (LIOIsUIKitFlatMode())
+        self.navigationController.navigationBar.barTintColor = navigationBarColor;
+    else
+        self.navigationController.navigationBar.tintColor = navigationBarColor;
+        
     if ([self.delegate webViewControllerShowControlButtonForWebView:self])
     {
         self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
@@ -82,7 +97,13 @@
         [self.controlButton updateBaseValues];
     }
     
-    self.navigationItem.title = LIOLocalizedString(@"LIOLookIOManager.WebViewLoadingTitle");
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.titleLabel.text = LIOLocalizedString(@"LIOLookIOManager.WebViewLoadingTitle");
+    self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementWebViewHeaderBar];
+    self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementWebViewHeaderBar];
+    self.titleLabel.backgroundColor = [UIColor clearColor];
+    [self.titleLabel sizeToFit];
+    self.navigationItem.titleView = self.titleLabel;
 }
 
 - (NSURL *)currentWebViewURL
@@ -96,7 +117,7 @@
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
-    self.navigationItem.title = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+    self.titleLabel.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
 }
 
 #pragma mark -
