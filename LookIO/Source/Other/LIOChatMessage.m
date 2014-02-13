@@ -59,6 +59,8 @@
         self.sendingFailed = [sendingFailedNumber boolValue];
         self.lineId = [decoder decodeObjectForKey:LIOChatMessageLineIdKey];
         self.clientLineId = [decoder decodeObjectForKey:LIOChatMessageClientLineIdKey];
+        
+        [self detectLinks];
     }
     
     return self;
