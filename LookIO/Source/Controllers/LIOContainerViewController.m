@@ -10,6 +10,7 @@
 
 // Managers
 #import "LIOBundleManager.h"
+#import "LIOBrandingManager.h"
 
 // View Controllers
 #import "LIOChatViewController.h"
@@ -38,7 +39,6 @@
 @property (nonatomic, strong) LIOWebViewController *webViewController;
 
 @property (nonatomic, strong) LIOEngagement *engagement;
-
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
@@ -555,12 +555,12 @@
 #pragma mark Status Bar Inset Methods
 
 - (void)setupStatusBarInset
-{
-    CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-    
+{    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
     {
-        self.statusBarInset = statusBarHeight;
+        BOOL statusBarHidden = [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+
+        self.statusBarInset = statusBarHidden ? 0.0 : 20.0;
     }
     else
     {
@@ -658,6 +658,19 @@
 }
 
 #pragma mark -
+#pragma mark StatusBar Methods
+
+- (BOOL)prefersStatusBarHidden
+{
+    return [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return [[LIOBrandingManager brandingManager] statusBarStyleForElement:LIOBrandingElementStatusBar];
+}
+
+#pragma mark -
 #pragma mark Push back animations
 
 - (void)animationPopFrontScaleUp {
@@ -698,5 +711,7 @@
 	UIView* view = self.view;
 	[view.layer addAnimation:group forKey:nil];
 }
+
+
 
 @end

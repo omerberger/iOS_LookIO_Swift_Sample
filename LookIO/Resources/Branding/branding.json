@@ -9,6 +9,10 @@
         "logo": {
             "image": ""
         },
+        "status_bar": {
+            "hidden": "0",
+            "type": "dark"
+        },
         "loading_screen": {
             "spin_image": "1",
             "title": {

@@ -21,6 +21,7 @@ typedef enum
     LIOBrandingElementFont,
     LIOBrandingElementBoldFont,
     LIOBrandingElementKeyboardType,
+    LIOBrandingElementStatusBar,
     LIOBrandingElementLogo,
     LIOBrandingElementBrandingBar,
     LIOBrandingElementBrandingBarNotifications,
@@ -98,6 +99,7 @@ typedef enum
 - (CGFloat)floatValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (NSInteger)integerValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element;
+- (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;
 
 @end
 

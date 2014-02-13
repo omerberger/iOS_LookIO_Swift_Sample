@@ -143,6 +143,15 @@ static LIOBrandingManager *brandingManager = nil;
         {
             return engagementDictionary;
         }
+        if (LIOBrandingElementStatusBar == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *statusBarDictionary = [engagementDictionary objectForKey:@"status_bar"];
+                if (statusBarDictionary)
+                    dictionary = statusBarDictionary;
+            }
+        }
         
         if (LIOBrandingElementLoadingScreen == element)
         {
@@ -1057,6 +1066,27 @@ static LIOBrandingManager *brandingManager = nil;
     }
     
     return appearance;
+}
+
+- (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element
+{
+    UIStatusBarStyle style = UIStatusBarStyleDefault;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSString *statusBarTypeString = [elementDictionary objectForKey:@"type"];
+        if (statusBarTypeString)
+        {
+            if ([statusBarTypeString isEqualToString:@"light"])
+                style = UIStatusBarStyleLightContent;
+            if ([statusBarTypeString isEqualToString:@"dark"])
+                style = UIStatusBarStyleDefault;
+        }
+    }
+    
+    return style;
+    
 }
 
 
