@@ -26,8 +26,6 @@ typedef enum
 @protocol LIODraggableButtonDelegate <NSObject>
 
 - (void)draggableButtonWasTapped:(LIODraggableButton *)draggableButton;
-- (void)draggableButtonDidBeginDragging:(LIODraggableButton *)draggableButton;
-- (void)draggableButtonDidEndDragging:(LIODraggableButton *)draggableButton;
 
 @end
 
@@ -40,6 +38,8 @@ typedef enum
 @property (nonatomic, assign) NSInteger numberOfUnreadMessages;
 
 @property (nonatomic, strong) NSString *buttonTitle;
+
+@property (nonatomic, assign) BOOL ignoreActualInterfaceOrientation;
 
 - (void)show:(BOOL)animated;
 - (void)hide:(BOOL)animated;
@@ -55,5 +55,7 @@ typedef enum
 - (void)setLoadingMode;
 - (void)setChatMode;
 - (void)setSurveyMode;
+
+- (void)removeTimers;
 
 @end

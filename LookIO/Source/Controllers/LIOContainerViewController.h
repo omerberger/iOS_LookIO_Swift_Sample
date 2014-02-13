@@ -31,9 +31,13 @@ typedef enum {
 
 - (void)containerViewControllerDidDismiss:(LIOContainerViewController *)containerViewController;
 - (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController;
-- (void)containerViewcontrollerDidTapIntraAppLink:(NSURL *)link;
+- (void)containerViewControllerDidTapIntraAppLink:(NSURL *)link;
+- (void)containerViewControllerWantsWindowBackgroundColor:(UIColor *)color;
+- (BOOL)containerViewControllerShowControlButtonForWebView:(LIOContainerViewController *)containerViewController;
+- (NSInteger)containerViewControllerButtonKindForWebView:(LIOContainerViewController *)containerViewController;
 
-// Rotation methodw
+
+// Rotation methods
 - (BOOL)containerViewController:(LIOContainerViewController *)containerViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
 - (BOOL)containerViewControllerShouldAutorotate:(LIOContainerViewController *)containerViewController;
 - (NSInteger)containerViewControllerSupportedInterfaceOrientations:(LIOContainerViewController *)containerViewController;

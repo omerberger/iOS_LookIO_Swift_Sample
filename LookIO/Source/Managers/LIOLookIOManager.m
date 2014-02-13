@@ -603,16 +603,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods
 
-- (void)draggableButtonDidBeginDragging:(LIODraggableButton *)draggableButton
-{
-    
-}
-
-- (void)draggableButtonDidEndDragging:(LIODraggableButton *)draggableButton
-{
-    
-}
-
 - (void)draggableButtonWasTapped:(LIODraggableButton *)draggableButton
 {
     [self beginChat];
@@ -801,7 +791,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.visit.visitState = LIOVisitStatePostChatSurvey;
 }
 
-- (void)containerViewcontrollerDidTapIntraAppLink:(NSURL *)link
+- (void)containerViewControllerDidTapIntraAppLink:(NSURL *)link
 {
     self.nextDismissalCompletionBlock = ^{
         [[UIApplication sharedApplication] openURL:link];
@@ -809,6 +799,36 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.containerViewController dismissCurrentViewController];
 }
 
+- (void)containerViewControllerWantsWindowBackgroundColor:(UIColor *)color
+{
+    self.lookioWindow.backgroundColor = color;
+}
+
+- (BOOL)containerViewControllerShowControlButtonForWebView:(LIOContainerViewController *)containerViewController
+{
+    NSInteger visibilityValue = [self.visit.lastKnownButtonVisibility integerValue];
+    switch (visibilityValue) {
+        case 0:
+            return NO;
+            break;
+            
+        case 1:
+            return YES;
+            break;
+            
+        case 2:
+            return YES;
+            
+        default:
+            break;
+    }
+    return NO;
+}
+
+- (NSInteger)containerViewControllerButtonKindForWebView:(LIOContainerViewController *)containerViewController
+{
+    return [self.visit.lastKnownButtonType integerValue];
+}
 
 #pragma mark -
 #pragma mark Engagement Interaction Methods
@@ -832,6 +852,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
     self.mainWindow = self.previousKeyWindow;
     
+    self.lookioWindow.backgroundColor = [UIColor clearColor];
     [self.lookioWindow makeKeyAndVisible];
 
     // Control Button

@@ -204,6 +204,11 @@
         self.approvePhotoView = nil;
     }
     
+    if (LIOChatStateWeb == self.chatState)
+    {
+        self.chatState = LIOChatStateChat;
+    }
+    
     [self.delegate chatViewControllerDidDismissChat:self];
  
     if ([self.inputBarView.textView isFirstResponder])
@@ -805,7 +810,7 @@
 {
     [super viewWillDisappear:animated];
     
-    if (self.chatState != LIOChatStateImagePicker)
+    if (self.chatState != LIOChatStateImagePicker && self.chatState != LIOChatStateWeb)
     {
         // Hide the chat so we can drop it when we return..
         self.keyboardState = LIOKeyboardStateIntroAnimation;
@@ -1454,6 +1459,7 @@
 
 - (void)openWebLinkURL:(NSURL*)url
 {
+    self.chatState = LIOChatStateWeb;
     [self.view endEditing:YES];
     [self.delegate chatViewControllerDidTapWebLink:url];
 }

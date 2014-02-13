@@ -266,6 +266,9 @@
 - (void)setVisibleFrameWithMessageWidth:(CGFloat)messageWidth
 {
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
 
@@ -349,6 +352,9 @@
     }
     
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
     
@@ -386,15 +392,14 @@
 }
 
 - (void)resetFrame {
-    if (NO == [self.superview isKindOfClass:[UIWindow class]])
-        return;
-    
     CGRect frame = self.frame;
     
-    UIWindow *buttonWindow = (UIWindow *)self.superview;
+    UIView *buttonWindow = (UIView  *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
     
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
     [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
     
     CGFloat verticalPosition = [[LIOBrandingManager brandingManager] verticalPositionForElement:LIOBrandingElementControlButton];
@@ -439,6 +444,9 @@
 - (void)resetTitleLabelRotationForAttachedToRight:(BOOL)attachedToRight
 {
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
     CGSize expectedSize = [self.buttonTitle sizeWithFont:font constrainedToSize:CGSizeMake(200, LIODraggableButtonSize)];
     CGFloat loadingExtra = LIOButtonModeLoading == self.buttonMode ? self.baseSize.width*0.7 : 0.0;
@@ -612,6 +620,16 @@
     }];
 }
 
+- (void)removeTimers
+{
+    if (self.messageTimer)
+    {
+        [self.messageTimer stopTimer];
+        self.messageTimer = nil;
+    }
+}
+
+
 - (void)messageTimerDidFire
 {
     if (self.messageTimer)
@@ -690,8 +708,6 @@
         self.preDragPosition = self.frame.origin;
         self.panPoint = CGPointMake([[sender view] center].x, [[sender view] center].y);
         
-        [self.delegate draggableButtonDidBeginDragging:self];
-        
         if (self.isShowingMessage)
         {
             [self messageTimerDidFire];
@@ -705,6 +721,9 @@
     // Toggle text button alpha when dragging
     BOOL goingToAttachToRight = self.isAttachedToRight;
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
         CGFloat verticalPercent = self.center.x/superview.bounds.size.width;
         if (verticalPercent < 0.5)
@@ -765,6 +784,9 @@
         self.isDragging = NO;
         
         UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if (self.ignoreActualInterfaceOrientation)
+            actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
         if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {
             if (self.center.x > superview.bounds.size.width/2)
             {
@@ -857,8 +879,6 @@
             
             [self setAlphaForDraggedElements:1.0];
         } completion:nil];
-
-        [self.delegate draggableButtonDidEndDragging:self];
     }
 }
 

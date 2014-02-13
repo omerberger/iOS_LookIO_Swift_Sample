@@ -45,7 +45,6 @@
 @property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
 @property (nonatomic, assign) NSInteger failedFunnelCount;
 
-@property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, assign) BOOL disableControlButtonOverride;
 @property (nonatomic, assign) NSNumber *previousControlButtonVisibilityValue;
 

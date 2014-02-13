@@ -21,9 +21,8 @@
 #import "LIOHeaderBarView.h"
 
 #define LIOContainerViewControllerAlertViewNextStepDismiss      2001
-#define LIOContainerViewControllerAlertViewNextStepOpenInSafari 2002
 
-@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate, LIOHeaderBarViewDelegate>
+@interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate, LIOHeaderBarViewDelegate, LIOWebViewControllerDelegate>
 
 @property (nonatomic, strong) UIView *contentView;
 
@@ -36,6 +35,7 @@
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
 @property (nonatomic, strong) LIOLoadingViewController *loadingViewController;
 @property (nonatomic, strong) LPSurveyViewController *surveyViewController;
+@property (nonatomic, strong) LIOWebViewController *webViewController;
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -53,12 +53,38 @@
         self.blurImageView.alpha = 1.0;
         self.view.alpha = 1.0;
     } completion:^(BOOL finished) {
+
     }];
 }
 
 - (void)updateBlurImage:(UIImage *)image
 {
     [self.blurImageView setImageAndBlur:image];
+}
+
+#pragma mark -
+#pragma mark WebViewController Methods
+
+- (void)webViewControllerCloseButtonWasTapped:(LIOWebViewController *)webViewController
+{
+    self.containerViewState = LIOContainerViewStateChat;
+    
+    [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
+    [self animationPopFrontScaleUp];
+    [self dismissViewControllerAnimated:YES completion:^{
+        [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
+        self.webViewController = nil;
+    }];
+}
+
+- (BOOL)webViewControllerShowControlButtonForWebView:(LIOWebViewController *)webViewController
+{
+    return [self.delegate containerViewControllerShowControlButtonForWebView:self];
+}
+
+- (NSInteger)webViewControllerButtonKindForWebView:(LIOWebViewController *)webViewController
+{
+    return [self.delegate containerViewControllerButtonKindForWebView:self];
 }
 
 #pragma mark -
@@ -72,55 +98,11 @@
     }
 }
 
-- (void)headerBarViewBackToChatButtonWasTapped:(LIOHeaderBarView *)aView
-{
-    [self.headerBarView toggleWebMode:NO];
-
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    if (padUI)
-        [self dismissHeaderBarView:YES withState:LIOHeaderBarStateHidden];
-    else
-    {
-        if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
-            [self dismissHeaderBarView:YES withState:LIOHeaderBarStateLandscapeHidden];
-    }
-
-    [self presentChatViewController:YES];
-}
-
-- (void)headerBarViewOpenInSafariButtonWasTapped:(LIOHeaderBarView *)aView
-{
-    // Let's find the current link
-    if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
-    {
-        LIOWebViewController *webViewController = (LIOWebViewController *)self.currentViewController;
-        NSURL *url = [webViewController currentWebViewURL];
-        
-        NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
-        NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
-        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), url];
-
-        [self dismissExistingAlertView];
-        self.alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                        message:alertMessage
-                                                       delegate:self
-                                              cancelButtonTitle:nil
-                                              otherButtonTitles:alertCancel, alertOpen, nil];
-        self.alertView.tag = LIOContainerViewControllerAlertViewNextStepOpenInSafari;
-        [self.alertView show];
-    }
-}
-
 - (void)presentHeaderBarView:(BOOL)animated
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     if (padUI)
-    {
-        if (LIOContainerViewStateWeb == self.containerViewState)
-            self.headerBarView.hidden = NO;
-        else
-            return;
-    }
+        return;
 
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = 0;
@@ -149,10 +131,7 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     if (padUI)
-    {
-        if (LIOContainerViewStateWeb != self.containerViewState)
-            return;
-    }
+        return;
 
     CGRect headerBarFrame = self.headerBarView.frame;
     headerBarFrame.origin.y = -headerBarFrame.size.height;
@@ -195,6 +174,10 @@
         {
             [self.chatViewController displayToasterNotification:notification];
         }
+    }
+    if (LIOContainerViewStateWeb == self.containerViewState)
+    {
+        [self.webViewController presentNotification:notification];
     }
 }
 
@@ -258,7 +241,7 @@
 
 - (void)chatViewControllerDidTapIntraAppLink:(NSURL *)url
 {
-    [self.delegate containerViewcontrollerDidTapIntraAppLink:url];
+    [self.delegate containerViewControllerDidTapIntraAppLink:url];
 }
 
 - (void)chatViewControllerDidTapWebLink:(NSURL *)url
@@ -267,11 +250,13 @@
     
     [self.headerBarView hideCurrentNotification];
     
-    [self presentHeaderBarView:YES];
-    [self.headerBarView toggleWebMode:YES];
+    [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     
-    LIOWebViewController *webViewController = [[LIOWebViewController alloc] initWithURL:url];
-    [self swapCurrentControllerWith:webViewController animated:YES];
+    self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
+    self.webViewController.delegate = self;
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.webViewController];
+    [self presentModalViewController:navigationController animated:YES];
+    [self animationPushBackScaleDown];
 }
 
 - (void)chatViewControllerLandscapeWantsHeaderBarHidden:(BOOL)hidden
@@ -332,7 +317,8 @@
     [self.chatViewController engagement:engagement didReceiveMessage:message];
     if (LIOContainerViewStateWeb == self.containerViewState)
     {
-        [self.headerBarView reportUnreadChatMessageForWebView];
+        [self.webViewController reportUnreadMessage];
+        [self.webViewController presentNotification:LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody")];
     }
 }
 
@@ -396,6 +382,7 @@
     }
   
     [self dismiss];
+    self.surveyViewController = nil;
 }
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
@@ -419,6 +406,7 @@
         default:
             break;
     }
+    self.surveyViewController = nil;
 }
 
 - (void)showSurveySubmissionAlert
@@ -436,26 +424,12 @@
 #pragma mark UIAlertView Delegate Methods
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    LIOWebViewController *webViewController;
-    
+{    
     switch (alertView.tag) {
         case LIOContainerViewControllerAlertViewNextStepDismiss:
             [self dismiss];
             break;
             
-        case LIOContainerViewControllerAlertViewNextStepOpenInSafari:
-            if (buttonIndex == 1)
-            {
-                // Let's find the current link
-                if ([self.currentViewController isKindOfClass:[LIOWebViewController class]])
-                {
-                    webViewController = (LIOWebViewController *)self.currentViewController;
-                    [[UIApplication sharedApplication] openURL:[webViewController currentWebViewURL]];
-                }
-            }
-            break;
-
         default:
             break;
     }
@@ -479,7 +453,7 @@
             break;
             
         case LIOContainerViewStateWeb:
-            // TODO: This should be handled
+            [self.webViewController dismissExistingAlertView];
             break;
             
         default:
@@ -535,8 +509,6 @@
 
 - (void)dismissCurrentViewController
 {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
     switch (self.containerViewState)
     {
         case LIOContainerViewStateChat:
@@ -552,15 +524,11 @@
             break;
             
         case LIOContainerViewStateWeb:
-            [self.headerBarView toggleWebMode:NO];
-            if (padUI)
-                [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
-            else
-            {
-                if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
-                    [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
-            }
+            [self dismissModalViewControllerAnimated:NO];
+            [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
+            [self.chatViewController dismissChat:self];
             [self dismiss];
+            self.webViewController = nil;
             break;
             
         default:
@@ -603,10 +571,6 @@
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    // When displaying when views, we want to show the header bar all the time
-    if (LIOContainerViewStateWeb == self.containerViewState)
-        return;
-    
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
     {
         if (LIOContainerViewStateChat == self.containerViewState)
@@ -689,6 +653,48 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return [self.delegate containerViewController:self shouldRotateToInterfaceOrientation:interfaceOrientation];
+}
+
+#pragma mark -
+#pragma mark Push back animations
+
+- (void)animationPopFrontScaleUp {
+	CABasicAnimation* scaleUp = [CABasicAnimation animationWithKeyPath:@"transform"];
+	scaleUp.toValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+	scaleUp.fromValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.8, 0.8, 0.8)];
+	scaleUp.removedOnCompletion = YES;
+    
+	CABasicAnimation* opacity = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	opacity.fromValue = [NSNumber numberWithFloat:0.4];
+	opacity.toValue = [NSNumber numberWithFloat:1.0f];
+	opacity.removedOnCompletion = YES;
+    
+	CAAnimationGroup* group = [CAAnimationGroup animation];
+	group.duration = 0.4;
+	group.animations = [NSArray arrayWithObjects:scaleUp, opacity, nil];
+    
+	UIView* view = self.navigationController.view?self.navigationController.view:self.view;
+	[view.layer addAnimation:group forKey:nil];
+    
+}
+
+- (void)animationPushBackScaleDown {
+	CABasicAnimation* scaleDown = [CABasicAnimation animationWithKeyPath:@"transform"];
+	scaleDown.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.8, 0.8, 0.8)];
+	scaleDown.fromValue = [NSValue valueWithCATransform3D:CATransform3DIdentity];
+	scaleDown.removedOnCompletion = YES;
+    
+	CABasicAnimation* opacity = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	opacity.fromValue = [NSNumber numberWithFloat:1.0f];
+	opacity.toValue = [NSNumber numberWithFloat:0.4];
+	opacity.removedOnCompletion = YES;
+    
+	CAAnimationGroup* group = [CAAnimationGroup animation];
+	group.duration = 0.4;
+	group.animations = [NSArray arrayWithObjects:scaleDown, opacity, nil];
+    
+	UIView* view = self.view;
+	[view.layer addAnimation:group forKey:nil];
 }
 
 @end

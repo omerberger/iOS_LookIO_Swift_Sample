@@ -66,6 +66,7 @@ typedef enum
 @property (nonatomic, assign) LIOVisitState visitState;
 @property (nonatomic, assign) BOOL controlButtonHidden;
 
+@property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, strong) NSNumber *lastKnownButtonType;
 @property (nonatomic, assign) BOOL lastKnownButtonPopupChat;
 

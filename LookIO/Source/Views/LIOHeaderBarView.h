@@ -15,8 +15,6 @@
 @protocol LIOHeaderBarViewDelegate
 
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
-- (void)headerBarViewOpenInSafariButtonWasTapped:(LIOHeaderBarView *)aView;
-- (void)headerBarViewBackToChatButtonWasTapped:(LIOHeaderBarView *)aView;
 
 @end
 
@@ -29,9 +27,6 @@
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
 - (void)hideCurrentNotification;
-
-- (void)toggleWebMode:(BOOL)webMode;
-- (void)reportUnreadChatMessageForWebView;
 
 - (void)rejiggerSubviews;
 

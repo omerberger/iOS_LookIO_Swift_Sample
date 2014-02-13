@@ -180,4 +180,4 @@
 "LIOLookIOManager.KeyboardMenuButtonEndSession" = "End Session";
 "LIOLookIOManager.KeyboardMenuButtonKeyboard" = "Keyboard";
 
-"LIOLookIOManager.WebViewBackToChatButton" = "Chat";
+"LIOLookIOManager.WebViewLoadingTitle" = "Loading..";

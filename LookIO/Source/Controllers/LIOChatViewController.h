@@ -23,6 +23,7 @@ typedef enum {
     LIOChatStateChat = 0,
     LIOChatStateEmailChat,
     LIOChatStateImagePicker,
+    LIOChatStateWeb,
     LIOChatStateImageApprove
 } LIOChatState;
 
