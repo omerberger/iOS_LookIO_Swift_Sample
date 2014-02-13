@@ -556,9 +556,11 @@
 
 - (void)setupStatusBarInset
 {
+    CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
     {
-        self.statusBarInset = 20.0;
+        self.statusBarInset = statusBarHeight;
     }
     else
     {
