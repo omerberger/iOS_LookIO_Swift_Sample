@@ -28,6 +28,8 @@
 
 @property (nonatomic, strong) UILabel *titleLabel;
 
+@property (nonatomic, strong) UIImageView *loadingImageView;
+
 @end
 
 @implementation LIOWebViewController
@@ -47,14 +49,30 @@
 
 - (void)viewWillDisappear:(BOOL)animated
 {
+    [super viewWillDisappear:animated];
+    
     [self dismissExistingAlertView];
     [self.controlButton removeTimers];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
+    
     [self.controlButton resetFrame];
     [self.controlButton show:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+    loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
+    loadingAnimation.duration = 1.0f;
+    loadingAnimation.repeatCount = HUGE_VAL;
+    [self.loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
 }
 
 - (void)viewDidLoad
@@ -104,6 +122,12 @@
     self.titleLabel.backgroundColor = [UIColor clearColor];
     [self.titleLabel sizeToFit];
     self.navigationItem.titleView = self.titleLabel;
+    
+    self.loadingImageView = [[UIImageView alloc] initWithFrame:self.webView.bounds];
+    self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
+    self.loadingImageView.contentMode = UIViewContentModeCenter;
+    self.loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    [self.webView addSubview:self.loadingImageView];
 }
 
 - (NSURL *)currentWebViewURL
@@ -118,6 +142,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.titleLabel.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+    [self.loadingImageView removeFromSuperview];
 }
 
 #pragma mark -

@@ -309,7 +309,7 @@
         "webview": {
             "header_bar": {
                 "background": {
-                    "color": "#cccccc"
+                    "color": "#dddddd"
                 },
                 "font": {
                     "color": "#000000",
