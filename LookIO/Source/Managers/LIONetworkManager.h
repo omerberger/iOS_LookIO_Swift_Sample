@@ -24,6 +24,8 @@ typedef enum
 + (LIONetworkManager *)networkManager;
 
 - (void)resetNetworkEndpoints;
+- (void)resetOnlyVisitEndpoints;
+
 - (void)setProductionMode;
 - (void)setStagingMode;
 - (void)setQAMode;

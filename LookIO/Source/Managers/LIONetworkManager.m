@@ -66,6 +66,28 @@ static LIONetworkManager *networkManager = nil;
     }
 }
 
+- (void)resetOnlyVisitEndpoints
+{
+    LPVisitAPIClient* visitClient = [LPVisitAPIClient sharedClient];
+
+    switch (self.serverMode) {
+        case LIOServerProduction:
+            visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint]];
+            break;
+            
+        case LIOServerStaging:
+            visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_Dev]];
+            break;
+            
+        case LIOServerQA:
+            visitClient.baseURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@", LIOLookIOManagerDefaultControlEndpoint_QA]];
+            break;
+            
+        default:
+            break;
+    }
+}
+
 - (void)setProductionMode
 {
     self.serverMode = LIOServerProduction;
