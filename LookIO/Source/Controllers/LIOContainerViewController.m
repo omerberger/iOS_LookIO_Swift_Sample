@@ -363,6 +363,11 @@
         [self.headerBarView hideCurrentNotification];
     }
     
+    if (LIOContainerViewStateWeb == self.containerViewState)
+    {
+        [self webViewControllerCloseButtonWasTapped:self.webViewController];
+    }
+    
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
     self.surveyViewController.delegate = self;
     self.containerViewState = LIOContainerViewStateSurvey;
@@ -704,7 +709,7 @@
 	group.duration = 0.4;
 	group.animations = [NSArray arrayWithObjects:scaleUp, opacity, nil];
     
-	UIView* view = self.navigationController.view?self.navigationController.view:self.view;
+	UIView* view = self.view;
 	[view.layer addAnimation:group forKey:nil];
     
 }
@@ -721,7 +726,7 @@
 	opacity.removedOnCompletion = YES;
     
 	CAAnimationGroup* group = [CAAnimationGroup animation];
-	group.duration = 0.4;
+	group.duration = 1.0;
 	group.animations = [NSArray arrayWithObjects:scaleDown, opacity, nil];
     
 	UIView* view = self.view;

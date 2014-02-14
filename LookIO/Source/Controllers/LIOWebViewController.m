@@ -116,6 +116,7 @@
     }
     
     self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.titleLabel.text = LIOLocalizedString(@"LIOLookIOManager.WebViewLoadingTitle");
     self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementWebViewHeaderBar];
     self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementWebViewHeaderBar];
@@ -142,6 +143,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.titleLabel.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+    [self.titleLabel sizeToFit];
     [self.loadingImageView removeFromSuperview];
 }
 

@@ -33,8 +33,6 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-        
         UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
         tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [tappableDismissBackgroundButton addTarget:self action:@selector(cancelButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];

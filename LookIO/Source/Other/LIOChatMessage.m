@@ -80,6 +80,13 @@
         text = [NSString stringWithFormat:@"%@: %@", self.senderName, self.text];
     
     NSRange fullRange = NSMakeRange(0, [text length]);
+    if (text == nil)
+    {
+        NSLog(@"Breakpoint@!");
+        1==1;
+        return;
+    }
+    
     [dataDetector enumerateMatchesInString:text options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
         
         LPChatBubbleLink *currentLink = [[LPChatBubbleLink alloc] init];

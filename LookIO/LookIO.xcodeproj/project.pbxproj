@@ -51,9 +51,9 @@
 		A7A397371892B7E30073A41C /* LIOBadgeView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A397351892B7E30073A41C /* LIOBadgeView.h */; };
 		A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A397361892B7E30073A41C /* LIOBadgeView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7A4CB2D18A43B7100D05C1D /* LIOPopupLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A4CB2B18A43B7100D05C1D /* LIOPopupLabel.h */; };
-		A7A4CB2E18A43B7100D05C1D /* LIOPopupLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB2C18A43B7100D05C1D /* LIOPopupLabel.m */; };
+		A7A4CB2E18A43B7100D05C1D /* LIOPopupLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB2C18A43B7100D05C1D /* LIOPopupLabel.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7A4CB3118A527EB00D05C1D /* LIOApprovePhotoView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A4CB2F18A527EB00D05C1D /* LIOApprovePhotoView.h */; };
-		A7A4CB3218A527EB00D05C1D /* LIOApprovePhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB3018A527EB00D05C1D /* LIOApprovePhotoView.m */; };
+		A7A4CB3218A527EB00D05C1D /* LIOApprovePhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7A4CB3018A527EB00D05C1D /* LIOApprovePhotoView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE31FE18732922002D9F23 /* LIOSurvey.h in Headers */ = {isa = PBXBuildFile; fileRef = A7AE31FC18732922002D9F23 /* LIOSurvey.h */; };
 		A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE31FD18732922002D9F23 /* LIOSurvey.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE3201187343A0002D9F23 /* LPSurveyViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
