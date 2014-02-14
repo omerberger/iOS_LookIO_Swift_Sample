@@ -558,7 +558,23 @@
 {    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
     {
-        BOOL statusBarHidden = [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+        BOOL statusBarHidden = NO;
+
+        // Read the plist to see if we should use status bar appearance
+        BOOL viewControllerBasedStatusBarAppearance = NO;
+        if ([[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"])
+            viewControllerBasedStatusBarAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"] boolValue];
+        
+        // If status bar appearance, we should use the branding result
+        if (viewControllerBasedStatusBarAppearance)
+        {
+            statusBarHidden = [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+        }
+        // If not, just use the UIApplication result
+        else
+        {
+            statusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
+        }
 
         self.statusBarInset = statusBarHidden ? 0.0 : 20.0;
     }
