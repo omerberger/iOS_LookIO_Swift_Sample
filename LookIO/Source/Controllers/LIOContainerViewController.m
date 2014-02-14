@@ -255,7 +255,8 @@
     self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
     self.webViewController.delegate = self;
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.webViewController];
-    [self presentModalViewController:navigationController animated:YES];
+
+    [self presentViewController:navigationController animated:YES completion:nil];
     [self animationPushBackScaleDown];
 }
 
@@ -726,7 +727,7 @@
 	opacity.removedOnCompletion = YES;
     
 	CAAnimationGroup* group = [CAAnimationGroup animation];
-	group.duration = 1.0;
+	group.duration = 0.4;
 	group.animations = [NSArray arrayWithObjects:scaleDown, opacity, nil];
     
 	UIView* view = self.view;

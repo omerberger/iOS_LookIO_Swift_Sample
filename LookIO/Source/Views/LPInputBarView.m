@@ -122,7 +122,9 @@
         {
             self.plusButton.layer.borderWidth = 1.0;
             self.plusButton.layer.cornerRadius = 5.0;
-            self.plusButton.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBarPlusButton] CGColor];
+            UIColor *borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSendBarPlusButton] colorWithAlphaComponent:0.5];
+            self.plusButton.layer.borderColor = [borderColor CGColor];
+            
             
             // Create the path (with only the top-left corner rounded)
             UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.plusButton.bounds
