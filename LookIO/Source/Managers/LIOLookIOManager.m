@@ -1302,6 +1302,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self dismissLookIOWindow];
     
+    [self visitChatEnabledDidUpdate:self.visit];
     [self.controlButton setChatMode];
     [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
@@ -1328,6 +1329,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self.engagement cleanUpEngagement];
         self.engagement = nil;
+        
+        [self visitChatEnabledDidUpdate:self.visit];
         
         if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
             [self.delegate lookIOManagerDidEndChat:self];
@@ -1369,6 +1372,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.engagement cleanUpEngagement];
     self.engagement = nil;
     
+    [self visitChatEnabledDidUpdate:self.visit];
+
     self.visit.visitState = LIOVisitStateVisitInProgress;
 }
 

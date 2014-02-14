@@ -1006,6 +1006,10 @@
     if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
         return NO;
     
+    // If chat is in progress, chat should always be enabled
+    if (self.chatInProgress)
+        return YES;
+    
     // nil or empty
     if (0 == [self.multiskillMapping count])
         return NO;
