@@ -191,7 +191,7 @@
     aLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementBrandingBarNotifications];
     aLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarNotifications];
     aLabel.text = aString;
-    [newNotification addSubview:aLabel];        
+    [newNotification addSubview:aLabel];
 
     if (padUI)
     {
@@ -207,28 +207,58 @@
     {
         aLabel.numberOfLines = 1;
         [aLabel sizeToFit];
-
+        
         CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
-
+        
         CGRect aFrame = aLabel.frame;
         aFrame.origin.y = 8.0;
         aFrame.origin.x = (newNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
         aLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        
-        if (expectedSize.width > self.frame.size.width) {
-            aFrame.origin.x = 8.0;
-            
-            self.startAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
-                                                                     target:self
-                                                                   selector:@selector(startAnimatedLongText)];
-            
-            self.animatingLongText = YES;
-        }
-
         aLabel.frame = aFrame;
+        if (expectedSize.width > self.frame.size.width)
+            [self animateLongTextAnimationIfNeededForLabel:aLabel animated:NO];
     }
     
     return newNotification;
+}
+
+- (BOOL)animateLongTextAnimationIfNeededForLabel:(UILabel *)aLabel animated:(BOOL)animated
+{
+    CGSize expectedSize = [aLabel.text sizeWithFont:aLabel.font constrainedToSize:CGSizeMake(9999, aLabel.frame.size.height) lineBreakMode:UILineBreakModeClip];
+    CGRect aFrame = aLabel.frame;
+    
+    if (expectedSize.width > self.frame.size.width) {
+        aFrame.origin.x = 8.0;
+        
+        self.startAnimatedLongTextTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPreLongTextAnimationDuration
+                                                                               target:self
+                                                                             selector:@selector(startAnimatedLongText)];
+        
+        self.animatingLongText = YES;
+    }
+    else
+    {
+        return NO;
+    }
+    
+    if (animated)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            CGRect overshootFrame = aFrame;
+            overshootFrame.origin.x = 0;
+            aLabel.frame = overshootFrame;
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.1 animations:^{
+                aLabel.frame = aFrame;
+            }];
+        }];
+    }
+    else
+    {
+        aLabel.frame = aFrame;
+    }
+    
+    return YES;
 }
 
 - (void)revealDefaultNotification
@@ -464,8 +494,31 @@
     self.notificationTimer = nil;
     
     if (!self.animatingLongText) {
-        [self dismissActiveNotification];
-        [self revealDefaultNotification];
+        
+        // Let's check if we should dismiss this notification
+        BOOL shouldDismiss = [self.delegate notificationAreaShouldDismissNotification:self];
+        if (!shouldDismiss)
+        {
+            UILabel *notificationLabel = (UILabel *)[self.activeNotification viewWithTag:LIONotificationAreaNotificationLabelTag];
+            BOOL isLongTextAnimation = [self animateLongTextAnimationIfNeededForLabel:notificationLabel animated:YES];
+            
+            // If this isn't a long text animation, let's set up another timer for dismissing it
+            if (!isLongTextAnimation)
+            {
+                self.notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIONotificationAreaPostLongTextAnimationDuration
+                                                                              target:self
+                                                                            selector:@selector(notificationTimerDidFire)];
+            }
+        }
+        else
+        {
+            
+            // Let's check if we should reveal the default notification, or the typing notification
+            [self dismissActiveNotification];
+            BOOL shouldDisplayIsTyping = [self.delegate notificationAreaShouldDisplayIsTypingAfterDismiss:self];
+            if (!shouldDisplayIsTyping)
+                [self revealDefaultNotification];
+        }
     }
 }
 

@@ -36,8 +36,6 @@
 #define LIOLookIOManagerMessageSeparator                @"!look.io!"
 #define LIOLookIOManagerScreenCaptureInterval           0.5
 
-
-
 @interface LIOEngagement () <LPSSEManagerDelegate>
 
 @property (nonatomic, strong) NSMutableArray *chatCookies;
@@ -83,6 +81,9 @@
         self.sseChannelState = LIOSSEChannelStateInitialized;
         
         self.failedRequestQueue = [[NSMutableArray alloc] init];
+        
+        self.isConnected = NO;
+        self.isAgentTyping = NO;
     }
     return self;
 }
@@ -183,6 +184,7 @@
         }
 
         self.sseChannelState = LIOSSEChannelStateInitialized;
+        self.isAgentTyping = NO;
         [self.delegate engagementDidEnd:self];
     }
 }
@@ -376,12 +378,14 @@
         // If we're ending, this means ending succeeded
         case LIOSSEChannelStateEnding:
             self.sseChannelState = LIOSSEChannelStateInitialized;
+            self.isAgentTyping = NO;
             [self.delegate engagementDidEnd:self];
             break;
             
         // If we recieved an outro earlier, we are expecting this disconnect
         case LIOSSEChannelStateDisconnecting:
             self.sseChannelState = LIOSSEChannelStateInitialized;
+            self.isAgentTyping = NO;
             [self.delegate engagementDidDisconnect:self withAlert:YES];
             break;
             
@@ -414,6 +418,7 @@
             if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState)
             {
                 self.sseChannelState = LIOSSEChannelStateInitialized;
+                self.isAgentTyping = NO;
                 [self.delegate engagementDidDisconnectWhileInPostOrOfflineSurvey:self];
             }
             else
@@ -522,6 +527,9 @@
     // Received line
     if ([type isEqualToString:@"line"])
     {
+        // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
+        self.isConnected = YES;
+        
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults synchronize];
             
@@ -660,15 +668,19 @@
         }
         if ([action isEqualToString:@"typing_start"])
         {
+            self.isAgentTyping = YES;
             [self.delegate engagement:self agentDidUpdateTypingStatus:YES];
         }
         if ([action isEqualToString:@"typing_stop"])
         {
+            self.isAgentTyping = NO;
             [self.delegate engagement:self agentDidUpdateTypingStatus:NO];
         }
         if ([action isEqualToString:@"connected"])
         {
-            LIOLog(@"We're live!");            
+            LIOLog(@"We're live!");
+            
+            self.isConnected = YES;
             [self.delegate engagementAgentIsReady:self];
         }
         if ([action isEqualToString:@"unprovisioned"])
@@ -956,6 +968,7 @@
         if (self.sseManager)
             [self.sseManager disconnect];
         
+        self.isAgentTyping = NO;
         [self.delegate engagementDidEnd:self];
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
@@ -963,6 +976,7 @@
         if (self.sseManager)
             [self.sseManager disconnect];
         
+        self.isAgentTyping = NO;
         [self.delegate engagementDidEnd:self];
     }];
 }
@@ -1404,6 +1418,8 @@
         self.mediaUrlString = [decoder decodeObjectForKey:@"mediaUrlString"];
         self.lastSSEventId = [decoder decodeObjectForKey:@"lastSSEventId"];
         
+        self.isConnected = [decoder decodeBoolForKey:@"isConnected"];
+        
         self.sseChannelState = LIOSSEChannelStateInitialized;
         self.failedRequestQueue = [[NSMutableArray alloc] init];
     }
@@ -1425,6 +1441,8 @@
     [encoder encodeObject:self.postUrlString forKey:@"postUrlString"];
     [encoder encodeObject:self.mediaUrlString forKey:@"mediaUrlString"];
     [encoder encodeObject:self.lastSSEventId forKey:@"lastSSEventId"];
+    
+    [encoder encodeBool:self.isConnected forKey:@"isConnected"];
 }
 
 #pragma mark -

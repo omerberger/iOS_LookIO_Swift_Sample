@@ -81,6 +81,9 @@ typedef enum
 
 @property (nonatomic, assign) id <LIOEngagementDelegate> delegate;
 
+@property (nonatomic, assign) BOOL isConnected;
+@property (nonatomic, assign) BOOL isAgentTyping;
+
 @property (nonatomic, assign) NSInteger lastClientLineId;
 @property (nonatomic, strong) NSMutableArray *messages;
 

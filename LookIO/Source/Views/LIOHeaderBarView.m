@@ -21,7 +21,7 @@
 // Helpers
 #import "LIOTimerProxy.h"
 
-@interface LIOHeaderBarView ()
+@interface LIOHeaderBarView () <LIONotificationAreaDelegate>
 
 @property (nonatomic, strong) LIONotificationArea* notificationArea;
 
@@ -63,6 +63,7 @@
         {
             self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
             self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            self.notificationArea.delegate = self;
             [self addSubview:self.notificationArea];
         }
         
@@ -95,6 +96,19 @@
 - (void)hideCurrentNotification
 {
     [self.notificationArea hideCurrentNotification];
+}
+
+#pragma mark -
+#pragma mark NotificationAreaDelegate Methods
+
+- (BOOL)notificationAreaShouldDismissNotification:(LIONotificationArea *)aView
+{
+    return [self.delegate headerBarShouldDismissNotification:self];
+}
+
+- (BOOL)notificationAreaShouldDisplayIsTypingAfterDismiss:(LIONotificationArea *)aView;
+{
+    return [self.delegate headerBarShouldDisplayIsTypingAfterDismiss:self];
 }
 
 #pragma mark -

@@ -15,6 +15,8 @@
 @protocol LIOToasterViewDelegate
 - (void)toasterViewDidFinishShowing:(LIOToasterView *)aView;
 - (void)toasterViewDidFinishHiding:(LIOToasterView *)aView;
+- (BOOL)toasterViewShouldDismissNotification:(LIOToasterView *)aView;
+
 @end
 
 @interface LIOToasterView : UIView

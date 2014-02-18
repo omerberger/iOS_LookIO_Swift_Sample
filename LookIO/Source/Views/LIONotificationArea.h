@@ -15,7 +15,18 @@
 
 @class LIOAnimatedKeyboardIcon, LIOTimerProxy;
 
+@class LIONotificationArea;
+
+@protocol LIONotificationAreaDelegate <NSObject>
+
+- (BOOL)notificationAreaShouldDismissNotification:(LIONotificationArea *)aView;
+- (BOOL)notificationAreaShouldDisplayIsTypingAfterDismiss:(LIONotificationArea *)aView;
+
+@end
+
 @interface LIONotificationArea : UIView
+
+@property (nonatomic, assign) id <LIONotificationAreaDelegate> delegate;
 
 @property (nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
 @property (nonatomic, assign) BOOL hasCustomBranding;

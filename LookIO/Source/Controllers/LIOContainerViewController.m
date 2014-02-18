@@ -42,6 +42,9 @@
 
 @property (nonatomic, strong) UIAlertView *alertView;
 
+@property (nonatomic, assign) BOOL isAgentTypingMessageVisible;
+@property (nonatomic, assign) BOOL isNotificationVisible;
+
 @end
 
 @implementation LIOContainerViewController
@@ -96,6 +99,27 @@
     {
         [self.chatViewController headerBarViewPlusButtonWasTapped];
     }
+}
+
+- (BOOL)headerBarShouldDismissNotification:(LIOHeaderBarView *)aView
+{
+    if (!self.engagement.isConnected)
+    {
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)headerBarShouldDisplayIsTypingAfterDismiss:(LIOHeaderBarView *)aView
+{
+    if (self.engagement.isAgentTyping)
+    {
+        [self engagement:self.engagement agentIsTyping:YES];
+        return YES;
+    }
+
+    return NO;
 }
 
 - (void)presentHeaderBarView:(BOOL)animated
@@ -166,6 +190,8 @@
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
+        self.isAgentTypingMessageVisible = NO;
+        
         if (!padUI)
         {
             [self.headerBarView revealNotificationString:notification withAnimatedKeyboard:NO permanently:NO];
@@ -181,10 +207,23 @@
     }
 }
 
+- (void)dismissCurrentNotification
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    if (padUI)
+    {
+        [self.chatViewController hideToasterView];
+    }
+    else
+    {
+        [self.headerBarView hideCurrentNotification];
+    }
+
+}
+
 - (void)engagement:(LIOEngagement *)engagement agentIsTyping:(BOOL)isTyping
 {
-//   TODO pendingNotificationStringIsTypingNotification = YES;
-
     if (LIOContainerViewStateChat == self.containerViewState)
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
@@ -195,18 +234,37 @@
         }
         else
         {
-            if (isTyping)
+            // Reveal if needed
+            if (isTyping && self.isAgentTypingMessageVisible == NO)
             {
-                [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
+                self.isAgentTypingMessageVisible = YES;
+
+                if (padUI)
+                {
+                    [self.chatViewController displayToasterAgentIsTyping:isTyping];
+                }
+                else
+                {
+                    [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
+                }
             }
-            else
+            
+            // Hide if needed
+            if (!isTyping && self.isAgentTypingMessageVisible == YES)
             {
-                [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
+                self.isAgentTypingMessageVisible = NO;
+                if (padUI)
+                {
+                    [self.chatViewController displayToasterAgentIsTyping:isTyping];
+                }
+                else
+                {
+                    [self.headerBarView revealNotificationString:nil withAnimatedKeyboard:NO permanently:NO];
+                }
             }
         }
     }
 }
-
 
 #pragma mark -
 #pragma mark LoadingViewController Delegate Methods
@@ -554,6 +612,11 @@
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
         [self.loadingViewController hideBezel];
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
+        
+        if (self.isAgentTypingMessageVisible)
+        {
+            [self engagement:self.engagement agentIsTyping:NO];
+        }
     }];
 }
 

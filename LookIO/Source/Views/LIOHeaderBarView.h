@@ -15,6 +15,8 @@
 @protocol LIOHeaderBarViewDelegate
 
 - (void)headerBarViewPlusButtonWasTapped:(LIOHeaderBarView *)aView;
+- (BOOL)headerBarShouldDismissNotification:(LIOHeaderBarView *)aView;
+- (BOOL)headerBarShouldDisplayIsTypingAfterDismiss:(LIOHeaderBarView *)aView;
 
 @end
 

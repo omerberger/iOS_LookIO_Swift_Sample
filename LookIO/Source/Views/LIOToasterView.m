@@ -110,6 +110,15 @@
 
 - (void)showAnimated:(BOOL)animated permanently:(BOOL)permanent
 {
+    if (NO == permanent)
+    {
+        [notificationTimer stopTimer];
+        [notificationTimer release];
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+    }
+    
     if (shown)
         return;
     
@@ -144,14 +153,7 @@
                                           }];
                      }];
     
-    if (NO == permanent)
-    {
-        [notificationTimer stopTimer];
-        [notificationTimer release];
-        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
-                                                                 target:self
-                                                               selector:@selector(notificationTimerDidFire)];
-    }
+
 }
 
 - (void)hideAnimated:(BOOL)animated
@@ -204,7 +206,18 @@
     [notificationTimer release];
     notificationTimer = nil;
     
-    [self hideAnimated:YES];
+    // Let's check if we should dismiss this notification
+    BOOL shouldDismiss = [self.delegate toasterViewShouldDismissNotification:self];
+    if (!shouldDismiss)
+    {
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+    }
+    else
+    {
+        [self hideAnimated:YES];
+    }
 }
 
 #pragma mark -

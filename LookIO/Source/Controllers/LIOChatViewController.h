@@ -52,6 +52,7 @@ typedef enum {
 
 - (void)displayToasterNotification:(NSString *)notification;
 - (void)displayToasterAgentIsTyping:(BOOL)isTyping;
+- (void)hideToasterView;
 
 - (BOOL)shouldHideHeaderBarForLandscape;
 

@@ -1289,6 +1289,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     [self.engagement cleanUpEngagement];
     self.engagement = nil;
+    [self.containerViewController dismissCurrentNotification];
     
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
         [self.delegate lookIOManagerDidEndChat:self];
@@ -1326,6 +1327,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         [self.engagement cleanUpEngagement];
         self.engagement = nil;
+        [self.containerViewController dismissCurrentNotification];
         
         [self visitChatEnabledDidUpdate:self.visit];
         
@@ -1368,6 +1370,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [self.engagement cleanUpEngagement];
     self.engagement = nil;
+    [self.containerViewController dismissCurrentNotification];
     
     [self visitChatEnabledDidUpdate:self.visit];
 

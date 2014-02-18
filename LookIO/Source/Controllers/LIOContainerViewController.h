@@ -63,10 +63,11 @@ typedef enum {
 - (void)engagement:(LIOEngagement *)engagement agentIsTyping:(BOOL)isTyping;
 - (void)engagementChatMessageStatusDidChange:(LIOEngagement *)engagement;
 
+- (void)dismissCurrentNotification;
+
 - (void)presentLoadingViewController;
 - (void)dismissCurrentViewController;
 
 - (void)dismissExistingAlertView;
-
 
 @end

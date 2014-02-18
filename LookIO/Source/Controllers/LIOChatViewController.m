@@ -1352,14 +1352,21 @@
 #pragma mark -
 #pragma mark ToasterView Delegate Methods
 
+- (BOOL)toasterViewShouldDismissNotification:(LIOToasterView *)aView
+{
+    return self.engagement.isConnected;
+}
+
 - (void)toasterViewDidFinishHiding:(LIOToasterView *)aView
 {
-
+    if (self.engagement.isAgentTyping)
+    {
+        [self displayToasterAgentIsTyping:YES];
+    }
 }
 
 - (void)toasterViewDidFinishShowing:(LIOToasterView *)aView
 {
-    
 }
 
 - (void)displayToasterNotification:(NSString *)notification
@@ -1382,6 +1389,11 @@
     {
         [self.toasterView hideAnimated:YES];
     }
+}
+
+- (void)hideToasterView
+{
+    [self.toasterView hideAnimated:YES];
 }
 
 #pragma mark -
