@@ -576,12 +576,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)visitWillRelaunch:(LIOVisit *)visit
 {
-    if (self.chatInProgress)
-    {
-        [self.engagement engagementNotFound];
-    }
-
-    [[LIONetworkManager networkManager] resetNetworkEndpoints];
+    [[LIONetworkManager networkManager] resetOnlyVisitEndpoints];
 }
 
 - (void)visitReachabilityDidChange:(LIOVisit *)visit

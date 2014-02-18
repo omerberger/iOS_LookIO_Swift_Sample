@@ -660,11 +660,16 @@
 #pragma mark Launch Visit Methods
 
 // Launch a new visit because of a 404 response
+// If chat is in progress, we need to maintain the previous visit state
+
 - (void)relaunchVisit
 {
     [self.delegate visitWillRelaunch:self];
 
-    self.visitState = LIOVisitStateInitialized;
+    // If this is a relaunch during chat, don't change visit state
+    if (!self.chatInProgress)
+        self.visitState = LIOVisitStateInitialized;
+    
     self.currentVisitId = nil;
 
     [self.continuationTimer stopTimer];
@@ -681,7 +686,9 @@
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        self.visitState = LIOVisitStateLaunching;
+        // If this is a relaunch during chat, don't change visit state
+        if (!self.chatInProgress)
+            self.visitState = LIOVisitStateLaunching;
         
         NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO];
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -690,10 +697,14 @@
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
  
-            self.funnelState = LIOFunnelStateVisit;
-            LIOLog(@"<FUNNEL STATE> Visit");
-            
-            self.visitState = LIOVisitStateVisitInProgress;
+            // If this is a relaunch during chat, don't change visit state
+            if (!self.chatInProgress)
+            {
+                self.funnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+
+                self.visitState = LIOVisitStateVisitInProgress;
+            }
 
             [self.delegate visitDidLaunch:self];
             
@@ -709,7 +720,8 @@
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
             }
             
-            self.visitState = LIOVisitStateFailed;
+            if (!self.chatInProgress)
+                self.visitState = LIOVisitStateFailed;
  
             self.multiskillMapping = nil;
             [self.delegate visitSkillMappingDidChange:self];
@@ -1109,6 +1121,7 @@
             
         case LIOVisitStateEnding:
             return NO;
+            break;
             
         default:
             return NO;
@@ -1182,6 +1195,7 @@
             
         case LIOVisitStateEnding:
             return YES;
+            break;
             
         default:
             return NO;
