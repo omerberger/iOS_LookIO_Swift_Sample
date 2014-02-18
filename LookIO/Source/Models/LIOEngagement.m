@@ -1128,12 +1128,16 @@
                 
                 break;
                 
+            // In case of offline or postchat, we are expecting the session to end afterwards
+                
             case LIOSurveyTypeOffline:
                 surveyTypeString = @"offline";
+                self.sseChannelState = LIOSSEChannelStateEnding;
                 break;
                 
             case LIOSurveyTypePostchat:
                 surveyTypeString = @"postchat";
+                self.sseChannelState = LIOSSEChannelStateEnding;
                 break;
                 
             default:
