@@ -33,11 +33,14 @@
 
     NSArray* pickerEntryTitles = [self pickerEntryTitles];
     
-    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Satisfied", @"Satisfied", @"Neither Satisfied Nor Dissatisfied", @"Dissatisfied", @"Very Dissatisfied", nil]])
+    if ([pickerEntryTitles isEqualToArray:@[@"Very Satisfied", @"Satisfied", @"Neither Satisfied Nor Dissatisfied", @"Dissatisfied", @"Very Dissatisfied"]])
         return YES;
     
-    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Likely", @"Likely", @"Neither Likely Nor Unlikely", @"Unlikely", @"Very Unlikely", nil]])
+    if ([pickerEntryTitles isEqualToArray:@[@"Very Likely", @"Likely", @"Neither Likely Nor Unlikely", @"Unlikely", @"Very Unlikely"]])
         return YES;
+    
+    if ([pickerEntryTitles isEqualToArray:@[@"Excellent", @"Good", @"Fair", @"Below Average", @"Poor"]])
+         return YES;
     
     return NO;
 }
