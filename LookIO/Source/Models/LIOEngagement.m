@@ -729,7 +729,10 @@
     
     if ([type isEqualToString:@"outro"])
     {
-        self.sseChannelState = LIOSSEChannelStateDisconnecting;
+        // If we are already ending the session, and received an outro,
+        // this is still and ending session, not a disconnect session
+        if (LIOSSEChannelStateEnding != self.sseChannelState)
+            self.sseChannelState = LIOSSEChannelStateDisconnecting;
     }
     
     if ([type isEqualToString:@"permission"])
