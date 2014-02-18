@@ -60,7 +60,10 @@
         self.lineId = [decoder decodeObjectForKey:LIOChatMessageLineIdKey];
         self.clientLineId = [decoder decodeObjectForKey:LIOChatMessageClientLineIdKey];
         
-        [self detectLinks];
+        // Detect links for textual messages, not for photo messages
+        if (LIOChatMessageKindLocalImage != self.kind)
+            if (self.text != nil)
+                [self detectLinks];
     }
     
     return self;
@@ -82,7 +85,8 @@
     NSRange fullRange = NSMakeRange(0, [text length]);
     if (text == nil)
     {
-        NSLog(@"Breakpoint@!");
+        // TODO: Remove this
+        NSLog(@"Breakpoint!");
         1==1;
         return;
     }
