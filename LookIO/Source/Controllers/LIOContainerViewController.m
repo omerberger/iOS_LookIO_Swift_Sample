@@ -312,9 +312,8 @@
     
     self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
     self.webViewController.delegate = self;
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.webViewController];
 
-    [self presentViewController:navigationController animated:YES completion:nil];
+    [self presentViewController:self.webViewController animated:YES completion:nil];
     [self animationPushBackScaleDown];
 }
 

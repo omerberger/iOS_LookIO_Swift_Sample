@@ -80,7 +80,15 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
-    self.webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
+    CGFloat topBarHeight = LIOIsUIKitFlatMode() ? 64.0 : 44.0;
+    
+    UIView *topBarView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, topBarHeight)];
+    topBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    topBarView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementWebViewHeaderBar];
+    [self.view addSubview:topBarView];
+    
+    self.webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, topBarHeight, self.view.bounds.size.width, self.view.bounds.size.height -  topBarHeight)];
+    self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.webView loadRequest:[NSURLRequest requestWithURL:self.url]];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.webView.delegate = self;
@@ -88,23 +96,17 @@
     
     UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementWebViewHeaderBarButtons];
 
-    UIButton *closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    UIButton *closeButton = [[UIButton alloc] initWithFrame:CGRectMake(8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
     [closeButton addTarget:self action:@selector(closeButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     [closeButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] forState:UIControlStateNormal];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:closeButton];
-
-    UIButton *shareButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [topBarView addSubview:closeButton];
+    
+    UIButton *shareButton = [[UIButton alloc] initWithFrame:CGRectMake(topBarView.bounds.size.width - 32.0 - 8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
+    shareButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [shareButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     [shareButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:shareButton];
+    [topBarView addSubview:shareButton];
     
-    UIColor *navigationBarColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementWebViewHeaderBar];
-    
-    if (LIOIsUIKitFlatMode())
-        self.navigationController.navigationBar.barTintColor = navigationBarColor;
-    else
-        self.navigationController.navigationBar.tintColor = navigationBarColor;
-        
     if ([self.delegate webViewControllerShowControlButtonForWebView:self])
     {
         self.controlButton = [[LIODraggableButton alloc] initWithFrame:CGRectZero];
