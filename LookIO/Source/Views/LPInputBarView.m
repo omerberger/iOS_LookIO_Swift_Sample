@@ -239,6 +239,7 @@
     [self setNeedsLayout];
     
     NSUInteger currentTextLength = aTextView.text.length;
+
     if (0 == self.previousTextLength)
     {
         // "Typing" started.
@@ -251,6 +252,17 @@
             [self.delegate inputBarDidStopTyping:self];
     }
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
+
+    // Limit the length, and make sure there isn't any marekd text first
+    if (currentTextLength > maxCharacters && self.textView.markedTextRange == nil)
+    {
+        NSString *newText = [aTextView.text substringToIndex:maxCharacters];
+        aTextView.text = newText;
+        currentTextLength = [newText length];
+    }
+    
     self.previousTextLength = currentTextLength;
 }
 
@@ -258,10 +270,7 @@
     [self.delegate inputBarTextFieldDidBeginEditing:self];
 }
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-    NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
-    
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {    
     if ([text isEqualToString:@"\n"])
     {
         [self setNeedsLayout];
@@ -269,9 +278,6 @@
         [self.delegate inputBarViewSendButtonWasTapped:self];
         return NO;
     }
-    
-    if (self.textView.text.length == maxCharacters)
-        return NO;
     
     return YES;
 }
