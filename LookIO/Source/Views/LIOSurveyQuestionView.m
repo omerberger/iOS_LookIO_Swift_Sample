@@ -423,8 +423,6 @@
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
  
-    NSLog(@"Frame for layoutsubviews is %f", self.frame.size.width);
-    
     UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
     

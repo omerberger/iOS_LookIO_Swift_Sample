@@ -44,5 +44,6 @@ typedef enum
 - (NSDictionary*)responseDict;
 - (LIOSurveyQuestion *)questionForIntroView;
 - (BOOL)anyQuestionsAnswered;
+- (BOOL)isQuestionWithIndexLastQuestion:(NSInteger)anIndex;
 
 @end

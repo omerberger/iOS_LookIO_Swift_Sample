@@ -191,7 +191,8 @@
     
     self.currentQuestionView = [[LIOSurveyQuestionView alloc] initWithFrame:self.scrollView.bounds];
     self.currentQuestionView.tag = self.currentQuestionIndex;
-    [self.currentQuestionView setupViewWithQuestion:currentQuestion isLastQuestion:NO delegate:self];
+    BOOL isLastQuestion = [self.survey isQuestionWithIndexLastQuestion:self.currentQuestionIndex];
+    [self.currentQuestionView setupViewWithQuestion:currentQuestion isLastQuestion:isLastQuestion delegate:self];
     [self.scrollView addSubview:self.currentQuestionView];
     [self.currentQuestionView becomeFirstResponder];
     
@@ -697,12 +698,13 @@
     }
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:nextQuestionIndex];
+    BOOL isLastQuestion = [self.survey isQuestionWithIndexLastQuestion:nextQuestionIndex];
     
     // If we already have a next question view, and we're just updating ity
     if (self.nextQuestionView)
     {
         self.nextQuestionView.tag = nextQuestionIndex;
-        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
+        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:isLastQuestion delegate:self];
     }
     else
     {
@@ -719,7 +721,7 @@
         [self.scrollView addSubview:self.nextQuestionView];
         
         self.nextQuestionView.tag = nextQuestionIndex;
-        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:NO delegate:self];
+        [self.nextQuestionView setupViewWithQuestion:question isLastQuestion:isLastQuestion delegate:self];
         [self.nextQuestionView reloadTableViewDataIfNeeded];
     }
     

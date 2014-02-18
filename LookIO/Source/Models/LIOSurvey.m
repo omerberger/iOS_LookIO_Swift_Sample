@@ -460,6 +460,24 @@
     return YES;
 }
 
+- (BOOL)isQuestionWithIndexLastQuestion:(NSInteger)anIndex
+{
+    NSInteger nextQuestionIndex = anIndex;
+    BOOL foundNextPage = NO;
+    
+    while (!foundNextPage)
+    {
+        if (nextQuestionIndex == self.questions.count - 1)
+            return YES;
+        
+        nextQuestionIndex += 1;
+        if ([self shouldShowQuestion:nextQuestionIndex])
+            return NO;
+    }
+    
+    return NO;
+}
+
 #pragma mark -
 #pragma mark NSCopying Methods
 
