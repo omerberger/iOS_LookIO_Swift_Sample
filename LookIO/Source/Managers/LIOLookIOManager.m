@@ -1295,7 +1295,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.visit.visitState = LIOVisitStateVisitInProgress;
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-        [self dismissLookIOWindow];
+    {
+        [self.containerViewController dismissCurrentViewController];
+    }
     
     [self visitChatEnabledDidUpdate:self.visit];
     [self.controlButton setChatMode];
