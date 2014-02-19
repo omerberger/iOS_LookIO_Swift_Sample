@@ -29,8 +29,6 @@
 #define LIOLookIOManagerLastKnownEngagementMessagesKey    @"LIOLookIOManagerLastKnownEngagementMessagesKey"
 #define LIOLookIOManagerLastKnownEngagementActivityDate   @"LIOLookIOManagerLastKnownEngagementActivityDate"
 
-// TODO: Save last activity dates for when returning from background
-
 #define LIOChatAPIRequestRetries                        3
 #define LIOEngagementReconnectionAfterCrashTimeLimit    60.0 // 1 minutes
 #define LIOLookIOManagerMessageSeparator                @"!look.io!"
@@ -597,7 +595,7 @@
             // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
             // we do want to use this method
             
-            // TODO Handle shouldUseCustomactionForNotChatAnswered
+            // TODO: Handle shouldUseCustomactionForNotChatAnswered
             
             NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
             if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
@@ -663,7 +661,7 @@
         }
         if ([action isEqualToString:@"send_logs"])
         {
-            // TODO: Send Longs
+            // TODO: Send Logs
             // [[LIOLogManager sharedLogManager] uploadLog];
         }
         if ([action isEqualToString:@"typing_start"])

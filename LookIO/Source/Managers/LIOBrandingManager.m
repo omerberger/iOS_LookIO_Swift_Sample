@@ -755,7 +755,7 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
 {
-    UIColor *backgroundColor = [UIColor whiteColor];
+    UIColor *colorToReturn = [UIColor whiteColor];
     
     NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     if (elementDictionary)
@@ -766,7 +766,7 @@ static LIOBrandingManager *brandingManager = nil;
         {
             NSString *colorString = [elementDictionary objectForKey:@"color"];
             if (colorString)
-                backgroundColor = [self colorForHexString:colorString];
+                colorToReturn = [self colorForHexString:colorString];
         }
         else {
             if (LIOBrandingColorBackground == colorType)
@@ -785,13 +785,13 @@ static LIOBrandingManager *brandingManager = nil;
                 NSString *colorString = [parentDictionary objectForKey:@"color"];
                 if (colorString)
                 {
-                    backgroundColor = [self colorForHexString:colorString];
+                    colorToReturn = [self colorForHexString:colorString];
                 }
             }
         }
     }
     
-    return backgroundColor;
+    return colorToReturn;
 }
 
 - (CGFloat)alphaForElement:(LIOBrandingElement)element

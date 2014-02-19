@@ -2,7 +2,7 @@
 //  LIOLookIOManager.h
 //  LivePerson iOS Remote Support Client v##UNKNOWN_VERSION##
 //
-//  Copyright 2011-2013 LivePerson, Inc. All rights reserved.
+//  Copyright 2011-2014 LivePerson, Inc. All rights reserved.
 //
 //  This header file is for use with LivePerson Mobile.
 //  Documentation and support: https://community.liveperson.com/docs/DOC-2062
@@ -252,8 +252,6 @@ extern NSString *const kLPEventAddedToCart;
  @see LIOLookIOManagerDelegate
  */
 @property(nonatomic, assign) id<LIOLookIOManagerDelegate> delegate;
-
-@property(nonatomic, assign) UInt32 selectedChatTheme;
 
 ///---------------------------------------------------------------------------------------
 /// @name Lifecycle Methods

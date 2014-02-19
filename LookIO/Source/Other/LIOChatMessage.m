@@ -82,14 +82,10 @@
     if (self.senderName != nil)
         text = [NSString stringWithFormat:@"%@: %@", self.senderName, self.text];
     
-    NSRange fullRange = NSMakeRange(0, [text length]);
     if (text == nil)
-    {
-        // TODO: Remove this
-        NSLog(@"Breakpoint!");
-        1==1;
         return;
-    }
+    
+    NSRange fullRange = NSMakeRange(0, [text length]);
     
     [dataDetector enumerateMatchesInString:text options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
         

@@ -139,7 +139,6 @@
         [self.textFieldBackground addSubview:self.textView];
         
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
-        // TODO: Star color rating customization
         [self.scrollView addSubview:self.starRatingView];
         
         self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -452,7 +451,7 @@
     if (!self.subtitleLabel.hidden)
     {
         aFrame.origin.x = LIOSurveyViewSideMargin;
-        // TODO Base origin here on the actual text which can be localized
+        // TODO: Base origin here on the actual text which can be localized
         aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 10.0;
         aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
         if (!padUI)

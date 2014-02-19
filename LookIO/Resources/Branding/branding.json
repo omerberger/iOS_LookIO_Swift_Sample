@@ -66,7 +66,7 @@
                         "color": "#ff0000"
                     },
                     "font": {
-                        "color": "#ffffff",
+                        "color": "#00ff00",
                         "size": "12.0"
                     }
                 }
@@ -437,6 +437,10 @@
             "badge": {
                 "background": {
                     "color": "#ff0000"
+                },
+                "font": {
+                    "color": "#00ff00",
+                    "size": "12.0"
                 }
             },
             "font": {

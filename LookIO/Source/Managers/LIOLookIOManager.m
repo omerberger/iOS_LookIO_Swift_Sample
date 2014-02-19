@@ -316,8 +316,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self.engagement sendAdvisoryPacketWithDict:backgroundedDict retries:0];
         }
         
-        // TODO Dismiss any active alert views
-        
         switch (self.visit.visitState) {
             case LIOVisitStateChatActive:
                 self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
@@ -1308,7 +1306,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidDisconnect:(LIOEngagement *)engagement withAlert:(BOOL)withAlert
 {
-    // TODO ADd cases where an alert shouldn't be shown, like a prechat survey which was not completed and isn't visible
+    // TODO: Add cases where an alert shouldn't be shown, like a prechat survey which was not completed and isn't visible
     
     // If chat is disconnected, let's show an alert view.
     

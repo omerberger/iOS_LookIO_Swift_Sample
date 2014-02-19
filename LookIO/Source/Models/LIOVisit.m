@@ -250,7 +250,7 @@
 
     if (includeExtras)
     {
-        // TODO Do we need this?
+        // TODO: Do we need this?
         [statusDictionary setObject:LIOLookIOManagerVersion forKey:@"version"];
         
         // Detect some stuff about the client.
@@ -958,7 +958,7 @@
         aReason = @"no visibility setting";
     }
     
-    // TODO Trump card #2: If chat is up, button is always hidden.
+    // TODO: Trump card #2: If chat is up, button is always hidden.
 
     if (willHide)
     {
