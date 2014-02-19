@@ -135,7 +135,7 @@ static LIOBrandingManager *brandingManager = nil;
         {
             return engagementDictionary;
         }
-        if (LIOBrandingElementKeyboardType == element)
+        if (LIOBrandingElementKeyboard == element)
         {
             return engagementDictionary;
         }
@@ -1055,17 +1055,47 @@ static LIOBrandingManager *brandingManager = nil;
     NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     if (elementDictionary)
     {
-        NSString *keyboardString = [elementDictionary objectForKey:@"keyboard_type"];
-        if (keyboardString)
+        NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
+        if (keyboardDictionary)
         {
-            if ([keyboardString isEqualToString:@"light"])
-                appearance = UIKeyboardAppearanceLight;
-            if ([keyboardString isEqualToString:@"dark"])
-                appearance = UIKeyboardAppearanceDark;
+            NSString *keyboardTypeString = [keyboardDictionary objectForKey:@"type"];
+            if (keyboardTypeString)
+            {
+                if ([keyboardTypeString isEqualToString:@"light"])
+                    appearance = UIKeyboardAppearanceLight;
+                if ([keyboardTypeString isEqualToString:@"dark"])
+                    appearance = UIKeyboardAppearanceDark;
+            }
         }
     }
     
     return appearance;
+}
+
+- (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
+{
+    LIOKeyboardInitialPosition position = LIOKeyboardInitialPositionUp;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
+        if (keyboardDictionary)
+        {
+            NSString *keyboardPositionString = [keyboardDictionary objectForKey:@"initial_state"];
+            if (keyboardPositionString)
+            {
+                if ([keyboardPositionString isEqualToString:@"up"])
+                    position = LIOKeyboardInitialPositionUp;
+                if ([keyboardPositionString isEqualToString:@"down"])
+                    position = LIOKeyboardInitialPositionDown;
+                if ([keyboardPositionString isEqualToString:@"menu"])
+                    position = LIOKeyboardInitialPositionMenu;
+            }
+        }
+    }
+    
+    return position;
 }
 
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element

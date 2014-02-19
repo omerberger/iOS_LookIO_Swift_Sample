@@ -72,6 +72,10 @@
                 }
             }
         },
+        "keyboard": {
+            "type": "light",
+            "initial_state": "menu"
+        },
         "keyboard_type": "light",
         "chat_bubbles": {
             "agent": {

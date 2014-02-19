@@ -125,7 +125,7 @@
         self.textField.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
         self.textField.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
-        self.textField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
+        self.textField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard];
         [self.textFieldBackground addSubview:self.textField];
         
         self.textView = [[UITextView alloc] init];
@@ -135,7 +135,7 @@
         self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSurveyTextField];
         self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSurveyTextField];
         self.textView.autocorrectionType = UITextAutocorrectionTypeNo;
-        self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
+        self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard];
         [self.textFieldBackground addSubview:self.textView];
         
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
@@ -253,7 +253,7 @@
             else
             {
                 
-                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard])
                 {
                     numberToolbar.barStyle = UIBarStyleDefault;
                 }
@@ -330,7 +330,7 @@
             else
             {
                 
-                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard])
                 {
                     numberToolbar.barStyle = UIBarStyleDefault;
                 }

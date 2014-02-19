@@ -11,6 +11,7 @@
 // Managers
 #import "LIOBundleManager.h"
 #import "LIOMediaManager.h"
+#import "LIOBrandingManager.h"
 
 // Table View Cells
 #import "LIOChatTableViewCell.h"
@@ -492,7 +493,7 @@
         self.approvePhotoView = nil;
         
         self.keyboardState = LIOKeyboardStateIntroAnimation;
-        [self.inputBarView.textView becomeFirstResponder];
+        [self appearanceAnimationForKeyboardInitialPosition];
     }];
 }
 
@@ -515,7 +516,7 @@
     
     [self registerForKeyboardNotifications];
     self.keyboardState = LIOKeyboardStateIntroAnimation;
-    [self.inputBarView.textView becomeFirstResponder];
+    [self appearanceAnimationForKeyboardInitialPosition];
 }
 
 - (void)emailChatViewDidForceDismiss:(LIOEmailChatView *)emailChatView
@@ -707,8 +708,30 @@
     }
 }
 
+- (void)introAnimationForKeyboardHidden
+{
+    BOOL introAnimation = NO;
+    if (LIOKeyboardStateIntroAnimation == self.keyboardState)
+        introAnimation = YES;
+    self.keyboardState = LIOKeyboardStateHidden;
+
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [self updateSubviewFrames];
+        
+        if (introAnimation)
+        {
+            CGRect frame = self.tableView.frame;
+            frame.origin.y = 0;
+            self.tableView.frame = frame;
+        }
+    } completion:nil];
+}
+
 - (void)presentKeyboardMenu
 {
+    BOOL introAnimation = NO;
+    if (LIOKeyboardStateIntroAnimation == self.keyboardState)
+        introAnimation = YES;
     self.keyboardState = LIOKeyboardStateMenu;
 
     // If keyboard is visible, resigning the textview as first responder will update the view
@@ -732,6 +755,12 @@
                 [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
 
             [self updateSubviewFrames];
+            if (introAnimation)
+            {
+                CGRect frame = self.tableView.frame;
+                frame.origin.y = 0;
+                self.tableView.frame = frame;
+            }
         } completion:nil];
     }
 }
@@ -793,8 +822,33 @@
     [super viewDidAppear:animated];
     
     [self.tableView reloadData];
+    
+    [self appearanceAnimationForKeyboardInitialPosition];
+}
+
+- (void)appearanceAnimationForKeyboardInitialPosition
+{
+    LIOKeyboardInitialPosition initialPosition = [[LIOBrandingManager brandingManager] keyboardInitialPositionForElement:LIOBrandingElementKeyboard];
+    
     if (self.chatState != LIOChatStateImagePicker && self.chatState != LIOChatStateImageApprove)
-        [self.inputBarView.textView becomeFirstResponder];
+    {
+        switch (initialPosition) {
+            case LIOKeyboardInitialPositionUp:
+                [self.inputBarView.textView becomeFirstResponder];
+                break;
+                
+            case LIOKeyboardInitialPositionMenu:
+                [self presentKeyboardMenu];
+                break;
+                
+            case LIOKeyboardInitialPositionDown:
+                [self introAnimationForKeyboardHidden];
+                break;
+                
+            default:
+                break;
+        }
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated

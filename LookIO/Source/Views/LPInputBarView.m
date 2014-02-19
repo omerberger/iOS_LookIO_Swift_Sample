@@ -150,7 +150,7 @@
         [self addSubview:self.textViewBackgroundView];
         
         self.textView = [[UITextView alloc] initWithFrame:self.textViewBackgroundView.bounds];
-        self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
+        self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard];
         self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarTextField];
         self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarTextField];

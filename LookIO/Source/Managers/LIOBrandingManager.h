@@ -20,7 +20,7 @@ typedef enum
     LIOBrandingElementChatBackgroundBlur,
     LIOBrandingElementFont,
     LIOBrandingElementBoldFont,
-    LIOBrandingElementKeyboardType,
+    LIOBrandingElementKeyboard,
     LIOBrandingElementStatusBar,
     LIOBrandingElementLogo,
     LIOBrandingElementBrandingBar,
@@ -74,6 +74,13 @@ typedef enum
     LIOBrandingColorColor
 } LIOBrandingColor;
 
+typedef enum
+{
+    LIOKeyboardInitialPositionUp,
+    LIOKeyboardInitialPositionMenu,
+    LIOKeyboardInitialPositionDown
+} LIOKeyboardInitialPosition;
+
 // Defaults keys
 #define LIOBrandingManagerBrandingDictKey      @"LIOBrandingManagerBrandingDictKey"
 #define LIOBrandingManagerBrandingDictHashKey  @"LIOBrandingManagerBrandingDictHashKey"
@@ -99,6 +106,7 @@ typedef enum
 - (CGFloat)floatValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (NSInteger)integerValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element;
+- (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;
 
 @end

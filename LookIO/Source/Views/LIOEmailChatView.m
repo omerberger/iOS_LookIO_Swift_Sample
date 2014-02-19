@@ -89,7 +89,7 @@
         self.emailTextField.delegate = self;
         self.emailTextField.textAlignment = UITextAlignmentCenter;
         self.emailTextField.keyboardType = UIKeyboardTypeEmailAddress;
-        self.emailTextField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType];
+        self.emailTextField.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard];
         self.emailTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         [self.emailTextFieldBackgroundView addSubview:self.emailTextField];
         self.emailTextField.placeholder = LIOLocalizedString(@"LIOEmailPlaceholder");
@@ -139,7 +139,7 @@
             else
             {
                 
-                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboardType])
+                if (UIKeyboardAppearanceLight == [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard])
                 {
                     numberToolbar.barStyle = UIBarStyleDefault;
                 }
