@@ -86,6 +86,8 @@
         
         self.visitState = LIOVisitStateInitialized;
         
+        self.developerDisabledChat = NO;
+        
         self.multiskillMapping = nil;
         self.visitUDEs = [[NSMutableDictionary alloc] init];
 
@@ -1021,6 +1023,10 @@
     // If chat is in progress, chat should always be enabled
     if (self.chatInProgress)
         return YES;
+    
+    // If developer explictly disabled chat, chat should be disabled
+    if (self.developerDisabledChat)
+        return NO;
     
     // nil or empty
     if (0 == [self.multiskillMapping count])

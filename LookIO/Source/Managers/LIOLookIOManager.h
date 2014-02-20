@@ -294,6 +294,17 @@ extern NSString *const kLPEventAddedToCart;
  */
 - (void)endChatAndShowAlert:(BOOL)showAlert;
 
+/*!
+ This method allows you to explictly disable chat for a specific part of your app, regardless of the 
+ actual state of agent availability. Setting chat to disabled will hide the control button if its 
+ visibility is set to "Always", and will also return FALSE for other methods querying the status of
+ Live Chat.
+ 
+ @param disabled A boolean value indicating if chat should be set to disabled or not.
+ 
+ */
+- (void)setChatDisabled:(BOOL)disabled;
+
 ///---------------------------------------------------------------------------------------
 /// @name Custom Button Reporting Methods
 ///---------------------------------------------------------------------------------------

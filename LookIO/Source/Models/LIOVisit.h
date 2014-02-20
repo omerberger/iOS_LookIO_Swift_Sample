@@ -64,7 +64,10 @@ typedef enum
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
 @property (nonatomic, assign) LIOVisitState visitState;
+@property (nonatomic, assign) LIOVisitState preBackgroundState;
 @property (nonatomic, assign) BOOL controlButtonHidden;
+
+@property (nonatomic, assign) BOOL developerDisabledChat;
 
 @property (nonatomic, strong) NSNumber *lastKnownButtonVisibility;
 @property (nonatomic, strong) NSNumber *lastKnownButtonType;

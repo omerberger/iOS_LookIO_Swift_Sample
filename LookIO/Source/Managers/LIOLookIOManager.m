@@ -321,16 +321,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
                 break;
                 
-            case LIOVisitStateVisitInProgress:
-                self.visit.visitState = LIOVisitStateAppBackgrounded;
-                break;
-                
             case LIOVisitStatePreChatSurvey:
                 self.visit.visitState = LIOVisitStatePreChatSurveyBackgrounded;
                 break;
                 
             default:
-                self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
+                self.visit.preBackgroundState = self.visit.visitState;
+                self.visit.visitState = LIOVisitStateAppBackgrounded;
                 break;
         }
         
@@ -348,16 +345,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateChatActive;
             break;
             
-        case LIOVisitStateAppBackgrounded:
-            self.visit.visitState = LIOVisitStateVisitInProgress;
-            break;
-            
         case LIOVisitStatePreChatSurveyBackgrounded:
             self.visit.visitState = LIOVisitStatePreChatSurvey;
             break;
             
         default:
-            self.visit.visitState = LIOVisitStateChatActive;
+            self.visit.visitState = self.visit.preBackgroundState;
             break;
     }
     
@@ -516,6 +509,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (BOOL)enabled
 {
     return self.visit.chatEnabled;
+}
+
+- (void)setChatDisabled:(BOOL)disabled
+{
+    self.visit.developerDisabledChat = disabled;
+    [self visitChatEnabledDidUpdate:self.visit];
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (BOOL)chatInProgress
