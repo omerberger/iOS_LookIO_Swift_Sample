@@ -619,6 +619,11 @@
         }
         self.messageTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIODraggableButtonMessageTime target:self selector:@selector(messageTimerDidFire)];
     }];
+    
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, message);
+    }
 }
 
 - (void)removeTimers

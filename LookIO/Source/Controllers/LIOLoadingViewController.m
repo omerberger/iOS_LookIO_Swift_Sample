@@ -118,6 +118,12 @@
             self.soundEffect.shouldRepeat = YES;
         }
     }
+    
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        NSString *loadingMessage = [NSString stringWithFormat:@"%@ %@", self.loadingLabel.text, self.loadingSubLabel.text];
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, loadingMessage);
+    }
 }
 
 - (void)hideBezel

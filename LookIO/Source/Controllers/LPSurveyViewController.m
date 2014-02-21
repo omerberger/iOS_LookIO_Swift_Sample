@@ -195,6 +195,7 @@
     [self.currentQuestionView setupViewWithQuestion:currentQuestion isLastQuestion:isLastQuestion delegate:self];
     [self.scrollView addSubview:self.currentQuestionView];
     [self.currentQuestionView becomeFirstResponder];
+    [self.currentQuestionView questionViewDidAppear];
     
     // Set up the next question; If we get a FALSE response, we're at the last question
     self.isLastQuestion = ![self setupNextQuestionScrollView];
@@ -1047,6 +1048,12 @@
 
 - (void)showAlertWithMessage:(NSString *)aMessage
 {
+    
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, aMessage);
+    }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
     [self.validationView removeFromSuperview];
@@ -1084,6 +1091,7 @@
     self.validationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOSurveyViewControllerValidationDuration
                                                                 target:self
                                                               selector:@selector(validationTimerDidFire)];
+
 }
 
 

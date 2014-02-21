@@ -820,6 +820,11 @@
 {
     if (!self.starRatingView.hidden)
         [self.starRatingView showIntroAnimation];
+    
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.titleLabel.text);
+    }
 }
 
 - (void)questionViewDidDisappear

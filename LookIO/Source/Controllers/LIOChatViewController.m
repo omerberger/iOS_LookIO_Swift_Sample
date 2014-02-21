@@ -856,6 +856,16 @@
     [self.tableView reloadData];
     
     [self appearanceAnimationForKeyboardInitialPosition];
+    
+    // If only one message appears, read it
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        if (self.engagement.messages.count == 1)
+        {
+            LIOChatMessage *firstMessage = [self.engagement.messages objectAtIndex:0];
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, firstMessage.text);
+        }
+    }
 }
 
 - (void)appearanceAnimationForKeyboardInitialPosition
