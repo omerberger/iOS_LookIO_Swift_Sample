@@ -138,40 +138,53 @@
 
 - (void)setRatingTextForRating:(NSInteger)rating
 {
+    if (rating == 0)
+        self.ratingLabel.text = @"";
+    else
+        self.ratingLabel.text = [self ratingTextForRating:rating];
+}
+
+
+- (NSString *)ratingTextForRating:(NSInteger)rating
+{
+    NSString *ratingText = @"";
+    
     if (self.valueLabelArray && self.valueLabelArray.count == 5) {
         if (rating == 0)
-            self.ratingLabel.text = @"";
+            ratingText = @"";
         else
-            self.ratingLabel.text = (NSString*)[self.valueLabelArray objectAtIndex:(5 - rating)];
+            ratingText = (NSString*)[self.valueLabelArray objectAtIndex:(5 - rating)];
     } else {
         switch (rating) {
             case 5:
-                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
+                ratingText = LIOLocalizedString(@"LIOStarRatingView.ExcellentRatingTitle");
                 break;
                 
             case 4:
-                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
+                ratingText = LIOLocalizedString(@"LIOStarRatingView.GoodRatingTitle");
                 break;
                 
             case 3:
-                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
+                ratingText = LIOLocalizedString(@"LIOStarRatingView.OkRatingTitle");
                 break;
                 
             case 2:
-                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
+                ratingText = LIOLocalizedString(@"LIOStarRatingView.NotGoodRatingTitle");
                 break;
                 
             case 1:
-                self.ratingLabel.text = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
+                ratingText = LIOLocalizedString(@"LIOStarRatingView.BadRatingTitle");
                 break;
                 
             case 0:
-                self.ratingLabel.text = @"";
+                ratingText = @"";
                 
             default:
                 break;
         }
     }
+    
+    return ratingText;
 }
 
 - (void)showIntroAnimationForAnswerAtIndex:(int)index
@@ -256,6 +269,15 @@
     for (int i=0; i<newValueLabelsArray.count; i++) {
         NSString* valueLabel = (NSString*)[newValueLabelsArray objectAtIndex:i];
         [self.valueLabelArray addObject:valueLabel];
+    }
+    
+    for (int i=0; i<5; i++)
+    {
+        if (i < self.starButtonArray.count)
+        {
+            UIButton* starButton = [self.starButtonArray objectAtIndex:i];
+            starButton.accessibilityLabel = [self ratingTextForRating:i+1];
+        }
     }
 }
 

@@ -26,6 +26,9 @@
 #import "LIOEmailChatView.h"
 #import "LIOApprovePhotoView.h"
 
+// Models
+#import "LIOSoundEffect.h"
+
 #define LIOChatViewControllerChatTableViewCellIdentifier        @"LIOChatViewControllerChatTableViewCellIdentifier"
 #define LIOChatViewControllerChatTableViewImageCellIdentifier   @"LIOChatViewControllerChatTableViewImageCellIdentifier"
 
@@ -287,6 +290,17 @@
     [self.engagement sendVisitorLineWithText:text];
     [self.tableView reloadData];
     [self scrollToBottomDelayed:YES];
+    
+    // Accessibility - Read the message and play a sound if it exists
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundMessageSent" ofType:@"aiff"];
+        if (path)
+        {
+            LIOSoundEffect *soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundMessageSent.aiff"];
+            [soundEffect play];
+        }
+    }
 }
 
 - (void)resendFailedMessage:(id)sender
@@ -320,6 +334,24 @@
     {
         [self updateSubviewFrames];
         [self scrollToBottomDelayed:YES];
+        
+        // Accessibility - Read the message and play a sound if it exists
+        if (UIAccessibilityIsVoiceOverRunning())
+        {
+            NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundMessageReceived" ofType:@"aiff"];
+            if (path)
+            {
+                LIOSoundEffect *soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundMessageReceived.aiff"];
+                soundEffect.completionBlock = ^{
+                    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, [NSString stringWithFormat:@"%@ %@", message.senderName, message.text]);
+                };
+                [soundEffect play];
+            }
+            else
+            {
+                UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, [NSString stringWithFormat:@"%@ %@", message.senderName, message.text]);
+            }
+        }
     }
 }
 

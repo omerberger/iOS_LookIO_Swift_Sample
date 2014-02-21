@@ -66,6 +66,7 @@
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 0.0;
         self.buttonTitle = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
+        self.accessibilityLabel = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
         
         [self addTarget:self action:@selector(draggableButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         

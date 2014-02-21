@@ -8,8 +8,12 @@
 
 #import "LIOLoadingViewController.h"
 
+// Managers
 #import "LIOBrandingManager.h"
 #import "LIOBundleManager.h"
+
+// Models
+#import "LIOSoundEffect.h"
 
 @interface LIOLoadingViewController ()
 
@@ -18,6 +22,8 @@
 @property (nonatomic, strong) UILabel *loadingLabel;
 @property (nonatomic, strong) UILabel *loadingSubLabel;
 @property (nonatomic, strong) UIButton *dismissButton;
+
+@property (nonatomic, strong) LIOSoundEffect *soundEffect;
 
 @end
 
@@ -42,6 +48,18 @@
         loadingAnimation.repeatCount = HUGE_VAL;
         [self.loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
     }
+    
+    // Accessibility - Play a sound if it exists
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundLoading" ofType:@"aiff"];
+        if (path)
+        {
+            self.soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundLoading.aiff"];
+            [self.soundEffect play];
+            self.soundEffect.shouldRepeat = YES;
+        }
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -49,6 +67,11 @@
     [super viewDidDisappear:animated];
     
     [self.loadingImageView.layer removeAnimationForKey:@"animation"];
+    if (self.soundEffect)
+    {
+        self.soundEffect.shouldRepeat = NO;
+        [self.soundEffect stop];
+    }
 }
 
 - (void)viewDidLoad

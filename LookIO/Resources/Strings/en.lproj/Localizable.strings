@@ -23,6 +23,7 @@
 "LIOAltChatViewController.NoChatHistoryAlertButton" = "Dismiss";
 "LIOAltChatViewController.LoadingLabel" = "Loading Chat";
 "LIOAltChatViewController.LoadingSubLabel" = "We'll be right with you...";
+"LIOAltChatViewController.NewMessageAccessiblityAlert" = "New message from";
 
 "LIOChatBubbleView.LinkAlert" = "Are you sure you want to leave the app and visit \"%@\"?";
 "LIOChatBubbleView.LinkAlertEmail" = "Are you sure you want to leave the app and e-mail \"%@\"?";
@@ -173,6 +174,7 @@
 "LIOLookIOManager.FailedAttachmentSendBody" = "Your photo could not be sent. Please try again.";
 "LIOLookIOManager.FailedAttachmentSendButton" = "Dismiss";
 
+"LIOLookIOManager.KeyboardMenuPlusButton" = "Menu";
 "LIOLookIOManager.KeyboardMenuButtonSendPhoto" = "Send Photo";
 "LIOLookIOManager.KeyboardMenuButtonFaqs" = "FAQs";
 "LIOLookIOManager.KeyboardMenuButtonEmailChat" = "Email Chat";
@@ -181,3 +183,5 @@
 "LIOLookIOManager.KeyboardMenuButtonKeyboard" = "Keyboard";
 
 "LIOLookIOManager.WebViewLoadingTitle" = "Loading..";
+"LIOLookIOManager.CloseButton" = "Close";
+"LIOLookIOManager.OpenInBrowserButton" = "Open in Browser";

@@ -107,6 +107,7 @@
         CGFloat plusButtonXMargin = padUI ? 12.0 : 0.0;
         CGFloat plusButtonYMargin = padUI ? 19.0 : 5.0;
         self.plusButton = [[UIButton alloc] initWithFrame:CGRectMake(self.hasCustomBranding ? 150.0 : plusButtonXMargin, plusButtonYMargin + (padUI ? 2.0 : 0.0), inputBarHeight - plusButtonXMargin, self.frame.size.height - 2*plusButtonYMargin)];
+        self.plusButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuPlusButton");
         UIColor *buttonTintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSendBarPlusButton];
         if (padUI)
             [self.plusButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIconBig" withTint:buttonTintColor] forState:UIControlStateNormal];

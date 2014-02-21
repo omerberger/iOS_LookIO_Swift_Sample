@@ -134,6 +134,7 @@
         LIOKeyboardMenuItem *item = [self.items objectAtIndex:i];
         LIOKeyboardMenuButton *button = [[LIOKeyboardMenuButton alloc] init];
         button.tag = LIOKeyboardMenuButtonTagBase + i;
+        button.accessibilityLabel = item.title;
         [button setImage:[[LIOBundleManager sharedBundleManager] imageNamed:item.iconName withTint:iconColor] forState:UIControlStateNormal];
         [button setBottomLabelText:[item.title uppercaseString]];
         [button addTarget:self action:@selector(keyboardMenuButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
