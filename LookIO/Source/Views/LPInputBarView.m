@@ -172,6 +172,7 @@
         self.sendButton.titleLabel.textAlignment = UITextAlignmentCenter;
         [self.sendButton addTarget:self action:@selector(sendButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.sendButton.showsTouchWhenHighlighted = YES;
+        self.sendButton.titleLabel.adjustsFontSizeToFitWidth = YES;
         self.sendButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
         [self addSubview:self.sendButton];
         
