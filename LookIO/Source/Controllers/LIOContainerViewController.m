@@ -21,6 +21,9 @@
 // Views
 #import "LIOHeaderBarView.h"
 
+// Models
+#import "LIOSoundEffect.h"
+
 #define LIOContainerViewControllerAlertViewNextStepDismiss      2001
 
 @interface LIOContainerViewController () <LIOChatViewControllerDelegate, LPSurveyViewControllerDelegate, LIOLoadingViewControllerDelegate, UIAlertViewDelegate, LIOHeaderBarViewDelegate, LIOWebViewControllerDelegate>
@@ -44,6 +47,8 @@
 
 @property (nonatomic, assign) BOOL isAgentTypingMessageVisible;
 @property (nonatomic, assign) BOOL isNotificationVisible;
+
+@property (nonatomic, strong) LIOSoundEffect *soundEffect;
 
 @end
 
@@ -237,6 +242,7 @@
             // Reveal if needed
             if (isTyping && self.isAgentTypingMessageVisible == NO)
             {
+                [self playAccessibilityTypingSoundEffect];
                 self.isAgentTypingMessageVisible = YES;
 
                 if (padUI)
@@ -247,11 +253,14 @@
                 {
                     [self.headerBarView revealNotificationString:LIOLocalizedString(@"LIOAltChatViewController.AgentTypingNotification") withAnimatedKeyboard:YES permanently:YES];
                 }
+                
             }
             
             // Hide if needed
             if (!isTyping && self.isAgentTypingMessageVisible == YES)
             {
+                [self stopAccessibilityTypingSoundEffect];
+                
                 self.isAgentTypingMessageVisible = NO;
                 if (padUI)
                 {
@@ -263,6 +272,29 @@
                 }
             }
         }
+    }
+}
+
+- (void)playAccessibilityTypingSoundEffect
+{
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundTyping" ofType:@"aiff"];
+        if (path)
+        {
+            self.soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundTyping.aiff"];
+            [self.soundEffect play];
+            self.soundEffect.shouldRepeat = YES;
+        }
+    }
+}
+
+- (void)stopAccessibilityTypingSoundEffect
+{
+    if (self.soundEffect)
+    {
+        self.soundEffect.shouldRepeat = NO;
+        [self.soundEffect stop];
     }
 }
 
@@ -348,6 +380,11 @@
         else
             self.headerBarState = LIOHeaderBarStateLandscapeHidden;
         [self presentChatViewController:YES];
+        
+        if (self.engagement.isAgentTyping)
+        {
+            [self playAccessibilityTypingSoundEffect];
+        }
     }
 }
 
@@ -532,7 +569,6 @@
     if (viewController == self.currentViewController)
         return;
     
-    
     [self.currentViewController willMoveToParentViewController:nil];
     [self addChildViewController:viewController];
     
@@ -552,6 +588,11 @@
                                     [self.currentViewController.view removeFromSuperview];
                                     self.currentViewController.view.alpha = 1.0;
                                     
+                                    if (self.currentViewController == self.loadingViewController)
+                                    {
+                                        [self.loadingViewController hideBezel];
+                                    }
+                                    
                                     //Set the new view controller as current
                                     self.currentViewController = viewController;
                                     [self.currentViewController didMoveToParentViewController:self];
@@ -564,6 +605,11 @@
         [self.currentViewController.view removeFromSuperview];
         
         [self.contentView addSubview:viewController.view];
+
+        if (self.currentViewController == self.loadingViewController)
+        {
+            [self.loadingViewController hideBezel];
+        }
 
         self.currentViewController = viewController;
         [self.currentViewController didMoveToParentViewController:self];
@@ -616,6 +662,7 @@
         {
             [self engagement:self.engagement agentIsTyping:NO];
         }
+        [self stopAccessibilityTypingSoundEffect];
     }];
 }
 

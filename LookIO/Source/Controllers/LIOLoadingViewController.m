@@ -37,41 +37,11 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
-    BOOL spinImage = [[LIOBrandingManager brandingManager] booleanValueForField:@"spin_image" element:LIOBrandingElementLoadingScreen];
-    if (spinImage)
-    {
-        CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-        loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
-        loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
-        loadingAnimation.duration = 1.0f;
-        loadingAnimation.repeatCount = HUGE_VAL;
-        [self.loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
-    }
-    
-    // Accessibility - Play a sound if it exists
-    if (UIAccessibilityIsVoiceOverRunning())
-    {
-        NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundLoading" ofType:@"aiff"];
-        if (path)
-        {
-            self.soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundLoading.aiff"];
-            [self.soundEffect play];
-            self.soundEffect.shouldRepeat = YES;
-        }
-    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
-    [self.loadingImageView.layer removeAnimationForKey:@"animation"];
-    if (self.soundEffect)
-    {
-        self.soundEffect.shouldRepeat = NO;
-        [self.soundEffect stop];
-    }
 }
 
 - (void)viewDidLoad
@@ -125,11 +95,41 @@
 - (void)showBezel
 {
     self.bezelView.hidden = NO;
+    
+    BOOL spinImage = [[LIOBrandingManager brandingManager] booleanValueForField:@"spin_image" element:LIOBrandingElementLoadingScreen];
+    if (spinImage)
+    {
+        CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+        loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
+        loadingAnimation.toValue = [NSNumber numberWithFloat: 2*M_PI];
+        loadingAnimation.duration = 1.0f;
+        loadingAnimation.repeatCount = HUGE_VAL;
+        [self.loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
+    }
+    
+    // Accessibility - Play a sound if it exists
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundLoading" ofType:@"aiff"];
+        if (path)
+        {
+            self.soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundLoading.aiff"];
+            [self.soundEffect play];
+            self.soundEffect.shouldRepeat = YES;
+        }
+    }
 }
 
 - (void)hideBezel
 {
     self.bezelView.hidden = YES;
+    
+    [self.loadingImageView.layer removeAnimationForKey:@"animation"];
+    if (self.soundEffect)
+    {
+        self.soundEffect.shouldRepeat = NO;
+        [self.soundEffect stop];
+    }
 }
 
 @end
