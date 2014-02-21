@@ -241,6 +241,14 @@
         if (padUI)
         {
             [self.chatViewController displayToasterAgentIsTyping:isTyping];
+            if (isTyping)
+            {
+                [self playAccessibilityTypingSoundEffect];
+            }
+            else
+            {
+                [self stopAccessibilityTypingSoundEffect];
+            }
         }
         else
         {

@@ -286,6 +286,11 @@
     
     [self registerForKeyboardNotifications];
     [self.emailTextField becomeFirstResponder];
+    
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.titleLabel.text);
+    }
 }
 
 - (void)dismiss
