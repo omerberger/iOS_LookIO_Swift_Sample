@@ -22,4 +22,6 @@
 @property (nonatomic, assign) id<LIOApprovePhotoViewDelegate> delegate;
 @property (nonatomic, strong) UIImageView *imageView;
 
+- (void)viewDidAppear;
+
 @end

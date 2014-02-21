@@ -185,5 +185,13 @@
     [self.delegate approvePhotoViewDidApprove:self];
 }
 
+- (void)viewDidAppear
+{
+    if (UIAccessibilityIsVoiceOverRunning())
+    {
+        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.titleLabel.text);
+    }
+}
+
 
 @end

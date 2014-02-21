@@ -476,7 +476,9 @@
                 CGRect frame = self.approvePhotoView.frame;
                 frame.origin.y = 0;
                 self.approvePhotoView.frame = frame;
-            } completion:nil];
+            } completion:^(BOOL finished) {
+                [self.approvePhotoView viewDidAppear];
+            }];
         }];
     }
 }
