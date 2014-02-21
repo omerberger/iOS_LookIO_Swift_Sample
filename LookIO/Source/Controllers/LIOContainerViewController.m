@@ -193,6 +193,11 @@
 {
     if (LIOContainerViewStateChat == self.containerViewState || LIOContainerViewStateLoading == self.containerViewState)
     {
+        if (UIAccessibilityIsVoiceOverRunning())
+        {
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, notification);
+        }
+        
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
         self.isAgentTypingMessageVisible = NO;
