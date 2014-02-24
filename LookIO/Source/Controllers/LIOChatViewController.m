@@ -38,9 +38,7 @@
 #define LIOChatViewControllerOpenExtraAppLinkAlertViewTag 1002
 #define LIOChatViewControllerOpenWebLinkAlertViewTag      1003
 
-#define LIOChatViewControllerPhotoSourceActionSheetTag 2001
-
-@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate, LIOChatTableViewCellDelegate, LIOApprovePhotoViewDelegate>
+@interface LIOChatViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate, LPInputBarViewDelegte, LIOKeyboardMenuDelegate, UIGestureRecognizerDelegate, LIOEmailChatViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, LIOToasterViewDelegate, LIOChatTableViewCellDelegate, LIOApprovePhotoViewDelegate>
 
 @property (nonatomic, assign) LIOChatState chatState;
 
@@ -219,7 +217,7 @@
         [self.inputBarView.textView resignFirstResponder];
 }
 
-- (void)sendPhoto
+- (void)sendPhotoWithCamera:(BOOL)withCamera
 {
     if (self.engagement.messages.count <= 1)
     {
@@ -234,7 +232,7 @@
     else
     {
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
-            [self presentPhotoSourceActionSheet];
+            [self presentImagePickerWithCamera:withCamera];
         else
             [self presentImagePickerWithCamera:NO];
     }
@@ -374,24 +372,6 @@
 }
 
 #pragma mark -
-#pragma mark UIActionSheetDelegate Methods
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    switch (actionSheet.tag) {
-        case LIOChatViewControllerPhotoSourceActionSheetTag:
-            if (buttonIndex == 0)
-                [self presentImagePickerWithCamera:YES];
-            if (buttonIndex == 1)
-                [self presentImagePickerWithCamera:NO];
-            break;
-            
-        default:
-            break;
-    }
-}
-
-#pragma mark -
 #pragma mark Photo Sharing Methods
 
 - (void)presentImagePickerWithCamera:(BOOL)withCamera
@@ -412,20 +392,6 @@
     {
         [self presentModalViewController:imagePickerController animated:YES];
     }
-}
-
-- (void)presentPhotoSourceActionSheet
-{
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
-                                              delegate:self
-                                     cancelButtonTitle:LIOLocalizedString(@"LIOAltChatViewController.AttachSourceCancel")
-                                destructiveButtonTitle:nil
-                                     otherButtonTitles:LIOLocalizedString(@"LIOAltChatViewController.AttachSourceCamera"),
-                                                       LIOLocalizedString(@"LIOAltChatViewController.AttachSourceLibrary"), nil];
-    actionSheet.tag = LIOChatViewControllerPhotoSourceActionSheetTag;
-    actionSheet.actionSheetStyle = UIActionSheetStyleBlackOpaque;
-    
-    [actionSheet showInView:self.view];
 }
 
 #pragma mark -
@@ -836,12 +802,17 @@
             [self dismissChat:self];
             break;
             
-        case LIOKeyboardMenuItemSendPhoto:
-            [self sendPhoto];
+        case LIOKeyboardMenuItemTakePhoto:
+            [self presentImagePickerWithCamera:YES];
             break;
             
+        case LIOKeyboardMenuItemUploadPhoto:
+            [self sendPhotoWithCamera:NO];
+            break;
+
+            
         case LIOKeyboardMenuItemEmailChat:
-            [self emailChat];
+            [self sendPhotoWithCamera:NO];
             
         default:
             break;

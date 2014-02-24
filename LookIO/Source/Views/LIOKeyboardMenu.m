@@ -53,21 +53,24 @@
     
     if ([self.delegate keyboardMenuShouldShowTakePhotoDefaultItem:self])
     {
-        item = [[LIOKeyboardMenuItem alloc] init];
-        item.type = LIOKeyboardMenuItemSendPhoto;
-        item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonSendPhoto");
-        item.iconName = @"LIOCameraIcon";
+        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+        {
+            item = [[LIOKeyboardMenuItem alloc] init];
+            item.type = LIOKeyboardMenuItemTakePhoto;
+            item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonTakePhoto");
+            item.iconName = @"LIOCameraIcon";
     
+            [self.items addObject:item];
+        }
+
+        item = [[LIOKeyboardMenuItem alloc] init];
+        item.type = LIOKeyboardMenuItemUploadPhoto;
+        item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonUploadPhoto");
+        item.iconName = @"LIOUploadCloudIcon";
+        
         [self.items addObject:item];
     }
     
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs");
-    item.iconName = @"LIOInfoIcon";
-    
-    [self.items addObject:item];
-
     if ([self.delegate keyboardMenuShouldShowHideEmailChatDefaultItem:self])
     {
         item = [[LIOKeyboardMenuItem alloc] init];
@@ -96,6 +99,13 @@
     item.type = LIOKeyboardMenuItemShowKeyboard;
     item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonKeyboard");
     item.iconName = @"LIOArrowUpIconLarge";
+    
+    [self.items addObject:item];
+    
+    item = [[LIOKeyboardMenuItem alloc] init];
+    item.type = LIOKeyboardMenuItemWebView;
+    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs");
+    item.iconName = @"LIOInfoIcon";
     
     [self.items addObject:item];
     

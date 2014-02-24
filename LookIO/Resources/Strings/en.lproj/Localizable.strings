@@ -177,7 +177,8 @@
 "LIOLookIOManager.FailedAttachmentSendButton" = "Dismiss";
 
 "LIOLookIOManager.KeyboardMenuPlusButton" = "Menu";
-"LIOLookIOManager.KeyboardMenuButtonSendPhoto" = "Send Photo";
+"LIOLookIOManager.KeyboardMenuButtonTakePhoto" = "Take Photo";
+"LIOLookIOManager.KeyboardMenuButtonUploadPhoto" = "Upload Photo";
 "LIOLookIOManager.KeyboardMenuButtonFaqs" = "FAQs";
 "LIOLookIOManager.KeyboardMenuButtonEmailChat" = "Email Chat";
 "LIOLookIOManager.KeyboardMenuButtonHideChat" = "Hide Chat";

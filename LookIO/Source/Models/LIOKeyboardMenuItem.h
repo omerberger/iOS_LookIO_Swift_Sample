@@ -15,7 +15,8 @@ typedef enum
     LIOKeyboardMenuItemHideChat,
     LIOKeyboardMenuItemShowKeyboard,
     LIOKeyboardMenuItemEmailChat,
-    LIOKeyboardMenuItemSendPhoto,
+    LIOKeyboardMenuItemTakePhoto,
+    LIOKeyboardMenuItemUploadPhoto,
     LIOKeyboardMenuItemWebView
 } LIOKeyboardMenuItemType;
 
