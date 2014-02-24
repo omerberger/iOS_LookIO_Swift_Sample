@@ -32,10 +32,12 @@
 
 // User defaults keys
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
+#define LIOLookIOManagerVisitorIdKey                    @"LIOLookIOManagerVisitorIdKey"
 
 @interface LIOVisit ()
 
 @property (nonatomic, copy) NSString *currentVisitId;
+@property (nonatomic, copy) NSString *visitorId;
 
 @property (nonatomic, copy) NSString *requiredSkill;
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
@@ -154,6 +156,12 @@
         if (nil == self.queuedLaunchReportDates)
             self.queuedLaunchReportDates = [[NSMutableArray alloc] init];
         
+        // Set up the visitor id, if it exists
+        if ([userDefaults objectForKey:LIOLookIOManagerVisitorIdKey])
+            self.visitorId = [userDefaults objectForKey:LIOLookIOManagerVisitorIdKey];
+        else
+            self.visitorId = nil;
+        
         // Default visibility is no - until recieving a different visibility setting
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
     }
@@ -220,7 +228,11 @@
         [statusDictionary setObject:self.currentVisitId forKey:@"visit_id"];
     }
     
-    // TODO: Find out if should send visitor_id here?
+    // Send visitor ID, if we have it
+    if ([self.visitorId length])
+    {
+        [statusDictionary setObject:self.visitorId forKey:@"visitor_id"];
+    }
     
     if (includesType)
         [statusDictionary setObject:@"intro" forKey:@"type"];
@@ -446,6 +458,10 @@
     if ([visitIdString length])
         [resolvedSettings setObject:visitIdString forKey:@"visit_id"];
     
+    NSString *visitorIdString = [settingsDict objectForKey:@"visitor_id"];
+    if ([visitorIdString length])
+        [resolvedSettings setObject:visitorIdString forKey:@"visitor_id"];
+    
     NSDictionary *localizedStrings = [settingsDict objectForKey:@"localized_strings"];
     if ([localizedStrings count])
         [resolvedSettings setObject:localizedStrings forKey:@"localized_strings"];
@@ -571,6 +587,13 @@
         if ([visitIdString length])
         {
             self.currentVisitId = visitIdString;
+        }
+        
+        NSString *visitorIdString = [resolvedSettings objectForKey:@"visitor_id"];
+        if ([visitorIdString length])
+        {
+            self.visitorId = visitorIdString;
+            [userDefaults setObject:visitorIdString forKey:LIOLookIOManagerVisitorIdKey];
         }
         
         NSDictionary *localizedStrings = [resolvedSettings objectForKey:@"localized_strings"];
