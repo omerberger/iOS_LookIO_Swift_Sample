@@ -574,7 +574,7 @@
     }
     else
     {
-        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(maxWidth, self.bounds.size.height) lineBreakMode:UILineBreakModeTailTruncation];
+        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(maxWidth, self.bounds.size.height) lineBreakMode:UILineBreakModeWordWrap];
     }
     
     CGRect frame = self.messageLabel.frame;
@@ -584,14 +584,13 @@
     frame.size.height = LIODraggableButtonSize;
     self.messageLabel.frame = frame;
     
-    
     frame = self.externalMessageLabel.frame;
     if (self.isAttachedToRight)
         frame.origin.x = -expectedSize.width - 20.0;
     else
         frame.origin.x = self.baseSize.width + 10.0;
     frame.origin.y = (self.baseSize.height - expectedSize.height - 10.0)/2;
-    frame.size.width = expectedSize.width + 10.0;
+    frame.size.width = expectedSize.width;
     frame.size.height = expectedSize.height + 10.0;
     self.externalMessageLabel.numberOfLines = 0;
     self.externalMessageLabel.frame = frame;
