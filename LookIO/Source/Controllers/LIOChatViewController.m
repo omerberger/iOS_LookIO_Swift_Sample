@@ -981,7 +981,7 @@
     
     self.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, self.inputBarView.frame.size.height + 5.0)];
     self.tableFooterView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.tableFooterView.isAccessibilityElement = YES;
+    self.tableFooterView.isAccessibilityElement = YES; 
     self.tableFooterView.accessibilityLabel = LIOLocalizedString(@"LIODismissalBarView.DismissalLabel");
     self.tableView.tableFooterView = self.tableFooterView;
     

@@ -97,13 +97,13 @@
     UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementWebViewHeaderBarButtons];
 
     UIButton *closeButton = [[UIButton alloc] initWithFrame:CGRectMake(8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
-    closeButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.CloseButton");
+    closeButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewCloseButton");
     [closeButton addTarget:self action:@selector(closeButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     [closeButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] forState:UIControlStateNormal];
     [topBarView addSubview:closeButton];
     
     UIButton *shareButton = [[UIButton alloc] initWithFrame:CGRectMake(topBarView.bounds.size.width - 32.0 - 8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
-    shareButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.OpenInBrowserButton");
+    shareButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewOpenInBrowserButton");
     shareButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [shareButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     [shareButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];

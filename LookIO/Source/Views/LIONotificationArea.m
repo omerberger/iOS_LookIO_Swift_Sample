@@ -139,23 +139,12 @@
                 tinyLogo.layer.shadowOpacity = 0.33;
                 tinyLogo.layer.shadowRadius = 0.75;
                 
-                UIButton *plusButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [plusButton addTarget:self action:@selector(plusButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-                [plusButton setBackgroundImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOHeaderPlusIcon"] forState:UIControlStateNormal];
-                [plusButton sizeToFit];
-                aFrame = plusButton.frame;
-                aFrame.size.height = 15.0;
-                aFrame.origin.y = 8.0;
-                aFrame.origin.x = tinyLogo.frame.origin.x + tinyLogo.frame.size.width + 5.0;
-                plusButton.frame = aFrame;
-                
                 aFrame = finalBrandingView.frame;
-                aFrame.size.width = tinyLogo.frame.size.width + plusButton.frame.size.width + 10.0;
+                aFrame.size.width = tinyLogo.frame.size.width + 10.0;
                 aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
                 finalBrandingView.frame = aFrame;
                 
                 [finalBrandingView addSubview:tinyLogo];
-                [finalBrandingView addSubview:plusButton];
             }
             
             [self.defaultNotification addSubview:finalBrandingView];
@@ -186,6 +175,7 @@
     newNotification.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
     UILabel *aLabel = [[UILabel alloc] init];
+    aLabel.isAccessibilityElement = YES;
     aLabel.tag = LIONotificationAreaNotificationLabelTag;
     aLabel.backgroundColor = [UIColor clearColor];
     aLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementBrandingBarNotifications];

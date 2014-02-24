@@ -35,6 +35,7 @@
         [self.contentView addSubview:self.chatImageView];
         
         self.failedToSendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - 313.0, 20, 22, 22)];
+        self.failedToSendButton.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ResendFailedMessageButton");
         UIImage* failedToSendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOFailedMessageAlertIcon"];
         [self.failedToSendButton setImage:failedToSendButtonImage forState:UIControlStateNormal];
         [self.contentView addSubview:self.failedToSendButton];

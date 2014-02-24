@@ -742,6 +742,7 @@
     [self setupStatusBarInset];
     
     UIButton *emergencyDismissButton = [[UIButton alloc] initWithFrame:self.view.bounds];
+    emergencyDismissButton.isAccessibilityElement = NO;
     emergencyDismissButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [emergencyDismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:emergencyDismissButton];

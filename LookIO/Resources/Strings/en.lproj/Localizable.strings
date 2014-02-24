@@ -2,7 +2,7 @@
 
 "LIOAltChatViewController.EmailChatButton"  = "Email Chat";
 "LIOAltChatViewController.EndSessionButton" = "End Session";
-"LIOAltChatViewController.ReconnectionLabel"     = "Reconnecting...";
+"LIOAltChatViewController.ReconnectionLabel" = "Reconnecting...";
 "LIOAltChatViewController.ReconnectionHideButton" = "Hide";
 "LIOAltChatViewController.LocalNameLabel" = "Me";
 "LIOAltChatViewController.AgentTypingNotification" = "Agent is typing...";
@@ -24,6 +24,8 @@
 "LIOAltChatViewController.LoadingLabel" = "Loading Chat";
 "LIOAltChatViewController.LoadingSubLabel" = "We'll be right with you...";
 "LIOAltChatViewController.NewMessageAccessiblityAlert" = "New message from";
+"LIOAltChatViewController.ResendFailedMessageButton" = "Resend failed message";
+"LIOAltChatViewController.ScrollToTopButton" = "Scroll to top";
 
 "LIOChatBubbleView.LinkAlert" = "Are you sure you want to leave the app and visit \"%@\"?";
 "LIOChatBubbleView.LinkAlertEmail" = "Are you sure you want to leave the app and e-mail \"%@\"?";
@@ -183,5 +185,5 @@
 "LIOLookIOManager.KeyboardMenuButtonKeyboard" = "Keyboard";
 
 "LIOLookIOManager.WebViewLoadingTitle" = "Loading..";
-"LIOLookIOManager.CloseButton" = "Close";
-"LIOLookIOManager.OpenInBrowserButton" = "Open in Browser";
+"LIOLookIOManager.WebViewCloseButton" = "Close";
+"LIOLookIOManager.WebViewOpenInBrowserButton" = "Open in Browser";

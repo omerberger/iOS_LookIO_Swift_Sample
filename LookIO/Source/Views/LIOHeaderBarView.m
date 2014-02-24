@@ -70,6 +70,8 @@
         UITapGestureRecognizer *tapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         self.tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
         self.tappableBackground.backgroundColor = [UIColor clearColor];
+        self.tappableBackground.isAccessibilityElement = YES;
+        self.tappableBackground.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ScrollToTopButton");
         [self.tappableBackground addGestureRecognizer:tapper];
         [self addSubview:self.tappableBackground];
     }
