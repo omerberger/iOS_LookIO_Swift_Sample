@@ -63,6 +63,8 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
+        self.isAccessibilityElement = YES;
+        
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 0.0;
         self.buttonTitle = LIOLocalizedString(@"LIOControlButtonView.DefaultText");
@@ -142,6 +144,8 @@
 
 - (void)updateBaseValues
 {
+    self.accessibilityLabel = self.buttonTitle;
+
     if (LIOButtonKindIcon == self.buttonKind)
     {
         self.baseSize = CGSizeMake(LIODraggableButtonSize, LIODraggableButtonSize);
