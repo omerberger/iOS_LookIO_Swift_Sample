@@ -812,7 +812,8 @@
 
             
         case LIOKeyboardMenuItemEmailChat:
-            [self sendPhotoWithCamera:NO];
+            [self emailChat];
+            break;
             
         default:
             break;
