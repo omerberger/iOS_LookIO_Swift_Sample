@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOBrandingManager.h"
 
 #define LIOLocalizedString(key) [[LIOBundleManager sharedBundleManager] localizedStringWithKey:key]
 
@@ -17,8 +18,9 @@
 #define LIOBundleManagerErrorKey @"LIOBundleManagerErrorKey"
 
 // Defaults keys
-#define LIOBundleManagerStringTableDictKey  @"LIOBundleManagerStringTableDictKey"
-#define LIOBundleManagerStringTableHashKey  @"LIOBundleManagerStringTableHashKey"
+#define LIOBundleManagerStringTableDictKey     @"LIOBundleManagerStringTableDictKey"
+#define LIOBundleManagerStringTableHashKey     @"LIOBundleManagerStringTableHashKey"
+#define LIOBundleManagerBrandingImageCacheKey  @"LIOBundleManagerBrandingImageCacheKey"
 
 #ifndef kCFCoreFoundationVersionNumber_iOS_7_0
 #define kCFCoreFoundationVersionNumber_iOS_7_0 847.2
@@ -40,7 +42,8 @@ BOOL LIOIsUIKitFlatMode(void);
     NSOutputStream *bundleDownloadOutputStream;
     UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
     NSMutableDictionary *imageCache;
-    UInt32 selectedChatTheme;
+
+    NSMutableDictionary *brandingImageCache;
 }
 
 @property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
@@ -50,6 +53,8 @@ BOOL LIOIsUIKitFlatMode(void);
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
 - (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color;
+- (void)cacheImage:(UIImage *)image fromURL:(NSURL *)url forBrandingElement:(LIOBrandingElement)element;
+- (UIImage *)cachedImageForBrandingElement:(LIOBrandingElement)element;
 - (NSDictionary *)brandingDictionary;
 - (BOOL)isAvailable;
 - (void)pruneImageCache;

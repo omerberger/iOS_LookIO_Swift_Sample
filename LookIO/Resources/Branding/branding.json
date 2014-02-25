@@ -55,28 +55,12 @@
                     "color": "#555555",
                     "size": "12.0"
                 }
-            },
-            "webview_buttons": {
-                "font": {
-                    "color": "#47a1ff",
-                    "size": "15.0"
-                },
-                "badge": {
-                    "background": {
-                        "color": "#ff0000"
-                    },
-                    "font": {
-                        "color": "#00ff00",
-                        "size": "12.0"
-                    }
-                }
             }
         },
         "keyboard": {
             "type": "light",
             "initial_state": "menu"
         },
-        "keyboard_type": "light",
         "chat_bubbles": {
             "agent": {
                 "background": {
@@ -424,7 +408,12 @@
     "visit": {
         "control_button": {
             "alpha": "0.9",
-            "icon": "",
+            "chat_icon": {
+                "image": "https://cdn2.iconfinder.com/data/icons/picons-basic-2/57/basic2-005_bubble_cloud-128.png"
+            },
+            "survey_icon": {
+                "image": "https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-checkmark-128.png"
+            },
             "background": {
                 "color": "#666666"
             },
@@ -443,7 +432,7 @@
                     "color": "#ff0000"
                 },
                 "font": {
-                    "color": "#00ff00",
+                    "color": "#ffffff",
                     "size": "12.0"
                 }
             },

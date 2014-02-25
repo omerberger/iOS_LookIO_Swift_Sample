@@ -13,6 +13,8 @@ typedef enum
     LIOBrandingElementControlButton = 0,
     LIOBrandingElementControlButtonBadge,
     LIOBrandingElementControlButtonMessageLabel,
+    LIOBrandingElementControlButtonChatIcon,
+    LIOBrandingElementControlButtonSurveyIcon,
     LIOBrandingElementLoadingScreen,
     LIOBrandingElementLoadingScreenTitle,
     LIOBrandingElementLoadingScreenSubtitle,
@@ -108,6 +110,8 @@ typedef enum
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element;
 - (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;
+
+- (NSURL *)customImageURLForElement:(LIOBrandingElement)element;
 
 @end
 

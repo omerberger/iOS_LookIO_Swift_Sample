@@ -153,6 +153,7 @@
         self.statusImageView.hidden = NO;
 //        self.messageLabel.hidden = NO;
         self.buttonTitleLabel.hidden = YES;
+        
     }
     if (LIOButtonKindText == self.buttonKind)
     {
@@ -237,6 +238,34 @@
             [self setVisibleFrame];
         } completion:nil];
     }
+
+    // Let's check to see if a custom image is available
+    NSURL *imageURL = [[LIOBrandingManager brandingManager] customImageURLForElement:LIOBrandingElementControlButtonChatIcon];
+    if (imageURL)
+    {
+        // Let's check to see if we have this image cached
+        UIImage *cachedImage = [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementControlButtonChatIcon];
+        if (cachedImage)
+        {
+            self.statusImageView.image = cachedImage;
+        }
+        else
+        {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:imageURL]];
+                if (image)
+                {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        
+                        self.statusImageView.image = image;
+                    });
+                    [[LIOBundleManager sharedBundleManager] cacheImage:image fromURL:imageURL forBrandingElement:LIOBrandingElementControlButtonChatIcon];
+                }
+            });
+        }
+    }
+    
+
 }
 
 - (void)setTransformForInterfaceOrienation:(UIInterfaceOrientation)orientation

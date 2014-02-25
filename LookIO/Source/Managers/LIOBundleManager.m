@@ -117,6 +117,18 @@ BOOL LIOIsUIKitFlatMode(void) {
         [self findBundle];
         
         imageCache = [[NSMutableDictionary alloc] init];
+        
+        brandingImageCache = [[NSMutableDictionary alloc] init];
+
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        if ([userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey])
+        {
+            brandingImageCache = [userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey];
+        }
+        else
+        {
+            brandingImageCache = [[NSMutableDictionary alloc] init];
+        }
     }
     
     return self;
@@ -129,7 +141,8 @@ BOOL LIOIsUIKitFlatMode(void) {
     [lioBundle release];
     [bundleDownloadRequest release];
     [bundleDownloadConnection release];
-    [imageCache release];    
+    [imageCache release];
+    [brandingImageCache release];
     
     [bundleDownloadOutputStream close];
     [bundleDownloadOutputStream release];
@@ -145,6 +158,11 @@ BOOL LIOIsUIKitFlatMode(void) {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *cachesDir = [paths objectAtIndex:0];
     return [cachesDir stringByAppendingPathComponent:[NSString stringWithFormat:@"_LOOKIO_%@/", LOOKIO_VERSION_STRING]];
+}
+
+- (NSString *)brandingImagesDirectory
+{
+    return [[self targetDirectory] stringByAppendingPathComponent:@"branding/"];
 }
 
 -(NSString*)bundleName {
@@ -519,6 +537,58 @@ BOOL LIOIsUIKitFlatMode(void) {
     LIOLog(@"IMAGE: Warning! Couldn't find \"%@\"", aString);
     
     return [UIImage imageNamed:aString];
+}
+
+- (void)cacheImage:(UIImage *)image fromURL:(NSURL *)url forBrandingElement:(LIOBrandingElement)element
+{
+    // Delete the previous image cached for this branding element
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    if ([brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    {
+        NSString *oldFileName = [brandingImageCache objectForKey:element];
+        NSString *oldFilePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:oldFileName];
+        if ([fileManager fileExistsAtPath:oldFilePath])
+        {
+            NSError *error = nil;
+            [fileManager removeItemAtPath:oldFilePath error:&error];
+        }
+    }
+    
+    // Cache the new image
+
+    NSString *newFilename = [[url path] lastPathComponent];
+    NSString *newFilePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:newFilename];
+    
+    [UIImagePNGRepresentation(image) writeToFile:newFilePath atomically:YES];
+    [brandingImageCache setObject:url forKey:@"Test"];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:brandingImageCache forKey:LIOBundleManagerBrandingImageCacheKey];
+    [userDefaults synchronize];
+}
+
+- (UIImage *)cachedImageForBrandingElement:(LIOBrandingElement)element
+{
+    if (![brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    {
+        return nil;
+    }
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSURL *fileURL = [brandingImageCache objectForKey:element];
+    NSString *filename = [[fileURL path] lastPathComponent];
+    NSString *filePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:filename];
+    
+    if (![fileManager fileExistsAtPath:filePath])
+    {
+        return nil;
+    }
+    
+    NSData *data = [[NSData alloc] initWithContentsOfFile:filePath];
+    UIImage *image = [[UIImage alloc] initWithData:data];
+    
+    return image;
 }
 
 - (BOOL)isAvailable

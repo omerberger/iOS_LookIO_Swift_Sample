@@ -131,6 +131,34 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementControlButtonChatIcon == element)
+        {
+            if (visitDictionary)
+            {
+                NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
+                if (buttonDictionary)
+                {
+                    NSDictionary *chatIconDictionary = [buttonDictionary objectForKey:@"chat_icon"];
+                    if (chatIconDictionary)
+                        dictionary = chatIconDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementControlButtonSurveyIcon == element)
+        {
+            if (visitDictionary)
+            {
+                NSDictionary *buttonDictionary = [visitDictionary objectForKey:@"control_button"];
+                if (buttonDictionary)
+                {
+                    NSDictionary *surveyIconDictionary = [buttonDictionary objectForKey:@"survey_icon"];
+                    if (surveyIconDictionary)
+                        dictionary = surveyIconDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementFont == element)
         {
             return engagementDictionary;
@@ -1116,9 +1144,23 @@ static LIOBrandingManager *brandingManager = nil;
     }
     
     return style;
-    
 }
 
-
+- (NSURL *)customImageURLForElement:(LIOBrandingElement)element
+{
+    NSURL* url = nil;
+    
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        NSString *imageString = [elementDictionary objectForKey:@"image"];
+        if (imageString && [imageString length])
+        {
+            url = [NSURL URLWithString:imageString];
+        }
+    }
+    
+    return url;
+}
 
 @end
