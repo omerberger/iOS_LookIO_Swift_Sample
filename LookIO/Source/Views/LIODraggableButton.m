@@ -607,13 +607,24 @@
             self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
             self.externalMessageLabel.hidden = NO;
         }
+        else
+        {
+            self.externalMessageLabel.alpha = 0.0;
+            self.externalMessageLabel.hidden = NO;
+        }
     }
     
     [self.externalMessageLabel setNeedsLayout];
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        self.externalMessageLabel.transform = CGAffineTransformIdentity;
-//        [self setVisibleFrameWithMessageWidth:expectedSize.width];
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+        {
+            self.externalMessageLabel.transform = CGAffineTransformIdentity;
+        }
+        else
+        {
+            self.externalMessageLabel.alpha = 1.0;
+        }
     } completion:^(BOOL finished) {
         if (self.messageTimer)
         {
@@ -650,11 +661,18 @@
     CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-
-        self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+        {
+            self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
+        }
+        else
+        {
+            self.externalMessageLabel.alpha = 0.0;
+        }
     } completion:^(BOOL finished) {
         self.isShowingMessage = NO;
         self.externalMessageLabel.hidden = YES;
+        self.externalMessageLabel.alpha = 1.0;
         self.externalMessageLabel.transform = CGAffineTransformIdentity;
     }];
 }
