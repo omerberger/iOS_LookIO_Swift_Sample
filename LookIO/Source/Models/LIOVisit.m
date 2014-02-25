@@ -228,10 +228,14 @@
         [statusDictionary setObject:self.currentVisitId forKey:@"visit_id"];
     }
     
-    // Send visitor ID, if we have it
+    // Send visitor ID, if we have it. Otherwise request it.
     if ([self.visitorId length])
     {
         [statusDictionary setObject:self.visitorId forKey:@"visitor_id"];
+    }
+    else
+    {
+        [statusDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"request_visitor_id"];
     }
     
     if (includesType)
