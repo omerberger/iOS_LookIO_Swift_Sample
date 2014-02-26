@@ -83,7 +83,7 @@
         self.scrollView.frame = frame;
         
         frame = self.pageControl.frame;
-        frame.origin.y = self.view.bounds.size.height - frame.size.height;
+        frame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight - frame.size.height;
         self.pageControl.frame = frame;
     } completion:nil];
 }
