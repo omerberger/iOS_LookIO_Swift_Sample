@@ -67,7 +67,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     return LIOUIKitFlatMode;
 }
 
-@synthesize lioTabInnerShadow, lioTabInnerShadow2x, selectedChatTheme;
+@synthesize lioTabInnerShadow, lioTabInnerShadow2x;
 
 + (LIOBundleManager *)sharedBundleManager
 {
@@ -123,12 +123,14 @@ BOOL LIOIsUIKitFlatMode(void) {
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         if ([userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey])
         {
-            brandingImageCache = [userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey];
+            NSData *brandingImageCacheData = [userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey];
+            brandingImageCache = [NSKeyedUnarchiver unarchiveObjectWithData:brandingImageCacheData];
         }
         else
         {
             brandingImageCache = [[NSMutableDictionary alloc] init];
         }
+        [brandingImageCache retain];
     }
     
     return self;
@@ -162,7 +164,12 @@ BOOL LIOIsUIKitFlatMode(void) {
 
 - (NSString *)brandingImagesDirectory
 {
-    return [[self targetDirectory] stringByAppendingPathComponent:@"branding/"];
+    return [[self targetDirectory] stringByAppendingPathComponent:@"CustomBranding/"];
+}
+
+- (NSString *)brandingImagesDirectoryForBrandingElement:(LIOBrandingElement)element
+{
+    return [[self brandingImagesDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"%d/", element]];
 }
 
 -(NSString*)bundleName {
@@ -544,10 +551,11 @@ BOOL LIOIsUIKitFlatMode(void) {
     // Delete the previous image cached for this branding element
     NSFileManager *fileManager = [NSFileManager defaultManager];
 
-    if ([brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    if ([brandingImageCache objectForKey:[NSNumber numberWithInt:element]])
     {
-        NSString *oldFileName = [brandingImageCache objectForKey:element];
-        NSString *oldFilePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:oldFileName];
+        NSURL *oldFileURL = [brandingImageCache objectForKey:[NSNumber numberWithInt:element]];
+        NSString *oldFileName = [[oldFileURL path] lastPathComponent];
+        NSString *oldFilePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:oldFileName];
         if ([fileManager fileExistsAtPath:oldFilePath])
         {
             NSError *error = nil;
@@ -555,40 +563,166 @@ BOOL LIOIsUIKitFlatMode(void) {
         }
     }
     
+    // Let's check if the root directory exists, if not, create it
+
+    BOOL isDir;
+    BOOL exists = [fileManager fileExistsAtPath:[self brandingImagesDirectory] isDirectory:&isDir];
+    if (!exists) {
+        NSError *error = nil;
+        BOOL success = [fileManager createDirectoryAtPath:[self brandingImagesDirectory] withIntermediateDirectories:NO attributes:nil error:&error];
+        if (!success || error) {
+            LIOLog(@"Error: %@", [error localizedDescription]);
+        }
+    }
+    
+    // Let's check if the directory exists, if not, create it
+    
+    exists = [fileManager fileExistsAtPath:[self brandingImagesDirectoryForBrandingElement:element] isDirectory:&isDir];
+    if (!exists) {
+        NSError *error = nil;
+        BOOL success = [fileManager createDirectoryAtPath:[self brandingImagesDirectoryForBrandingElement:element] withIntermediateDirectories:NO attributes:nil error:&error];
+        if (!success || error) {
+            LIOLog(@"Error: %@", [error localizedDescription]);
+        }
+    }
+    
     // Cache the new image
 
     NSString *newFilename = [[url path] lastPathComponent];
-    NSString *newFilePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:newFilename];
+    NSString *newFilePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:newFilename];
     
     [UIImagePNGRepresentation(image) writeToFile:newFilePath atomically:YES];
-    [brandingImageCache setObject:url forKey:@"Test"];
+    [brandingImageCache setObject:url forKey:[NSNumber numberWithInt:element]];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:brandingImageCache forKey:LIOBundleManagerBrandingImageCacheKey];
+    NSData *brandingImageCacheData = [NSKeyedArchiver archivedDataWithRootObject:brandingImageCache];
+    [userDefaults setObject:brandingImageCacheData forKey:LIOBundleManagerBrandingImageCacheKey];
     [userDefaults synchronize];
 }
 
-- (UIImage *)cachedImageForBrandingElement:(LIOBrandingElement)element
+- (void)cachedImageForBrandingElement:(LIOBrandingElement)element withBlock:(void (^)(BOOL, UIImage *))block;
 {
-    if (![brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    // Check if this element has a custom image. If not, report failure
+    NSURL *imageURL = [[LIOBrandingManager brandingManager] customImageURLForElement:element];
+    if (!imageURL)
     {
-        return nil;
+        if (block)
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                block(NO, nil);
+            });
+        }
+        return;
     }
     
+    // Let's check if the image exists, if not, call the callback without setting an image
+    if ([brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *fileURL = [brandingImageCache objectForKey:[NSNumber numberWithInt:element]];
+        
+        // Make sure that the cached image is the same URL
+        if ([imageURL isEqual:fileURL])
+        {
+            NSString *filename = [[fileURL path] lastPathComponent];
+            NSString *filePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:filename];
+        
+            // Make sure the file exists
+            if ([fileManager fileExistsAtPath:filePath])
+            {
+                // Before we use the cached file, let's make sure we have the latest version of it
+                if (![self newerVersionOfCachedFile:filePath forURL:imageURL])
+                {
+                    // Load the image and return it
+                    NSData *data = [[[NSData alloc] initWithContentsOfFile:filePath] autorelease];
+                    UIImage *image = [[[UIImage alloc] initWithData:data] autorelease];
+                
+                    if (block)
+                    {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            block(YES, image);
+                        });
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    // Image with the same URL isn't cached, or a newer version exists on server side Let's download it in background.
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        UIImage *image = [[[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:imageURL]] autorelease];
+        if (image)
+        {
+            if (block)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    block(YES, image);
+                });
+            }
+            [[LIOBundleManager sharedBundleManager] cacheImage:image fromURL:imageURL forBrandingElement:element];
+        }
+        else
+        {
+            if (block)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    block (NO, nil);
+                });
+            }
+        }
+    });
+}
+
+- (BOOL)newerVersionOfCachedFile:(NSString *)filePath forURL:(NSURL *)url
+{
+    BOOL newerVersion = NO;
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *fileURL = [brandingImageCache objectForKey:element];
-    NSString *filename = [[fileURL path] lastPathComponent];
-    NSString *filePath = [[self brandingImagesDirectory] stringByAppendingPathComponent:filename];
-    
-    if (![fileManager fileExistsAtPath:filePath])
-    {
-        return nil;
+
+    // Let's grab the server's last modified string
+    NSString *lastModifiedString = nil;
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"HEAD"];
+    NSHTTPURLResponse *response;
+    NSError *error = nil;
+    [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    if ([response respondsToSelector:@selector(allHeaderFields)]) {
+        lastModifiedString = [[response allHeaderFields] objectForKey:@"Last-Modified"];
     }
     
-    NSData *data = [[NSData alloc] initWithContentsOfFile:filePath];
-    UIImage *image = [[UIImage alloc] initWithData:data];
+    // If we got an error, or didn't get a last modified from the server, we should use the local file
+    if (error || lastModifiedString == nil)
+    {
+        return NO;
+    }
     
-    return image;
+    NSDate *lastModifiedServer = nil;
+    @try {
+        NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+        dateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+        dateFormatter.locale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+        dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+        lastModifiedServer = [dateFormatter dateFromString:lastModifiedString];
+    }
+    @catch (NSException * e) {
+        NSLog(@"Error parsing last modified date: %@ - %@", lastModifiedString, [e description]);
+        return NO;
+    }
+    
+    NSDate *lastModifiedLocal = nil;
+    NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:&error];
+    lastModifiedLocal = [fileAttributes fileModificationDate];
+    
+    // Download file from server if we don't have a local file
+    if (!lastModifiedLocal) {
+        newerVersion = YES;
+    }
+    // Download file from server if the server modified timestamp is later than the local modified timestamp
+    if ([lastModifiedLocal laterDate:lastModifiedServer] == lastModifiedServer) {
+        newerVersion = YES;
+    }
+    
+    return newerVersion;
 }
 
 - (BOOL)isAvailable

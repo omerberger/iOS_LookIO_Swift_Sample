@@ -41,6 +41,7 @@
 @property (nonatomic, assign) CGPoint preDragPosition;
 
 @property (nonatomic, strong) UIImageView *statusImageView;
+@property (nonatomic, assign) LIOBrandingElement lastUsedImageIcon;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
 @property (nonatomic, strong) UIView *borderView;
@@ -64,6 +65,8 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.isAccessibilityElement = YES;
+        
+        self.lastUsedImageIcon = -1;
         
         self.layer.cornerRadius = 5.0;
         self.layer.borderWidth = 0.0;
@@ -183,7 +186,6 @@
 
     [self resetFrame];
     [self resetTitleLabelRotationForAttachedToRight:self.isAttachedToRight];
-    [self updateButtonBranding];
 }
 
 - (void)updateButtonBranding
@@ -202,33 +204,55 @@
     self.externalMessageLabel.layer.borderColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButtonMessageLabel].CGColor;
     self.externalMessageLabel.borderLayer.strokeColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementControlButtonMessageLabel].CGColor;
     self.buttonTitleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementControlButton];
-    
-    switch (self.buttonMode) {
-        case LIOButtonModeSurvey:
-            if (LIOButtonKindIcon == self.buttonKind)
-                self.statusImageView.hidden = NO;
-            [self.activityIndicatorView stopAnimating];
-            [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyIcon" withTint:contentColor]];
-            break;
+
+    if (LIOButtonModeSurvey == self.buttonMode)
+    {
+        [self.activityIndicatorView stopAnimating];
+        if (LIOButtonKindIcon == self.buttonKind)
+        {
+            self.statusImageView.hidden = NO;
             
-        case LIOButtonModeChat:
-            if (LIOButtonKindIcon == self.buttonKind)
-                self.statusImageView.hidden = NO;
-            [self.activityIndicatorView stopAnimating];
-            [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor]];
-            break;
-            
-        case LIOButtonModeLoading:
-            [self.activityIndicatorView startAnimating];
-            if (LIOButtonKindIcon == self.buttonKind)
+            if (self.lastUsedImageIcon != LIOBrandingElementControlButtonSurveyIcon)
             {
-                self.activityIndicatorView.frame = self.bounds;
-                self.statusImageView.hidden = YES;
+                self.lastUsedImageIcon = LIOBrandingElementControlButtonSurveyIcon;
+                [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementControlButtonSurveyIcon withBlock:^(BOOL success, UIImage *image) {
+                    if (success)
+                        self.statusImageView.image = image;
+                    else
+                        [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSurveyIcon" withTint:contentColor]];
+                }];
             }
-            break;
+        }
+    }
+    
+    if (LIOButtonModeChat == self.buttonMode)
+    {
+        [self.activityIndicatorView stopAnimating];
+        if (LIOButtonKindIcon == self.buttonKind)
+        {
+            self.statusImageView.hidden = NO;
             
-        default:
-            break;
+            if (self.lastUsedImageIcon != LIOBrandingElementControlButtonChatIcon)
+            {
+                self.lastUsedImageIcon = LIOBrandingElementControlButtonChatIcon;
+                [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementControlButtonChatIcon withBlock:^(BOOL success, UIImage *image) {
+                if (success)
+                    self.statusImageView.image = image;
+                else
+                    [self.statusImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpeechBubble" withTint:contentColor]];
+                }];
+            }
+        }
+    }
+    
+    if (LIOButtonModeLoading == self.buttonMode)
+    {
+        [self.activityIndicatorView startAnimating];
+        if (LIOButtonKindIcon == self.buttonKind)
+        {
+            self.activityIndicatorView.frame = self.bounds;
+            self.statusImageView.hidden = YES;
+        }
     }
     
     if (LIOButtonKindText == self.buttonKind && self.isVisible)
@@ -238,33 +262,6 @@
             [self setVisibleFrame];
         } completion:nil];
     }
-
-    // Let's check to see if a custom image is available
-    NSURL *imageURL = [[LIOBrandingManager brandingManager] customImageURLForElement:LIOBrandingElementControlButtonChatIcon];
-    if (imageURL)
-    {
-        // Let's check to see if we have this image cached
-        UIImage *cachedImage = [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementControlButtonChatIcon];
-        if (cachedImage)
-        {
-            self.statusImageView.image = cachedImage;
-        }
-        else
-        {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                UIImage *image = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:imageURL]];
-                if (image)
-                {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        
-                        self.statusImageView.image = image;
-                    });
-                    [[LIOBundleManager sharedBundleManager] cacheImage:image fromURL:imageURL forBrandingElement:LIOBrandingElementControlButtonChatIcon];
-                }
-            });
-        }
-    }
-    
 
 }
 

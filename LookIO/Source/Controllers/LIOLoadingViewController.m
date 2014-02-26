@@ -60,8 +60,13 @@
     [self.view addSubview:self.bezelView];
     
     self.loadingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 20.0, self.bezelView.bounds.size.width, 50)];
-    self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
-    self.loadingImageView.contentMode = UIViewContentModeCenter;
+    [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementLoadingScreen withBlock:^(BOOL success, UIImage *image) {
+        if (success)
+            self.loadingImageView.image = image;
+        else
+            self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
+    }];
+    self.loadingImageView.contentMode = UIViewContentModeScaleAspectFit;
     self.loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [self.bezelView addSubview:self.loadingImageView];
     

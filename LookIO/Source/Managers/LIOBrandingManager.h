@@ -92,6 +92,8 @@ typedef enum
 @property (nonatomic, strong) NSDictionary *lastKnownBrandingDictionary;
 
 + (LIOBrandingManager *)brandingManager;
+- (void)preloadCustomBrandingImages;
+
 - (UIColor *)colorForHexString:(NSString *)string;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element;
 - (CGFloat)alphaForElement:(LIOBrandingElement)element;
@@ -110,7 +112,6 @@ typedef enum
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element;
 - (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;
-
 - (NSURL *)customImageURLForElement:(LIOBrandingElement)element;
 
 @end

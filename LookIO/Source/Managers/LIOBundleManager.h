@@ -47,14 +47,13 @@ BOOL LIOIsUIKitFlatMode(void);
 }
 
 @property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
-@property(nonatomic, assign) UInt32 selectedChatTheme;
 
 + (LIOBundleManager *)sharedBundleManager;
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
 - (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color;
 - (void)cacheImage:(UIImage *)image fromURL:(NSURL *)url forBrandingElement:(LIOBrandingElement)element;
-- (UIImage *)cachedImageForBrandingElement:(LIOBrandingElement)element;
+- (void)cachedImageForBrandingElement:(LIOBrandingElement)element withBlock:(void (^)(BOOL, UIImage *))block;
 - (NSDictionary *)brandingDictionary;
 - (BOOL)isAvailable;
 - (void)pruneImageCache;

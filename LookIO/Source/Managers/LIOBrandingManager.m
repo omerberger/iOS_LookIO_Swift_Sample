@@ -68,6 +68,16 @@ static LIOBrandingManager *brandingManager = nil;
 
 #pragma mark Helper Methods
 
+- (void)preloadCustomBrandingImages
+{
+    NSArray *imageElements = @[[NSNumber numberWithInt:LIOBrandingElementControlButtonChatIcon], [NSNumber numberWithInt:LIOBrandingElementControlButtonSurveyIcon], [NSNumber numberWithInt:LIOBrandingElementLoadingScreen]];
+    
+    for (NSNumber *elementNumber in imageElements)
+    {
+        [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:[elementNumber intValue] withBlock:nil];        
+    }
+}
+
 - (UIColor *)colorForHexString:(NSString *)string
 {
     unsigned int colorValue;

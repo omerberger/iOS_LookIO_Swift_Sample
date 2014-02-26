@@ -662,6 +662,7 @@
             {
                 [userDefaults setObject:brandingDictionary forKey:LIOBrandingManagerBrandingDictKey];
                 [LIOBrandingManager brandingManager].lastKnownBrandingDictionary = brandingDictionary;
+                [[LIOBrandingManager brandingManager] preloadCustomBrandingImages];
         
                 NSString *brandingMd5 = [resolvedSettings objectForKey:@"branding_md5"];
                 if (brandingMd5)
@@ -674,7 +675,6 @@
         [userDefaults synchronize];
         [self refreshControlButtonVisibility];
         [self.delegate controlButtonCharacteristsDidChange:self];
-//      [self applicationDidChangeStatusBarOrientation:nil];
     }
 }
 
