@@ -8,8 +8,9 @@
 
 #import "LIOPopupLabel.h"
 
-@interface LIOPopupLabel ()
+#define LIOPopupLabelMarginSize 10
 
+@interface LIOPopupLabel ()
 
 @end
 
@@ -86,6 +87,11 @@
     self.borderLayer.path = [borderPath CGPath];
     self.borderLayer.frame = self.bounds;
     
+}
+
+- (void)drawTextInRect:(CGRect)rect {
+    UIEdgeInsets insets = {LIOPopupLabelMarginSize, LIOPopupLabelMarginSize, LIOPopupLabelMarginSize, LIOPopupLabelMarginSize};
+    [super drawTextInRect:UIEdgeInsetsInsetRect(rect, insets)];
 }
 
 @end

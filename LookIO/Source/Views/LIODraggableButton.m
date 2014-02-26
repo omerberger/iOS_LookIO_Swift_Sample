@@ -109,6 +109,7 @@
         self.externalMessageLabel.textAlignment = UITextAlignmentCenter;
         self.externalMessageLabel.hidden = YES;
         self.externalMessageLabel.userInteractionEnabled = YES;
+        self.externalMessageLabel.lineBreakMode = (UILineBreakModeWordWrap | UILineBreakModeTailTruncation);
         [self addSubview:self.externalMessageLabel];
         
         UIButton *externalMessageLabelButton = [[UIButton alloc] init];
@@ -591,21 +592,9 @@
     self.externalMessageLabel.text = message;
     self.externalMessageLabel.isPointingRight = self.isAttachedToRight;
     
-    CGFloat maxWidth = 240.0;
+    CGFloat maxWidth = 220.0;
 
-    CGSize expectedSize;
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-    {
-        CGRect expectedTextRect = [message boundingRectWithSize:CGSizeMake(maxWidth, self.bounds.size.height)
-                                                     options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-                                                  attributes:@{NSFontAttributeName:self.messageLabel.font}
-                                                     context:nil];
-        expectedSize = expectedTextRect.size;
-    }
-    else
-    {
-        expectedSize = [message sizeWithFont:self.messageLabel.font constrainedToSize:CGSizeMake(maxWidth, self.bounds.size.height) lineBreakMode:UILineBreakModeWordWrap];
-    }
+    CGSize expectedSize = [message sizeWithFont:self.externalMessageLabel.font constrainedToSize:CGSizeMake(maxWidth, self.bounds.size.height) lineBreakMode:(UILineBreakModeWordWrap | UILineBreakModeTailTruncation)];
     
     CGRect frame = self.messageLabel.frame;
     frame.origin.x = LIODraggableButtonSize;
@@ -616,12 +605,12 @@
     
     frame = self.externalMessageLabel.frame;
     if (self.isAttachedToRight)
-        frame.origin.x = -expectedSize.width - 20.0;
+        frame.origin.x = -expectedSize.width - 35.0;
     else
-        frame.origin.x = self.baseSize.width + 10.0;
-    frame.origin.y = (self.baseSize.height - expectedSize.height - 10.0)/2;
-    frame.size.width = expectedSize.width;
-    frame.size.height = expectedSize.height + 10.0;
+        frame.origin.x = self.baseSize.width + 15.0;
+    frame.origin.y = (self.baseSize.height - expectedSize.height - 20.0)/2;
+    frame.size.width = expectedSize.width + 20.0;
+    frame.size.height = expectedSize.height + 20.0;
     self.externalMessageLabel.numberOfLines = 0;
     self.externalMessageLabel.frame = frame;
 
