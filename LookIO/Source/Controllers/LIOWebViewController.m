@@ -52,7 +52,6 @@
     [super viewWillDisappear:animated];
     
     [self dismissExistingAlertView];
-    [self.controlButton removeTimers];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -61,11 +60,6 @@
     
     [self.controlButton resetFrame];
     [self.controlButton show:YES];
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
     
     CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     loadingAnimation.fromValue = [NSNumber numberWithFloat:0.0f];
@@ -73,6 +67,13 @@
     loadingAnimation.duration = 1.0f;
     loadingAnimation.repeatCount = HUGE_VAL;
     [self.loadingImageView.layer addAnimation:loadingAnimation forKey:@"animation"];
+
+    self.loadingImageView.alpha = 1.0;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
 }
 
 - (void)viewDidLoad
@@ -117,21 +118,29 @@
         self.controlButton.ignoreActualInterfaceOrientation = YES;
         self.controlButton.buttonKind = [self.delegate webViewControllerButtonKindForWebView:self];
         [self.controlButton updateBaseValues];
+        [self.controlButton updateButtonBranding];
     }
     
-    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, topBarHeight - 8.0 - 32.0, topBarView.frame.size.width - 100, 32)];
     self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.titleLabel.text = LIOLocalizedString(@"LIOLookIOManager.WebViewLoadingTitle");
     self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementWebViewHeaderBar];
     self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementWebViewHeaderBar];
     self.titleLabel.backgroundColor = [UIColor clearColor];
-    [self.titleLabel sizeToFit];
-    self.navigationItem.titleView = self.titleLabel;
+    self.titleLabel.textAlignment = UITextAlignmentCenter;
+    [topBarView addSubview:self.titleLabel];
     
-    self.loadingImageView = [[UIImageView alloc] initWithFrame:self.webView.bounds];
-    self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
-    self.loadingImageView.contentMode = UIViewContentModeCenter;
+    self.loadingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.webView.bounds.size.width/2 - 65, self.webView.bounds.size.height/2 - 50, 130, 50)];
+    self.loadingImageView.alpha = 0.0;
+    [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementLoadingScreen withBlock:^(BOOL success, UIImage *image) {
+        if (success)
+            self.loadingImageView.image = image;
+        else
+            self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
+    }];
+    self.loadingImageView.contentMode = UIViewContentModeScaleAspectFit;
     self.loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    
     [self.webView addSubview:self.loadingImageView];
 }
 
@@ -147,7 +156,6 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.titleLabel.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    [self.titleLabel sizeToFit];
     [self.loadingImageView removeFromSuperview];
 }
 
@@ -174,6 +182,7 @@
 
 - (void)closeButtonWasTapped:(id)sender
 {
+    [self.controlButton removeTimers];
     [self.delegate webViewControllerCloseButtonWasTapped:self];
 }
 
