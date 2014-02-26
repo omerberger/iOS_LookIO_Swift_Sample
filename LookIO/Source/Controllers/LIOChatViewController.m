@@ -803,7 +803,7 @@
             break;
             
         case LIOKeyboardMenuItemTakePhoto:
-            [self presentImagePickerWithCamera:YES];
+            [self sendPhotoWithCamera:YES];
             break;
             
         case LIOKeyboardMenuItemUploadPhoto:
