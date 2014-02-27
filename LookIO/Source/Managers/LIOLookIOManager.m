@@ -1824,6 +1824,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return nil;
 }
 
+- (BOOL)supportDeprecatedXcodeVersions
+{
+    BOOL supportDeprecatedXcodeVersions = NO;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(supportDeprecatedXcodeVersions)])
+        supportDeprecatedXcodeVersions = [self.delegate supportDeprecatedXcodeVersions];
+        
+    return supportDeprecatedXcodeVersions;
+}
+
 #pragma mark -
 #pragma mark Autorotation Methods
 

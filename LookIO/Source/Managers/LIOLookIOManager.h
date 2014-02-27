@@ -167,6 +167,7 @@ extern NSString *const kLPEventAddedToCart;
 
 -(void)lookIOManagerCustomActionForChatNotAnswered:(LIOLookIOManager *)aManager;
 
+
 ///---------------------------------------------------------------------------------------
 /// @name Troubleshooting / UI Integration Methods
 ///---------------------------------------------------------------------------------------
@@ -220,6 +221,18 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  */
 - (NSInteger)lookIOManagerSupportedInterfaceOrientations:(LIOLookIOManager *)aManager;
+
+/*!
+ 
+ The LIOLookIOManager class is set up to support the latest version of iOS and be compiled with versions
+ of Xcode containing the last SDK. If you are compiling your application with a deprecated version of Xcode (< 5.0),
+ you should implement this delegate method and return a value of YES
+ 
+ @return A boolean value indicating if you are compiling your application with a deprecated version of Xcode.
+ 
+ */
+
+- (BOOL)supportDeprecatedXcodeVersions;
 
 @end
 

@@ -37,7 +37,7 @@
         self.foregroundImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;        
 //        [self addSubview:self.foregroundImageView];
 
-        UILongPressGestureRecognizer *aLongPresser = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)] autorelease];
+        UILongPressGestureRecognizer *aLongPresser = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
         aLongPresser.delegate = self;
         [self addGestureRecognizer:aLongPresser];
         
@@ -84,7 +84,6 @@
     UIMenuController *menu = [UIMenuController sharedMenuController];
     UIMenuItem *menuItem = [[UIMenuItem alloc] initWithTitle:@"Save Image" action:@selector(saveImage:)];
     [menu setMenuItems:[NSArray arrayWithObject:menuItem]];
-    [menuItem release];
     menu.arrowDirection = UIMenuControllerArrowUp;
     [menu setTargetRect:targetFrame inView:self];
     [menu setMenuVisible:YES animated:YES];
