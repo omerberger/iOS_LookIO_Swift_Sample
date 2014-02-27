@@ -50,7 +50,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
+    [self.controlButton removeTimers];
     [self dismissExistingAlertView];
 }
 
@@ -250,6 +250,19 @@
 {
     if (self.controlButton)
         [self.controlButton presentMessage:notification];
+}
+
+#pragma mark -
+#pragma mark StatusBar Methods
+
+- (BOOL)prefersStatusBarHidden
+{
+    return [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return [[LIOBrandingManager brandingManager] statusBarStyleForElement:LIOBrandingElementStatusBar];
 }
 
 @end
