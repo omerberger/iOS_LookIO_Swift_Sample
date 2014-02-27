@@ -38,7 +38,7 @@
 		A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A73D44361856776A0030FF44 /* LIOContainerViewController.h */; };
 		A73D44391856776A0030FF44 /* LIOContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A73D44371856776A0030FF44 /* LIOContainerViewController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A742967A18842D28007A0FC3 /* LPChatImageView.h in Headers */ = {isa = PBXBuildFile; fileRef = A742967818842D28007A0FC3 /* LPChatImageView.h */; };
-		A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A742967918842D28007A0FC3 /* LPChatImageView.m */; settings = {COMPILER_FLAGS = "-fobj-arc"; }; };
+		A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A742967918842D28007A0FC3 /* LPChatImageView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
 		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
