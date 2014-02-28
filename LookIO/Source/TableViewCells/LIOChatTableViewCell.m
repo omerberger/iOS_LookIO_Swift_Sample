@@ -68,7 +68,8 @@
 
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
 {
-    LIOBrandingElement brandingElement;
+    LIOBrandingElement brandingElement = LIOBrandingElementVisitorChatBubble;
+    
     // Set up background color
     switch (chatMessage.kind) {
         case LIOChatMessageKindLocal:
@@ -112,7 +113,7 @@
 {
     [self.chatBubbleView prepareForReuse];
     
-    LIOBrandingElement brandingElement;
+    LIOBrandingElement brandingElement = LIOBrandingElementVisitorChatBubble;
     
     // Set up background color
     switch (chatMessage.kind) {

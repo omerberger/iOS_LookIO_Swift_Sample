@@ -30,7 +30,7 @@
 #define LIOSurveyViewiPadNextQuestionOffsetPortrait      0.55
 #define LIOSurveyViewiPadNextQuestionOffsetLandscape     0.4
 
-@interface LPSurveyViewController () <UIScrollViewDelegate, UIAlertViewDelegate>
+@interface LPSurveyViewController () <UIScrollViewDelegate, UIAlertViewDelegate, LIOSurveyValidationViewDelegate>
 
 @property (nonatomic, strong) LIOSurvey *survey;
 
@@ -1277,7 +1277,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
+    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];
     LIOSurveyPickerEntry* entry = [question.pickerEntries objectAtIndex:indexPath.row];
@@ -1291,12 +1291,11 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
+    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     
     if (tableViewQuestionIndex > self.survey.questions.count)
     {
-        NSLog(@"Breakpoint");
         return 0;
     }
     
@@ -1338,7 +1337,6 @@
     // This is an error check, but should not ever be a problem
     if (indexPath.row > question.pickerEntries.count)
     {
-        NSLog(@"Breakpoint - check this");
         return cell;
     }
     
@@ -1409,7 +1407,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LIOSurveyQuestionView *questionView = [(LIOSurveyQuestionView *)[tableView superview] superview];
+    LIOSurveyQuestionView *questionView = (LIOSurveyQuestionView *)[(LIOSurveyQuestionView *)[tableView superview] superview];
     NSInteger tableViewQuestionIndex = questionView.tag;
     
     LIOSurveyQuestion *question = [self.survey.questions objectAtIndex:tableViewQuestionIndex];

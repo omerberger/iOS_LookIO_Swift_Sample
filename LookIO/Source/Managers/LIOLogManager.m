@@ -138,7 +138,7 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)uploadLog
 {
-    // TODO Do it?
+    // TODO: Do it?
     return;
     
     [self flush];

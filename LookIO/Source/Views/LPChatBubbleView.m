@@ -74,8 +74,8 @@
 {
     CGSize maxSize = CGSizeMake(width, FLT_MAX);
     
-    LIOBrandingElement brandingElement;
-    LIOBrandingElement linkBrandingElement;
+    LIOBrandingElement brandingElement = LIOBrandingElementVisitorChatBubble;
+    LIOBrandingElement linkBrandingElement = LIOBrandingElementVisitorChatBubble;
 
     // Set up background color
     switch (chatMessage.kind) {

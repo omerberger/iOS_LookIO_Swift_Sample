@@ -15,7 +15,6 @@
 
 @property (nonatomic, assign) BOOL appForegrounded;
 @property (nonatomic, assign) BOOL badInitialization;
-@property (nonatomic, strong) CLLocation *lastKnownLocation;
 
 + (LIOStatusManager *) statusManager;
 

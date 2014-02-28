@@ -43,7 +43,6 @@
 
 -(void)loadContent {
     [webView loadRequest:[NSURLRequest requestWithURL:url]];
-    NSLog(@"Activity indicator view is %@", activityIndicatorView);
     [activityIndicatorView startAnimating];
 }
 

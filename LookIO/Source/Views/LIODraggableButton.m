@@ -305,7 +305,6 @@
     CGSize screenSize = [buttonWindow bounds].size;
 
     CGRect frame = self.frame;
-    CGRect buttonTitleFrame = self.buttonTitleLabel.frame;
     
     CGFloat messageWidthWithMargin = (messageWidth > 0.0 ? messageWidth + 10.0 : 0.0);
     CGFloat messageHeightMargin = ((LIOButtonModeLoading == self.buttonMode && LIOButtonKindText == self.buttonKind) ? self.baseSize.width*0.7 : 0.0);
