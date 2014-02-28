@@ -110,12 +110,7 @@
                                                  selector:@selector(reachabilityDidChange:)
                                                      name:LIOAnalyticsManagerReachabilityDidChangeNotification
                                                    object:[LIOAnalyticsManager sharedAnalyticsManager]];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(locationWasDetermined:)
-                                                     name:LIOAnalyticsManagerLocationWasDeterminedNotification
-                                                   object:[LIOAnalyticsManager sharedAnalyticsManager]];
-        
+                
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         
         // Hash the existing langauge file to prepare for visit launching
@@ -809,14 +804,6 @@
 }
 
 #pragma mark -
-#pragma mark Location Methods
-
-- (void)locationWasDetermined:(NSNotification *)aNotification
-{
-    // TODO: Report new location?
-}
-
-#pragma mark -
 #pragma mark Continue Methods
 
 - (void)continuationTimerDidFire
@@ -1023,7 +1010,7 @@
 {
     _visitState = visitState;
     
-    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"AppBackgrounded", @"ChatRequested", @"ChatOpened", @"PreChatSurvey", @"PreChatSurveyBackgrounded", @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"ChatActiveBackgrounded", @"PostChatSurvey", @"Ending"];
+    NSArray *stateNames = @[@"Initialized", @"Failed", @"Queued", @"Launching", @"VisitInProgress", @"ChatRequested", @"ChatOpened", @"PreChatSurvey",  @"ChatStarted", @"OfflineSurvey", @"ChatActive", @"PostChatSurvey", @"Ending"];
     
     LIOLog(@"<VISIT STATE> %@", [stateNames objectAtIndex:self.visitState]);
 }
@@ -1112,10 +1099,6 @@
             return NO;
             break;
             
-        case LIOVisitStateAppBackgrounded:
-            return NO;
-            break;
-
         case LIOVisitStateChatRequested:
             return YES;
             break;
@@ -1128,10 +1111,6 @@
             return YES;
             break;
             
-        case LIOVisitStatePreChatSurveyBackgrounded:
-            return YES;
-            break;
-            
         case LIOVisitStateChatStarted:
             return YES;
             break;
@@ -1141,10 +1120,6 @@
             break;
             
         case LIOVisitStateChatActive:
-            return YES;
-            break;
-            
-        case LIOVisitStateChatActiveBackgrounded:
             return YES;
             break;
             
@@ -1186,10 +1161,6 @@
             return YES;
             break;
             
-        case LIOVisitStateAppBackgrounded:
-            return YES;
-            break;
-            
         case LIOVisitStateChatRequested:
             return YES;
             break;
@@ -1202,10 +1173,6 @@
             return YES;
             break;
             
-        case LIOVisitStatePreChatSurveyBackgrounded:
-            return YES;
-            break;
-            
         case LIOVisitStateChatStarted:
             return YES;
             break;
@@ -1215,10 +1182,6 @@
             break;
             
         case LIOVisitStateChatActive:
-            return YES;
-            break;
-            
-        case LIOVisitStateChatActiveBackgrounded:
             return YES;
             break;
             

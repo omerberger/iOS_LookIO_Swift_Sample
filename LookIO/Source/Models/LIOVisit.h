@@ -31,15 +31,12 @@ typedef enum
     LIOVisitStateQueued,
     LIOVisitStateLaunching,
     LIOVisitStateVisitInProgress,
-    LIOVisitStateAppBackgrounded,
     LIOVisitStateChatRequested,
     LIOVisitStateChatOpened,
     LIOVisitStatePreChatSurvey,
-    LIOVisitStatePreChatSurveyBackgrounded,
     LIOVisitStateChatStarted,
     LIOVisitStateOfflineSurvey,
     LIOVisitStateChatActive,
-    LIOVisitStateChatActiveBackgrounded,
     LIOVisitStatePostChatSurvey,
     LIOVisitStateEnding
 } LIOVisitState;
@@ -64,7 +61,6 @@ typedef enum
 @property (nonatomic, assign) id <LIOVisitDelegate> delegate;
 
 @property (nonatomic, assign) LIOVisitState visitState;
-@property (nonatomic, assign) LIOVisitState preBackgroundState;
 @property (nonatomic, assign) BOOL controlButtonHidden;
 
 @property (nonatomic, assign) BOOL developerDisabledChat;

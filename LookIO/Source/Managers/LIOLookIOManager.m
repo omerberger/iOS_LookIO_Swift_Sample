@@ -315,22 +315,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                      nil];
             [self.engagement sendAdvisoryPacketWithDict:backgroundedDict retries:0];
         }
-        
-        switch (self.visit.visitState) {
-            case LIOVisitStateChatActive:
-                self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
-                break;
-                
-            case LIOVisitStatePreChatSurvey:
-                self.visit.visitState = LIOVisitStatePreChatSurveyBackgrounded;
-                break;
-                
-            default:
-                self.visit.preBackgroundState = self.visit.visitState;
-                self.visit.visitState = LIOVisitStateAppBackgrounded;
-                break;
-        }
-        
     }
 }
 
@@ -339,20 +323,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
 
     [LIOStatusManager statusManager].appForegrounded = YES;
-    
-    switch (self.visit.visitState) {
-        case LIOVisitStateChatActiveBackgrounded:
-            self.visit.visitState = LIOVisitStateChatActive;
-            break;
-            
-        case LIOVisitStatePreChatSurveyBackgrounded:
-            self.visit.visitState = LIOVisitStatePreChatSurvey;
-            break;
-            
-        default:
-            self.visit.visitState = self.visit.preBackgroundState;
-            break;
-    }
     
     if (UIBackgroundTaskInvalid != self.backgroundTaskId)
     {
@@ -1180,7 +1150,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementAgentIsReady:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
+    if (![[LIOStatusManager statusManager] appForegrounded])
     {
          if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
          {
@@ -1199,13 +1169,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (LIOVisitStateChatStarted == self.visit.visitState)
     {
-        if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
+        self.visit.visitState = LIOVisitStateChatActive;
+        if (UIApplicationStateActive == [[UIApplication sharedApplication] applicationState])
         {
-            self.visit.visitState = LIOVisitStateChatActiveBackgrounded;
-        }
-        else
-        {
-            self.visit.visitState = LIOVisitStateChatActive;
             [self.containerViewController presentChatForEngagement:engagement];
         }
     }
@@ -1332,14 +1298,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
             [self.delegate lookIOManagerDidEndChat:self];
         
-        if ([LIOStatusManager statusManager].appForegrounded)
-        {
-            self.visit.visitState = LIOVisitStateVisitInProgress;
-        }
-        else
-        {
-            self.visit.visitState = LIOVisitStateAppBackgrounded;
-        }
+        self.visit.visitState = LIOVisitStateVisitInProgress;
     }
     
     [self dismissExistingAlertView];
@@ -1431,9 +1390,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
     }
 
-    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
+    if (![[LIOStatusManager statusManager] appForegrounded])
     {
-        
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
             UILocalNotification *localNotification = [[UILocalNotification alloc] init];
@@ -1564,7 +1522,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementWantsScreenshare:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatActiveBackgrounded == self.visit.visitState)
+    if (![[LIOStatusManager statusManager] appForegrounded])
     {
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
