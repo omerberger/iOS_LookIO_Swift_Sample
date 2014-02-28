@@ -308,10 +308,10 @@
         
         [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
         
-        if ([LIOStatusManager statusManager].lastKnownLocation)
+        if ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation)
         {
-            NSNumber *lat = [NSNumber numberWithDouble:[LIOStatusManager statusManager].lastKnownLocation.coordinate.latitude];
-            NSNumber *lon = [NSNumber numberWithDouble:[LIOStatusManager statusManager].lastKnownLocation.coordinate.longitude];
+            NSNumber *lat = [NSNumber numberWithDouble:[LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation.coordinate.latitude];
+            NSNumber *lon = [NSNumber numberWithDouble:[LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation.coordinate.longitude];
             NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
             [detectedDict setObject:location forKey:@"location"];
         }
