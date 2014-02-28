@@ -233,6 +233,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.alertView show];
 }
 
+#pragma mark -
+#pragma mark Override methods
+
 - (void)disableSurveys
 {
     [self.visit disableSurveys];
@@ -257,6 +260,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         LIOLog(@"No visit yet to disable");
 
     [self.visit undisableControlButton];
+}
+
+- (NSDictionary *)currentBrandingDictionary
+{
+    return [LIOBrandingManager brandingManager].lastKnownBrandingDictionary;
+}
+
+- (void)overideBrandingDictionary:(NSDictionary *)dictionary
+{
+    [LIOBrandingManager brandingManager].lastKnownBrandingDictionary = dictionary;
+    [self.controlButton updateButtonBranding];
 }
 
 #pragma mark -
@@ -781,6 +795,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case 2:
             return YES;
+            break;
             
         default:
             break;
