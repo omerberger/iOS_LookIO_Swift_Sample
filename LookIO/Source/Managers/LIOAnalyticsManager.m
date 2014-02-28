@@ -290,12 +290,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:newLocation, LIOAnalyticsManagerLocationObjectKey, nil];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:LIOAnalyticsManagerLocationWasDeterminedNotification
-                                                        object:self
-                                                      userInfo:userInfo];
-    
+    self.lastKnownLocation = newLocation;
     [locationManager stopUpdatingLocation];
 }
 
