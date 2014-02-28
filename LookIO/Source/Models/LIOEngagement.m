@@ -591,12 +591,6 @@
 
         // Check if this is an offline survey
         if ([aPacket objectForKey:@"offline"]) {
-            // By default, we're not calling the custom chat not answered method.
-            // If the developer has implemented both relevant methods, and shouldUseCustomactionForNotChatAnswered returns YES,
-            // we do want to use this method
-            
-            // TODO: Handle shouldUseCustomactionForNotChatAnswered
-            
             NSDictionary *offlineSurveyDict = [aPacket objectForKey:@"offline"];
             if (offlineSurveyDict && [offlineSurveyDict isKindOfClass:[NSDictionary class]])
             {

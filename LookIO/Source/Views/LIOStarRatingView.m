@@ -178,6 +178,7 @@
                 
             case 0:
                 ratingText = @"";
+                break;
                 
             default:
                 break;

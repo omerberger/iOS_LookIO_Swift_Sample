@@ -324,14 +324,6 @@
         if ([extrasDict count])
         {
             [statusDictionary setObject:extrasDict forKey:@"extras"];
-            
-            NSString *emailAddress = [extrasDict objectForKey:@"email_address"];
-            if ([emailAddress length])
-            {
-                // TODO What is this pendingEmailAddress?
-//                [pendingEmailAddress release];
-//                pendingEmailAddress = [emailAddress retain];
-            }
         }
     }
 
@@ -903,7 +895,6 @@
 
 - (void)refreshControlButtonVisibility
 {
-    // TODO: Trump card #-1: If the session is ending, button is hidden.
     if (self.visitState == LIOVisitStateEnding)
     {
         self.controlButtonHidden = YES;
@@ -974,8 +965,6 @@
         aReason = @"no visibility setting";
     }
     
-    // TODO: Trump card #2: If chat is up, button is always hidden.
-
     if (willHide)
     {
         LIOLog(@"<<CONTROL>> Hiding. Reason: %@", aReason);

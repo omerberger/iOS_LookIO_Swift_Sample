@@ -162,7 +162,6 @@
         self.textView.contentInset = UIEdgeInsetsMake(2, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];
         
-        // TODO: Consider the language of the send here
         self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - inputBarHeight - 12, (self.frame.size.height - 30)/2, inputBarHeight + 10.0, 30)];
         [self.sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
         [self.sendButton.titleLabel setFont:[[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSendBarSendButton]];
