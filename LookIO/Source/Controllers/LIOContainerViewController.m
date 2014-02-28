@@ -500,7 +500,15 @@
 
 - (void)surveyViewController:(LPSurveyViewController *)surveyViewController didCompleteSurvey:(LIOSurvey *)survey
 {
-    [self.engagement submitSurvey:survey retries:0];
+    if (LIOSurveyTypePrechat == survey.surveyType)
+    {
+        [self.engagement submitSurvey:survey retries:0];
+    }
+    else
+    {
+        if ([survey anyQuestionsAnswered])
+            [self.engagement submitSurvey:survey retries:0];
+    }
 
     // For offline survey or post chat survey, dismiss chat
     switch (survey.surveyType) {
