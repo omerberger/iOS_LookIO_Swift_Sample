@@ -451,9 +451,21 @@
         [self.moveAnimatedLongTextTimer stopTimer];
         self.moveAnimatedLongTextTimer = nil;
     }
+    if (self.animatedEllipsisTimer)
+    {
+        [self.animatedEllipsisTimer stopTimer];
+        self.animatedEllipsisTimer = nil;
+    }
     [self dismissActiveNotification];
     [self revealDefaultNotification];
 }
+
+- (void)removeTimersAndNotifications
+{
+    [self hideCurrentNotification];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 
 - (void)dismissActiveNotification
 {

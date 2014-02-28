@@ -922,6 +922,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.nextDismissalCompletionBlock();
         self.nextDismissalCompletionBlock = nil;
     }
+    
+    // If the engagement is over/cancelled, let's get rid of the container view controller to save memory
+    if (LIOVisitStateVisitInProgress == self.visit.visitState)
+    {
+        [self.containerViewController removeTimers];
+        self.containerViewController = nil;
+    }
 }
 
 - (void)takeScreenshotAndSetBlurImageView {

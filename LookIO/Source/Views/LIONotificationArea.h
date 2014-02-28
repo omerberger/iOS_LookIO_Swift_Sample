@@ -33,5 +33,6 @@
 
 - (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent;
 - (void)hideCurrentNotification;
+- (void)removeTimersAndNotifications;
 
 @end

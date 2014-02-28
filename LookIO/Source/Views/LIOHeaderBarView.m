@@ -100,6 +100,12 @@
     [self.notificationArea hideCurrentNotification];
 }
 
+- (void)removeTimersAndNotifications
+{
+    [self.notificationArea removeTimersAndNotifications];
+}
+
+
 #pragma mark -
 #pragma mark NotificationAreaDelegate Methods
 

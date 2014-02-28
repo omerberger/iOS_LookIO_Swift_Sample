@@ -70,4 +70,6 @@ typedef enum {
 
 - (void)dismissExistingAlertView;
 
+- (void)removeTimers;
+
 @end

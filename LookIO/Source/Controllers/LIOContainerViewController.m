@@ -582,6 +582,21 @@
     }
 }
 
+- (void)removeTimers
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
+    if (padUI)
+    {
+        [self.chatViewController hideToasterView];
+    }
+    else
+    {
+        [self.headerBarView removeTimersAndNotifications];
+    }
+
+}
+
 #pragma mark -
 #pragma mark Container View Controller Methods
 
