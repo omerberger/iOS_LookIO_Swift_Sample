@@ -311,6 +311,11 @@
             [detectedDict setObject:location forKey:@"location"];
         }
         
+        if (UIAccessibilityIsVoiceOverRunning())
+        {
+            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"voiceover_enabled"];
+        }
+        
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
         if ([self.visitUDEs count])
             [extrasDict setDictionary:self.visitUDEs];
