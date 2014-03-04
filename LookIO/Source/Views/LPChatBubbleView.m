@@ -177,6 +177,7 @@
         [newLinkButton setBackgroundColor:[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:linkBrandingElement]];
         [newLinkButton setTitleColor:[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:linkBrandingElement] forState:UIControlStateNormal];
         newLinkButton.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:linkBrandingElement] CGColor];
+        newLinkButton.titleLabel.font = [[LIOBrandingManager brandingManager] fontForElement:linkBrandingElement];
 
         LPChatBubbleLink *curLink = [chatMessage.links objectAtIndex:i];
         [newLinkButton setTitle:curLink.string forState:UIControlStateNormal];
@@ -211,7 +212,7 @@
         if ([followingText length])
         {
             UILabel *newMessageView = [[UILabel alloc] initWithFrame:self.bounds];
-            newMessageView.font = [UIFont systemFontOfSize:15.0];
+            newMessageView.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
             newMessageView.backgroundColor = [UIColor clearColor];
             newMessageView.numberOfLines = 0;
             newMessageView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];

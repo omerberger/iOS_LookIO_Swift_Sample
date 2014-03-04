@@ -80,6 +80,9 @@
             brandingElement = LIOBrandingElementAgentChatBubble;
             break;
             
+        case LIOChatMessageKindSystemMessage:
+            brandingElement = LIOBrandingElementSystemMessageChatBubble;
+            
         default:
             break;
     }
@@ -127,6 +130,10 @@
             self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
             break;
             
+        case LIOChatMessageKindSystemMessage:
+            brandingElement = LIOBrandingElementSystemMessageChatBubble;
+            break;
+            
         default:
             break;
     }
@@ -139,6 +146,18 @@
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
     CGFloat maxWidth = self.bounds.size.width * bubbleWidthFactor - 20;
     
+    if (brandingElement == LIOBrandingElementSystemMessageChatBubble)
+    {
+        NSString *bubbleAlignment = [[LIOBrandingManager brandingManager] stringValueForField:@"bubble_alignment" forElement:LIOBrandingElementSystemMessageChatBubble];
+        self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+        if ([bubbleAlignment isEqualToString:@"right"])
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        if ([bubbleAlignment isEqualToString:@"left"])
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+        if ([bubbleAlignment isEqualToString:@"center"])
+            self.chatBubbleView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
+    }
+    
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
         text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
@@ -149,7 +168,18 @@
         CGSize expectedTextSize = CGSizeMake(maxWidth, expectedHeight);
         
         CGRect aFrame = self.chatBubbleView.frame;
-        aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
+        if (chatMessage.kind == LIOChatMessageKindSystemMessage)
+        {
+            NSString *bubbleAlignment = [[LIOBrandingManager brandingManager] stringValueForField:@"bubble_alignment" forElement:LIOBrandingElementSystemMessageChatBubble];
+            if ([bubbleAlignment isEqualToString:@"right"])
+                aFrame.origin.x = self.contentView.bounds.size.width - expectedTextSize.width - 30;
+            if ([bubbleAlignment isEqualToString:@"left"])
+                aFrame.origin.x = 8;
+            if ([bubbleAlignment isEqualToString:@"center"])
+                aFrame.origin.x = (self.contentView.bounds.size.width - expectedTextSize.width - 20)/2;
+        }
+        else
+            aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
         aFrame.origin.y = 10;
         aFrame.size.width = expectedTextSize.width + 20;
         aFrame.size.height = expectedTextSize.height + 16;
@@ -167,7 +197,18 @@
         CGSize expectedTextSize = [LIOChatTableViewCell expectedSizeForText:text withFont:boldNameFont forWidth:maxWidth];
         
         CGRect aFrame = self.chatBubbleView.frame;
-        aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
+        if (chatMessage.kind == LIOChatMessageKindSystemMessage)
+        {
+            NSString *bubbleAlignment = [[LIOBrandingManager brandingManager] stringValueForField:@"bubble_alignment" forElement:LIOBrandingElementSystemMessageChatBubble];
+            if ([bubbleAlignment isEqualToString:@"right"])
+                aFrame.origin.x = self.contentView.bounds.size.width - expectedTextSize.width - 30;
+            if ([bubbleAlignment isEqualToString:@"left"])
+                aFrame.origin.x = 8;
+            if ([bubbleAlignment isEqualToString:@"center"])
+                aFrame.origin.x = (self.contentView.bounds.size.width - expectedTextSize.width - 20)/2;
+        }
+        else
+            aFrame.origin.x = chatMessage.kind == LIOChatMessageKindRemote ? 8 : self.contentView.bounds.size.width - expectedTextSize.width - 30;
         aFrame.origin.y = 10;
         aFrame.size.width = expectedTextSize.width + 20;
         aFrame.size.height = expectedTextSize.height + 16;

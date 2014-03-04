@@ -103,7 +103,7 @@
     {
         LIOChatMessage *firstMessage = [[LIOChatMessage alloc] init];
         firstMessage.status = LIOChatMessageStatusCreatedLocally;
-        firstMessage.kind = LIOChatMessageKindRemote;
+        firstMessage.kind = LIOChatMessageKindSystemMessage;
         firstMessage.date = [NSDate date];
         firstMessage.lineId = nil;
         firstMessage.text = [self.visit welcomeText];
