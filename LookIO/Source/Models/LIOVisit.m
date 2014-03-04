@@ -726,7 +726,7 @@
             
             if (![self chatInProgress])
             {
-                [self.delegate visit:self wantsToShowMessage:@"Tap to chat"];
+                [self.delegate visit:self wantsToShowMessage:LIOLocalizedString(@"LIOControlButtonView.ChatInvitePopupMessage")];
             }
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
             LIOLog(@"<LAUNCH> Request failed with response code %d and error: %d", operation.responseCode);
@@ -847,7 +847,7 @@
             
             if (![self chatInProgress])
             {
-                [self.delegate visit:self wantsToShowMessage:@"Tap to chat"];
+                [self.delegate visit:self wantsToShowMessage:LIOLocalizedString(@"LIOControlButtonView.ChatInvitePopupMessage")];
             }
             
         } failure:^(LPHTTPRequestOperation *operation, NSError *error) {

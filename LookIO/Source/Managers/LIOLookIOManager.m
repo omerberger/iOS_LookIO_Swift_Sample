@@ -893,7 +893,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             else
             {
                 [self.controlButton setSurveyMode];
-                [self.controlButton presentMessage:@"Tap to complete survey"];
+                [self.controlButton presentMessage:LIOLocalizedString(@"LIOControlButtonView.CompleteSurveyPopupMessage")];
             }
             break;
 

@@ -37,6 +37,8 @@
 
 "LIOControlButtonView.DefaultText" = "Live Help";
 "LIOControlButtonView.ReconnectingText" = "Reconnecting";
+"LIOControlButtonView.ChatInvitePopupMessage" = "Tap to chat";
+"LIOControlButtonView.CompleteSurveyPopupMessage" = "Tap to complete survey";
 
 "LIODismissalBarView.DismissalLabel" = "Hide Chat";
 
