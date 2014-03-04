@@ -262,14 +262,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.visit undisableControlButton];
 }
 
-- (NSDictionary *)currentBrandingDictionary
+- (NSMutableDictionary *)currentBrandingDictionary
 {
-    return [LIOBrandingManager brandingManager].lastKnownBrandingDictionary;
+    NSData *buffer = [NSKeyedArchiver archivedDataWithRootObject:[LIOBrandingManager brandingManager].lastKnownBrandingDictionary];
+    return (NSMutableDictionary *)[NSKeyedUnarchiver unarchiveObjectWithData: buffer];
 }
 
-- (void)overideBrandingDictionary:(NSDictionary *)dictionary
+- (void)overrideBrandingDictionary:(NSDictionary *)dictionary
 {
-    [LIOBrandingManager brandingManager].lastKnownBrandingDictionary = dictionary;
+    [LIOBrandingManager brandingManager].overrideBrandingDictionary = dictionary;
+    [self.controlButton updateBaseValues];
+    [self.controlButton updateButtonBranding];
+}
+
+- (void)removeBrandingOverride
+{
+    [LIOBrandingManager brandingManager].overrideBrandingDictionary = nil;
+    [self.controlButton updateBaseValues];
     [self.controlButton updateButtonBranding];
 }
 

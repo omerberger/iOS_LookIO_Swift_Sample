@@ -18,6 +18,7 @@ typedef enum
     LIOBrandingElementLoadingScreen,
     LIOBrandingElementLoadingScreenTitle,
     LIOBrandingElementLoadingScreenSubtitle,
+    LIOBrandingElementLoadingScreenImage,
     LIOBrandingElementChatBackground,
     LIOBrandingElementChatBackgroundBlur,
     LIOBrandingElementFont,
@@ -33,6 +34,8 @@ typedef enum
     LIOBrandingElementAgentChatBubbleLink,
     LIOBrandingElementVisitorChatBubble,
     LIOBrandingElementVisitorChatBubbleLink,
+    LIOBrandingElementSystemMessageChatBubble,
+    LIOBrandingElementSystemMessageChatBubbleLink,
     LIOBrandingElementSendBar,
     LIOBrandingElementSendBarTextField,
     LIOBrandingElementSendBarPlusButton,
@@ -90,6 +93,7 @@ typedef enum
 @interface LIOBrandingManager : NSObject
 
 @property (nonatomic, strong) NSDictionary *lastKnownBrandingDictionary;
+@property (nonatomic, strong) NSDictionary *overrideBrandingDictionary;
 
 + (LIOBrandingManager *)brandingManager;
 - (void)preloadCustomBrandingImages;
@@ -109,6 +113,7 @@ typedef enum
 - (CGFloat)verticalPositionForElement:(LIOBrandingElement)element;
 - (CGFloat)floatValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (NSInteger)integerValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
+- (NSString *)stringValueForField:(NSString *)field forElement:(LIOBrandingElement)element;
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element;
 - (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;

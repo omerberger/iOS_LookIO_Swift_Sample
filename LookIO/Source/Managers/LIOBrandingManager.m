@@ -53,6 +53,7 @@ static LIOBrandingManager *brandingManager = nil;
 - (void)loadDefaults
 {
     self.originalBrandingDictionary = [[LIOBundleManager sharedBundleManager] brandingDictionary];
+    self.overrideBrandingDictionary = nil;
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([userDefaults objectForKey:LIOBrandingManagerBrandingDictKey])
@@ -91,15 +92,22 @@ static LIOBrandingManager *brandingManager = nil;
 - (NSDictionary *)brandingDictionaryForElement:(LIOBrandingElement)element
 {
     NSDictionary *dictionary = nil;
-    
     NSDictionary *brandingDictionary = nil;
-    if (self.lastKnownBrandingDictionary)
+    
+    if (self.overrideBrandingDictionary)
     {
-        brandingDictionary = self.lastKnownBrandingDictionary;
+        brandingDictionary = self.overrideBrandingDictionary;
     }
     else
     {
-        brandingDictionary = self.originalBrandingDictionary;
+        if (self.lastKnownBrandingDictionary)
+        {
+            brandingDictionary = self.lastKnownBrandingDictionary;
+        }
+        else
+        {
+            brandingDictionary = self.originalBrandingDictionary;
+        }
     }
     @try
     {
@@ -253,6 +261,19 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementLoadingScreenImage == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *loadingDictionary = [engagementDictionary objectForKey:@"loading_screen"];
+                if (loadingDictionary)
+                {
+                    NSDictionary *imageDictionary = [loadingDictionary objectForKey:@"image"];
+                    if (imageDictionary)
+                        dictionary = imageDictionary;
+                }
+            }
+        }
         
         if (LIOBrandingElementAgentChatBubble == element)
         {
@@ -314,6 +335,32 @@ static LIOBrandingManager *brandingManager = nil;
                         if (linksDictionary)
                             dictionary = linksDictionary;
                     }
+                }
+            }
+        }
+        
+        if (LIOBrandingElementSystemMessageChatBubble == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *systemMessageDictionary = [engagementDictionary objectForKey:@"system_message"];
+                if (systemMessageDictionary)
+                {
+                    dictionary = systemMessageDictionary;
+                }
+            }
+        }
+        
+        if (LIOBrandingElementSystemMessageChatBubbleLink == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *systemMessageDictionary = [engagementDictionary objectForKey:@"system_message"];
+                if (systemMessageDictionary)
+                {
+                    NSDictionary *linksDictionary = [systemMessageDictionary objectForKey:@"links"];
+                    if (linksDictionary)
+                        dictionary = linksDictionary;
                 }
             }
         }
@@ -511,7 +558,7 @@ static LIOBrandingManager *brandingManager = nil;
                 NSDictionary *surveyPageDictionary = [surveyDictionary objectForKey:@"survey_card"];
                 if (surveyPageDictionary)
                 {
-                    NSDictionary *cancelButtonDictionary = [surveyPageDictionary objectForKey:@"cancel"];
+                    NSDictionary *cancelButtonDictionary = [surveyPageDictionary objectForKey:@"cancel_button"];
                     if (cancelButtonDictionary)
                         dictionary = cancelButtonDictionary;
                 }
@@ -1086,6 +1133,19 @@ static LIOBrandingManager *brandingManager = nil;
     return value;
 }
 
+- (NSString *)stringValueForField:(NSString *)field forElement:(LIOBrandingElement)element
+{
+    NSString *stringToReturn = @"";
+
+    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+    if (elementDictionary)
+    {
+        stringToReturn = [elementDictionary objectForKey:field];
+    }
+    
+    return stringToReturn;
+}
+
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element
 {
     UIKeyboardAppearance appearance = UIKeyboardAppearanceLight;
@@ -1163,10 +1223,12 @@ static LIOBrandingManager *brandingManager = nil;
     NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     if (elementDictionary)
     {
-        NSString *imageString = [elementDictionary objectForKey:@"image"];
-        if (imageString && [imageString length])
+        NSDictionary *imageDictionary = [elementDictionary objectForKey:@"image"];
+        if (imageDictionary)
         {
-            url = [NSURL URLWithString:imageString];
+            NSString *urlString = [imageDictionary objectForKey:@"url"];
+            if (urlString)
+                url = [NSURL URLWithString:urlString];
         }
     }
     
