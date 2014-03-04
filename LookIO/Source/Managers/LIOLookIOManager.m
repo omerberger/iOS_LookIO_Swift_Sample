@@ -952,6 +952,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [self.containerViewController removeTimers];
         self.containerViewController = nil;
+        self.lookioWindow.rootViewController = nil;
     }
 }
 
