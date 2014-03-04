@@ -173,7 +173,7 @@
 
 - (void)cancelReconnect
 {
-    if (LIOSSEChannelStateReconnectRetryAfter == self.sseChannelState)
+    if (LIOSSEChannelStateReconnectRetryAfter == self.sseChannelState || LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
     {
         if (self.reconnectTimer)
         {
