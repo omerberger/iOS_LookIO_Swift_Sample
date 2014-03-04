@@ -289,14 +289,21 @@
     [self.tableView reloadData];
     [self scrollToBottomDelayed:YES];
     
-    // Accessibility - Read the message and play a sound if it exists
+    // Accessibility - Play a sound if exists, and always read the text
     if (UIAccessibilityIsVoiceOverRunning())
     {
         NSString *path = [[NSBundle mainBundle] pathForResource:@"LIOAccessibilitySoundMessageSent" ofType:@"aiff"];
         if (path)
         {
             LIOSoundEffect *soundEffect = [[LIOSoundEffect alloc] initWithSoundNamed:@"LIOAccessibilitySoundMessageSent.aiff"];
+            soundEffect.completionBlock = ^{
+                UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, text);
+            };
             [soundEffect play];
+        }
+        else
+        {
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, text);
         }
     }
 }

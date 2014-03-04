@@ -158,6 +158,7 @@
         self.textView.backgroundColor = [UIColor clearColor];
         self.textView.returnKeyType = UIReturnKeySend;
         self.textView.delegate = self;
+        self.textView.accessibilityLabel = LIOLocalizedString(@"LIOInputBarView.TextFieldAccessibilityLabel");
         self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.textView.contentInset = UIEdgeInsetsMake(2, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];

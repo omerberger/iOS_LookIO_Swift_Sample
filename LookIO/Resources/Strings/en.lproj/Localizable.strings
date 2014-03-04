@@ -55,6 +55,7 @@
 
 "LIOInputBarView.SendButton" = "Send";
 "LIOInputBarView.Placeholder" = "Send a message.";
+"LIOInputBarView.TextFieldAccessibilityLabel" = "Chat Entry";
 
 "LIOInterstitialViewController.LoadingLabel" = "We're loading the chat.\nGive us just a few. :)";
 "LIOInterstitialViewController.DismissButton" = "Let's just hide this for now";
