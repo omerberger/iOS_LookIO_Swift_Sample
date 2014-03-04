@@ -101,7 +101,7 @@
 {
     self.bezelView.hidden = NO;
     
-    BOOL spinImage = [[LIOBrandingManager brandingManager] booleanValueForField:@"spin_image" element:LIOBrandingElementLoadingScreen];
+    BOOL spinImage = [[LIOBrandingManager brandingManager] booleanValueForField:@"spin" element:LIOBrandingElementLoadingScreenImage];
     if (spinImage)
     {
         CABasicAnimation *loadingAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
