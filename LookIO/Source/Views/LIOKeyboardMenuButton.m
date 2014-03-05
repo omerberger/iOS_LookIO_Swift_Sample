@@ -42,11 +42,14 @@
     aFrame.origin.y = 0.22 * self.bounds.size.height;
     self.imageView.frame = aFrame;
     
+    CGSize expectedSize = [self.bottomLabel.text sizeWithFont:self.bottomLabel.font constrainedToSize:CGSizeMake(self.bounds.size.width - 6.0, 40.0) lineBreakMode:UILineBreakModeWordWrap];
+    
+    self.bottomLabel.numberOfLines = 0;
     aFrame = self.bottomLabel.frame;
-    aFrame.origin.x = 0;
-    aFrame.origin.y = 0.65 * self.bounds.size.height;
-    aFrame.size.width = self.bounds.size.width;
-    aFrame.size.height = 18.0;
+    aFrame.origin.x = 3.0;
+    aFrame.origin.y = 0.64 * self.bounds.size.height;
+    aFrame.size.width = self.bounds.size.width - 6.0;
+    aFrame.size.height = expectedSize.height;
     self.bottomLabel.frame = aFrame;
 }
 
