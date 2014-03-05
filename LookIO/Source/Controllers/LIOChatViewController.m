@@ -1472,6 +1472,7 @@
 
 - (void)hideToasterView
 {
+    self.toasterView.delegate = nil;
     [self.toasterView hideAnimated:YES];
 }
 

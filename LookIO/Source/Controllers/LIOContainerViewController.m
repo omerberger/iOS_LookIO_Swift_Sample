@@ -592,6 +592,7 @@
     }
     else
     {
+        self.headerBarView.delegate = nil;
         [self.headerBarView removeTimersAndNotifications];
     }
 

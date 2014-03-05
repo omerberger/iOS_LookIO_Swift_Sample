@@ -15,6 +15,7 @@
 // Managers
 #import "LIOBundleManager.h"
 #import "LIOBrandingManager.h"
+#import "LIOStatusManager.h"
 
 @interface LIOBlurImageView ()
 
@@ -31,13 +32,13 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        self.tintLayer = [[CALayer alloc] init];
-        self.tintLayer.frame = self.bounds;
-        self.tintLayer.opacity = 0.4;
         
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementChatBackground];
         CGFloat backgroundColorAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementChatBackground];
         
+        self.tintLayer = [[CALayer alloc] init];
+        self.tintLayer.frame = self.bounds;
+        self.tintLayer.opacity = backgroundColorAlpha;
         self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];
         
         [self.layer addSublayer:self.tintLayer];
@@ -52,12 +53,24 @@
     CGFloat blurRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"radius" forElement:LIOBrandingElementChatBackgroundBlur];
     NSInteger blurIterations = [[LIOBrandingManager brandingManager] integerValueForField:@"iterations" forElement:LIOBrandingElementChatBackgroundBlur];
     CGFloat saturationFactor = [[LIOBrandingManager brandingManager] floatValueForField:@"saturation_factor" forElement:LIOBrandingElementChatBackgroundBlur];
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    BOOL isiPad3 = NO;
+
+    if (padUI && [[LIOStatusManager deviceType] hasPrefix:@"iPad3,"])
+        isiPad3 = YES;    
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0")) {
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0") && !isiPad3) {
         UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
         self.image = [self blurImage:imageToBlur withRadius:blurRadius iterations:blurIterations tintColor:tintColor saturationDeltaFactor:saturationFactor];
     } else {
-        self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementChatBackground];
+        CGFloat backgroundColorAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementChatBackground];
+        if (backgroundColorAlpha < 0.8)
+            backgroundColorAlpha = 0.8;
+
+        self.tintLayer.opacity = 0.8;
+        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];
     }
 }
 
