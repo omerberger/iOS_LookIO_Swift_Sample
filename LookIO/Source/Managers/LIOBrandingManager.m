@@ -391,6 +391,24 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementSendBarTextFieldPlaceholder == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *sendBarDictionary = [engagementDictionary objectForKey:@"send_bar"];
+                if (sendBarDictionary)
+                {
+                    NSDictionary *textFieldDictionary = [sendBarDictionary objectForKey:@"text_field"];
+                    if (textFieldDictionary)
+                    {
+                        NSDictionary *placeholderDictionary = [textFieldDictionary objectForKey:@"placeholder"];
+                        if (placeholderDictionary)
+                            dictionary = placeholderDictionary;
+                    }
+                }
+            }
+        }
+        
         if (LIOBrandingElementSendBarSendButton == element)
         {
             if (engagementDictionary)

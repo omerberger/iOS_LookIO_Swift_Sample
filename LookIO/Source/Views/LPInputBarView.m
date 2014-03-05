@@ -60,6 +60,7 @@
 @property (nonatomic, assign) BOOL hasCustomBranding;
 
 @property (nonatomic, strong) UILabel *characterCountLabel;
+@property (nonatomic, strong) UILabel *placeholderLabel;
 
 @end
 
@@ -160,8 +161,23 @@
         self.textView.delegate = self;
         self.textView.accessibilityLabel = LIOLocalizedString(@"LIOInputBarView.TextFieldAccessibilityLabel");
         self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.textView.contentInset = UIEdgeInsetsMake(2, 0, 0, 0);
+        self.textView.contentInset = UIEdgeInsetsMake(padUI ? 6.0 : 2.0, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];
+        
+        CGFloat xPlaceholderMargin = 7.0;
+        if (LIOIsUIKitFlatMode())
+            xPlaceholderMargin = 5.0;
+        
+        self.placeholderLabel = [[UILabel alloc] initWithFrame:CGRectMake(xPlaceholderMargin, 10, self.textViewBackgroundView.bounds.size.width - xPlaceholderMargin*2, self.textViewBackgroundView.bounds.size.height - 20.0)];
+        self.placeholderLabel.isAccessibilityElement = NO;
+        self.placeholderLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.placeholderLabel.text = LIOLocalizedString(@"LIOInputBarView.Placeholder");
+        self.placeholderLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarTextFieldPlaceholder];
+        self.placeholderLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarTextFieldPlaceholder];
+        self.placeholderLabel.numberOfLines = 1;
+        self.placeholderLabel.hidden = NO;
+        self.placeholderLabel.backgroundColor = [UIColor clearColor];
+        [self.textViewBackgroundView addSubview:self.placeholderLabel];
         
         self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(self.bounds.size.width - inputBarHeight - 12, (self.frame.size.height - 30)/2, inputBarHeight + 10.0, 30)];
         [self.sendButton setTitle:LIOLocalizedString(@"LIOInputBarView.SendButton") forState:UIControlStateNormal];
@@ -206,12 +222,21 @@
     frame.size.height = expectedSize.height + (padUI ? 30.0 : 20.0);
     self.textViewBackgroundView.frame = frame;
     
+    frame = self.placeholderLabel.frame;
+    frame.size.height = self.textViewBackgroundView.bounds.size.height - 20.0;
+    self.placeholderLabel.frame = frame;
+    
     NSInteger numberOfLines = expectedSize.height / singleLineSize.height;
     NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
     
     self.characterCountLabel.frame = CGRectMake(self.sendButton.frame.origin.x, self.sendButton.frame.origin.y + self.sendButton.frame.size.height, self.sendButton.frame.size.width, 20);
     self.characterCountLabel.hidden = (numberOfLines < 3);
     self.characterCountLabel.text = [NSString stringWithFormat:@"(%ld/%ld)", (long)self.textView.text.length, (long)maxCharacters];
+    
+    if (self.textView.text.length == 0)
+        self.placeholderLabel.hidden = NO;
+    else
+        self.placeholderLabel.hidden = YES;
 }
 
 -(void)drawRect:(CGRect)rect {

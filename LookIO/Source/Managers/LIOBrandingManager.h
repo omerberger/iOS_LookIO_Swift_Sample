@@ -38,6 +38,7 @@ typedef enum
     LIOBrandingElementSystemMessageChatBubbleLink,
     LIOBrandingElementSendBar,
     LIOBrandingElementSendBarTextField,
+    LIOBrandingElementSendBarTextFieldPlaceholder,
     LIOBrandingElementSendBarPlusButton,
     LIOBrandingElementSendBarSendButton,
     LIOBrandingElementSendBarCharacterCount,
