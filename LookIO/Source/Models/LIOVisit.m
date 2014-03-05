@@ -42,6 +42,8 @@
 @property (nonatomic, copy) NSString *requiredSkill;
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
+@property (nonatomic, strong) NSMutableDictionary *lastReportedSettingsDictionary;
+
 @property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
 @property (nonatomic, strong) NSMutableArray *funnelRequestQueue;
@@ -267,53 +269,148 @@
         [statusDictionary setObject:LIOLookIOManagerVersion forKey:@"version"];
         
         // Detect some stuff about the client.
+        if (self.lastReportedSettingsDictionary == nil)
+            self.lastReportedSettingsDictionary = [NSMutableDictionary dictionary];
+        
         NSMutableDictionary *detectedDict = [NSMutableDictionary dictionary];
         
         NSString *carrierName = [[LIOAnalyticsManager sharedAnalyticsManager] cellularCarrierName];
         if ([carrierName length])
-            [detectedDict setObject:carrierName forKey:@"carrier_name"];
+        {
+            // Let's check if this has already been reported
+            NSString *reportedCarrierName = [self.lastReportedSettingsDictionary objectForKey:@"carrier_name"];
+            if (![reportedCarrierName isEqualToString:carrierName])
+            {
+                [detectedDict setObject:carrierName forKey:@"carrier_name"];
+                [self.lastReportedSettingsDictionary setObject:carrierName forKey:@"carrier_name"];
+            }
+        }
         
         NSString *bundleVersion = [[LIOAnalyticsManager sharedAnalyticsManager] hostAppBundleVersion];
         if ([bundleVersion length])
-            [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
+        {
+            NSString *reportedBundleVersion = [self.lastReportedSettingsDictionary objectForKey:@"app_bundle_version"];
+            if (![reportedBundleVersion isEqualToString:reportedBundleVersion])
+            {
+                [detectedDict setObject:bundleVersion forKey:@"app_bundle_version"];
+                [self.lastReportedSettingsDictionary setObject:bundleVersion forKey:@"app_bundle_version"];
+            }
+        }
         
-        if ([[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled])
-            [detectedDict setObject:@"enabled" forKey:@"location_services"];
-        else
-            [detectedDict setObject:@"disabled" forKey:@"location_services"];
-        
-        if ([[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse])
-            [detectedDict setObject:@"cellular" forKey:@"connection_type"];
-        else
-            [detectedDict setObject:@"wifi" forKey:@"connection_type"];
+        NSString *locationServicesEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] locationServicesEnabled] ? @"enabled" : @"disabled";
+        NSString *reportedLocationServicesEnabled = [self.lastReportedSettingsDictionary objectForKey:@"location_services"];
+        if (![reportedLocationServicesEnabled isEqualToString:locationServicesEnabled])
+        {
+            [detectedDict setObject:locationServicesEnabled forKey:@"location_services"];
+            [self.lastReportedSettingsDictionary setObject:locationServicesEnabled forKey:@"location_services"];
+        }
+
+        NSString *connectionType = [[LIOAnalyticsManager sharedAnalyticsManager] cellularNetworkInUse] ? @"cellular" : @"wifi";
+        NSString *reportedConnectionType = [self.lastReportedSettingsDictionary objectForKey:@"connection_type"];
+        if (![reportedConnectionType isEqualToString:connectionType])
+        {
+            [detectedDict setObject:connectionType forKey:@"connection_type"];
+            [self.lastReportedSettingsDictionary setObject:connectionType forKey:@"connection_type"];
+        }
         
         NSArray *twitterHandles = [[LIOAnalyticsManager sharedAnalyticsManager] twitterHandles];
         if ([twitterHandles count])
-            [detectedDict setObject:twitterHandles forKey:@"twitter"];
+        {
+            NSArray *reportedTwitterHandles = [self.lastReportedSettingsDictionary objectForKey:@"twitter"];
+            if (reportedTwitterHandles == nil)
+            {
+                [detectedDict setObject:twitterHandles forKey:@"twitter"];
+                [self.lastReportedSettingsDictionary setObject:twitterHandles forKey:@"twitter"];
+            }
+            else
+            {
+                // Let's see if we have any new ones
+                NSSet *currentSet = [NSSet setWithArray:twitterHandles];
+                NSSet *reportedSet = [NSSet setWithArray:reportedTwitterHandles];
+                if (![currentSet isEqualToSet:reportedSet])
+                {
+                    [detectedDict setObject:twitterHandles forKey:@"twitter"];
+                    [self.lastReportedSettingsDictionary setObject:twitterHandles forKey:@"twitter"];
+                }
+            }
+        }
         
         NSString *tzOffset = [[LIOAnalyticsManager sharedAnalyticsManager] timezoneOffset];
         if ([tzOffset length])
-            [detectedDict setObject:tzOffset forKey:@"tz_offset"];
+        {
+            NSString *reportedTzOffset = [self.lastReportedSettingsDictionary objectForKey:@"tz_offset"];
+            if (![reportedTzOffset isEqualToString:tzOffset])
+            {
+                [detectedDict setObject:tzOffset forKey:@"tz_offset"];
+                [self.lastReportedSettingsDictionary setObject:tzOffset forKey:@"tz_offset"];
+            }
+        }
         
         BOOL jailbroken = [[LIOAnalyticsManager sharedAnalyticsManager] jailbroken];
-        [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
+        NSNumber *reportedJailbroken = [self.lastReportedSettingsDictionary objectForKey:@"jailbroken"];
+        if (reportedJailbroken == nil || reportedJailbroken.boolValue != jailbroken)
+        {
+            [detectedDict setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
+            [self.lastReportedSettingsDictionary setObject:[NSNumber numberWithBool:jailbroken] forKey:@"jailbroken"];
+        }
         
         BOOL pushEnabled = [[LIOAnalyticsManager sharedAnalyticsManager] pushEnabled];
-        [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
+        NSNumber *reportedPushEnabled = [self.lastReportedSettingsDictionary objectForKey:@"push"];
+        if (reportedPushEnabled == nil || reportedPushEnabled.boolValue != pushEnabled)
+        {
+            [detectedDict setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
+            [self.lastReportedSettingsDictionary setObject:[NSNumber numberWithBool:pushEnabled] forKey:@"push"];
+        }
         
-        [detectedDict setObject:[[LIOAnalyticsManager sharedAnalyticsManager] distributionType] forKey:@"distribution_type"];
+        NSString *distributionType = [[LIOAnalyticsManager sharedAnalyticsManager] distributionType];
+        NSString *reportedDistributionType = [self.lastReportedSettingsDictionary objectForKey:@"distribution_type"];
+        if (![reportedDistributionType isEqualToString:distributionType])
+        {
+            [detectedDict setObject:distributionType forKey:@"distribution_type"];
+            [self.lastReportedSettingsDictionary setObject:distributionType forKey:@"distribution_type"];
+        }
         
         if ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation)
         {
             NSNumber *lat = [NSNumber numberWithDouble:[LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation.coordinate.latitude];
             NSNumber *lon = [NSNumber numberWithDouble:[LIOAnalyticsManager sharedAnalyticsManager].lastKnownLocation.coordinate.longitude];
-            NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:lat, @"latitude", lon, @"longitude", nil];
-            [detectedDict setObject:location forKey:@"location"];
+            NSNumber *lastReportedLatitute = [self.lastReportedSettingsDictionary objectForKey:@"latitude"];
+            NSNumber *lastReportedLongitude = [self.lastReportedSettingsDictionary objectForKey:@"longitude"];
+
+            NSMutableDictionary *location = [NSMutableDictionary dictionary];
+            if (lastReportedLatitute == nil || lastReportedLatitute.floatValue != lat.floatValue)
+            {
+                [location setObject:lat forKey:@"latitude"];
+                [self.lastReportedSettingsDictionary setObject:lat forKey:@"latitude"];
+            }
+            if (lastReportedLongitude == nil || lastReportedLongitude.floatValue != lon.floatValue)
+            {
+                [location setObject:lon forKey:@"longitude"];
+                [self.lastReportedSettingsDictionary setObject:lon forKey:@"longitude"];
+            }
+            
+            if ([location count])
+                [detectedDict setObject:location forKey:@"location"];
         }
         
         if (UIAccessibilityIsVoiceOverRunning())
         {
-            [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"voiceover_enabled"];
+            NSNumber *reportedVoiceoverEnabled = [self.lastReportedSettingsDictionary objectForKey:@"voiceover_enabled"];
+            if (reportedVoiceoverEnabled == nil || reportedVoiceoverEnabled.boolValue != YES)
+            {
+                [detectedDict setObject:[NSNumber numberWithBool:YES] forKey:@"voiceover_enabled"];
+                [self.lastReportedSettingsDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"voiceover_enabled"];
+            }
+        }
+        else
+        {
+            NSNumber *reportedVoiceoverEnabled = [self.lastReportedSettingsDictionary objectForKey:@"voiceover_enabled"];
+            if (reportedVoiceoverEnabled.boolValue == YES)
+            {
+                [detectedDict setObject:[NSNumber numberWithBool:NO] forKey:@"voiceover_enabled"];
+                [self.lastReportedSettingsDictionary setObject:[NSNumber numberWithBool:NO] forKey:@"voiceover_enabled"];
+            }
+            
         }
         
         NSMutableDictionary *extrasDict = [NSMutableDictionary dictionary];
@@ -692,6 +789,7 @@
         self.visitState = LIOVisitStateInitialized;
     
     self.currentVisitId = nil;
+    self.lastReportedSettingsDictionary = nil;
 
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
