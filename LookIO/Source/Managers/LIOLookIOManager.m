@@ -192,6 +192,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)launchNewVisit
 {
+    [self.visit relaunchVisit];
+    return;
+    
     // End existing chats if they exist
     
     if (self.engagement)
@@ -244,6 +247,30 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)undisableSurveys
 {
     [self.visit undisableSurveys];
+}
+
+- (void)useIconButton
+{
+    [self.visit useIconButton];
+    self.controlButton.buttonKind = [self.visit.lastKnownButtonType integerValue];
+    [self.controlButton updateBaseValues];
+    [self.controlButton updateButtonBranding];
+}
+
+- (void)useTextButton
+{
+    [self.visit useTextButton];
+    self.controlButton.buttonKind = [self.visit.lastKnownButtonType integerValue];
+    [self.controlButton updateBaseValues];
+    [self.controlButton updateButtonBranding];
+}
+
+- (void)useDefaultButton
+{
+    [self.visit useDefaultButton];
+    self.controlButton.buttonKind = [self.visit.lastKnownButtonType integerValue];
+    [self.controlButton updateBaseValues];
+    [self.controlButton updateButtonBranding];
 }
 
 - (void)disableControlButton

@@ -64,6 +64,9 @@
 @property (nonatomic, assign) BOOL disableSurveysOverride;
 @property (nonatomic, assign) BOOL previousSurveysEnabledValue;
 
+@property (nonatomic, assign) BOOL overrideButtonType;
+@property (nonatomic, strong) NSNumber *previousButtonType;
+
 @property (nonatomic, assign) BOOL lastKnownHideEmailChat;
 
 @property (nonatomic, strong) NSMutableArray *queuedLaunchReportDates;
@@ -105,6 +108,9 @@
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
         self.dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+        
+        self.overrideButtonType = NO;
+        self.disableSurveysOverride = NO;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -196,6 +202,35 @@
 - (void)undisableSurveys {
     self.disableSurveysOverride = NO;
     self.lastKnownSurveysEnabled = self.previousSurveysEnabledValue;
+}
+
+- (void)useIconButton
+{
+    if (!self.overrideButtonType)
+    {
+        self.overrideButtonType = YES;
+        self.previousButtonType = self.lastKnownButtonType;
+    }
+    
+    self.lastKnownButtonType = [NSNumber numberWithInteger:1];
+}
+
+- (void)useTextButton
+{
+    if (!self.overrideButtonType)
+    {
+        self.overrideButtonType = YES;
+        self.previousButtonType = self.lastKnownButtonType;
+    }
+
+    self.lastKnownButtonType = [NSNumber numberWithInteger:0];
+}
+
+- (void)useDefaultButton
+{
+    self.overrideButtonType = NO;
+    self.lastKnownButtonType = self.previousButtonType;
+    self.previousButtonType = nil;
 }
 
 #pragma mark -

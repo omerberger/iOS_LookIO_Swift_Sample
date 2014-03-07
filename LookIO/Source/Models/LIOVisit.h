@@ -77,6 +77,9 @@ typedef enum
 - (void)undisableControlButton;
 - (void)disableSurveys;
 - (void)undisableSurveys;
+- (void)useIconButton;
+- (void)useTextButton;
+- (void)useDefaultButton;
 
 - (void)refreshControlButtonVisibility;
 
