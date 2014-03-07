@@ -584,6 +584,8 @@
 
 - (void)removeTimers
 {
+    [self stopAccessibilityTypingSoundEffect];
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI)

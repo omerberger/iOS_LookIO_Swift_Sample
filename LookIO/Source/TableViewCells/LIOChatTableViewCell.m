@@ -66,6 +66,34 @@
     return expectedTextSize;
 }
 
++ (CGSize)expectedSizeForAttributedString:(NSAttributedString *)attributedString withFont:(UIFont *)font forWidth:(CGFloat)width
+{
+    CGSize expectedTextSize;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        CGRect expectedTextRect = [attributedString boundingRectWithSize:CGSizeMake(width, 9999)
+                                                     options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+                                                     context:nil];
+        expectedTextSize = expectedTextRect.size;
+    }
+    else
+    {
+        // TODO: Support iOS 5.0 here
+        NSString *text = [attributedString string];
+        expectedTextSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(width, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    }
+    
+    expectedTextSize = CGSizeMake(ceil(expectedTextSize.width) + 2.0, ceil(expectedTextSize.height) + 2.0);
+    
+    return expectedTextSize;
+}
+
++ (NSAttributedString *)attributedStringForChatMessage:(LIOChatMessage *)chatMessage
+{
+    
+}
+
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
 {
     LIOBrandingElement brandingElement = LIOBrandingElementVisitorChatBubble;
@@ -87,18 +115,37 @@
             break;
     }
     
-    UIFont *font = [[LIOBrandingManager brandingManager] boldFontForElement:brandingElement];
+    UIFont *boldFont = [[LIOBrandingManager brandingManager] boldFontForElement:brandingElement];
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
     CGFloat maxSize = size.width * bubbleWidthFactor - 20;
     
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
         text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
+    NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:text];
+
+    CTFontRef standardCTFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
+    [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(standardCTFont) range:NSMakeRange(0, mutableAttributedString.length)];
+    if ([chatMessage.senderName length])
+    {
+        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", chatMessage.senderName]] ;
+        NSRange boldRange = NSMakeRange(0, [nameCallout length]);
+        
+        CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldFont.fontName, boldFont.pointSize, NULL);
+        
+        if (boldRange.location != NSNotFound)
+        {
+            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(boldNameCTFont) range:boldRange];
+        }
+    }
     
     CGSize expectedTextSize;
     
     if (chatMessage.isShowingLinks)
     {
+        // TODO: Use attributeds tring for height with links
+
         LPChatBubbleView *chatBubbleView = [[LPChatBubbleView alloc] init];
         CGFloat bubbleHeight = [chatBubbleView populateLinksChatBubbleViewWithMessage:chatMessage forWidth:maxSize];
         
@@ -106,7 +153,7 @@
     }
     else
     {
-        expectedTextSize = [LIOChatTableViewCell expectedSizeForText:text withFont:font forWidth:maxSize];
+        expectedTextSize = [LIOChatTableViewCell expectedSizeForAttributedString:mutableAttributedString withFont:font forWidth:maxSize];
     }
     
     return CGSizeMake(expectedTextSize.width + 31.0, expectedTextSize.height + 35.0);
@@ -141,6 +188,7 @@
     self.chatBubbleView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:brandingElement];
     UIColor *textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];
     UIFont *boldNameFont = [[LIOBrandingManager brandingManager] boldFontForElement:brandingElement];
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     self.chatBubbleView.messageLabel.textColor = textColor;
     self.chatBubbleView.messageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     CGFloat bubbleWidthFactor = [[LIOBrandingManager brandingManager] widthForElement:brandingElement];
@@ -193,8 +241,25 @@
         }
     }
     else
-    {        
-        CGSize expectedTextSize = [LIOChatTableViewCell expectedSizeForText:text withFont:boldNameFont forWidth:maxWidth];
+    {
+        NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:text];
+        
+        CTFontRef standardCTFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
+        [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(standardCTFont) range:NSMakeRange(0, mutableAttributedString.length)];
+        if ([chatMessage.senderName length])
+        {
+            NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", chatMessage.senderName]] ;
+            NSRange boldRange = NSMakeRange(0, [nameCallout length]);
+            
+            CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
+            
+            if (boldRange.location != NSNotFound)
+            {
+                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(boldNameCTFont) range:boldRange];
+            }
+        }
+
+        CGSize expectedTextSize = [LIOChatTableViewCell expectedSizeForAttributedString:mutableAttributedString withFont:font forWidth:maxWidth];
         
         CGRect aFrame = self.chatBubbleView.frame;
         if (chatMessage.kind == LIOChatMessageKindSystemMessage)
@@ -229,8 +294,11 @@
                     [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)textColor.CGColor range:boldRange];
                 }
             }
+            
             return mutableAttributedString;
         }];
+        
+        
         
         aFrame = self.chatBubbleView.messageLabel.frame;
         aFrame.origin.x = 10;
