@@ -216,7 +216,11 @@
     else
         expectedSize = singleLineSize;
     
-    [self.delegate inputBar:self wantsNewHeight:expectedSize.height + (padUI ? 50.0 : 30.0)];
+    if (expectedSize.height != self.lastCalculatedExpectedHeight)
+    {
+        [self.delegate inputBar:self wantsNewHeight:expectedSize.height + (padUI ? 50.0 : 30.0)];
+        self.lastCalculatedExpectedHeight = expectedSize.height;
+    }
     
     CGRect frame = self.textViewBackgroundView.frame;
     frame.size.height = expectedSize.height + (padUI ? 30.0 : 20.0);
