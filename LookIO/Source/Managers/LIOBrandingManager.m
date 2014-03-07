@@ -859,39 +859,43 @@ static LIOBrandingManager *brandingManager = nil;
 - (UIColor *)colorType:(LIOBrandingColor)colorType forElement:(LIOBrandingElement)element
 {
     UIColor *colorToReturn = [UIColor whiteColor];
-    
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *parentDictionary = nil;
-        
-        if (LIOBrandingColorColor == colorType)
+
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *colorString = [elementDictionary objectForKey:@"color"];
-            if (colorString)
-                colorToReturn = [self colorForHexString:colorString];
-        }
-        else {
-            if (LIOBrandingColorBackground == colorType)
-                parentDictionary = [elementDictionary objectForKey:@"background"];
-            if (LIOBrandingColorText == colorType)
-                parentDictionary = [elementDictionary objectForKey:@"font"];
-            if (LIOBrandingColorBorder == colorType)
-                parentDictionary = [elementDictionary objectForKey:@"border"];
-            if (LIOBrandingColorContent == colorType)
-                parentDictionary = [elementDictionary objectForKey:@"content"];
-            if (LIOBrandingColorIcon == colorType)
-                parentDictionary = [elementDictionary objectForKey:@"icon"];
+            NSDictionary *parentDictionary = nil;
             
-            if (parentDictionary)
+            if (LIOBrandingColorColor == colorType)
             {
-                NSString *colorString = [parentDictionary objectForKey:@"color"];
+                NSString *colorString = [elementDictionary objectForKey:@"color"];
                 if (colorString)
-                {
                     colorToReturn = [self colorForHexString:colorString];
+            }
+            else {
+                if (LIOBrandingColorBackground == colorType)
+                    parentDictionary = [elementDictionary objectForKey:@"background"];
+                if (LIOBrandingColorText == colorType)
+                    parentDictionary = [elementDictionary objectForKey:@"font"];
+                if (LIOBrandingColorBorder == colorType)
+                    parentDictionary = [elementDictionary objectForKey:@"border"];
+                if (LIOBrandingColorContent == colorType)
+                    parentDictionary = [elementDictionary objectForKey:@"content"];
+                if (LIOBrandingColorIcon == colorType)
+                    parentDictionary = [elementDictionary objectForKey:@"icon"];
+                
+                if (parentDictionary)
+                {
+                    NSString *colorString = [parentDictionary objectForKey:@"color"];
+                    if (colorString)
+                    {
+                        colorToReturn = [self colorForHexString:colorString];
+                    }
                 }
             }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return colorToReturn;
@@ -900,12 +904,17 @@ static LIOBrandingManager *brandingManager = nil;
 - (CGFloat)alphaForElement:(LIOBrandingElement)element
 {
     CGFloat alpha = 1.0;
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-
-    if (elementDictionary) {
-        NSNumber *alphaObject = [elementDictionary objectForKey:@"alpha"];
-        if (alphaObject)
-            alpha = [alphaObject floatValue];
+    
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        
+        if (elementDictionary) {
+            NSNumber *alphaObject = [elementDictionary objectForKey:@"alpha"];
+            if (alphaObject)
+                alpha = [alphaObject floatValue];
+        }
+    }
+    @catch (NSException *exception) {
     }
     
     return alpha;
@@ -914,16 +923,20 @@ static LIOBrandingManager *brandingManager = nil;
 - (CGFloat)backgroundAlphaForElement:(LIOBrandingElement)element
 {
     CGFloat alpha = 1.0;
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    
-    if (elementDictionary) {
-        NSDictionary *backgroundDictionary = [elementDictionary objectForKey:@"background"];
-        if (backgroundDictionary)
-        {
-            NSNumber *alphaObject = [backgroundDictionary objectForKey:@"alpha"];
-            if (alphaObject)
-                alpha = [alphaObject floatValue];
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        
+        if (elementDictionary) {
+            NSDictionary *backgroundDictionary = [elementDictionary objectForKey:@"background"];
+            if (backgroundDictionary)
+            {
+                NSNumber *alphaObject = [backgroundDictionary objectForKey:@"alpha"];
+                if (alphaObject)
+                    alpha = [alphaObject floatValue];
+            }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return alpha;
@@ -931,16 +944,20 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (CGFloat)widthForElement:(LIOBrandingElement)element {
     CGFloat width = 1.0;
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
     
-    if (elementDictionary) {
-        NSDictionary *sizeDictionary = [elementDictionary objectForKey:@"size"];
-        if (sizeDictionary)
-        {
-            NSNumber *widthObject = [sizeDictionary objectForKey:@"width"];
-            if (widthObject)
-                width = [widthObject floatValue];
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary) {
+            NSDictionary *sizeDictionary = [elementDictionary objectForKey:@"size"];
+            if (sizeDictionary)
+            {
+                NSNumber *widthObject = [sizeDictionary objectForKey:@"width"];
+                if (widthObject)
+                    width = [widthObject floatValue];
+            }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return width;
@@ -951,17 +968,22 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSString *fontName = @"HelveticaNeue";
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
-        if (fontDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *fontNameString = [fontDictionary objectForKey:@"family"];
-            if (fontNameString)
-                fontName = fontNameString;
+            NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
+            if (fontDictionary)
+            {
+                NSString *fontNameString = [fontDictionary objectForKey:@"family"];
+                if (fontNameString)
+                    fontName = fontNameString;
+            }
         }
     }
+    @catch (NSException *exception) {
+    }
+    
     return fontName;
 }
 
@@ -969,17 +991,22 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSString *fontName = @"HelveticaNeue-Medium";
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"bold_font"];
-        if (fontDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *fontNameString = [fontDictionary objectForKey:@"family"];
-            if (fontNameString)
-                fontName = fontNameString;
+            NSDictionary *fontDictionary = [elementDictionary objectForKey:@"bold_font"];
+            if (fontDictionary)
+            {
+                NSString *fontNameString = [fontDictionary objectForKey:@"family"];
+                if (fontNameString)
+                    fontName = fontNameString;
+            }
         }
     }
+    @catch (NSException *exception) {
+    }
+    
     return fontName;
 }
 
@@ -987,17 +1014,23 @@ static LIOBrandingManager *brandingManager = nil;
 - (CGFloat)fontSizeForElement:(LIOBrandingElement)element
 {
     CGFloat fontSize = 15.0;
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
-        if (fontDictionary)
+    
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *fontSizeObject = [fontDictionary objectForKey:@"size"];
-            if (fontSizeObject)
-                fontSize = [fontSizeObject floatValue];
+            NSDictionary *fontDictionary = [elementDictionary objectForKey:@"font"];
+            if (fontDictionary)
+            {
+                NSString *fontSizeObject = [fontDictionary objectForKey:@"size"];
+                if (fontSizeObject)
+                    fontSize = [fontSizeObject floatValue];
+            }
         }
     }
+    @catch (NSException *exception) {
+    }
+    
     return fontSize;
 }
 
@@ -1062,40 +1095,49 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (BOOL)booleanValueForField:(NSString *)field element:(LIOBrandingElement)element
 {
-    BOOL value = NO;
-    
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSNumber *boolValueNumber = [elementDictionary objectForKey:field];
-        if (boolValueNumber)
+    @try {
+        BOOL value = NO;
+        
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            value = [boolValueNumber boolValue];
+            NSNumber *boolValueNumber = [elementDictionary objectForKey:field];
+            if (boolValueNumber)
+            {
+                value = [boolValueNumber boolValue];
+            }
         }
+        
+        return value;    
     }
-
-    return value;    
+    @catch (NSException *exception) {
+        return NO;
+    }
 }
 
 - (BOOL)attachedToRightForElement:(LIOBrandingElement)element
 {
     BOOL attachedToRight = YES;
 
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
-        if (positionDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *attachedToRightString = [positionDictionary objectForKey:@"horizontal"];
-            if (attachedToRightString)
+            NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
+            if (positionDictionary)
             {
-                if ([attachedToRightString isEqualToString:@"right"])
-                    attachedToRight = YES;
-                if ([attachedToRightString isEqualToString:@"left"])
-                    attachedToRight = NO;
+                NSString *attachedToRightString = [positionDictionary objectForKey:@"horizontal"];
+                if (attachedToRightString)
+                {
+                    if ([attachedToRightString isEqualToString:@"right"])
+                        attachedToRight = YES;
+                    if ([attachedToRightString isEqualToString:@"left"])
+                        attachedToRight = NO;
+                }
             }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return attachedToRight;
@@ -1105,16 +1147,20 @@ static LIOBrandingManager *brandingManager = nil;
 {
     CGFloat verticalPosition = 0.5;
 
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
-        if (positionDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSNumber *verticalPositionNumber = [positionDictionary objectForKey:@"vertical"];
-            if (verticalPositionNumber)
-                verticalPosition = [verticalPositionNumber floatValue];
+            NSDictionary *positionDictionary = [elementDictionary objectForKey:@"position"];
+            if (positionDictionary)
+            {
+                NSNumber *verticalPositionNumber = [positionDictionary objectForKey:@"vertical"];
+                if (verticalPositionNumber)
+                    verticalPosition = [verticalPositionNumber floatValue];
+            }
         }
+    }
+    @catch (NSException *exception) {
     }
 
     return verticalPosition;
@@ -1125,12 +1171,16 @@ static LIOBrandingManager *brandingManager = nil;
 {
     CGFloat value = 0.0;
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSNumber *valueObject = [elementDictionary objectForKey:field];
-        if (valueObject)
-            value = [valueObject floatValue];
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
+        {
+            NSNumber *valueObject = [elementDictionary objectForKey:field];
+            if (valueObject)
+                value = [valueObject floatValue];
+        }
+    }
+    @catch (NSException *exception) {
     }
     
     return value;
@@ -1140,12 +1190,16 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSInteger value = 0;
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSNumber *valueObject = [elementDictionary objectForKey:field];
-        if (valueObject)
-            value = [valueObject integerValue];
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
+        {
+            NSNumber *valueObject = [elementDictionary objectForKey:field];
+            if (valueObject)
+                value = [valueObject integerValue];
+        }
+    }
+    @catch (NSException *exception) {
     }
     
     return value;
@@ -1155,10 +1209,14 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSString *stringToReturn = @"";
 
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        stringToReturn = [elementDictionary objectForKey:field];
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
+        {
+            stringToReturn = [elementDictionary objectForKey:field];
+        }
+    }
+    @catch (NSException *exception) {
     }
     
     return stringToReturn;
@@ -1167,22 +1225,26 @@ static LIOBrandingManager *brandingManager = nil;
 - (UIKeyboardAppearance)keyboardTypeForElement:(LIOBrandingElement)element
 {
     UIKeyboardAppearance appearance = UIKeyboardAppearanceLight;
-
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
-        if (keyboardDictionary)
+    
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *keyboardTypeString = [keyboardDictionary objectForKey:@"type"];
-            if (keyboardTypeString)
+            NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
+            if (keyboardDictionary)
             {
-                if ([keyboardTypeString isEqualToString:@"light"])
-                    appearance = UIKeyboardAppearanceLight;
-                if ([keyboardTypeString isEqualToString:@"dark"])
-                    appearance = UIKeyboardAppearanceDark;
+                NSString *keyboardTypeString = [keyboardDictionary objectForKey:@"type"];
+                if (keyboardTypeString)
+                {
+                    if ([keyboardTypeString isEqualToString:@"light"])
+                        appearance = UIKeyboardAppearanceLight;
+                    if ([keyboardTypeString isEqualToString:@"dark"])
+                        appearance = UIKeyboardAppearanceDark;
+                }
             }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return appearance;
@@ -1192,23 +1254,27 @@ static LIOBrandingManager *brandingManager = nil;
 {
     LIOKeyboardInitialPosition position = LIOKeyboardInitialPositionUp;
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
-        if (keyboardDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *keyboardPositionString = [keyboardDictionary objectForKey:@"initial_state"];
-            if (keyboardPositionString)
+            NSDictionary *keyboardDictionary = [elementDictionary objectForKey:@"keyboard"];
+            if (keyboardDictionary)
             {
-                if ([keyboardPositionString isEqualToString:@"up"])
-                    position = LIOKeyboardInitialPositionUp;
-                if ([keyboardPositionString isEqualToString:@"down"])
-                    position = LIOKeyboardInitialPositionDown;
-                if ([keyboardPositionString isEqualToString:@"menu"])
-                    position = LIOKeyboardInitialPositionMenu;
+                NSString *keyboardPositionString = [keyboardDictionary objectForKey:@"initial_state"];
+                if (keyboardPositionString)
+                {
+                    if ([keyboardPositionString isEqualToString:@"up"])
+                        position = LIOKeyboardInitialPositionUp;
+                    if ([keyboardPositionString isEqualToString:@"down"])
+                        position = LIOKeyboardInitialPositionDown;
+                    if ([keyboardPositionString isEqualToString:@"menu"])
+                        position = LIOKeyboardInitialPositionMenu;
+                }
             }
         }
+    }
+    @catch (NSException *exception) {
     }
     
     return position;
@@ -1218,18 +1284,24 @@ static LIOBrandingManager *brandingManager = nil;
 {
     UIStatusBarStyle style = UIStatusBarStyleDefault;
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSString *statusBarTypeString = [elementDictionary objectForKey:@"type"];
-        if (statusBarTypeString)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            if ([statusBarTypeString isEqualToString:@"light"])
-                style = UIStatusBarStyleLightContent;
-            if ([statusBarTypeString isEqualToString:@"dark"])
-                style = UIStatusBarStyleDefault;
+            NSString *statusBarTypeString = [elementDictionary objectForKey:@"type"];
+            if (statusBarTypeString)
+            {
+                if ([statusBarTypeString isEqualToString:@"light"])
+                    style = UIStatusBarStyleLightContent;
+                if ([statusBarTypeString isEqualToString:@"dark"])
+                    style = UIStatusBarStyleDefault;
+            }
         }
     }
+    @catch (NSException *exception) {
+
+    }
+    
     
     return style;
 }
@@ -1238,16 +1310,21 @@ static LIOBrandingManager *brandingManager = nil;
 {
     NSURL* url = nil;
     
-    NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
-    if (elementDictionary)
-    {
-        NSDictionary *imageDictionary = [elementDictionary objectForKey:@"image"];
-        if (imageDictionary)
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:element];
+        if (elementDictionary)
         {
-            NSString *urlString = [imageDictionary objectForKey:@"url"];
-            if (urlString)
-                url = [NSURL URLWithString:urlString];
+            NSDictionary *imageDictionary = [elementDictionary objectForKey:@"image"];
+            if (imageDictionary)
+            {
+                NSString *urlString = [imageDictionary objectForKey:@"url"];
+                if (urlString)
+                    url = [NSURL URLWithString:urlString];
+            }
         }
+    }
+    @catch (NSException *exception) {
+
     }
     
     return url;
