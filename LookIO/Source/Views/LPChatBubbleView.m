@@ -95,6 +95,7 @@
     
     UIColor *textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:brandingElement];
     UIFont *boldNameFont = [[LIOBrandingManager brandingManager] boldFontForElement:brandingElement];
+    UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     self.messageLabel.textColor = textColor;
     self.messageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     
@@ -158,12 +159,29 @@
                 [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)textColor.CGColor range:boldRange];
             }
         }
-        
         return mutableAttributedString;
     }];
     
-    CGSize mainMessageViewSize = [LIOChatTableViewCell expectedSizeForText:firstString withFont:boldNameFont forWidth:width];
+    NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:firstString];
+    CTFontRef standardCTFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
+    [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(standardCTFont) range:NSMakeRange(0, mutableAttributedString.length)];
+    if ([chatMessage.senderName length])
+    {
+        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", chatMessage.senderName]] ;
+        NSRange boldRange = NSMakeRange(0, [nameCallout length]);
+        
+        CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
+        
+        if (boldRange.location != NSNotFound)
+        {
+            [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(boldNameCTFont) range:boldRange];
+        }
+    }
+    
+    CGSize mainMessageViewSize = [LIOChatTableViewCell expectedSizeForAttributedString:mutableAttributedString withFont:font forWidth:width];
+
     self.messageLabel.frame = CGRectMake(10.0, 8.0, mainMessageViewSize.width, mainMessageViewSize.height);
+    self.messageLabel.numberOfLines = 0;
     
     for (int i=0; i < [chatMessage.links count]; i++)
     {

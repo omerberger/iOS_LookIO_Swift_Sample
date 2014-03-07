@@ -26,5 +26,6 @@
 - (void)layoutSubviewsForChatMessage:(LIOChatMessage *)chatMessage;
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size;
 + (CGSize)expectedSizeForText:(NSString *)text withFont:(UIFont *)font forWidth:(CGFloat)width;
++ (CGSize)expectedSizeForAttributedString:(NSAttributedString *)attributedString withFont:(UIFont *)font forWidth:(CGFloat)width;
 
 @end

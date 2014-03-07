@@ -79,7 +79,6 @@
     }
     else
     {
-        // TODO: Support iOS 5.0 here
         NSString *text = [attributedString string];
         expectedTextSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(width, 9999) lineBreakMode:UILineBreakModeWordWrap];
     }
@@ -87,11 +86,6 @@
     expectedTextSize = CGSizeMake(ceil(expectedTextSize.width) + 2.0, ceil(expectedTextSize.height) + 2.0);
     
     return expectedTextSize;
-}
-
-+ (NSAttributedString *)attributedStringForChatMessage:(LIOChatMessage *)chatMessage
-{
-    
 }
 
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
