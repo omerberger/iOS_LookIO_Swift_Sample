@@ -462,7 +462,29 @@
 
 - (void)removeTimersAndNotifications
 {
-    [self hideCurrentNotification];
+    if (self.notificationTimer)
+    {
+        [self.notificationTimer stopTimer];
+        self.notificationTimer = nil;
+    }
+    if (self.startAnimatedLongTextTimer)
+    {
+        [self.startAnimatedLongTextTimer stopTimer];
+        self.startAnimatedLongTextTimer = nil;
+    }
+    if (self.moveAnimatedLongTextTimer)
+    {
+        [self.moveAnimatedLongTextTimer stopTimer];
+        self.moveAnimatedLongTextTimer = nil;
+    }
+    if (self.animatedEllipsisTimer)
+    {
+        [self.animatedEllipsisTimer stopTimer];
+        self.animatedEllipsisTimer = nil;
+    }
+    if (nil == self.activeNotification)
+        [self dismissActiveNotification];
+
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
