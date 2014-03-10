@@ -1700,15 +1700,17 @@
     if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
         [self.pendingEvents removeObjectAtIndex:0];
     
-    // Immediately make a continue call, unless the event is the built-in "page view" one.
-    if (NO == [anEvent isEqualToString:kLPEventPageView])
+    // Immediately make a continue call
+    [self sendContinuationReport];
+
+    // For PageView event, also record the last known page view
+    if (YES == [anEvent isEqualToString:kLPEventPageView])
     {
-        [self sendContinuationReport];
-    }
-    else if ([someData isKindOfClass:[NSString class]])
-    {
-        // Okay, this IS a pageview event. Record it as the last known.
-        self.lastKnownPageViewValue = (NSString *)someData;
+        if ([someData isKindOfClass:[NSString class]])
+        {
+            // Okay, this IS a pageview event. Record it as the last known.
+            self.lastKnownPageViewValue = (NSString *)someData;
+        }
     }
 }
 
