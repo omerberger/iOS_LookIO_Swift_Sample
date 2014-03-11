@@ -860,6 +860,8 @@
                 self.visitState = LIOVisitStateVisitInProgress;
             }
 
+            [self updateAndReportFunnelState];
+
             [self.delegate visitDidLaunch:self];
             
             if (![self chatInProgress])
