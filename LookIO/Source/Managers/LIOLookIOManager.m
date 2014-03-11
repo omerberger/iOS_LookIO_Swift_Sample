@@ -613,6 +613,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState
+{
+    if (funnelState < LIOFunnelStateClicked)
+        return funnelState;
+    
+    if (self.engagement == nil)
+        return funnelState;
+
+    if (self.engagement.isConnected == YES)
+        return 6;
+
+    if (self.visit.visitState == LIOVisitStateChatActive)
+        return 5;
+    
+    return funnelState;
+}
+
+
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods
 

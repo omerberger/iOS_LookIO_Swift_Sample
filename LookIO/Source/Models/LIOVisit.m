@@ -24,6 +24,10 @@
 // Helpers
 #import "LIOTimerProxy.h"
 
+// Apple Frameworks
+#import <CoreTelephony/CTCall.h>
+#import <CoreTelephony/CTCallCenter.h>
+
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
@@ -78,6 +82,12 @@
 @property (nonatomic, assign) BOOL customButtonInvitationShown;
 
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
+
+@property (nonatomic, strong) CTCallCenter *callCenter;
+@property (nonatomic, strong) NSDate *callConnectionTime;
+@property (nonatomic, assign) BOOL didReportFirstCall;
+@property (nonatomic, assign) BOOL isCurrentCallOutgoingAndFirst;
+@property (nonatomic, copy) NSString *callVisitId;
 
 
 @end
@@ -167,6 +177,9 @@
         
         // Default visibility is no - until recieving a different visibility setting
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
+        
+        // Setup the call center object to monitor phone calls
+        [self setupCallCenter];
     }
     return self;
 }
@@ -828,6 +841,8 @@
 
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
+    
+    [self setupCallCenter];
     
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
@@ -1716,5 +1731,73 @@
     }
 }
 
+#pragma mark Call Center Methods
+
+- (void)setupCallCenter
+{
+    self.didReportFirstCall = NO;
+    self.callConnectionTime = nil;
+    self.isCurrentCallOutgoingAndFirst = NO;
+    [self.visitUDEs removeObjectForKey:@"CALL_LP_STATE"];
+    [self.visitUDEs removeObjectForKey:@"CALL_DURATION"];
+    
+    LIOVisit *currentVisit = self;
+    
+    self.callCenter = [[CTCallCenter alloc] init];
+    self.callCenter.callEventHandler = ^(CTCall* call)
+    {
+        // If we've already reported call data for this visit, do nothing
+        if (call.callState == CTCallStateIncoming)
+        {
+            currentVisit.isCurrentCallOutgoingAndFirst = NO;
+        }
+        if (call.callState == CTCallStateDialing)
+        {
+            if (currentVisit.didReportFirstCall)
+                return;
+
+            currentVisit.isCurrentCallOutgoingAndFirst = YES;
+            currentVisit.callVisitId = currentVisit.currentVisitId;
+            
+            // If the funnel state is clicked, we should check the engagement through the delegate to see if we are actually in funnel state 5 or 6
+            LIOFunnelState callFunnelState = (LIOFunnelStateClicked == currentVisit.funnelState) ? [currentVisit.delegate visit:currentVisit engagementFunnelStateForFunnelState:LIOFunnelStateClicked] : currentVisit.funnelState;
+            
+            [currentVisit setUDE:[NSNumber numberWithInteger:callFunnelState] forKey:@"CALL_LP_STATE"];
+            currentVisit.didReportFirstCall = YES;
+            
+            currentVisit.callConnectionTime = nil;
+        }
+        if (call.callState == CTCallStateConnected)
+        {
+            // We only want to monitor data if the current call is outgoing
+            if (currentVisit.isCurrentCallOutgoingAndFirst)
+            {
+                currentVisit.callConnectionTime = [NSDate date];
+            }
+        }
+        if (call.callState == CTCallStateDisconnected)
+        {
+            // We only want to monitor data if the current call is outgoing
+            if (currentVisit.isCurrentCallOutgoingAndFirst)
+            {
+                // Calculate the call time, or report 0 if call was never connected
+                NSInteger callTimeInSeconds = 0;
+                if (currentVisit.callConnectionTime != nil)
+                {
+                    callTimeInSeconds = (NSInteger)(-[currentVisit.callConnectionTime timeIntervalSinceNow]);
+                }
+                
+                // Make sure we the call time only if we're still at the same visit
+                if ([currentVisit.currentVisitId isEqualToString:currentVisit.callVisitId])
+                {
+                    [currentVisit setUDE:[NSNumber numberWithInteger:callTimeInSeconds] forKey:@"CALL_DURATION"];
+
+                    currentVisit.callConnectionTime = nil;
+                    currentVisit.isCurrentCallOutgoingAndFirst = NO;
+                }
+            }
+        }
+    };
+}
 
 @end

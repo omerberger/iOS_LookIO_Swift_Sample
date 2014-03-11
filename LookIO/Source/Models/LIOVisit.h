@@ -11,10 +11,10 @@
 typedef enum
 {
     LIOFunnelStateInitialized = 0,
-    LIOFunnelStateVisit,
-    LIOFunnelStateHotlead,
-    LIOFunnelStateInvitation,
-    LIOFunnelStateClicked
+    LIOFunnelStateVisit = 1,
+    LIOFunnelStateHotlead = 2,
+    LIOFunnelStateInvitation = 3,
+    LIOFunnelStateClicked = 4,
 } LIOFunnelState;
 
 typedef enum
@@ -53,6 +53,7 @@ typedef enum
 - (void)visitReachabilityDidChange:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
 - (void)visitDidLaunch:(LIOVisit *)visit;
+- (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
 
 @end
 
