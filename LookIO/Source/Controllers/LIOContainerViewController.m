@@ -39,7 +39,9 @@
 @property (nonatomic, strong) LIOChatViewController *chatViewController;
 @property (nonatomic, strong) LIOLoadingViewController *loadingViewController;
 @property (nonatomic, strong) LPSurveyViewController *surveyViewController;
+
 @property (nonatomic, strong) LIOWebViewController *webViewController;
+@property (nonatomic, copy) NSString *currentWebViewURLString;
 
 @property (nonatomic, strong) LIOEngagement *engagement;
 
@@ -81,7 +83,6 @@
     [self animationPopFrontScaleUp];
     [self dismissViewControllerAnimated:YES completion:^{
         [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
-        self.webViewController = nil;
     }];
 }
 
@@ -355,8 +356,12 @@
     
     [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     
-    self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
-    self.webViewController.delegate = self;
+    if (self.currentWebViewURLString == nil || ![self.currentWebViewURLString isEqual:url.absoluteString])
+    {
+        self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
+        self.webViewController.delegate = self;
+        self.currentWebViewURLString = url.absoluteString;
+    };
 
     [self presentViewController:self.webViewController animated:YES completion:nil];
     [self animationPushBackScaleDown];
@@ -676,7 +681,6 @@
             [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
             [self.chatViewController dismissChat:self];
             [self dismiss];
-            self.webViewController = nil;
             break;
             
         default:
@@ -806,6 +810,8 @@
     self.currentViewController = self.loadingViewController;
     [self.loadingViewController didMoveToParentViewController:self];
     
+    self.currentWebViewURLString = nil;
+    
     [self.loadingViewController hideBezel];
 }
 
@@ -883,6 +889,16 @@
 	[view.layer addAnimation:group forKey:nil];
 }
 
+
+- (void)didReceiveMemoryWarning
+{
+    // If we get a memory warning while a web view controller is in memory but not visible, we should release it to save memoryvcim build_
+    if (LIOContainerViewStateWeb != self.containerViewState && self.webViewController != nil)
+    {
+        self.webViewController = nil;
+        self.currentWebViewURLString = nil;
+    }
+}
 
 
 @end
