@@ -94,7 +94,7 @@
         {
             UIView *finalBrandingView = nil;
             
-            CGSize brandingSize = CGSizeMake(240.0, 17.0);
+            CGSize brandingSize = CGSizeMake(320.0, 32.0);
             id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
             if (aBrandingView)
             {
@@ -103,11 +103,11 @@
                     UIImage *anImage = (UIImage *)aBrandingView;
                     finalBrandingView = [[UIImageView alloc] initWithImage:anImage];
                     finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
-                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 240.0, 17.0);
+                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 320.0, 32.0);
                     
                     finalBrandingView.userInteractionEnabled = NO;
                     aFrame = finalBrandingView.frame;
-                    aFrame.origin.y = 8.0;
+                    aFrame.origin.y = 0.0;
                     aFrame.origin.x = (self.defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
                     finalBrandingView.frame = aFrame;
                     finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;

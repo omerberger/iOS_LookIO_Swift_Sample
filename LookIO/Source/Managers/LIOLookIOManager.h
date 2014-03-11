@@ -132,7 +132,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
  @param dimensions The ideal dimensions of the image to be used to custom branding. If you pass an image that is
  not of these optimal dimensions, LP Mobile will use the UIViewContentModeScaleAspectFit content mode to display the image.
- The optimal image size is 130x44 points for iPad, and 240x17 points for iPhone.
+ The optimal image size is 140x68 points for iPad, and 320x32 points for iPhone.
  */
 
 - (UIImage*)lookIOManager:(LIOLookIOManager *)aManager brandingImageForDimensions:(CGSize)dimensions;
