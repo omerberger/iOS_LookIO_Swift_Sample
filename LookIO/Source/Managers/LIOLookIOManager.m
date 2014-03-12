@@ -1755,32 +1755,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 #pragma mark -
-#pragma mark Custom Branding Methods
-
-- (id)brandingViewWithDimensions:(NSValue *)aValue
-{
-    CGSize aSize = [aValue CGSizeValue];
-    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:brandingImageForDimensions:)])
-    {
-        id aView = [self.delegate lookIOManager:self brandingImageForDimensions:aSize];
-        if (aView)
-        {
-            if ([aView isKindOfClass:[UIImage class]])
-            {
-                UIImage *anImage = (UIImage *)aView;
-                return anImage;
-            }
-            else
-            {
-                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Expected a UIImage from \"brandingImageForDimensions\". Got: \"%@\". Falling back to default branding!", NSStringFromClass([aView class])];
-            }
-        }
-    }
-    
-    return nil;
-}
-
-#pragma mark -
 #pragma mark Custom Variables
 
 - (void)setCustomVariable:(id)anObject forKey:(NSString *)aKey

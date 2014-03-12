@@ -71,7 +71,7 @@ static LIOBrandingManager *brandingManager = nil;
 
 - (void)preloadCustomBrandingImages
 {
-    NSArray *imageElements = @[[NSNumber numberWithInt:LIOBrandingElementControlButtonChatIcon], [NSNumber numberWithInt:LIOBrandingElementControlButtonSurveyIcon], [NSNumber numberWithInt:LIOBrandingElementLoadingScreen]];
+    NSArray *imageElements = @[[NSNumber numberWithInt:LIOBrandingElementControlButtonChatIcon], [NSNumber numberWithInt:LIOBrandingElementControlButtonSurveyIcon], [NSNumber numberWithInt:LIOBrandingElementLoadingScreen], [NSNumber numberWithInt:LIOBrandingElementLogo]];
     
     for (NSNumber *elementNumber in imageElements)
     {
@@ -189,6 +189,18 @@ static LIOBrandingManager *brandingManager = nil;
         {
             return engagementDictionary;
         }
+        
+        
+        if (LIOBrandingElementLogo == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *logoDictionary = [engagementDictionary objectForKey:@"logo"];
+                if (logoDictionary)
+                    dictionary = logoDictionary;
+            }
+        }
+        
         if (LIOBrandingElementStatusBar == element)
         {
             if (engagementDictionary)

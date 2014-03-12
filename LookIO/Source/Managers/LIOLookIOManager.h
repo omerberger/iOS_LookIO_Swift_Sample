@@ -124,20 +124,6 @@ extern NSString *const kLPEventAddedToCart;
 - (UInt32)lookIOManagerEnabledCollaborationComponents:(LIOLookIOManager *)aManager;
 
 /*!
- Implement this method to specify your own branding image to be used within Live Chat, replacting the default LP Mobile
- logo.
- 
- @return The image that should be used for custom branding.
- 
- @param aManager The LIOLookIOManager shared instance.
- @param dimensions The ideal dimensions of the image to be used to custom branding. If you pass an image that is
- not of these optimal dimensions, LP Mobile will use the UIViewContentModeScaleAspectFit content mode to display the image.
- The optimal image size is 140x68 points for iPad, and 320x32 points for iPhone.
- */
-
-- (UIImage*)lookIOManager:(LIOLookIOManager *)aManager brandingImageForDimensions:(CGSize)dimensions;
-
-/*!
  Implement this method to specify if a custom action should be performed when a user starts a Live Chat, but
  no agents are available to answer the chat.
  

@@ -52,102 +52,29 @@
         [self addSubview:self.defaultNotification];
         
         self.hasCustomBranding = NO;
-        if (padUI)
+        if (!padUI)
         {
-            UIView *finalBrandingView = nil;
+            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 32.0)];
+            brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
             
-            CGSize brandingSize = CGSizeMake(130.0, 44.0);
-            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
-            if (aBrandingView)
-            {
-                if ([aBrandingView isKindOfClass:[UIImage class]])
-                {
-                    UIImage *anImage = (UIImage *)aBrandingView;
-                    finalBrandingView = [[UIImageView alloc] initWithImage:anImage];
-                    finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
-                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 130.0, 44.0);
-                    
-                    self.hasCustomBranding = YES;
-                }
-                else
-                    finalBrandingView = nil;
-            }
-            
-            if (nil == finalBrandingView)
-            {
-                finalBrandingView = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]];
-                finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
-                aFrame = finalBrandingView.frame;
-                aFrame.size.width = 130.0;
-                aFrame.size.height = 44.0;
-                finalBrandingView.frame = aFrame;
-            }
-            
-            finalBrandingView.userInteractionEnabled = NO;
-            aFrame = finalBrandingView.frame;
-            aFrame.origin.x = 16.0;
-            aFrame.origin.y = 16.0;
-            finalBrandingView.frame = aFrame;
-            [self addSubview:finalBrandingView];
-        }
-        else
-        {
-            UIView *finalBrandingView = nil;
-            
-            CGSize brandingSize = CGSizeMake(320.0, 32.0);
-            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
-            if (aBrandingView)
-            {
-                if ([aBrandingView isKindOfClass:[UIImage class]])
-                {
-                    UIImage *anImage = (UIImage *)aBrandingView;
-                    finalBrandingView = [[UIImageView alloc] initWithImage:anImage];
-                    finalBrandingView.contentMode = UIViewContentModeScaleAspectFit;
-                    finalBrandingView.frame = CGRectMake(0.0, 0.0, 320.0, 32.0);
-                    
-                    finalBrandingView.userInteractionEnabled = NO;
-                    aFrame = finalBrandingView.frame;
-                    aFrame.origin.y = 0.0;
-                    aFrame.origin.x = (self.defaultNotification.frame.size.width / 2.0) - (aFrame.size.width / 2.0);
-                    finalBrandingView.frame = aFrame;
-                    finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+            brandingImageView.userInteractionEnabled = NO;
+            brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
 
+            [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementLogo withBlock:^(BOOL success, UIImage *image) {
+                if (success)
+                {
+                    brandingImageView.image = image;
                     self.hasCustomBranding = YES;
                 }
                 else
-                    finalBrandingView = nil;
-                
-            }
+                {
+                    [brandingImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]];
+                    brandingImageView.contentMode = UIViewContentModeCenter;
+                    self.hasCustomBranding = NO;
+                }
+            }];
             
-            if (nil == finalBrandingView)
-            {
-                finalBrandingView = [[UIView alloc] initWithFrame:self.bounds];
-                finalBrandingView.backgroundColor = [UIColor clearColor];
-                //            aFrame = lolcontainer.frame;
-                //            aFrame.size.height = 32.0;
-                //            aFrame.origin.y = (self.bounds.size.height / 2.0) - (aFrame.size.height / 2.0);
-                //            lolcontainer.frame = aFrame;
-                finalBrandingView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-                                
-                UIImageView *tinyLogo = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]];
-                aFrame = tinyLogo.frame;
-                aFrame.origin.y = 8.0;
-                aFrame.origin.x = 0.0;
-                tinyLogo.frame = aFrame;
-                tinyLogo.layer.shadowColor = [UIColor whiteColor].CGColor;
-                tinyLogo.layer.shadowOffset = CGSizeMake(0.5, 0.5);
-                tinyLogo.layer.shadowOpacity = 0.33;
-                tinyLogo.layer.shadowRadius = 0.75;
-                
-                aFrame = finalBrandingView.frame;
-                aFrame.size.width = tinyLogo.frame.size.width + 10.0;
-                aFrame.origin.x = (self.bounds.size.width / 2.0) - (aFrame.size.width / 2.0);
-                finalBrandingView.frame = aFrame;
-                
-                [finalBrandingView addSubview:tinyLogo];
-            }
-            
-            [self.defaultNotification addSubview:finalBrandingView];
+            [self.defaultNotification addSubview:brandingImageView];
         }
         
         self.keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0) forElement:LIOBrandingElementBrandingBarNotifications];

@@ -83,26 +83,22 @@
         self.hasCustomBranding = NO;
         if (padUI)
         {
-            CGSize brandingSize = CGSizeMake(140.0, 70.0);
-            id aBrandingView = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(brandingViewWithDimensions:) withObject:[NSValue valueWithCGSize:brandingSize]];
-            UIImage *brandingImage = nil;
-            if (aBrandingView)
-            {
-                if ([aBrandingView isKindOfClass:[UIImage class]])
-                {
-                    brandingImage = (UIImage *)aBrandingView;
-                }
-            }
-
-            if (brandingImage == nil)
-                brandingImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"];
-            UIImageView *brandingImageView = [[UIImageView alloc] initWithImage:brandingImage];
+            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 4.0, 140.0, 68.0)];
             brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
-            brandingImageView.frame = CGRectMake(0.0, 4.0, 140.0, 68.0);
             brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [self addSubview:brandingImageView];
+            self.hasCustomBranding = YES;
             
-            self.hasCustomBranding = YES;            
+            [[LIOBundleManager sharedBundleManager] cachedImageForBrandingElement:LIOBrandingElementLogo withBlock:^(BOOL success, UIImage *image) {
+                if (success)
+                {
+                    brandingImageView.image = image;
+                }
+                else
+                {
+                    [brandingImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOBigLivePersonLogo"]];
+                }
+            }];
         }
 
         CGFloat plusButtonXMargin = padUI ? 12.0 : 0.0;
