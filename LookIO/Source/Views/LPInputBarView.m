@@ -83,7 +83,7 @@
         self.hasCustomBranding = NO;
         if (padUI)
         {
-            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 4.0, 140.0, 68.0)];
+            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 8.0, 140.0, self.bounds.size.height - 16.0)];
             brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
             brandingImageView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [self addSubview:brandingImageView];
