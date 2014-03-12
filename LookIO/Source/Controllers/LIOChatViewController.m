@@ -58,6 +58,7 @@
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
 @property (nonatomic, assign) CGFloat keyboardMenuHeightBeforeDragging;
 @property (nonatomic, assign) CGFloat keyboardMenuDragStartPoint;
+@property (nonatomic, assign) BOOL keyboardIsDraggingInKeyboardState;
 
 @property (nonatomic, strong) UIAlertView *alertView;
 @property (nonatomic, strong) UIPopoverController *popover;
@@ -1174,6 +1175,12 @@
         introAnimation = YES;
     
     self.keyboardState = LIOKeyboardStateKeyboard;
+    BOOL dontScrollToBottom = NO;
+    if (self.keyboardIsDraggingInKeyboardState)
+    {
+        self.keyboardIsDraggingInKeyboardState = NO;
+        dontScrollToBottom = YES;
+    }
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
@@ -1190,8 +1197,9 @@
             self.tableView.frame = frame;
         }
     } completion:^(BOOL finished) {
-        if (self.chatState == LIOChatStateChat)
+        if (self.chatState == LIOChatStateChat && dontScrollToBottom == NO)
             [self scrollToBottomDelayed:NO];
+        
         if (introAnimation)
             self.keyboardState = LIOKeyboardStateKeyboard;
         
@@ -1224,6 +1232,8 @@
     if (LIOKeyboardStateKeyboard == self.keyboardState)
         self.keyboardState = LIOKeyboardStateHidden;
     
+    self.keyboardIsDraggingInKeyboardState = NO;
+    
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     
@@ -1246,6 +1256,7 @@
         self.lastKeyboardHeight = self.view.bounds.size.height - frame.origin.y;
     
         [self updateSubviewFrames];
+        self.keyboardIsDraggingInKeyboardState = YES;
     }
 }
 
