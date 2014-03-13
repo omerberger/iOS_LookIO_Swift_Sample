@@ -102,41 +102,6 @@
     
     [self.items addObject:item];
     
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = LIOLocalizedString(@"LIOLookIOManager.KeyboardMenuButtonFaqs");
-    item.iconName = @"LIOInfoIcon";
-    
-    [self.items addObject:item];
-    
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = @"Sample";
-    item.iconName = @"LIONewspaperIcon";
-    
-    [self.items addObject:item];
-    
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = @"Sample";
-    item.iconName = @"LIONewspaperIcon";
-    
-    [self.items addObject:item];
-    
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = @"Sample";
-    item.iconName = @"LIONewspaperIcon";
-    
-    [self.items addObject:item];
-    
-    item = [[LIOKeyboardMenuItem alloc] init];
-    item.type = LIOKeyboardMenuItemWebView;
-    item.title = @"Sample";
-    item.iconName = @"LIONewspaperIcon";
-    
-    [self.items addObject:item];
-
     UIColor *iconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementKeyboardMenu];
 
     for (int i=0; i<self.items.count; i++)
