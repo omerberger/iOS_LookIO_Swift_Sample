@@ -143,6 +143,15 @@
     self.loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     
     [self.webView addSubview:self.loadingImageView];
+    
+    UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
+    swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.webView addGestureRecognizer:swipeRightGestureRecognizer];
+}
+
+- (void)didSwipeRight:(id)sender
+{
+    [self.webView goBack];
 }
 
 - (NSURL *)currentWebViewURL
