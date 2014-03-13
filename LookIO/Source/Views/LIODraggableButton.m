@@ -559,6 +559,17 @@
     self.badgeView.hidden = NO;
 }
 
+- (void)hideCurrentMessage
+{
+    if (self.messageTimer)
+    {
+        [self.messageTimer stopTimer];
+        self.messageTimer = nil;
+
+        [self messageTimerDidFire];
+    }
+}
+
 
 - (void)presentMessage:(NSString *)message
 {

@@ -45,6 +45,7 @@ typedef enum
 - (void)hide:(BOOL)animated;
 
 - (void)presentMessage:(NSString *)message;
+- (void)hideCurrentMessage;
 - (void)resetUnreadMessages;
 - (void)reportUnreadMessage;
 

@@ -183,6 +183,8 @@
 
 - (void)closeButtonWasTapped:(id)sender
 {
+    [self.controlButton resetUnreadMessages];
+    [self.controlButton hideCurrentMessage];
     [self.controlButton removeTimers];
     [self.delegate webViewControllerCloseButtonWasTapped:self];
 }
