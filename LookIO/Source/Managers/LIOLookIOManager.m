@@ -406,7 +406,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
             if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
             {
-                [self beginChat];
+                // Don't popup chat if an alertview is visible because chat ended while in background
+                if (!self.alertView)
+                    [self beginChat];
             }
         }
     }
