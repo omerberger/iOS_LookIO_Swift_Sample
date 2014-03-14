@@ -58,6 +58,7 @@
 @property (nonatomic, assign) CGFloat lastKeyboardHeight;
 @property (nonatomic, assign) CGFloat keyboardMenuHeightBeforeDragging;
 @property (nonatomic, assign) CGFloat keyboardMenuDragStartPoint;
+@property (nonatomic, assign) BOOL keyboardIsAnimating;
 @property (nonatomic, assign) BOOL keyboardIsDraggingInKeyboardState;
 
 @property (nonatomic, strong) UIAlertView *alertView;
@@ -644,6 +645,9 @@
 }
 
 - (void)inputBarViewPlusButtonWasTapped:(LPInputBarView *)inputBarView {
+    if (self.keyboardIsAnimating)
+        return;
+    
     if (LIOKeyboardStateMenu == self.keyboardState) {
         self.keyboardState = LIOKeyboardStateKeyboard;
         [self.inputBarView.textView becomeFirstResponder];
@@ -750,7 +754,6 @@
     // If keyboard is not visible, display the keyboard menu
     else
     {
-        
         if (self.lastKeyboardHeight == 0.0)
         {
             UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
@@ -769,7 +772,8 @@
                 frame.origin.y = 0;
                 self.tableView.frame = frame;
             }
-        } completion:nil];
+        } completion:^(BOOL finished) {
+        }];
     }
 }
 
@@ -1158,6 +1162,8 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
+    self.keyboardIsAnimating = YES;
+    
     // Acquire keyboard info
     NSDictionary *info = [notification userInfo];
     
@@ -1210,12 +1216,14 @@
             self.emailChatView = nil;
         }
 
-        
+        self.keyboardIsAnimating = NO;
     }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
+    self.keyboardIsAnimating = YES;
+    
     // Acquire keyboard info
     NSDictionary *info = [notification userInfo];
     
@@ -1244,6 +1252,7 @@
         
         [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
     } completion:^(BOOL finished) {
+        self.keyboardIsAnimating = NO;
     }];
 }
 
