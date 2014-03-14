@@ -1166,6 +1166,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
+            if (self.engagement)
+            {
+                [self.engagement cleanUpEngagement];
+                self.engagement = nil;
+            }
             self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit];
             self.engagement.delegate = self;
             self.visit.visitState = LIOVisitStateChatRequested;
