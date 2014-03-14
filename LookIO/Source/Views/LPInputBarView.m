@@ -145,6 +145,7 @@
         self.textViewBackgroundView.layer.cornerRadius = 5.0;
         self.textViewBackgroundView.layer.borderWidth = 1.0;
         self.textViewBackgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        self.textViewBackgroundView.clipsToBounds = YES;
         [self addSubview:self.textViewBackgroundView];
         
         self.textView = [[UITextView alloc] initWithFrame:self.textViewBackgroundView.bounds];
