@@ -118,6 +118,7 @@
         self.controlButton.delegate = self;
         self.controlButton.ignoreActualInterfaceOrientation = YES;
         self.controlButton.buttonKind = [self.delegate webViewControllerButtonKindForWebView:self];
+        self.controlButton.buttonTitle = [self.delegate webViewControllerButtonTitleForWebView:self];
         [self.controlButton updateBaseValues];
         [self.controlButton updateButtonBranding];
     }
@@ -144,9 +145,19 @@
     
     [self.webView addSubview:self.loadingImageView];
     
-    UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
-    swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
-    [self.webView addGestureRecognizer:swipeRightGestureRecognizer];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        UIScreenEdgePanGestureRecognizer *swipeRightGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
+        swipeRightGestureRecognizer.edges = UIRectEdgeLeft;
+        [self.webView addGestureRecognizer:swipeRightGestureRecognizer];
+    }
+    else
+    {
+        UISwipeGestureRecognizer *swipeRightGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipeRight:)];
+        swipeRightGestureRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+        [self.webView addGestureRecognizer:swipeRightGestureRecognizer];
+    }
+    
 }
 
 - (void)didSwipeRight:(id)sender
