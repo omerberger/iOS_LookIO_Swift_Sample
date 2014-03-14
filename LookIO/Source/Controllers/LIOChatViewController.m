@@ -883,6 +883,8 @@
 {
     [super viewWillAppear:animated];
     
+    [self updateNumberOfMessagesToShowInScrollBackForOrientation:self.interfaceOrientation];
+    
     [self scrollToBottomDelayed:NO];
     
     [self registerForKeyboardNotifications];
@@ -914,6 +916,29 @@
     [self unregisterForKeyboardNotifications];
 }
 
+- (void)updateNumberOfMessagesToShowInScrollBackForOrientation:(UIInterfaceOrientation)orientation
+{
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(orientation);
+    
+    if (padUI)
+        self.numberOfMessagesToShowInScrollBack = 3;
+    else
+    {
+        
+        if (LIO_IS_IPHONE_5) {
+            if (landscape)
+                self.numberOfMessagesToShowInScrollBack = 1;
+            else
+                self.numberOfMessagesToShowInScrollBack = 2;
+        }
+        else
+        {
+            self.numberOfMessagesToShowInScrollBack = 1;
+        }
+    }
+
+}
 
 - (void)viewDidLoad
 {
@@ -922,18 +947,11 @@
 
     self.chatState = LIOChatStateChat;
     
-    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
-
-    if (padUI)
-        self.numberOfMessagesToShowInScrollBack = 3;
-    else
-    {
-        if (LIO_IS_IPHONE_5)
-            self.numberOfMessagesToShowInScrollBack = 2;
-        else
-            self.numberOfMessagesToShowInScrollBack = 1;
-    }
+    [self updateNumberOfMessagesToShowInScrollBackForOrientation:self.interfaceOrientation];
+    
     self.lastScrollId = 0;
+
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
     if (padUI)
@@ -1298,6 +1316,7 @@
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self setDefaultKeyboardHeightsForOrientation:toInterfaceOrientation];
+    [self updateNumberOfMessagesToShowInScrollBackForOrientation:toInterfaceOrientation];
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
