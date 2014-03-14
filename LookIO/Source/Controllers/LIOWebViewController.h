@@ -15,6 +15,7 @@
 - (void)webViewControllerCloseButtonWasTapped:(LIOWebViewController *)webViewController;
 - (BOOL)webViewControllerShowControlButtonForWebView:(LIOWebViewController *)webViewController;
 - (NSInteger)webViewControllerButtonKindForWebView:(LIOWebViewController *)webViewController;
+- (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController;
 
 @end
 

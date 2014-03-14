@@ -35,7 +35,7 @@ typedef enum {
 - (void)containerViewControllerWantsWindowBackgroundColor:(UIColor *)color;
 - (BOOL)containerViewControllerShowControlButtonForWebView:(LIOContainerViewController *)containerViewController;
 - (NSInteger)containerViewControllerButtonKindForWebView:(LIOContainerViewController *)containerViewController;
-
+- (NSString *)containerViewControllerButtonTitleForWebView:(LIOContainerViewController *)containerViewController;
 
 // Rotation methods
 - (BOOL)containerViewController:(LIOContainerViewController *)containerViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;

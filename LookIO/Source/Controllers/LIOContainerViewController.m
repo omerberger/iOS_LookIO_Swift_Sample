@@ -96,6 +96,11 @@
     return [self.delegate containerViewControllerButtonKindForWebView:self];
 }
 
+- (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController
+{
+    return [self.delegate containerViewControllerButtonTitleForWebView:self];
+}
+
 #pragma mark -
 #pragma mark HeaderBarView Methods
 

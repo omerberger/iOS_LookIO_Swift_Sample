@@ -859,6 +859,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return NO;
 }
 
+- (NSString *)containerViewControllerButtonTitleForWebView:(LIOContainerViewController *)containerViewController
+{
+    return self.visit.lastKnownButtonText;
+}
+
 - (NSInteger)containerViewControllerButtonKindForWebView:(LIOContainerViewController *)containerViewController
 {
     return [self.visit.lastKnownButtonType integerValue];
