@@ -178,6 +178,8 @@
 {
     self.titleLabel.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
     [self.loadingImageView removeFromSuperview];
+    
+    [self.webView stringByEvaluatingJavaScriptFromString:@"window._LPM_NATIVE_ = true;"];
 }
 
 #pragma mark -
