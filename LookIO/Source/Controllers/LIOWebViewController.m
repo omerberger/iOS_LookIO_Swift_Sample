@@ -290,4 +290,24 @@
     return [[LIOBrandingManager brandingManager] statusBarStyleForElement:LIOBrandingElementStatusBar];
 }
 
+#pragma mark -
+#pragma mark Autorotate Methods
+
+- (BOOL)shouldAutorotate
+{
+    return [self.delegate webViewControllerShouldAutorotate:self];
+}
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return [self.delegate webViewControllerSupportedInterfaceOrientations:self];
+}
+
+-(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+{
+    return [self.delegate webViewController:self shouldRotateToInterfaceOrientation:toInterfaceOrientation];
+}
+
+
+
 @end

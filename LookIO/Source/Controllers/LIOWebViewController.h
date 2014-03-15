@@ -17,6 +17,11 @@
 - (NSInteger)webViewControllerButtonKindForWebView:(LIOWebViewController *)webViewController;
 - (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController;
 
+// Rotation methods
+- (BOOL)webViewController:(LIOWebViewController *)webViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;
+- (BOOL)webViewControllerShouldAutorotate:(LIOWebViewController *)webViewController;
+- (NSInteger)webViewControllerSupportedInterfaceOrientations:(LIOWebViewController *)webViewController;
+
 @end
 
 @interface LIOWebViewController : UIViewController

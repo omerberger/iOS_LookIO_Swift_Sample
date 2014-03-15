@@ -101,6 +101,21 @@
     return [self.delegate containerViewControllerButtonTitleForWebView:self];
 }
 
+- (BOOL)webViewControllerShouldAutorotate:(LIOWebViewController *)webViewController
+{
+    return [self.delegate containerViewControllerShouldAutorotate:self];
+}
+
+- (BOOL)webViewController:(LIOWebViewController *)webViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation
+{
+    return [self.delegate containerViewController:self shouldRotateToInterfaceOrientation:anOrientation];
+}
+
+- (NSInteger)webViewControllerSupportedInterfaceOrientations:(LIOWebViewController *)webViewController
+{
+    return [self.delegate containerViewControllerSupportedInterfaceOrientations:self];
+}
+
 #pragma mark -
 #pragma mark HeaderBarView Methods
 
