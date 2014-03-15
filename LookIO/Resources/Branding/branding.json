@@ -53,6 +53,9 @@
                 "color": "#dddddd",
                 "alpha": "1.0"
             },
+            "border": {
+                "color": "#aaaaaa"
+            },
             "notifications": {
                 "font": {
                     "color": "#555555",
@@ -143,6 +146,9 @@
             "background": {
                 "color": "#666666",
                 "alpha": "0.5"
+            },
+            "border": {
+                "color": "#ffffff"
             },
             "plus_button": {
                 "color": "#ffffff",

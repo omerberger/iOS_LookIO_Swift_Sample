@@ -48,7 +48,7 @@
         self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
         self.separator = [[UIView alloc] init];
-        self.separator.backgroundColor = [UIColor lightGrayColor];
+        self.separator.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementBrandingBar];
         CGRect aFrame = self.separator.frame;
         aFrame.size.height = 1.0;
         aFrame.size.width = self.bounds.size.width;
