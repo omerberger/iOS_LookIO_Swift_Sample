@@ -287,6 +287,18 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementChatBubbles == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *chatBubblesDictionary = [engagementDictionary objectForKey:@"chat_bubbles"];
+                if (chatBubblesDictionary)
+                {
+                    dictionary = chatBubblesDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementAgentChatBubble == element)
         {
             if (engagementDictionary)

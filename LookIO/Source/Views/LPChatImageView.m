@@ -22,7 +22,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.layer.cornerRadius = 10.0;
+        self.layer.cornerRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"corner_radius" forElement:LIOBrandingElementChatBubbles];
         
         self.imageView = [[UIImageView alloc] initWithFrame:self.bounds];
         self.imageView.contentMode = UIViewContentModeScaleAspectFill;

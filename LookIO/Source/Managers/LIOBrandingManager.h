@@ -30,6 +30,7 @@ typedef enum
     LIOBrandingElementBrandingBarNotifications,
     LIOBrandingElementWebViewHeaderBar,
     LIOBrandingElementWebViewHeaderBarButtons,
+    LIOBrandingElementChatBubbles,
     LIOBrandingElementAgentChatBubble,
     LIOBrandingElementAgentChatBubbleLink,
     LIOBrandingElementVisitorChatBubble,

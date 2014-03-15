@@ -31,7 +31,7 @@
     if (self) {
         // Initialization code
         
-        self.layer.cornerRadius = 10.0;
+        self.layer.cornerRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"corner_radius" forElement:LIOBrandingElementChatBubbles];
         
         self.messageLabel = [[TTTAttributedLabel_LIO alloc] initWithFrame:CGRectMake(10, 0, self.bounds.size.width, self.bounds.size.height)];
         self.messageLabel.lineBreakMode = UILineBreakModeWordWrap;

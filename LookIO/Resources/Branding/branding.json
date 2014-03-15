@@ -68,6 +68,7 @@
             "initial_state": "up"
         },
         "chat_bubbles": {
+            "corner_radius": "10.0",
             "agent": {
                 "background": {
                     "color": "#47a1ff"
