@@ -341,6 +341,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     [LIOStatusManager statusManager].appForegrounded = NO;
     
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+    {
+        [self.containerViewController dismissImmediatelyForBackgrounding];
+    }
+    
     if (UIBackgroundTaskInvalid == self.backgroundTaskId)
     {
         self.backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -350,11 +355,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         [self dismissExistingAlertView];
         
-        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-        {
-            [self.containerViewController dismissCurrentViewController];
-        }
-
         self.backgroundedTime = [NSDate date];
         [self.visit sendContinuationReport];
 

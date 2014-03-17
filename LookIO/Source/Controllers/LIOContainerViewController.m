@@ -708,7 +708,6 @@
     }
 }
 
-
 - (void)dismiss
 {
     [UIView animateWithDuration:0.3 animations:^{
@@ -727,6 +726,26 @@
         }
         [self stopAccessibilityTypingSoundEffect];
     }];
+}
+
+- (void)dismissImmediatelyForBackgrounding
+{
+    self.blurImageView.alpha = 0.0;
+    self.view.alpha = 0.01;
+    
+    [self dismissCurrentViewController];
+
+    [self.delegate containerViewControllerDidDismiss:self];
+    self.containerViewState = LIOContainerViewStateLoading;
+    [self swapCurrentControllerWith:self.loadingViewController animated:NO];
+    [self.loadingViewController hideBezel];
+    [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
+    
+    if (self.isAgentTypingMessageVisible)
+    {
+        [self engagement:self.engagement agentIsTyping:NO];
+    }
+    [self stopAccessibilityTypingSoundEffect];    
 }
 
 #pragma mark -
