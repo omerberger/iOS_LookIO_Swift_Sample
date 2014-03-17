@@ -1078,6 +1078,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // CAUTION: Called on a non-main thread!
 //    statusBarUnderlayBlackout.hidden = NO;
     
+    BOOL shouldBlur = [[LIOBrandingManager brandingManager] booleanValueForField:@"active" element:LIOBrandingElementChatBackgroundBlur];
+    
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    BOOL isiPad3 = NO;
+    if (padUI && [[LIOStatusManager deviceType] hasPrefix:@"iPad3,"])
+    {
+        isiPad3 = YES;
+        shouldBlur = NO;
+    }
+
+    if (!shouldBlur)
+        return nil;
+    
     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     UIGraphicsBeginImageContextWithOptions(screenSize, NO, [[UIScreen mainScreen] scale]);
     CGContextRef context = UIGraphicsGetCurrentContext();

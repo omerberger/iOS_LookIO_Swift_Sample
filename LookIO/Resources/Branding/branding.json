@@ -43,6 +43,7 @@
                 "alpha": "0.4"
             },
             "blur": {
+                "active": "1",
                 "radius": "24.0",
                 "iterations": "8",
                 "saturation_factor": "3.0"

@@ -39,7 +39,7 @@
         self.tintLayer = [[CALayer alloc] init];
         self.tintLayer.frame = self.bounds;
         self.tintLayer.opacity = backgroundColorAlpha;
-        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];
+        self.tintLayer.backgroundColor = [backgroundColor CGColor];
         
         [self.layer addSublayer:self.tintLayer];
     }
@@ -53,24 +53,28 @@
     CGFloat blurRadius = [[LIOBrandingManager brandingManager] floatValueForField:@"radius" forElement:LIOBrandingElementChatBackgroundBlur];
     NSInteger blurIterations = [[LIOBrandingManager brandingManager] integerValueForField:@"iterations" forElement:LIOBrandingElementChatBackgroundBlur];
     CGFloat saturationFactor = [[LIOBrandingManager brandingManager] floatValueForField:@"saturation_factor" forElement:LIOBrandingElementChatBackgroundBlur];
-
+    BOOL shouldBlur = [[LIOBrandingManager brandingManager] booleanValueForField:@"active" element:LIOBrandingElementChatBackgroundBlur];
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     BOOL isiPad3 = NO;
-
     if (padUI && [[LIOStatusManager deviceType] hasPrefix:@"iPad3,"])
-        isiPad3 = YES;    
+    {
+        isiPad3 = YES;
+        shouldBlur = NO;
+    }
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.0") && !isiPad3) {
+    if (shouldBlur) {
         UIColor *tintColor = [UIColor colorWithWhite:0.1 alpha:0.4];
         self.image = [self blurImage:imageToBlur withRadius:blurRadius iterations:blurIterations tintColor:tintColor saturationDeltaFactor:saturationFactor];
     } else {
+        BOOL actualShouldBlur = [[LIOBrandingManager brandingManager] booleanValueForField:@"active" element:LIOBrandingElementChatBackgroundBlur];
         UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementChatBackground];
         CGFloat backgroundColorAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementChatBackground];
-        if (backgroundColorAlpha < 0.8)
+        if (actualShouldBlur && isiPad3 && backgroundColorAlpha < 0.8)
             backgroundColorAlpha = 0.8;
 
-        self.tintLayer.opacity = 0.8;
-        self.tintLayer.backgroundColor = [[backgroundColor colorWithAlphaComponent:backgroundColorAlpha] CGColor];
+        self.tintLayer.opacity = backgroundColorAlpha;
+        self.tintLayer.backgroundColor = backgroundColor.CGColor;
     }
 }
 
