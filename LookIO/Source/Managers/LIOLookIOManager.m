@@ -888,8 +888,33 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [window endEditing:YES];
  
     // Set up the window
-    self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
-    self.mainWindow = self.previousKeyWindow;
+    if (self.previousKeyWindow == nil)
+    {
+        if (self.mainWindow)
+        {
+            self.previousKeyWindow = self.mainWindow;
+        
+            LIOLog(@"Got key window from mainWindow.");
+        }
+        else if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerMainWindowForHostApp:)])
+        {
+            self.previousKeyWindow = [self.delegate lookIOManagerMainWindowForHostApp:self];
+            self.mainWindow = self.previousKeyWindow;
+        
+            LIOLog(@"Got host app's key window from delegate: 0x%08X", (unsigned int)self.previousKeyWindow);
+        }
+        else if ([[[UIApplication sharedApplication] keyWindow] isKindOfClass:[UIWindow class]])
+        {
+            self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
+            self.mainWindow = self.previousKeyWindow;
+        
+            LIOLog(@"Got host app's key window from UIApplication: 0x%08X", (unsigned int)self.previousKeyWindow);
+        }
+        else
+        {
+            [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined."];
+        }
+    }
     
     self.lookioWindow.backgroundColor = [UIColor clearColor];
     [self.lookioWindow makeKeyAndVisible];
