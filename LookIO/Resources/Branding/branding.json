@@ -177,9 +177,6 @@
                 }
             },
             "send_button": {
-                "background": {
-                    "color": ""
-                },
                 "font": {
                     "color": "#ffffff",
                     "size": "18.0"
