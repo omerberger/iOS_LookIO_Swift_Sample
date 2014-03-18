@@ -68,24 +68,13 @@
 
 + (CGSize)expectedSizeForAttributedString:(NSAttributedString *)attributedString withFont:(UIFont *)font forWidth:(CGFloat)width
 {
-    CGSize expectedTextSize;
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFMutableAttributedStringRef)attributedString);
+    CFRange textRange = CFRangeMake(0, attributedString.length);
+    CFRange fitRange;
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-    {
-        CGRect expectedTextRect = [attributedString boundingRectWithSize:CGSizeMake(width, 9999)
-                                                     options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-                                                     context:nil];
-        expectedTextSize = expectedTextRect.size;
-    }
-    else
-    {
-        NSString *text = [attributedString string];
-        expectedTextSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(width, 9999) lineBreakMode:UILineBreakModeWordWrap];
-    }
+    CGSize frameSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, textRange, NULL, CGSizeMake(width, 9999), &fitRange);
     
-    expectedTextSize = CGSizeMake(ceil(expectedTextSize.width) + 2.0, ceil(expectedTextSize.height) + 2.0);
-    
-    return expectedTextSize;
+    return frameSize;
 }
 
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
