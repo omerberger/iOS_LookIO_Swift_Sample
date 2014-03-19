@@ -73,7 +73,9 @@
     CFRange fitRange;
     
     CGSize frameSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, textRange, NULL, CGSizeMake(width, 9999), &fitRange);
-    
+        
+    CFRelease(framesetter);
+
     return CGSizeMake(frameSize.width, frameSize.height + 2.0);
 }
 
