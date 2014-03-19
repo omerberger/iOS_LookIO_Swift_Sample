@@ -74,7 +74,7 @@
     
     CGSize frameSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, textRange, NULL, CGSizeMake(width, 9999), &fitRange);
     
-    return frameSize;
+    return CGSizeMake(frameSize.width, frameSize.height + 2.0);
 }
 
 + (CGSize)expectedSizeForChatMessage:(LIOChatMessage *)chatMessage constrainedToSize:(CGSize)size
