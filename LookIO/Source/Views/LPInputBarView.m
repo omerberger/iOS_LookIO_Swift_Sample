@@ -190,7 +190,7 @@
         [self addSubview:self.sendButton];
         
         self.characterCountLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.sendButton.frame.origin.x, self.sendButton.frame.origin.y + self.sendButton.frame.size.height, self.sendButton.frame.size.width, 20)];
-        self.characterCountLabel.text = @"(20/300)";
+        self.characterCountLabel.adjustsFontSizeToFitWidth = YES;
         self.characterCountLabel.textAlignment = UITextAlignmentCenter;
         self.characterCountLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin;
         self.characterCountLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarCharacterCount];
