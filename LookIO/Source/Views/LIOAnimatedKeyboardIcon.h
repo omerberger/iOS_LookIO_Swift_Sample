@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOBrandingManager.h"
 
 #define LIOAnimatedKeyboardIconNumKeys          11
 #define LIOAnimatedKeyboardIconKeyDecayRate     5.0
@@ -21,6 +22,8 @@
     LIOTimerProxy *animationTimer;
     BOOL animating;
 }
+
+- (id)initWithFrame:(CGRect)frame forElement:(LIOBrandingElement)brandingElement;
 
 @property(nonatomic, assign, getter=isAnimating) BOOL animating;
 

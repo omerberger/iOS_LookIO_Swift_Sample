@@ -175,7 +175,8 @@
     });
 }
 
-- (void)createEventFromStreamString:(NSString*)streamString {
+- (void)createEventFromStreamString:(NSString*)streamString
+{
     LPSSEvent* event = [[[LPSSEvent alloc] init] autorelease];
     event.eventId = @"";
     event.eventType = @"";

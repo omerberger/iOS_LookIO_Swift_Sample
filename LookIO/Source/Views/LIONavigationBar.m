@@ -8,6 +8,7 @@
 
 #import "LIONavigationBar.h"
 #import "LIOBundleManager.h"
+#import "LIOLookIOManager.h"
 #import <QuartzCore/QuartzCore.h>
 
 @implementation LIONavigationBar
@@ -22,20 +23,29 @@
     {
         self.clipsToBounds = NO;
         
-        stretchableBackgroundPortrait = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarPortrait"];
-        stretchableBackgroundPortrait = [[stretchableBackgroundPortrait stretchableImageWithLeftCapWidth:1 topCapHeight:0] retain];
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+            stretchableBackgroundPortrait = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarPortrait"];
+            stretchableBackgroundPortrait = [[stretchableBackgroundPortrait stretchableImageWithLeftCapWidth:1 topCapHeight:0] retain];
         
-        stretchableBackgroundLandscape = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarLandscape"];
-        stretchableBackgroundLandscape = [[stretchableBackgroundLandscape stretchableImageWithLeftCapWidth:1 topCapHeight:0] retain];
+            stretchableBackgroundLandscape = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarLandscape"];
+            stretchableBackgroundLandscape = [[stretchableBackgroundLandscape stretchableImageWithLeftCapWidth:1 topCapHeight:0] retain];
         
-        stretchableButtonPortrait = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarButtonPortrait"];
-        stretchableButtonPortrait = [[stretchableButtonPortrait stretchableImageWithLeftCapWidth:10 topCapHeight:0] retain];
+            stretchableButtonPortrait = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarButtonPortrait"];
+            stretchableButtonPortrait = [[stretchableButtonPortrait stretchableImageWithLeftCapWidth:10 topCapHeight:0] retain];
         
-        stretchableButtonLandscape = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarButtonLandscape"];
-        stretchableButtonLandscape = [[stretchableButtonLandscape stretchableImageWithLeftCapWidth:10 topCapHeight:0] retain];
+            stretchableButtonLandscape = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIONavBarButtonLandscape"];
+            stretchableButtonLandscape = [[stretchableButtonLandscape stretchableImageWithLeftCapWidth:10 topCapHeight:0] retain];
         
-        backgroundImageView = [[UIImageView alloc] initWithImage:stretchableBackgroundPortrait];
-        [self addSubview:backgroundImageView];
+            backgroundImageView = [[UIImageView alloc] initWithImage:stretchableBackgroundPortrait];
+            [self addSubview:backgroundImageView];
+        } else {
+            self.backgroundColor = [UIColor whiteColor];
+            
+            UIView *bottomBorderView = [[UIView alloc] initWithFrame:CGRectMake(0, self.frame.size.height - 1.0, self.frame.size.width, 1.0)];
+            bottomBorderView.backgroundColor = [UIColor colorWithWhite:0.5 alpha:1.0];
+            bottomBorderView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+            [self addSubview:bottomBorderView];
+        }
         
         titleImageView = [[UIImageView alloc] init];
         titleImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -43,10 +53,17 @@
         
         leftButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         [leftButton addTarget:self action:@selector(leftButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
-        [leftButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        leftButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
-        leftButton.titleLabel.shadowColor = [UIColor blackColor];
-        leftButton.titleLabel.shadowOffset = CGSizeMake(0.0, -0.75);
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme]) {
+
+            [leftButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            leftButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
+            leftButton.titleLabel.shadowColor = [UIColor blackColor];
+            leftButton.titleLabel.shadowOffset = CGSizeMake(0.0, -0.75);
+        } else {
+            leftButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
+            [leftButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:1.0f] forState:UIControlStateNormal];
+            [leftButton setTitleColor:[UIColor colorWithRed:0.0f green:0.49f blue:0.96f alpha:0.3f] forState:UIControlStateNormal | UIControlStateHighlighted];
+        }
         [self addSubview:leftButton];
         
         rightButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -54,7 +71,7 @@
         [rightButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         rightButton.titleLabel.font = [UIFont boldSystemFontOfSize:14.0];
         rightButton.titleLabel.shadowColor = [UIColor blackColor];
-        rightButton.titleLabel.shadowOffset = CGSizeMake(0.0, -0.75);
+        rightButton.titleLabel.shadowOffset = CGSizeMake(0.0, -0.75);            
         [self addSubview:rightButton];
         
         titleLabel = [[UILabel alloc] init];

@@ -12,24 +12,40 @@ typedef enum
 {
     LIOChatMessageKindRemote,
     LIOChatMessageKindLocal,
+    LIOChatMessageKindLocalImage,
     LIOChatMessageKindMapLocation,
     LIOChatMessageKindLink,
-    LIOChatMessageKindPhoneNumber
+    LIOChatMessageKindPhoneNumber,
+    LIOChatMessageKindSystemMessage
 } LIOChatMessageKind;
 
-@interface LIOChatMessage : NSObject
+typedef enum
 {
-    LIOChatMessageKind kind;
-    NSString *text;
-    NSDate *date;
-    NSString *senderName;
-    NSString *attachmentId;
-    BOOL sendingFailed;
-    NSString *lineId;
-    NSString *clientLineId;
-}
+    LIOChatMessageStatusInitialized,
+    LIOChatMessageStatusSending,
+    LIOChatMessageStatusResending,
+    LIOChatMessageStatusSent,
+    LIOChatMessageStatusFailed,
+    LIOChatMessageStatusReceived,
+    LIOChatMessageStatusCreatedLocally
+} LIOChatMessageStatus;
+
+@interface LPChatBubbleLink : NSObject
+
+@property (nonatomic, copy) NSString *string;
+@property (nonatomic, copy) NSString *originalRawString;
+@property (nonatomic, strong) NSURL *URL;
+@property (nonatomic, copy) NSString *scheme;
+@property (nonatomic, assign) NSTextCheckingType* checkingType;
+@property (nonatomic, assign) BOOL isIntraAppLink;
+
+@end
+
+@interface LIOChatMessage : NSObject
 
 @property (nonatomic, assign) LIOChatMessageKind kind;
+@property (nonatomic, assign) LIOChatMessageStatus status;
+
 @property (nonatomic, retain) NSString *text;
 @property (nonatomic, retain) NSDate *date;
 @property (nonatomic, retain) NSString *senderName;
@@ -38,6 +54,10 @@ typedef enum
 @property (nonatomic, copy) NSString *lineId;
 @property (nonatomic, copy) NSString *clientLineId;
 
-+ (LIOChatMessage *)chatMessage;
+@property (nonatomic, assign) BOOL isShowingLinks;
+@property (nonatomic, strong) NSMutableArray *links;
+@property (nonatomic, strong) NSMutableArray *textCheckingResults;
+
+- (void)detectLinks;
 
 @end

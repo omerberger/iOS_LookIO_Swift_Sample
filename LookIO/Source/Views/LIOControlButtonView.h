@@ -23,7 +23,7 @@ typedef enum
 @interface LIOControlButtonView : UIView
 {
     UILabel *label;
-    UIColor *tintColor, *textColor, *fillColor, *shadowColor;
+    UIColor *tintColor, *textColor, *fillColor, *shadowColor, *borderColor;
     NSString *labelText;
     UIImageView *innerShadow;
     UIActivityIndicatorView *spinner;
@@ -38,5 +38,7 @@ typedef enum
 @property(nonatomic, assign) LIOControlButtonViewMode currentMode;
 @property(nonatomic, readonly) UIActivityIndicatorView *spinner;
 @property(nonatomic, assign) id<LIOControlButtonViewDelegate> delegate;
+
+- (void)updateButtonForChatTheme;
 
 @end

@@ -14,13 +14,6 @@ typedef enum
 } LIOSurveyLogicPropType;
 
 @interface LIOSurveyLogicItem : NSObject
-{
-    NSInteger sourceLogicId;
-    NSInteger targetLogicId;
-    NSString* sourceAnswerLabel;
-    BOOL enabled;
-    LIOSurveyLogicPropType propType;
-}
 
 @property (nonatomic, assign) NSInteger sourceLogicId;
 @property (nonatomic, assign) NSInteger targetLogicId;

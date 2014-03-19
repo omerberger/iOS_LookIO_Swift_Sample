@@ -15,19 +15,24 @@
 
 @class LIOAnimatedKeyboardIcon, LIOTimerProxy;
 
-@interface LIONotificationArea : UIView
-{
-    UIView *defaultNotification, *activeNotification;
-    LIOTimerProxy *notificationTimer, *animatedEllipsisTimer, *startAnimatedLongTextTimer, *moveAnimatedLongTextTimer;
-    LIOAnimatedKeyboardIcon *keyboardIcon;
-    BOOL keyboardIconVisible;
-    BOOL animatingLongText;
-    BOOL hasCustomBranding;
-}
+@class LIONotificationArea;
 
-@property(nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
-@property (nonatomic, readonly) BOOL hasCustomBranding;
+@protocol LIONotificationAreaDelegate <NSObject>
+
+- (BOOL)notificationAreaShouldDismissNotification:(LIONotificationArea *)aView;
+- (BOOL)notificationAreaShouldDisplayIsTypingAfterDismiss:(LIONotificationArea *)aView;
+
+@end
+
+@interface LIONotificationArea : UIView
+
+@property (nonatomic, assign) id <LIONotificationAreaDelegate> delegate;
+
+@property (nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
+@property (nonatomic, assign) BOOL hasCustomBranding;
 
 - (void)revealNotificationString:(NSString *)aString permanently:(BOOL)permanent;
+- (void)hideCurrentNotification;
+- (void)removeTimersAndNotifications;
 
 @end

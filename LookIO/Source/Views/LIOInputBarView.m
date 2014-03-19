@@ -26,13 +26,21 @@
     {
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         BOOL attachNeeded = [[LIOLookIOManager sharedLookIOManager] enabledCollaborationComponents];
+        attachNeeded = YES;
         
-        self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
-                
-        UIImage *sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            self.backgroundColor = [UIColor colorWithWhite:102.0/255.0 alpha:0.5];
+        else
+            self.backgroundColor = [UIColor colorWithWhite:0.05 alpha:0.7];
+        
+        UIImage *sendButtonImage;
+        if ([LIOLookIOManager sharedLookIOManager].selectedChatTheme == kLPChatThemeFlat)
+            sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton-flat"];
+        else
+            sendButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOStretchableSendButton"];        
         sendButtonImage = [sendButtonImage stretchableImageWithLeftCapWidth:5 topCapHeight:20];
         
-        UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOAttachIcon"];
+        UIImage *attachImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOPlusIcon"];
         
         CGRect sendButtonFrame = CGRectZero;
         UIFont *sendButtonFont = nil;
@@ -51,6 +59,11 @@
             sendButtonFrame.size.width = 59.0;
             sendButtonFrame.size.height = 36.0;
             sendButtonFont = [UIFont boldSystemFontOfSize:12.0];
+            
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                sendButtonFont = [UIFont boldSystemFontOfSize:16.0];
+            else
+                sendButtonFont = [UIFont boldSystemFontOfSize:12.0];
         }
         
         sendButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -61,6 +74,8 @@
         sendButton.frame = sendButtonFrame;
         [sendButton addTarget:self action:@selector(sendButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
         sendButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            [sendButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.3] forState:UIControlStateNormal | UIControlStateHighlighted];
         [self addSubview:sendButton];
         
         CGRect attachButtonFrame = sendButton.frame;
@@ -73,6 +88,9 @@
         attachButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
         attachButton.frame = attachButtonFrame;
         attachButton.hidden = NO == attachNeeded;
+        attachButton.adjustsImageWhenHighlighted = NO;
+        attachButton.imageView.clipsToBounds = NO;
+        attachButton.imageView.contentMode = UIViewContentModeCenter;
         [attachButton setBackgroundImage:sendButtonImage forState:UIControlStateNormal];
         [attachButton setImage:attachImage forState:UIControlStateNormal];
         [attachButton addTarget:self action:@selector(attachButtonWasTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -152,7 +170,10 @@
             fontSize = 20.0;
         
         inputField = [[UITextView alloc] initWithFrame:inputFieldBackground.bounds];
-        inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            inputField.keyboardAppearance = UIKeyboardAppearanceDefault;
+        else
+            inputField.keyboardAppearance = UIKeyboardAppearanceAlert;
         inputField.accessibilityLabel = @"LIOInputBarView.inputField";
         inputField.font = [UIFont systemFontOfSize:fontSize];
         inputField.delegate = self;
@@ -179,7 +200,10 @@
         
         characterCount = [[UILabel alloc] init];
         characterCount.backgroundColor = [UIColor clearColor];
-        characterCount.textColor = [UIColor lightGrayColor];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            characterCount.textColor = [UIColor whiteColor];
+        else
+            characterCount.textColor = [UIColor lightGrayColor];
         characterCount.font = [UIFont italicSystemFontOfSize:12.0];
         [self addSubview:characterCount];
         

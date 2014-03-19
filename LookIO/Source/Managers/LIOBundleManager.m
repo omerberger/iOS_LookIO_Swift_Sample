@@ -117,6 +117,20 @@ BOOL LIOIsUIKitFlatMode(void) {
         [self findBundle];
         
         imageCache = [[NSMutableDictionary alloc] init];
+        
+        brandingImageCache = [[NSMutableDictionary alloc] init];
+
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        if ([userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey])
+        {
+            NSData *brandingImageCacheData = [userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey];
+            brandingImageCache = [NSKeyedUnarchiver unarchiveObjectWithData:brandingImageCacheData];
+        }
+        else
+        {
+            brandingImageCache = [[NSMutableDictionary alloc] init];
+        }
+        [brandingImageCache retain];
     }
     
     return self;
@@ -129,7 +143,8 @@ BOOL LIOIsUIKitFlatMode(void) {
     [lioBundle release];
     [bundleDownloadRequest release];
     [bundleDownloadConnection release];
-    [imageCache release];    
+    [imageCache release];
+    [brandingImageCache release];
     
     [bundleDownloadOutputStream close];
     [bundleDownloadOutputStream release];
@@ -147,6 +162,30 @@ BOOL LIOIsUIKitFlatMode(void) {
     return [cachesDir stringByAppendingPathComponent:[NSString stringWithFormat:@"_LOOKIO_%@/", LOOKIO_VERSION_STRING]];
 }
 
+- (NSString *)brandingImagesDirectory
+{
+    return [[self targetDirectory] stringByAppendingPathComponent:@"CustomBranding/"];
+}
+
+- (NSString *)brandingImagesDirectoryForBrandingElement:(LIOBrandingElement)element
+{
+    return [[self brandingImagesDirectory] stringByAppendingPathComponent:[NSString stringWithFormat:@"%d/", element]];
+}
+
+-(NSString*)bundleName {
+    return @"LookIO.bundle";
+}
+
+-(void)resetBundle {
+    [lioBundle release];
+    lioBundle = nil;
+    [self findBundle];
+
+    [imageCache release];
+    imageCache = [[NSMutableDictionary alloc] init];
+
+}
+
 - (NSString *)bundleZipPath
 {
     return [[self targetDirectory] stringByAppendingPathComponent:@"bundle.zip"];
@@ -154,7 +193,7 @@ BOOL LIOIsUIKitFlatMode(void) {
 
 - (NSString *)bundlePath
 {
-    return [[self targetDirectory] stringByAppendingPathComponent:@"LookIO.bundle"];
+    return [[self targetDirectory] stringByAppendingPathComponent:[self bundleName]];
 }
 
 - (void)findBundle
@@ -182,14 +221,14 @@ BOOL LIOIsUIKitFlatMode(void) {
     else
     {
         // Nope. Check the main .app bundle.
-        NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"LookIO.bundle"];
+        NSString *mainBundlePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:[self bundleName]];
         NSFileManager *fileManager = [NSFileManager defaultManager];
         BOOL isDir = NO;
         BOOL bundleExists = [fileManager fileExistsAtPath:mainBundlePath isDirectory:&isDir];
         if (bundleExists && isDir)
         {
             // Yep! Copy it to the target dir and try loading it.
-            NSString *targetDir = [NSString stringWithFormat:@"%@/LookIO.bundle", [self targetDirectory]];
+            NSString *targetDir = [NSString stringWithFormat:@"%@/%@", [self targetDirectory], [self bundleName]];
             NSError *anError = nil;
             BOOL copyResult = [fileManager copyItemAtPath:mainBundlePath toPath:targetDir error:&anError];
             if (copyResult && nil == anError)
@@ -268,6 +307,39 @@ BOOL LIOIsUIKitFlatMode(void) {
         [imageCache release];
         imageCache = newImageCache;
     }
+}
+
+#pragma mark Tint Color Methods
+
+- (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color {
+    UIImage *image = [self imageNamed:aString];
+    
+    if (!image)
+        return nil;
+    
+    if (image.size.width == 0 || image.size.height == 0)
+        return image;
+    
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    [color setFill];
+    
+    CGContextTranslateCTM(context, 0, image.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+    CGContextDrawImage(context, rect, image.CGImage);
+    
+    CGContextClipToMask(context, rect, image.CGImage);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    UIImage *coloredImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return coloredImage;
 }
 
 - (UIImage *)imageNamed:(NSString *)aString
@@ -474,6 +546,185 @@ BOOL LIOIsUIKitFlatMode(void) {
     return [UIImage imageNamed:aString];
 }
 
+- (void)cacheImage:(UIImage *)image fromURL:(NSURL *)url forBrandingElement:(LIOBrandingElement)element
+{
+    // Delete the previous image cached for this branding element
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    if ([brandingImageCache objectForKey:[NSNumber numberWithInt:element]])
+    {
+        NSURL *oldFileURL = [brandingImageCache objectForKey:[NSNumber numberWithInt:element]];
+        NSString *oldFileName = [[oldFileURL path] lastPathComponent];
+        NSString *oldFilePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:oldFileName];
+        if ([fileManager fileExistsAtPath:oldFilePath])
+        {
+            NSError *error = nil;
+            [fileManager removeItemAtPath:oldFilePath error:&error];
+        }
+    }
+    
+    // Let's check if the root directory exists, if not, create it
+
+    BOOL isDir;
+    BOOL exists = [fileManager fileExistsAtPath:[self brandingImagesDirectory] isDirectory:&isDir];
+    if (!exists) {
+        NSError *error = nil;
+        BOOL success = [fileManager createDirectoryAtPath:[self brandingImagesDirectory] withIntermediateDirectories:NO attributes:nil error:&error];
+        if (!success || error) {
+            LIOLog(@"Error: %@", [error localizedDescription]);
+        }
+    }
+    
+    // Let's check if the directory exists, if not, create it
+    
+    exists = [fileManager fileExistsAtPath:[self brandingImagesDirectoryForBrandingElement:element] isDirectory:&isDir];
+    if (!exists) {
+        NSError *error = nil;
+        BOOL success = [fileManager createDirectoryAtPath:[self brandingImagesDirectoryForBrandingElement:element] withIntermediateDirectories:NO attributes:nil error:&error];
+        if (!success || error) {
+            LIOLog(@"Error: %@", [error localizedDescription]);
+        }
+    }
+    
+    // Cache the new image
+
+    NSString *newFilename = [[url path] lastPathComponent];
+    NSString *newFilePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:newFilename];
+    
+    [UIImagePNGRepresentation(image) writeToFile:newFilePath atomically:YES];
+    [brandingImageCache setObject:url forKey:[NSNumber numberWithInt:element]];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSData *brandingImageCacheData = [NSKeyedArchiver archivedDataWithRootObject:brandingImageCache];
+    [userDefaults setObject:brandingImageCacheData forKey:LIOBundleManagerBrandingImageCacheKey];
+    [userDefaults synchronize];
+}
+
+- (void)cachedImageForBrandingElement:(LIOBrandingElement)element withBlock:(void (^)(BOOL, UIImage *))block;
+{
+    // Check if this element has a custom image. If not, report failure
+    NSURL *imageURL = [[LIOBrandingManager brandingManager] customImageURLForElement:element];
+    if (!imageURL)
+    {
+        if (block)
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                block(NO, nil);
+            });
+        }
+        return;
+    }
+    
+    // Let's check if the image exists, if not, call the callback without setting an image
+    if ([brandingImageCache objectForKey:[NSNumber numberWithInteger:element]])
+    {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSURL *fileURL = [brandingImageCache objectForKey:[NSNumber numberWithInt:element]];
+        
+        // Make sure that the cached image is the same URL
+        if ([imageURL isEqual:fileURL])
+        {
+            NSString *filename = [[fileURL path] lastPathComponent];
+            NSString *filePath = [[self brandingImagesDirectoryForBrandingElement:element] stringByAppendingPathComponent:filename];
+        
+            // Make sure the file exists
+            if ([fileManager fileExistsAtPath:filePath])
+            {
+                // Before we use the cached file, let's make sure we have the latest version of it
+                if (![self newerVersionOfCachedFile:filePath forURL:imageURL])
+                {
+                    // Load the image and return it
+                    NSData *data = [[[NSData alloc] initWithContentsOfFile:filePath] autorelease];
+                    UIImage *image = [[[UIImage alloc] initWithData:data] autorelease];
+                
+                    if (block)
+                    {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            block(YES, image);
+                        });
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    // Image with the same URL isn't cached, or a newer version exists on server side Let's download it in background.
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        UIImage *image = [[[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:imageURL]] autorelease];
+        if (image)
+        {
+            if (block)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    block(YES, image);
+                });
+            }
+            [[LIOBundleManager sharedBundleManager] cacheImage:image fromURL:imageURL forBrandingElement:element];
+        }
+        else
+        {
+            if (block)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    block (NO, nil);
+                });
+            }
+        }
+    });
+}
+
+- (BOOL)newerVersionOfCachedFile:(NSString *)filePath forURL:(NSURL *)url
+{
+    BOOL newerVersion = NO;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    // Let's grab the server's last modified string
+    NSString *lastModifiedString = nil;
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"HEAD"];
+    NSHTTPURLResponse *response;
+    NSError *error = nil;
+    [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    if ([response respondsToSelector:@selector(allHeaderFields)]) {
+        lastModifiedString = [[response allHeaderFields] objectForKey:@"Last-Modified"];
+    }
+    
+    // If we got an error, or didn't get a last modified from the server, we should use the local file
+    if (error || lastModifiedString == nil)
+    {
+        return NO;
+    }
+    
+    NSDate *lastModifiedServer = nil;
+    @try {
+        NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+        dateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+        dateFormatter.locale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
+        dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+        lastModifiedServer = [dateFormatter dateFromString:lastModifiedString];
+    }
+    @catch (NSException * e) {
+        NSLog(@"Error parsing last modified date: %@ - %@", lastModifiedString, [e description]);
+        return NO;
+    }
+    
+    NSDate *lastModifiedLocal = nil;
+    NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:&error];
+    lastModifiedLocal = [fileAttributes fileModificationDate];
+    
+    // Download file from server if we don't have a local file
+    if (!lastModifiedLocal) {
+        newerVersion = YES;
+    }
+    // Download file from server if the server modified timestamp is later than the local modified timestamp
+    if ([lastModifiedLocal laterDate:lastModifiedServer] == lastModifiedServer) {
+        newerVersion = YES;
+    }
+    
+    return newerVersion;
+}
+
 - (BOOL)isAvailable
 {
     return lioBundle != nil;
@@ -483,13 +734,13 @@ BOOL LIOIsUIKitFlatMode(void) {
 {
     // First, check to see if we've got a string for this key in
     // the downloaded tables.
-    NSString *localeId = [[NSLocale currentLocale] objectForKey:NSLocaleIdentifier];
+    NSString *languageId = [[NSLocale preferredLanguages] objectAtIndex:0];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *downloadedStrings = [userDefaults objectForKey:LIOBundleManagerStringTableDictKey];
     NSString *downloadedLocale = [downloadedStrings objectForKey:@"locale"];
-    if ([downloadedLocale length] && NO == [downloadedLocale isEqualToString:localeId])
+    if ([downloadedLocale length] && NO == [downloadedLocale isEqualToString:languageId])
     {
-        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The downloaded localized string table's locale (%@) does not match this device's locale (%@).", downloadedLocale, localeId];
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The downloaded localized string table's locale (%@) does not match this device's locale (%@).", downloadedLocale, languageId];
     }
     
     NSDictionary *stringTable = [downloadedStrings objectForKey:@"strings"];
@@ -502,6 +753,17 @@ BOOL LIOIsUIKitFlatMode(void) {
     return [englishBundle localizedStringForKey:aKey value:@"<LOCALIZATION MISSING>" table:nil];
 }
 
+- (NSDictionary *)brandingDictionary
+{
+    NSString *bundlePath = [lioBundle pathForResource:@"branding" ofType:@"json" inDirectory:nil];
+    NSData *data = [NSData dataWithContentsOfFile:bundlePath];
+    
+    if (data == nil)
+        return nil;
+    
+    return [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
+}
+
 - (NSString *)hashForLocalizedStringTable:(NSDictionary *)aTable
 {
     NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
@@ -512,8 +774,26 @@ BOOL LIOIsUIKitFlatMode(void) {
         NSString *aKey = [sortedKeys objectAtIndex:i];
         [stringResult appendString:[aTable objectForKey:aKey]];
     }
+    return [self md5StringForString:stringResult];
+}
+
+- (NSString *)hashForLocalBrandingFile
+{
+    NSString *bundlePath = [lioBundle pathForResource:@"branding" ofType:@"json" inDirectory:nil];
+    NSData *data = [NSData dataWithContentsOfFile:bundlePath];
+    if (data == nil)
+        return @"no_local_file";
     
-    const char *cString = [stringResult UTF8String];
+    NSString *brandingFileString = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@" " withString:@""];
+    brandingFileString = [brandingFileString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+    
+    return [self md5StringForString:brandingFileString];
+}
+
+- (NSString *)md5StringForString:(NSString *)inputString
+{
+    const char *cString = [inputString UTF8String];
     unsigned char result[16];
     CC_MD5(cString, strlen(cString), result);
     NSMutableString *md5String = [NSMutableString string];
@@ -521,6 +801,61 @@ BOOL LIOIsUIKitFlatMode(void) {
         [md5String appendFormat:@"%02x", result[i]];
     
     return md5String;
+}
+
+- (NSDictionary *)localizedStringTableForLanguage:(NSString *)aLangCode
+{
+    // Need a bundle for this to work.
+    if (NO == [self isAvailable])
+        return nil;
+    
+    NSString *path = [lioBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:aLangCode];
+    if (0 == [path length])
+    {
+        LIOLog(@"[localizedStringTableForLanguage:] Couldn't open localized string bundle: %@", path);
+        return nil;
+    }
+
+    NSError *error = nil;
+    NSString *contents = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
+    if (0 == [contents length])
+        return nil;
+
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    NSArray *lines = [contents componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    for (NSString *aLine in lines)
+    {
+        if (0 == [aLine length])
+            continue;
+        
+        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"^\"(.+)\"\\s*=\\s*\"(.+)\".*;$" options:0 error:nil];
+        NSArray *matches = [regex matchesInString:aLine options:0 range:NSMakeRange(0, [aLine length])];
+        if ([matches count] == 1)
+        {
+            NSTextCheckingResult *match = [matches objectAtIndex:0];
+            NSRange keyRange = [match rangeAtIndex:1];
+            NSRange valueRange = [match rangeAtIndex:2];
+            
+            if (keyRange.location != NSNotFound || valueRange.location != NSNotFound)
+            {
+                NSString *aKey = [aLine substringWithRange:keyRange];
+                
+                NSString *aValue = [aLine substringWithRange:valueRange];
+                
+                [result setObject:aValue forKey:aKey];
+            }
+            else
+            {
+                LIOLog(@"[localizedStringTableForLanguage:] Match failed! keyRange: %@, valueRange: %@. Line was:\n%@", [NSValue valueWithRange:keyRange], [NSValue valueWithRange:valueRange], aLine);
+            }
+        }
+        else
+        {
+            LIOLog(@"[localizedStringTableForLanguage:] >1 match? Fail. Line was:\n%@\n\nmatches: %@", aLine, matches);
+        }
+    }
+
+    return result;
 }
 
 #pragma mark -

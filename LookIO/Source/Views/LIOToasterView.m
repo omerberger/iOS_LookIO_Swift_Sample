@@ -10,6 +10,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import "LIOAnimatedKeyboardIcon.h"
 #import "LIOTimerProxy.h"
+#import "LIOLookIOManager.h"
+#import "LIOBrandingManager.h"
 
 @implementation LIOToasterView
 
@@ -24,21 +26,23 @@
     {
         self.layer.cornerRadius = 5.0;
         self.layer.masksToBounds = YES;
-        self.backgroundColor = [UIColor colorWithWhite:0.15 alpha:0.8];
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementToasterView];
+        CGFloat alpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementToasterView];
+        self.backgroundColor = [backgroundColor colorWithAlphaComponent:alpha];
         
         CGRect aFrame = self.frame;
         aFrame.size.height = 50.0;
         self.frame = aFrame;
         
-        keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0)];
+        keyboardIcon = [[LIOAnimatedKeyboardIcon alloc] initWithFrame:CGRectMake(0.0, 0.0, 13.0, 18.0) forElement:LIOBrandingElementToasterView];
         keyboardIcon.backgroundColor = [UIColor clearColor];
         [self addSubview:keyboardIcon];
         
         textLabel = [[UILabel alloc] init];
         textLabel.backgroundColor = [UIColor clearColor];
         textLabel.numberOfLines = 1;
-        textLabel.font = [UIFont boldSystemFontOfSize:14.0];
-        textLabel.textColor = [UIColor whiteColor];
+        textLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementToasterView];
+        textLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementToasterView];
         [self addSubview:textLabel];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -106,6 +110,15 @@
 
 - (void)showAnimated:(BOOL)animated permanently:(BOOL)permanent
 {
+    if (NO == permanent)
+    {
+        [notificationTimer stopTimer];
+        [notificationTimer release];
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+    }
+    
     if (shown)
         return;
     
@@ -140,14 +153,7 @@
                                           }];
                      }];
     
-    if (NO == permanent)
-    {
-        [notificationTimer stopTimer];
-        [notificationTimer release];
-        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
-                                                                 target:self
-                                                               selector:@selector(notificationTimerDidFire)];
-    }
+
 }
 
 - (void)hideAnimated:(BOOL)animated
@@ -200,7 +206,18 @@
     [notificationTimer release];
     notificationTimer = nil;
     
-    [self hideAnimated:YES];
+    // Let's check if we should dismiss this notification
+    BOOL shouldDismiss = [self.delegate toasterViewShouldDismissNotification:self];
+    if (!shouldDismiss)
+    {
+        notificationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOToasterViewDefaultNotificationDuration
+                                                                 target:self
+                                                               selector:@selector(notificationTimerDidFire)];
+    }
+    else
+    {
+        [self hideAnimated:YES];
+    }
 }
 
 #pragma mark -

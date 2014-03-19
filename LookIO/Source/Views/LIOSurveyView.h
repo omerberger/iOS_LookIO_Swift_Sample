@@ -41,7 +41,8 @@
     UISwipeGestureRecognizer* leftSwipeGestureRecognizer, *rightSwipeGestureRecognizer;
     UITapGestureRecognizer* tapGestureRecognizer, *iPadBackgroundGestureRecognizer;
     
-    BOOL isAnimating;
+    BOOL isAnimatingTransition;
+    BOOL isAnimatingEntrance;
     CGFloat keyboardHeight;
     
     LIOSurveyValidationView *validationView;

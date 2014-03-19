@@ -6,87 +6,117 @@
 //  Copyright (c) 2012 LivePerson, Inc. All rights reserved.
 //
 
-#import <QuartzCore/QuartzCore.h>
 #import "LIOHeaderBarView.h"
-#import "LIOLookIOManager.h"
+
+#import <QuartzCore/QuartzCore.h>
+
+// Managers
 #import "LIOBundleManager.h"
-#import "LIOTimerProxy.h"
+#import "LIOBrandingManager.h"
+
+// Views
 #import "LIONotificationArea.h"
+#import "LIOBadgeView.h"
+
+// Helpers
+#import "LIOTimerProxy.h"
+
+@interface LIOHeaderBarView () <LIONotificationAreaDelegate>
+
+@property (nonatomic, strong) LIONotificationArea* notificationArea;
+
+@property (nonatomic, assign) CGFloat statusBarInset;
+
+@property (nonatomic, strong) UIView *tappableBackground;
+@property (nonatomic, strong) UIView *separator;
+
+@end
 
 @implementation LIOHeaderBarView
 
-@synthesize delegate, notificationArea;
-
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset
 {
     self = [super initWithFrame:frame];
     
     if (self)
     {
+        self.statusBarInset = anInset;
         self.clipsToBounds = YES;
+
+        UIColor *backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementBrandingBar];
+        CGFloat backgroundAlpha = [[LIOBrandingManager brandingManager] backgroundAlphaForElement:LIOBrandingElementBrandingBar];
+        self.backgroundColor = [backgroundColor colorWithAlphaComponent:backgroundAlpha];
         
-        separator = [[UIView alloc] init];
-        separator.backgroundColor = [UIColor colorWithPatternImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIORepeatableBlendedSeparatorTop"]];
-        separator.opaque = NO;
-        CGRect aFrame = separator.frame;
-        aFrame.size.height = 15.0;
+        self.separator = [[UIView alloc] init];
+        self.separator.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementBrandingBar];
+        CGRect aFrame = self.separator.frame;
+        aFrame.size.height = 1.0;
         aFrame.size.width = self.bounds.size.width;
-        aFrame.origin.y = self.bounds.size.height - 14.0;
+        aFrame.origin.y = self.bounds.size.height - 1.0;
         
-        separator.frame = aFrame;
-        separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:separator];
-        [separator release];
-                
-        notificationArea = [[LIONotificationArea alloc] initWithFrame:self.bounds];
-        if (LIOIsUIKitFlatMode())
-            if (![[UIApplication sharedApplication] isStatusBarHidden]) {
-                aFrame = notificationArea.frame;
-                aFrame.origin.y += 20.0;
-                notificationArea.frame = aFrame;
-            }
+        self.separator.frame = aFrame;
+        self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:self.separator];
         
-        notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:notificationArea];
-        [notificationArea release];
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        if (!padUI)
+        {
+            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
+            self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+            self.notificationArea.delegate = self;
+            [self addSubview:self.notificationArea];
+        }
         
-        UITapGestureRecognizer *tapper = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)] autorelease];
-        tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
-        tappableBackground.backgroundColor = [UIColor clearColor];
-        [tappableBackground addGestureRecognizer:tapper];
-        [self addSubview:tappableBackground];
-        [tappableBackground release];
+        UITapGestureRecognizer *tapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+        self.tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
+        self.tappableBackground.backgroundColor = [UIColor clearColor];
+        self.tappableBackground.isAccessibilityElement = YES;
+        self.tappableBackground.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ScrollToTopButton");
+        [self.tappableBackground addGestureRecognizer:tapper];
+        [self addSubview:self.tappableBackground];
     }
     
     return self;
 }
 
 - (void)rejiggerSubviews {
-    CGRect aFrame = separator.frame;
-    aFrame.size.height = 15.0;
+    CGRect aFrame = self.separator.frame;
+    aFrame.size.height = 1.0;
     aFrame.size.width = self.bounds.size.width;
-    aFrame.origin.y = self.bounds.size.height - 14.0;
-    separator.frame = aFrame;
+    aFrame.origin.y = self.bounds.size.height - 1.0;
+    self.separator.frame = aFrame;
     
-    aFrame = self.bounds;
-    if (LIOIsUIKitFlatMode()) {
-        if (![[UIApplication sharedApplication] isStatusBarHidden]) {
-            aFrame.origin.y += 20.0;
-        }
-    }
-    notificationArea.frame = aFrame;
-}
-
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
+    self.notificationArea.frame = CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset);
 }
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent
 {
-    notificationArea.keyboardIconVisible = animated;
-    [notificationArea revealNotificationString:aString permanently:permanent];
+    self.notificationArea.keyboardIconVisible = animated;
+    [self.notificationArea revealNotificationString:aString permanently:permanent];
+}
+
+- (void)hideCurrentNotification
+{
+    [self.notificationArea hideCurrentNotification];
+}
+
+- (void)removeTimersAndNotifications
+{
+    [self.notificationArea removeTimersAndNotifications];
+}
+
+
+#pragma mark -
+#pragma mark NotificationAreaDelegate Methods
+
+- (BOOL)notificationAreaShouldDismissNotification:(LIONotificationArea *)aView
+{
+    return [self.delegate headerBarShouldDismissNotification:self];
+}
+
+- (BOOL)notificationAreaShouldDisplayIsTypingAfterDismiss:(LIONotificationArea *)aView;
+{
+    return [self.delegate headerBarShouldDisplayIsTypingAfterDismiss:self];
 }
 
 #pragma mark -
@@ -94,7 +124,7 @@
 
 - (void)plusButtonWasTapped
 {
-    [delegate headerBarViewPlusButtonWasTapped:self];
+    [self.delegate headerBarViewPlusButtonWasTapped:self];
 }
 
 #pragma mark -
@@ -102,7 +132,8 @@
 
 - (void)handleTap:(UITapGestureRecognizer *)aTapper
 {
-    [delegate headerBarViewPlusButtonWasTapped:self];
+    [self.delegate headerBarViewPlusButtonWasTapped:self];
 }
+
 
 @end

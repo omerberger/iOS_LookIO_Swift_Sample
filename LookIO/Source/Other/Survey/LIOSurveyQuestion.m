@@ -9,23 +9,11 @@
 #import "LIOSurveyQuestion.h"
 #import "LIOSurveyPickerEntry.h"
 
-
 @implementation LIOSurveyQuestion
 
-@synthesize questionId, mandatory, order, label, logicId, displayType;
-@synthesize validationType, pickerEntries;
-@synthesize lastKnownValue;
-
-- (void)dealloc
+- (NSArray*)pickerEntryTitles
 {
-    [label release];
-    [pickerEntries release];
-    
-    [super dealloc];
-}
-
-- (NSArray*)pickerEntryTitles {
-    NSMutableArray* pickerEntryTitles = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray* pickerEntryTitles = [[NSMutableArray alloc] init];
     
     for (int i=0; i < self.pickerEntries.count; i++) {
         LIOSurveyPickerEntry* pickerEntry = [self.pickerEntries objectAtIndex:i];
@@ -35,7 +23,8 @@
     return pickerEntryTitles;
 }
 
-- (BOOL)shouldUseStarRatingView {
+- (BOOL)shouldUseStarRatingView
+{
     if (self.displayType != LIOSurveyQuestionDisplayTypePicker)
         return NO;
     
@@ -44,13 +33,48 @@
 
     NSArray* pickerEntryTitles = [self pickerEntryTitles];
     
-    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Satisfied", @"Satisfied", @"Neither Satisfied Nor Dissatisfied", @"Dissatisfied", @"Very Dissatisfied", nil]])
+    if ([pickerEntryTitles isEqualToArray:@[@"Very Satisfied", @"Satisfied", @"Neither Satisfied Nor Dissatisfied", @"Dissatisfied", @"Very Dissatisfied"]])
         return YES;
     
-    if ([pickerEntryTitles isEqualToArray:[NSArray arrayWithObjects:@"Very Likely", @"Likely", @"Neither Likely Nor Unlikely", @"Unlikely", @"Very Unlikely", nil]])
+    if ([pickerEntryTitles isEqualToArray:@[@"Very Likely", @"Likely", @"Neither Likely Nor Unlikely", @"Unlikely", @"Very Unlikely"]])
         return YES;
+    
+    if ([pickerEntryTitles isEqualToArray:@[@"Excellent", @"Good", @"Fair", @"Below Average", @"Poor"]])
+         return YES;
     
     return NO;
+}
+
+#pragma mark -
+#pragma mark NSCopying Methods
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    if (self = [super init]) {
+        self.questionId = [decoder decodeIntegerForKey:@"questionId"];
+        self.mandatory = [decoder decodeBoolForKey:@"mandatory"];
+        self.order = [decoder decodeIntegerForKey:@"order"];
+        self.label = [decoder decodeObjectForKey:@"label"];
+        self.logicId = [decoder decodeObjectForKey:@"logicId"];
+        self.displayType = [decoder decodeIntegerForKey:@"displayType"];
+        self.validationType = [decoder decodeIntegerForKey:@"validationType"];
+        self.pickerEntries = [NSKeyedUnarchiver unarchiveObjectWithData:[decoder decodeObjectForKey:@"pickerEntries"]];
+        self.selectedIndices = [decoder decodeObjectForKey:@"selectedIndices"];
+        self.lastKnownValue = [decoder decodeObjectForKey:@"lastKnownValue"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+    [encoder encodeInteger:self.questionId forKey:@"questionId"];
+    [encoder encodeBool:self.mandatory forKey:@"mandatory"];
+    [encoder encodeInteger:self.order forKey:@"order"];
+    [encoder encodeObject:self.label forKey:@"label"];
+    [encoder encodeInteger:self.logicId forKey:@"logicId"];
+    [encoder encodeInteger:self.displayType forKey:@"displayType"];
+    [encoder encodeInteger:self.validationType forKey:@"validationType"];
+    [encoder encodeObject:[NSKeyedArchiver archivedDataWithRootObject:self.pickerEntries] forKey:@"pickerEntries"];
+    [encoder encodeObject:self.selectedIndices forKey:@"selectedIndices"];
+    [encoder encodeObject:self.lastKnownValue forKey:@"lastKnownValue"];
 }
 
 @end

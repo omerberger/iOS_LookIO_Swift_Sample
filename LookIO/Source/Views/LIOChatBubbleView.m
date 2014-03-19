@@ -34,12 +34,17 @@ static NSDataDetector *dataDetector = nil;
         
         mainMessageView = [[TTTAttributedLabel_LIO alloc] initWithFrame:self.bounds];
         mainMessageView.dataDetectorTypes = UIDataDetectorTypeNone;
-        mainMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
-        mainMessageView.layer.shadowRadius = 1.0;
-        mainMessageView.layer.shadowOpacity = 1.0;
-        mainMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        if (kLPChatThemeClassic == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+            mainMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
+            mainMessageView.layer.shadowRadius = 1.0;
+            mainMessageView.layer.shadowOpacity = 1.0;
+            mainMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        }
         mainMessageView.backgroundColor = [UIColor clearColor];
-        mainMessageView.textColor = [UIColor whiteColor];
+        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+            mainMessageView.textColor = [UIColor colorWithWhite:56.0/255.0 alpha:1.0];
+        else
+            mainMessageView.textColor = [UIColor whiteColor];
         mainMessageView.numberOfLines = 0;
         [self addSubview:mainMessageView];
         
@@ -57,24 +62,13 @@ static NSDataDetector *dataDetector = nil;
         linkSupertypes = [[NSMutableArray alloc] init];
         linkURLs = [[NSMutableArray alloc] init];
         linkSchemes = [[NSMutableArray alloc] init];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationWillResignActive:)
-                                                     name:UIApplicationWillResignActiveNotification
-                                                   object:nil];
     }
     
     return self;
 }
 
 - (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [alertView dismissWithClickedButtonIndex:0 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
-    
+{    
     [mainMessageView release];
     [backgroundImage release];
     [senderName release];
@@ -82,7 +76,6 @@ static NSDataDetector *dataDetector = nil;
     [links release];
     [linkButtons release];
     [linkTypes release];
-    [urlBeingLaunched release];
     [rawChatMessage release];
     [intraAppLinkViews release];
     [linkSupertypes release];
@@ -182,13 +175,18 @@ static NSDataDetector *dataDetector = nil;
 {
     UILabel *newMessageView = [[UILabel alloc] initWithFrame:self.bounds];
     newMessageView.font = [UIFont systemFontOfSize:15.0];
-    newMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
-    newMessageView.layer.shadowRadius = 1.0;
-    newMessageView.layer.shadowOpacity = 1.0;
-    newMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
     newMessageView.backgroundColor = [UIColor clearColor];
-    newMessageView.textColor = [UIColor whiteColor];
     newMessageView.numberOfLines = 0;
+    
+    if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme) {
+        newMessageView.textColor = [UIColor colorWithWhite:56.0/255.0 alpha:1.0];
+    } else {
+        newMessageView.layer.shadowColor = [UIColor blackColor].CGColor;
+        newMessageView.layer.shadowRadius = 1.0;
+        newMessageView.layer.shadowOpacity = 1.0;
+        newMessageView.layer.shadowOffset = CGSizeMake(0.0, 1.0);
+        newMessageView.textColor = [UIColor whiteColor];
+    }
     
     return newMessageView;
 }
@@ -203,6 +201,9 @@ static NSDataDetector *dataDetector = nil;
     newLinkButton.titleLabel.lineBreakMode = UILineBreakModeTailTruncation;
     [newLinkButton addTarget:self action:@selector(linkButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
     newLinkButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, 20.0, 0.0, 20.0);
+    
+    if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+        [newLinkButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     
     return newLinkButton;
 }
@@ -283,7 +284,11 @@ static NSDataDetector *dataDetector = nil;
                         NSString *aString = (NSString *)linkView;
                         UILabel *aLabel = [[[UILabel alloc] init] autorelease];
                         aLabel.backgroundColor = [UIColor clearColor];
+                        
                         aLabel.textColor = [UIColor whiteColor];
+                        if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                            aLabel.textColor = [UIColor darkGrayColor];
+                                                 
                         aLabel.text = aString;
                         aLabel.textAlignment = UITextAlignmentCenter;
                         [intraAppLinkViews addObject:aLabel];
@@ -327,7 +332,10 @@ static NSDataDetector *dataDetector = nil;
             if (boldRange.location != NSNotFound)
             {
                 [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)boldNameCTFont range:boldRange];
-                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
+                if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                    [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor colorWithRed:129.0/255.0 green:132.0/255.0 blue:131.0/255.0 alpha:1.0].CGColor range:boldRange];
+                else
+                    [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:(id)[UIColor whiteColor].CGColor range:boldRange];
             }
             
             CFRelease(boldNameCTFont);
@@ -346,6 +354,8 @@ static NSDataDetector *dataDetector = nil;
             UIButton *newLinkButton = [[self createLinkButton] autorelease];
             NSString *curLink = [links objectAtIndex:i];
             [newLinkButton setTitle:curLink forState:UIControlStateNormal];
+            if (kLPChatThemeFlat == [LIOLookIOManager sharedLookIOManager].selectedChatTheme)
+                [newLinkButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
             [linkButtons addObject:newLinkButton];
             [self addSubview:newLinkButton];
             
@@ -496,29 +506,7 @@ static NSDataDetector *dataDetector = nil;
     {
         if (LIOChatBubbleViewLinkSupertypeExtra == aSupertype)
         {
-            NSString *alertMessage = nil;
-            NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancel");
-            NSString *alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGo");
-            if ([[aScheme lowercaseString] hasPrefix:@"http"])
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlert"), aLink];
-            else if ([[aScheme lowercaseString] hasPrefix:@"mailto"])
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertEmail"), aLink];
-            else if ([[aScheme lowercaseString] hasPrefix:@"tel"])
-            {
-                alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
-                alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone");
-                alertOpen = LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone");
-            }
-            
-            [urlBeingLaunched release];
-            urlBeingLaunched = [aLinkURL retain];
-            
-            alertView = [[UIAlertView alloc] initWithTitle:nil
-                                                   message:alertMessage
-                                                  delegate:self
-                                         cancelButtonTitle:nil
-                                         otherButtonTitles:alertCancel, alertOpen, nil];
-            [alertView show];
+            [delegate chatBubbleView:self didTapWebLinkWithURL:aLinkURL];
         }
         else
         {
@@ -528,44 +516,8 @@ static NSDataDetector *dataDetector = nil;
     }
     else if (NSTextCheckingTypePhoneNumber)
     {
-        [urlBeingLaunched release];
-        urlBeingLaunched = [aLinkURL retain];
-        
-        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.LinkAlertPhone"), aLink];
-        alertView = [[UIAlertView alloc] initWithTitle:nil
-                                               message:alertMessage
-                                              delegate:self
-                                     cancelButtonTitle:nil
-                                     otherButtonTitles:LIOLocalizedString(@"LIOChatBubbleView.AlertCancelPhone"), LIOLocalizedString(@"LIOChatBubbleView.AlertGoPhone"), nil];
-        [alertView show];
+        [delegate chatBubbleView:self didTapPhoneURL:aLinkURL link:aLink];
     }
-}
-
-#pragma mark -
-#pragma mark UIAlertViewDelegate methods
-
-- (void)alertView:(UIAlertView *)anAlertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (1 == buttonIndex && urlBeingLaunched)
-    {
-        [[UIApplication sharedApplication] openURL:urlBeingLaunched];
-    }
-    
-    [urlBeingLaunched release];
-    urlBeingLaunched = nil;
-    
-    [alertView autorelease];
-    alertView = nil;
-}
-
-#pragma mark -
-#pragma mark Notification handlers
-
-- (void)applicationWillResignActive:(NSNotification *)aNotification
-{
-    [alertView dismissWithClickedButtonIndex:0 animated:NO];
-    [alertView autorelease];
-    alertView = nil;
 }
 
 @end

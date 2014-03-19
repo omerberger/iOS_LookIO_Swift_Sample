@@ -138,6 +138,9 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)uploadLog
 {
+    // TODO: Do it?
+    return;
+    
     [self flush];
     
     NSString *allLogEntries = [NSString stringWithContentsOfFile:[self logPath]

@@ -10,7 +10,7 @@
 #import "LIOSurveyManager.h"
 
 @class LIOAltChatViewController, LIOInputBarView, LIOHeaderBarView, LIODismissalBarView, LIOGradientLayer, LIOToasterView, LIOSurveyView;
-@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager;
+@class LIOTimerProxy, LIOChatMessage, LIOSurveyManager, LIOWebView, LIOKeyboardMenu;
 
 @protocol LIOInputBarViewDelegate;
 @protocol LIOHeaderBarViewDelegate;
@@ -19,8 +19,12 @@
 @protocol LIOLeaveMessageViewControllerDelegate;
 @protocol LIOChatBubbleViewDelegate;
 @protocol LIOToasterViewDelegate;
-@protocol LIOSurveyViewControllerDelegate;
 @protocol LIOSurveyViewDelegate;
+@protocol LIOKeyboardMenuDelegate;
+
+// LIOGradientLayer gets rid of implicit layer animations.
+@interface LIOGradientLayer : CAGradientLayer
+@end
 
 @protocol LIOAltChatViewControllerDelegate
 - (void)altChatViewController:(LIOAltChatViewController *)aController wasDismissedWithPendingChatText:(NSString *)aString;
@@ -59,7 +63,7 @@
     <UIActionSheetDelegate, UITableViewDataSource, UITableViewDelegate, LIOInputBarViewDelegate, UIScrollViewDelegate,
      LIOHeaderBarViewDelegate, LIODismissalBarViewDelegate, LIOEmailHistoryViewControllerDelegate,
      LIOLeaveMessageViewControllerDelegate, LIOChatBubbleViewDelegate, LIOToasterViewDelegate, UIPopoverControllerDelegate,
-     UIAlertViewDelegate, LIOSurveyViewControllerDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate>
+    UIAlertViewDelegate, UIImagePickerControllerDelegate, LIOSurveyViewDelegate, LIOKeyboardMenuDelegate>
 {
     CGFloat previousScrollHeight;
     UIView *background;
@@ -107,6 +111,19 @@
     
     BOOL shouldHideStatusBarAfterImagePicker;
     BOOL viewWereUpdatedForPreferedStatusBar;
+    
+    NSURL *urlBeingLaunched;
+
+    LIOWebView* webView;
+
+    NSMutableArray* chatModules;
+    int activeChatModuleIndex;
+    UIView* topButtonsView;
+    UIView* moduleView;
+    BOOL isModuleViewVisible;
+
+    LIOKeyboardMenu *keyboardMenu;
+    BOOL keyboardMenuIsVisible;
 }
 
 @property(nonatomic, assign) id<LIOAltChatViewControllerDelegate> delegate;
@@ -130,5 +147,6 @@
 - (void)noSurveyRecieved;
 - (void)engagementDidStart;
 - (void)hideChatUIForSurvey:(BOOL)animated;
+- (void)dismissExistingAlertView;
 
 @end

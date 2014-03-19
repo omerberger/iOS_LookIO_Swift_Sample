@@ -36,7 +36,10 @@
         dismissLabel.backgroundColor = [UIColor clearColor];
         dismissLabel.font = [UIFont boldSystemFontOfSize:14.0];
         dismissLabel.alpha = 0.75;
-        dismissLabel.textColor = [UIColor whiteColor];
+        if (kLPChatThemeClassic == [[LIOLookIOManager sharedLookIOManager] selectedChatTheme])
+            dismissLabel.textColor = [UIColor whiteColor];
+        else
+            dismissLabel.textColor = [UIColor darkGrayColor];
         dismissLabel.text = LIOLocalizedString(@"LIODismissalBarView.DismissalLabel");
         [dismissLabel sizeToFit];
         dismissLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;

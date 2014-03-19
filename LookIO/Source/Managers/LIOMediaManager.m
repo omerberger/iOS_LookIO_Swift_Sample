@@ -103,7 +103,7 @@ static LIOMediaManager *sharedInstance = nil;
 - (NSString *)commitImageMedia:(UIImage *)anImage
 {
     NSData *dataToSave = UIImageJPEGRepresentation(anImage, 0.8);
-    NSString *attachmentId = [NSString stringWithFormat:@"%@.image_jpeg", [[LIOLookIOManager sharedLookIOManager] nextGUID]];
+    NSString *attachmentId = [NSString stringWithFormat:@"%@.image_jpeg", [self nextGUID]];
     NSString *targetPath = [[self mediaPath] stringByAppendingPathComponent:attachmentId];
     [dataToSave writeToFile:targetPath atomically:YES];
     return attachmentId;
@@ -125,5 +125,13 @@ static LIOMediaManager *sharedInstance = nil;
     return result;
 }
 
+- (NSString *)nextGUID
+{
+    CFUUIDRef uuid = CFUUIDCreate(NULL);
+    CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+    NSString *newUUID = (NSString *)uuidString;
+    CFRelease(uuid);
+    return [newUUID autorelease];
+}
 
 @end

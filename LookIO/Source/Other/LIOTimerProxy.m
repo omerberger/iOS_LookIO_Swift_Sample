@@ -52,9 +52,15 @@
 - (void)theTimerDidFire:(NSTimer *)aTimer
 {
     if (selectorTakesArgument)
-        [theTarget performSelector:theSelector withObject:self];
+    {
+        if (theTarget != nil)
+            [theTarget performSelector:theSelector withObject:self];
+    }
     else
-        [theTarget performSelector:theSelector];
+    {
+        if (theTarget != nil)
+            [theTarget performSelector:theSelector];
+    }
 }
 
 - (void)dealloc

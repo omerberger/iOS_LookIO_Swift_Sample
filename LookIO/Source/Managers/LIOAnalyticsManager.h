@@ -31,7 +31,8 @@ typedef enum
     id locationManager;
 }
 
-@property(nonatomic, readonly) LIOAnalyticsManagerReachabilityStatus lastKnownReachabilityStatus;
+@property (nonatomic, readonly) LIOAnalyticsManagerReachabilityStatus lastKnownReachabilityStatus;
+@property (nonatomic, strong) CLLocation *lastKnownLocation;
 
 + (LIOAnalyticsManager *)sharedAnalyticsManager;
 - (NSString *)cellularCarrierName;
