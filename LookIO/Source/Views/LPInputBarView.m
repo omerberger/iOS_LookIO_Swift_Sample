@@ -62,6 +62,8 @@
 @property (nonatomic, strong) UILabel *characterCountLabel;
 @property (nonatomic, strong) UILabel *placeholderLabel;
 
+@property (nonatomic, assign) CGSize singleLineSize;
+
 @end
 
 @implementation LPInputBarView
@@ -150,14 +152,15 @@
         
         self.textView = [[UITextView alloc] initWithFrame:self.textViewBackgroundView.bounds];
         self.textView.keyboardAppearance = [[LIOBrandingManager brandingManager] keyboardTypeForElement:LIOBrandingElementKeyboard];
-        self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.1") && LIOIsUIKitFlatMode())
+            self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         self.textView.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementSendBarTextField];
         self.textView.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementSendBarTextField];
         self.textView.backgroundColor = [UIColor clearColor];
         self.textView.returnKeyType = UIReturnKeySend;
         self.textView.delegate = self;
         self.textView.accessibilityLabel = LIOLocalizedString(@"LIOInputBarView.TextFieldAccessibilityLabel");
-        self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.textView.contentInset = UIEdgeInsetsMake(padUI ? 6.0 : 2.0, 0, 0, 0);
         [self.textViewBackgroundView addSubview:self.textView];
         
@@ -198,6 +201,8 @@
         self.characterCountLabel.backgroundColor = [UIColor clearColor];
         [self addSubview:self.characterCountLabel];
         
+        self.singleLineSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
+        self.singleLineSize = CGSizeMake(floor(self.singleLineSize.width), floor(self.singleLineSize.height));
     }
     return self;
 }
@@ -205,13 +210,18 @@
 - (void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
-    CGSize singleLineSize = [@"A" sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
-    
     CGSize expectedSize;
     if (self.textView.text.length > 0)
         expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     else
-        expectedSize = singleLineSize;
+        expectedSize = self.singleLineSize;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.1") && LIOIsUIKitFlatMode())
+    {
+        CGRect frame = self.textView.frame;
+        frame.size.height = (self.textView.contentSize.height > 80) ?  90 : self.textView.contentSize.height;
+        self.textView.frame = frame;
+    }
     
     if (expectedSize.height != self.lastCalculatedExpectedHeight)
     {
@@ -227,7 +237,7 @@
     frame.size.height = self.textViewBackgroundView.bounds.size.height - 20.0;
     self.placeholderLabel.frame = frame;
     
-    NSInteger numberOfLines = expectedSize.height / singleLineSize.height;
+    NSInteger numberOfLines = expectedSize.height / self.singleLineSize.height;
     NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
     
     self.characterCountLabel.frame = CGRectMake(self.sendButton.frame.origin.x, self.sendButton.frame.origin.y + self.sendButton.frame.size.height, self.sendButton.frame.size.width, 20);
