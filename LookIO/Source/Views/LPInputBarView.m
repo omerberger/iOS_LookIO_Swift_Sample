@@ -219,7 +219,10 @@
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.1") && LIOIsUIKitFlatMode())
     {
         CGRect frame = self.textView.frame;
-        frame.size.height = (self.textView.contentSize.height > 80) ?  90 : self.textView.contentSize.height;
+        if (!padUI)
+            frame.size.height = (self.textView.contentSize.height > 80) ?  90 : self.textView.contentSize.height;
+        else
+            frame.size.height = (self.textView.contentSize.height > 80) ?  (90 + 12) : (self.textView.contentSize.height + 12);
         self.textView.frame = frame;
     }
     
