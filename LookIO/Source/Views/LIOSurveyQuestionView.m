@@ -61,7 +61,6 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         self.tag = -1;
-
         
         self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
         self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -141,17 +140,6 @@
         self.starRatingView = [[LIOStarRatingView alloc] initWithFrame:CGRectZero];
         [self.scrollView addSubview:self.starRatingView];
         
-        self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-        self.tableView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyList];
-        self.tableView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList] CGColor];
-        self.tableView.layer.borderWidth = 1.0;
-        self.tableView.separatorColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList];
-        self.tableView.layer.cornerRadius = 5.0;
-        self.tableView.backgroundView = nil;
-        self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        self.tableView.showsVerticalScrollIndicator = NO;
-        [self.scrollView addSubview:self.tableView];
-        
         self.nextButton = [[UIButton alloc] initWithFrame:CGRectZero];
         [self.nextButton addTarget:self action:@selector(nextButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
         self.nextButton.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementSurveyCardNextButton];
@@ -179,6 +167,25 @@
     }
     
     return self;
+}
+
+- (void)prepareForReuse {
+    [self.tableView removeFromSuperview];
+    self.tableView = nil;
+}
+
+- (void)setupTableView
+{
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+    self.tableView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementSurveyList];
+    self.tableView.layer.borderColor = [[[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList] CGColor];
+    self.tableView.layer.borderWidth = 1.0;
+    self.tableView.separatorColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBorder forElement:LIOBrandingElementSurveyList];
+    self.tableView.layer.cornerRadius = 5.0;
+    self.tableView.backgroundView = nil;
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    self.tableView.showsVerticalScrollIndicator = NO;
+    [self.scrollView addSubview:self.tableView];
 }
 
 - (void)setupViewWithQuestion:(LIOSurveyQuestion *)question isLastQuestion:(BOOL)isLastQuestion delegate:(id)delegate
@@ -394,6 +401,8 @@
         }
         else
         {
+            [self setupTableView];
+            
             self.tableView.hidden = NO;
             self.tableView.delegate = delegate;
             self.tableView.dataSource = delegate;
@@ -721,7 +730,7 @@
         self.scrollView.contentSize = self.backgroundView.frame.size;
     }
     
-    if (!self.tableView.isHidden)
+    if (!self.tableView.isHidden && self.tableView != nil)
     {
         // We need to set the tableView width ahead of time, because it's used for the calculation of the row height
         CGRect frame = self.tableView.frame;
