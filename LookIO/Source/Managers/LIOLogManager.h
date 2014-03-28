@@ -21,14 +21,17 @@ typedef enum {
 
 @class LIOLogManager;
 
-@interface LIOLogManager : NSObject
+@interface LIOLogManager : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 {
     NSDateFormatter *dateFormatter;
     NSMutableArray *logEntries;
     NSUInteger residentLogCharacters;
+
+    NSString *lastKnownLoggingUrl;
 }
 
-@property(nonatomic, readonly) NSMutableArray *logEntries;
+@property (nonatomic, readonly) NSMutableArray *logEntries;
+@property (nonatomic, retain) NSString *lastKnownLoggingUrl;
 
 + (LIOLogManager *)sharedLogManager;
 - (void)logWithSeverity:(LIOLogManagerSeverity)severity format:(NSString *)formatString, ...;
