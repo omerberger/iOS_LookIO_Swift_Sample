@@ -27,7 +27,7 @@ typedef enum {
 
 @end
 
-@interface LPSurveyViewController : UIViewController <LIOSurveyQuestionViewDelegate>
+@interface LPSurveyViewController : UIViewController <LIOSurveyQuestionViewDelegate, UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, assign) id <LPSurveyViewControllerDelegate> delegate;
 

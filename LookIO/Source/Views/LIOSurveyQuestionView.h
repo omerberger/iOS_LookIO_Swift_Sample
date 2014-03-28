@@ -38,6 +38,7 @@ typedef enum
 @property (nonatomic, strong) UITextField *textField;
 @property (nonatomic, strong) UITextView *textView;
 
+- (void)prepareForReuse;
 - (void)becomeFirstResponder;
 - (void)questionViewDidAppear;
 - (void)questionViewDidDisappear;
