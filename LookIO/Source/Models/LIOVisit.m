@@ -89,6 +89,7 @@
 @property (nonatomic, assign) BOOL isCurrentCallOutgoingAndFirst;
 @property (nonatomic, copy) NSString *callVisitId;
 
+@property (nonatomic, assign) BOOL lastKnownCreditCardMaskingEnabled;
 
 @end
 
@@ -121,6 +122,8 @@
         
         self.overrideButtonType = NO;
         self.disableSurveysOverride = NO;
+        
+        self.lastKnownCreditCardMaskingEnabled = NO;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -631,6 +634,14 @@
     if (brandingMd5String)
         [resolvedSettings setObject:brandingMd5String forKey:@"branding_md5"];
     
+    NSString *loggingUrl = [settingsDict objectForKey:@"logging_url"];
+    if (loggingUrl)
+        [resolvedSettings setObject:loggingUrl forKey:@"logging_url"];
+    
+    NSNumber *creditCardMaskingEnabledNumber = [settingsDict objectForKey:@"mask_cc"];
+    if (creditCardMaskingEnabledNumber)
+        [resolvedSettings setObject:creditCardMaskingEnabledNumber forKey:@"mask_cc"];
+    
     return resolvedSettings;
 }
 
@@ -808,6 +819,23 @@
                     [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
                 }
             }
+        }
+        
+        NSString* loggingURLString = [resolvedSettings objectForKey:@"logging_url"];
+        if ([loggingURLString length])
+        {
+            [LIOLogManager sharedLogManager].lastKnownLoggingUrl = loggingURLString;
+            [[LIOLogManager sharedLogManager] uploadLog];
+        }
+        else
+        {
+            [LIOLogManager sharedLogManager].lastKnownLoggingUrl = nil;
+        }
+        
+        NSNumber *creditCardMaskingEnabledNumber = [resolvedSettings objectForKey:@"mask_cc"];
+        if (creditCardMaskingEnabledNumber)
+        {
+            self.lastKnownCreditCardMaskingEnabled = [creditCardMaskingEnabledNumber boolValue];
         }
         
         [userDefaults synchronize];

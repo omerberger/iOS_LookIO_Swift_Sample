@@ -138,9 +138,6 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)uploadLog
 {
-    // TODO: Do it?
-    return;
-    
     [self flush];
     
     NSString *allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
@@ -148,17 +145,45 @@ static LIOLogManager *sharedLogManager = nil;
                                                            error:nil];
     
     if ([allLogEntries length])
-        [[LIOLookIOManager sharedLookIOManager] uploadLog:allLogEntries];
+    {
+        NSURL *url = [NSURL URLWithString:self.lastKnownLoggingUrl];
     
-    [self deleteExistingLog];
+        NSMutableURLRequest *uploadLogRequest = [NSMutableURLRequest requestWithURL:url
+                                                                        cachePolicy:NSURLCacheStorageNotAllowed
+                                                                    timeoutInterval:10.0];
+        [uploadLogRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+        [uploadLogRequest setHTTPBody:[allLogEntries dataUsingEncoding:NSUTF8StringEncoding]];
+        [uploadLogRequest setHTTPMethod:@"PUT"];
+    
+        [NSURLConnection connectionWithRequest:uploadLogRequest delegate:self];
+    
+        LIOLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
+    
+        [self deleteExistingLog];
+    }
 }
+
 
 #pragma mark -
 #pragma mark Notification handlers
 
 - (void)applicationWillResignActive:(NSNotification *)aNotification
 {
-    [self uploadLog];
+//    [self uploadLog];
+}
+
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    // TODO: Handle 404 here
+    NSLog(@"Upload log failed with error %@", error);
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+    int responseStatusCode = [httpResponse statusCode];
+    NSLog(@"Logging response is %d", responseStatusCode);
 }
 
 @end
