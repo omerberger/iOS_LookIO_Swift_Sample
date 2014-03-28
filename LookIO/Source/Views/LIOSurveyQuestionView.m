@@ -451,7 +451,6 @@
     if (!self.subtitleLabel.hidden)
     {
         aFrame.origin.x = LIOSurveyViewSideMargin;
-        // TODO: Base origin here on the actual text which can be localized
         aFrame.origin.y = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 10.0;
         aFrame.size.width = referenceFrame.size.width - 2*LIOSurveyViewSideMargin;
         if (!padUI)
@@ -459,6 +458,8 @@
             aFrame.origin.x = LIOSurveyViewSideMargin * 4;
             aFrame.size.width = referenceFrame.size.width - (LIOSurveyViewSideMargin * 2 * 4);
         }
+        CGSize expectedLabelSize = [self.subtitleLabel.text sizeWithFont:self.subtitleLabel.font constrainedToSize:CGSizeMake(aFrame.size.width, FLT_MAX) lineBreakMode:UILineBreakModeWordWrap];
+        aFrame.size.height = expectedLabelSize.height;        
         self.subtitleLabel.frame = aFrame;
 
         self.nextButton.hidden = NO;

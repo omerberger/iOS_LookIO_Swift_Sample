@@ -1092,7 +1092,7 @@
     if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
         tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
-
+    
     self.emailChatView.frame = emailChatViewFrame;
 
     if (saveOtherFrames)
@@ -1266,9 +1266,14 @@
     [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:NO maintainTableViewOffset:YES];
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         if ((LIOKeyboardStateHidden == self.keyboardState) && UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+        {
             [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:NO];
-        
-        [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
+            [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:NO];
+        }
+        else
+        {
+            [self updateSubviewFramesAndSaveTableViewFrames:NO saveOtherFrames:YES maintainTableViewOffset:NO];
+        }
     } completion:^(BOOL finished) {
         self.keyboardIsAnimating = NO;
     }];
@@ -1333,6 +1338,9 @@
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]])
+        return YES;
+    
     if ([touch.view isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview isKindOfClass:[LPChatBubbleView class]] || [touch.view.superview.superview isKindOfClass:[LPChatBubbleView class]])
         return NO;
     

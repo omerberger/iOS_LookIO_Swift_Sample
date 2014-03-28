@@ -705,7 +705,6 @@ BOOL LIOIsUIKitFlatMode(void) {
         lastModifiedServer = [dateFormatter dateFromString:lastModifiedString];
     }
     @catch (NSException * e) {
-        NSLog(@"Error parsing last modified date: %@ - %@", lastModifiedString, [e description]);
         return NO;
     }
     

@@ -81,7 +81,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
-    CGFloat topBarHeight = LIOIsUIKitFlatMode() ? 64.0 : 44.0;
+    CGFloat topBarHeight = 44.0 + [self statusBarInset];
     
     UIView *topBarView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, topBarHeight)];
     topBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -288,6 +288,39 @@
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
     return [[LIOBrandingManager brandingManager] statusBarStyleForElement:LIOBrandingElementStatusBar];
+}
+
+- (CGFloat)statusBarInset
+{
+    CGFloat statusBarInset = 0.0;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        BOOL statusBarHidden = NO;
+        
+        // Read the plist to see if we should use status bar appearance
+        BOOL viewControllerBasedStatusBarAppearance = NO;
+        if ([[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"])
+            viewControllerBasedStatusBarAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"] boolValue];
+        
+        // If status bar appearance, we should use the branding result
+        if (viewControllerBasedStatusBarAppearance)
+        {
+            statusBarHidden = [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+        }
+        // If not, just use the UIApplication result
+        else
+        {
+            statusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
+        }
+        
+        statusBarInset = statusBarHidden ? 0.0 : 20.0;
+    }
+    else
+    {
+        statusBarInset = 0.0;
+    }
+    
+    return statusBarInset;
 }
 
 #pragma mark -
