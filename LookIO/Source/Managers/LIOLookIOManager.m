@@ -84,6 +84,8 @@ typedef void (^LIOCompletionBlock)(void);
 
 @property (nonatomic, strong) NSArray *supportedOrientations;
 
+@property (nonatomic, strong) NSTimer *bringButtonToFrontTimer;
+
 @end
 
 @implementation LIOLookIOManager
@@ -126,6 +128,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
     self.lookioWindow.windowLevel = 0.1;
+    
+    self.bringButtonToFrontTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                                    target:self
+                                                                  selector:@selector(bringButtonToFrontTimerDidFire:)
+                                                                  userInfo:nil
+                                                                   repeats:YES];
     
     self.lookIOWindowState = LIOLookIOWindowStateHidden;
     
@@ -188,6 +196,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
+}
+
+- (void)bringButtonToFrontTimerDidFire:(NSTimer *)aTimer
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    if (keyWindow != self.lookioWindow)
+    {
+        if (self.controlButton)
+            [keyWindow bringSubviewToFront:self.controlButton];
+    }
 }
 
 - (void)launchNewVisit
