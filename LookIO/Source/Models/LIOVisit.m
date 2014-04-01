@@ -1174,6 +1174,11 @@
     return self.lastKnownHideEmailChat;
 }
 
+- (BOOL)maskCreditCards
+{
+    return self.lastKnownCreditCardMaskingEnabled;
+}
+
 - (BOOL)surveysEnabled
 {
     return self.lastKnownSurveysEnabled;
