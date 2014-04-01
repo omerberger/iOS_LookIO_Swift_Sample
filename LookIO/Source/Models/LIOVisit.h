@@ -91,6 +91,7 @@ typedef enum
 - (BOOL)chatInProgress;
 - (BOOL)surveysEnabled;
 - (BOOL)hideEmailChat;
+- (BOOL)maskCreditCards;
 
 - (void)launchVisit;
 - (void)relaunchVisit;
