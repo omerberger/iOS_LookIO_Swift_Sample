@@ -1232,6 +1232,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    if (LIOVisitStateFailed == self.visit.visitState || LIOVisitStateQueued == self.visit.visitState || LIOVisitStateInitialized == self.visit.visitState || LIOVisitStateLaunching == self.visit.visitState)
+    {
+        [self presentEngagementDidFailToStartAlert];
+        return;
+    }
+    
     [self presentLookIOWindow];
     
     switch (self.visit.visitState) {
@@ -1500,6 +1506,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
     self.alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
     [self.alertView show];
+}
+
+- (void)presentEngagementDidFailToStartAlert
+{
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+                                                message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
+                                               delegate:nil
+                                      cancelButtonTitle:nil                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
+    [self.alertView show];
+    
 }
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
