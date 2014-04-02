@@ -46,7 +46,8 @@ BOOL LIOIsUIKitFlatMode(void);
     NSMutableDictionary *brandingImageCache;
 }
 
-@property(nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
+@property (nonatomic, readonly) UIImage *lioTabInnerShadow, *lioTabInnerShadow2x;
+@property (nonatomic, assign) BOOL isDownloadingBundle;
 
 + (LIOBundleManager *)sharedBundleManager;
 - (void)findBundle;
