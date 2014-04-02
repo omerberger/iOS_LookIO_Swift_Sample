@@ -352,6 +352,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(bundleDownloadDidFinish:)
+                                                 name:LIOBundleManagerBundleDownloadDidFinishNotification
+                                               object:nil];
+
+    
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
 }
 
@@ -1295,6 +1301,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
     
+    if ([LIOBundleManager sharedBundleManager].isDownloadingBundle)
+    {
+        [self.containerViewController presentLoadingViewController];
+        return;
+    }
+    
+    [self presentContainerViewControllerForCurrentState];
+}
+
+- (void)presentContainerViewControllerForCurrentState
+{
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
             if (self.engagement)
@@ -1330,6 +1347,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         default:
             break;
     }
+}
+
+- (void)bundleDownloadDidFinish:(NSNotification *)notification
+{
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        [self presentContainerViewControllerForCurrentState];
 }
 
 - (void)showReconnectCancelAlert
