@@ -35,4 +35,6 @@
 - (void)reportUnreadMessage;
 - (void)presentNotification:(NSString *)notification;
 
+- (void)updateStatusBarInset;
+
 @end

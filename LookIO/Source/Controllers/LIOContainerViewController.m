@@ -798,6 +798,9 @@
         self.contentView.frame = CGRectMake(0, self.statusBarInset, self.view.bounds.size.width, self.view.bounds.size.height - self.statusBarInset);
         self.headerBarView.frame = CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset);
         [self.headerBarView updateStatusBarInset:self.statusBarInset];
+        
+        if (self.webViewController)
+            [self.webViewController updateStatusBarInset];
     }
 }
 
