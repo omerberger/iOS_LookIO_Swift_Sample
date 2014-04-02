@@ -751,14 +751,17 @@
 #pragma mark -
 #pragma mark Status Bar Inset Methods
 
-- (void)setupStatusBarInset
-{    
+- (CGFloat)calculateStatusBarInset
+{
+    CGFloat statusBarInsetToReturn = 0.0;
+    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
     {
         BOOL statusBarHidden = NO;
 
         // Read the plist to see if we should use status bar appearance
-        BOOL viewControllerBasedStatusBarAppearance = NO;
+        // The iOS 7.0 default is YES, so if no plist is present, use YES
+        BOOL viewControllerBasedStatusBarAppearance = YES;
         if ([[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"])
             viewControllerBasedStatusBarAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"] boolValue];
         
@@ -773,11 +776,28 @@
             statusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
         }
 
-        self.statusBarInset = statusBarHidden ? 0.0 : 20.0;
+        statusBarInsetToReturn = statusBarHidden ? 0.0 : 20.0;
     }
     else
     {
-        self.statusBarInset = 0.0;
+        statusBarInsetToReturn = 0.0;
+    }
+    
+    return statusBarInsetToReturn;
+}
+
+- (void)updateStatusBarInset
+{
+    if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+        return;
+
+    CGFloat calculatedStatusBarInset = [self calculateStatusBarInset];
+    if (calculatedStatusBarInset != self.statusBarInset)
+    {
+        self.statusBarInset = calculatedStatusBarInset;
+        self.contentView.frame = CGRectMake(0, self.statusBarInset, self.view.bounds.size.width, self.view.bounds.size.height - self.statusBarInset);
+        self.headerBarView.frame = CGRectMake(0, -(LIOHeaderBarViewDefaultHeight + self.statusBarInset), self.view.bounds.size.width, LIOHeaderBarViewDefaultHeight + self.statusBarInset);
+        [self.headerBarView updateStatusBarInset:self.statusBarInset];
     }
 }
 
@@ -808,7 +828,7 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
-    [self setupStatusBarInset];
+    self.statusBarInset = [self calculateStatusBarInset];
     
     UIButton *emergencyDismissButton = [[UIButton alloc] initWithFrame:self.view.bounds];
     emergencyDismissButton.isAccessibilityElement = NO;

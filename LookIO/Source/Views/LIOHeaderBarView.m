@@ -79,6 +79,13 @@
     return self;
 }
 
+- (void)updateStatusBarInset:(CGFloat)inset
+{
+    self.statusBarInset = inset;
+    [self rejiggerSubviews];
+    
+}
+
 - (void)rejiggerSubviews {
     CGRect aFrame = self.separator.frame;
     aFrame.size.height = 1.0;
