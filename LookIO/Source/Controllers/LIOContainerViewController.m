@@ -758,7 +758,8 @@
         BOOL statusBarHidden = NO;
 
         // Read the plist to see if we should use status bar appearance
-        BOOL viewControllerBasedStatusBarAppearance = NO;
+        // The iOS 7.0 default is YES, so if no plist is present, use YES
+        BOOL viewControllerBasedStatusBarAppearance = YES;
         if ([[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"])
             viewControllerBasedStatusBarAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"] boolValue];
         
