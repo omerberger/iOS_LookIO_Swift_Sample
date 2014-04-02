@@ -1237,7 +1237,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self presentEngagementDidFailToStartAlert];
         return;
     }
-    
+
+    if (self.containerViewController != nil)
+        [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
     
     switch (self.visit.visitState) {
