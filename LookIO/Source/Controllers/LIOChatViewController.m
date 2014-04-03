@@ -1101,6 +1101,8 @@
     if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
         tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
+    if (tableFooterViewFrame.size.height < 0)
+        tableFooterViewFrame.size.height = inputBarViewFrame.size.height;
     
     self.emailChatView.frame = emailChatViewFrame;
 
