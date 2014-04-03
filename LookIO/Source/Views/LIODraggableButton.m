@@ -22,6 +22,7 @@
 #define LIODraggableButtonSize 50.0
 #define LIODraggableButtonMessageTime 5.0
 #define LIODraggableButtonTextHeightRatio 1.5
+#define LIODraggableButtonPopbackHeight 30.0
 
 #define HEXCOLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 \
                      green:((c>>8)&0xFF)/255.0 \
@@ -850,13 +851,13 @@
                 self.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = NO;
             }
-            if (self.frame.origin.y < self.frame.size.height)
+            if (self.frame.origin.y < LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.frame.size.height);
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, LIODraggableButtonPopbackHeight);
             }
-            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height)
+            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height - LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height*2);
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height - LIODraggableButtonPopbackHeight);
             }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
@@ -873,11 +874,11 @@
             }
             if (self.frame.origin.x < self.frame.size.height)
             {
-                self.preDragPosition = CGPointMake(self.frame.size.width, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(LIODraggableButtonPopbackHeight, self.preDragPosition.y);
             }
-            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width)
+            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width - LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width*2, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width - LIODraggableButtonPopbackHeight, self.preDragPosition.y);
             }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
@@ -892,13 +893,13 @@
                 self	.preDragPosition = CGPointMake(-3, self.frame.origin.y);
                 self.isAttachedToRight = YES;
             }
-            if (self.frame.origin.y < self.frame.size.height)
+            if (self.frame.origin.y < LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.frame.size.height);
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, LIODraggableButtonPopbackHeight);
             }
-            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height)
+            if (self.frame.origin.y > self.superview.bounds.size.height - self.frame.size.height - LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height*2);
+                self.preDragPosition = CGPointMake(self.preDragPosition.x, self.superview.bounds.size.height - self.frame.size.height - LIODraggableButtonPopbackHeight);
             }
         }
         if (actualInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
@@ -915,11 +916,11 @@
             }
             if (self.frame.origin.x < self.frame.size.height)
             {
-                self.preDragPosition = CGPointMake(self.frame.size.width, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(LIODraggableButtonPopbackHeight, self.preDragPosition.y);
             }
-            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width)
+            if (self.frame.origin.x > self.superview.bounds.size.width - self.frame.size.width - LIODraggableButtonPopbackHeight)
             {
-                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width*2, self.preDragPosition.y);
+                self.preDragPosition = CGPointMake(self.superview.bounds.size.width - self.frame.size.width - LIODraggableButtonPopbackHeight, self.preDragPosition.y);
             }
         }
         
