@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOVisit.h"
 
 #define LIOLog(...) [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityDebug format:__VA_ARGS__]
 
@@ -28,6 +29,7 @@ typedef enum {
     NSUInteger residentLogCharacters;
 
     NSString *lastKnownLoggingUrl;
+    LIOVisit *visit;
 }
 
 @property (nonatomic, readonly) NSMutableArray *logEntries;
@@ -37,6 +39,6 @@ typedef enum {
 - (void)logWithSeverity:(LIOLogManagerSeverity)severity format:(NSString *)formatString, ...;
 - (void)deleteExistingLogIfOversized;
 - (void)flush;
-- (void)uploadLog;
+- (void)uploadLogForVisit:(LIOVisit *)visitForUpload;
 
 @end

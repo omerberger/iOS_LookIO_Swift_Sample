@@ -91,6 +91,10 @@
 
 @property (nonatomic, assign) BOOL lastKnownCreditCardMaskingEnabled;
 
+@property (nonatomic, copy) NSString *lastKnownLoggingURL;
+@property (nonatomic, assign) BOOL loggingEnabled;
+@property (nonatomic, strong) NSTimer *loggingTimer;
+
 @end
 
 @implementation LIOVisit
@@ -124,6 +128,7 @@
         self.disableSurveysOverride = NO;
         
         self.lastKnownCreditCardMaskingEnabled = NO;
+        self.loggingEnabled = NO;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -824,12 +829,12 @@
         NSString* loggingURLString = [resolvedSettings objectForKey:@"logging_url"];
         if ([loggingURLString length])
         {
-            [LIOLogManager sharedLogManager].lastKnownLoggingUrl = loggingURLString;
-            [[LIOLogManager sharedLogManager] uploadLog];
-        }
-        else
-        {
-            [LIOLogManager sharedLogManager].lastKnownLoggingUrl = nil;
+            // Logging should start either if this is the first logging_url received
+            // of if it's different than the last logging url recieved
+            if (self.lastKnownLoggingURL == nil || ![self.lastKnownLoggingURL isEqualToString:loggingURLString])
+            {
+                [self startLogUploadingWithURL:loggingURLString];
+            }
         }
         
         NSNumber *creditCardMaskingEnabledNumber = [resolvedSettings objectForKey:@"mask_cc"];
@@ -1689,7 +1694,7 @@
     {
         
         NSError *writeError = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:NSJSONWritingPrettyPrinted error:&writeError];
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:nil error:&writeError];
 
         if (!writeError && jsonData)
         {
@@ -1715,7 +1720,7 @@
 {
     // We only allow JSONable objects.
     NSError *writeError = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:NSJSONWritingPrettyPrinted error:&writeError];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:nil error:&writeError];
     
     if (!writeError && jsonData)
     {
@@ -1834,6 +1839,30 @@
             }
         }
     };
+}
+
+#pragma mark -
+#pragma mark Logging Methods
+
+- (void)startLogUploadingWithURL:(NSString *)loggingURLString
+{
+    self.loggingEnabled = YES;
+    self.lastKnownLoggingURL = loggingURLString;
+    [LIOLogManager sharedLogManager].lastKnownLoggingUrl = loggingURLString;
+    self.loggingTimer = [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(loggingUploadTimerDidFire:) userInfo:nil repeats:YES];
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
+}
+
+- (void)stopLogUploading
+{
+    self.loggingEnabled = NO;
+    [self.loggingTimer invalidate];
+    self.loggingTimer = nil;
+}
+
+- (void)loggingUploadTimerDidFire:(NSTimer *)timer
+{
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
 }
 
 @end
