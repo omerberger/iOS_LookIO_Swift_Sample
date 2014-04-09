@@ -136,13 +136,14 @@ static LIOLogManager *sharedLogManager = nil;
         [self flush];
 }
 
-- (void)uploadLog
+- (void)uploadLogForVisit:(LIOVisit *)visitForUpload
 {
     [self flush];
     
     NSString *allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
                                                         encoding:NSUTF8StringEncoding
                                                            error:nil];
+    visit = visitForUpload;
     
     if ([allLogEntries length])
     {
@@ -175,15 +176,24 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    // TODO: Handle 404 here
-    NSLog(@"Upload log failed with error %@", error);
+    // TODO: Handle retries here
+    NSLog(@"<<< LOG UPLOAD >>> Upload log failed with error %@", error);
+    
+    if (visit != nil)
+    {
+        [visit stopLogUploading];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
     int responseStatusCode = [httpResponse statusCode];
-    NSLog(@"Logging response is %d", responseStatusCode);
+    NSLog(@"<<< LOG UPLOAD >>> Logging response is %d", responseStatusCode);
+    if (404 == responseStatusCode && visit != nil)
+    {
+        [visit stopLogUploading];
+    }
 }
 
 @end

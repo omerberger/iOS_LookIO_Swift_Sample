@@ -115,4 +115,7 @@ typedef enum
 - (void)addUDEs:(NSDictionary *)aDictionary;
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData;
 
+// Logging
+- (void)stopLogUploading;
+
 @end

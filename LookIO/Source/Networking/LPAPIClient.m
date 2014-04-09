@@ -72,7 +72,7 @@ static LPAPIClient *sharedClient = nil;
             [request setURL:url];
         } else {
             NSError *jsonError = nil;
-            NSData *parametersJSONEncoded = [NSJSONSerialization dataWithJSONObject:parameters options:NSJSONWritingPrettyPrinted error:&jsonError];
+            NSData *parametersJSONEncoded = [NSJSONSerialization dataWithJSONObject:parameters options:nil error:&jsonError];
             [request setHTTPBody:parametersJSONEncoded];
             LIOLog(@"Request:\n%@", [[[NSString alloc] initWithData:parametersJSONEncoded encoding:NSUTF8StringEncoding] autorelease]);
         }
