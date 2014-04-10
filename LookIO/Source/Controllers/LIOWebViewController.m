@@ -30,6 +30,10 @@
 
 @property (nonatomic, strong) UIImageView *loadingImageView;
 
+@property (nonatomic, strong) UIView *topBarView;
+@property (nonatomic, strong) UIButton *shareButton;
+@property (nonatomic, strong) UIButton *closeButton;
+
 @end
 
 @implementation LIOWebViewController
@@ -81,12 +85,12 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
-    CGFloat topBarHeight = LIOIsUIKitFlatMode() ? 64.0 : 44.0;
+    CGFloat topBarHeight = 44.0 + [self statusBarInset];
     
-    UIView *topBarView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, topBarHeight)];
-    topBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    topBarView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementWebViewHeaderBar];
-    [self.view addSubview:topBarView];
+    self.topBarView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, topBarHeight)];
+    self.topBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.topBarView.backgroundColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:LIOBrandingElementWebViewHeaderBar];
+    [self.view addSubview:self.topBarView];
     
     self.webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, topBarHeight, self.view.bounds.size.width, self.view.bounds.size.height -  topBarHeight)];
     self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -98,18 +102,18 @@
     
     UIColor *buttonColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementWebViewHeaderBarButtons];
 
-    UIButton *closeButton = [[UIButton alloc] initWithFrame:CGRectMake(8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
-    closeButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewCloseButton");
-    [closeButton addTarget:self action:@selector(closeButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [closeButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] forState:UIControlStateNormal];
-    [topBarView addSubview:closeButton];
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
+    self.closeButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewCloseButton");
+    [self.closeButton addTarget:self action:@selector(closeButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self.closeButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOCloseIcon" withTint:buttonColor] forState:UIControlStateNormal];
+    [self.topBarView addSubview:self.closeButton];
     
-    UIButton *shareButton = [[UIButton alloc] initWithFrame:CGRectMake(topBarView.bounds.size.width - 32.0 - 8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
-    shareButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewOpenInBrowserButton");
-    shareButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [shareButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [shareButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];
-    [topBarView addSubview:shareButton];
+    self.shareButton = [[UIButton alloc] initWithFrame:CGRectMake(self.topBarView.bounds.size.width - 32.0 - 8.0, topBarHeight - 8.0 - 32.0, 32, 32)];
+    self.shareButton.accessibilityLabel = LIOLocalizedString(@"LIOLookIOManager.WebViewOpenInBrowserButton");
+    self.shareButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    [self.shareButton addTarget:self action:@selector(openInSafariButtonWasTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self.shareButton setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOShareIcon" withTint:buttonColor] forState:UIControlStateNormal];
+    [self.topBarView addSubview:self.shareButton];
     
     if ([self.delegate webViewControllerShowControlButtonForWebView:self])
     {
@@ -123,14 +127,14 @@
         [self.controlButton updateButtonBranding];
     }
     
-    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, topBarHeight - 8.0 - 32.0, topBarView.frame.size.width - 100, 32)];
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, topBarHeight - 8.0 - 32.0, self.topBarView.frame.size.width - 100, 32)];
     self.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.titleLabel.text = LIOLocalizedString(@"LIOLookIOManager.WebViewLoadingTitle");
     self.titleLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementWebViewHeaderBar];
     self.titleLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementWebViewHeaderBar];
     self.titleLabel.backgroundColor = [UIColor clearColor];
     self.titleLabel.textAlignment = UITextAlignmentCenter;
-    [topBarView addSubview:self.titleLabel];
+    [self.topBarView addSubview:self.titleLabel];
     
     self.loadingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.webView.bounds.size.width/2 - 65, self.webView.bounds.size.height/2 - 50, 130, 50)];
     self.loadingImageView.alpha = 0.0;
@@ -288,6 +292,52 @@
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
     return [[LIOBrandingManager brandingManager] statusBarStyleForElement:LIOBrandingElementStatusBar];
+}
+
+- (CGFloat)statusBarInset
+{
+    CGFloat statusBarInset = 0.0;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    {
+        BOOL statusBarHidden = NO;
+        
+        // Read the plist to see if we should use status bar appearance
+        // The iOS 7.0 default is YES, so if no plist is present, use YES
+        BOOL viewControllerBasedStatusBarAppearance = YES;
+        if ([[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"])
+            viewControllerBasedStatusBarAppearance = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIViewControllerBasedStatusBarAppearance"] boolValue];
+        
+        // If status bar appearance, we should use the branding result
+        if (viewControllerBasedStatusBarAppearance)
+        {
+            statusBarHidden = [[LIOBrandingManager brandingManager] booleanValueForField:@"hidden" element:LIOBrandingElementStatusBar];
+        }
+        // If not, just use the UIApplication result
+        else
+        {
+            statusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
+        }
+        
+        statusBarInset = statusBarHidden ? 0.0 : 20.0;
+    }
+    else
+    {
+        statusBarInset = 0.0;
+    }
+    
+    return statusBarInset;
+}
+
+- (void)updateStatusBarInset
+{
+    [self statusBarInset];
+ 
+    CGFloat topBarHeight = 44.0 + [self statusBarInset];
+    self.topBarView.frame = CGRectMake(0, 0, self.view.bounds.size.width, topBarHeight);
+    self.webView.frame = CGRectMake(0, topBarHeight, self.view.bounds.size.width, self.view.bounds.size.height -  topBarHeight);
+    self.closeButton.frame = CGRectMake(8.0, topBarHeight - 8.0 - 32.0, 32, 32);
+    self.shareButton.frame = CGRectMake(self.topBarView.bounds.size.width - 32.0 - 8.0, topBarHeight - 8.0 - 32.0, 32, 32);
+    self.titleLabel.frame = CGRectMake(50, topBarHeight - 8.0 - 32.0, self.topBarView.frame.size.width - 100, 32);
 }
 
 #pragma mark -

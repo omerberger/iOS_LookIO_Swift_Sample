@@ -31,6 +31,7 @@
 - (void)hideCurrentNotification;
 - (void)removeTimersAndNotifications;
 
+- (void)updateStatusBarInset:(CGFloat)inset;
 - (void)rejiggerSubviews;
 
 @end

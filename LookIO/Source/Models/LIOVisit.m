@@ -652,7 +652,8 @@
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
         
-        self.visitState = LIOVisitStateFailed;
+        if (!self.chatInProgress)
+            self.visitState = LIOVisitStateFailed;
     }
     
     // Save.
@@ -1038,8 +1039,8 @@
                     self.lastKnownVisitURL = nil;
                     
                     self.multiskillMapping = nil;
-                    
-                    self.visitState = LIOVisitStateFailed;
+                    if (!self.chatInProgress)
+                        self.visitState = LIOVisitStateFailed;
                 }
             }
         }];

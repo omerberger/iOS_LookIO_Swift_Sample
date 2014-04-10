@@ -70,6 +70,7 @@ typedef enum {
 - (void)dismissImmediatelyForBackgrounding;
 
 - (void)dismissExistingAlertView;
+- (void)updateStatusBarInset;
 
 - (void)removeTimers;
 

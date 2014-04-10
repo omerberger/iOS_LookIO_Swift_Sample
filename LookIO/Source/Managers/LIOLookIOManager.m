@@ -84,6 +84,8 @@ typedef void (^LIOCompletionBlock)(void);
 
 @property (nonatomic, strong) NSArray *supportedOrientations;
 
+@property (nonatomic, strong) NSTimer *bringButtonToFrontTimer;
+
 @end
 
 @implementation LIOLookIOManager
@@ -126,6 +128,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
     self.lookioWindow.windowLevel = 0.1;
+    
+    self.bringButtonToFrontTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                                    target:self
+                                                                  selector:@selector(bringButtonToFrontTimerDidFire:)
+                                                                  userInfo:nil
+                                                                   repeats:YES];
     
     self.lookIOWindowState = LIOLookIOWindowStateHidden;
     
@@ -188,6 +196,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [[LIOLogManager sharedLogManager] logWithSeverity: LIOLogManagerSeverityInfo format:@"Loaded."];
+}
+
+- (void)bringButtonToFrontTimerDidFire:(NSTimer *)aTimer
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    if (keyWindow != self.lookioWindow)
+    {
+        if (self.controlButton)
+            [keyWindow bringSubviewToFront:self.controlButton];
+    }
 }
 
 - (void)launchNewVisit
@@ -1214,6 +1232,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
+    if (LIOVisitStateFailed == self.visit.visitState || LIOVisitStateQueued == self.visit.visitState || LIOVisitStateInitialized == self.visit.visitState || LIOVisitStateLaunching == self.visit.visitState)
+    {
+        [self presentEngagementDidFailToStartAlert];
+        return;
+    }
+
+    if (self.containerViewController != nil)
+        [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
     
     switch (self.visit.visitState) {
@@ -1482,6 +1508,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
     self.alertView.tag = LIOAlertViewNextStepDismissLookIOWindow;
     [self.alertView show];
+}
+
+- (void)presentEngagementDidFailToStartAlert
+{
+    [self dismissExistingAlertView];
+    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertTitle")
+                                                message:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertBody")
+                                               delegate:nil
+                                      cancelButtonTitle:nil                                      otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.StartFailureAlertButton"), nil];
+    [self.alertView show];
+    
 }
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message

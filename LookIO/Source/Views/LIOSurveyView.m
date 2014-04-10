@@ -1311,7 +1311,6 @@
                 frame.size.height = scrollView.contentSize.height - 30;
             }
             backgroundImageView.frame = frame;
-            NSLog(@"alpha is %f", backgroundImageView.alpha);
         }
     }
     

@@ -891,6 +891,7 @@
             self.currentQuestionView = self.previousQuestionView;
             self.previousQuestionView = nil;
             [self setupPreviousQuestionScrollView];
+            [self.previousQuestionView reloadTableViewDataIfNeeded];
             
             [self updateScrollView];
             
@@ -898,7 +899,7 @@
             {
                 self.reusableQuestionView = tempView;
                 self.reusableQuestionView.tag = -1000;
-                
+                [self.reusableQuestionView prepareForReuse];
             }
             
             [self.nextQuestionView questionViewDidDisappear];
@@ -937,6 +938,7 @@
                 [tempView removeFromSuperview];
                 self.reusableQuestionView = tempView;
                 self.reusableQuestionView.tag = -1000;
+                [self.reusableQuestionView prepareForReuse];
                 self.reusableQuestionView.transform = CGAffineTransformIdentity;
             }
         }];
@@ -990,6 +992,7 @@
             self.currentQuestionView = self.nextQuestionView;
             self.nextQuestionView = nil;
             self.isLastQuestion = ![self setupNextQuestionScrollView];
+            [self.nextQuestionView reloadTableViewDataIfNeeded];
             
             [self updateScrollView];
             
@@ -997,6 +1000,7 @@
             {
                 self.reusableQuestionView = tempView;
                 self.reusableQuestionView.tag = -1000;
+                [self.reusableQuestionView prepareForReuse];
             }
             
             [self.currentQuestionView questionViewDidAppear];
@@ -1037,6 +1041,7 @@
                 [tempView removeFromSuperview];
                 self.reusableQuestionView = tempView;
                 self.reusableQuestionView.tag = -1000;
+                [self.reusableQuestionView prepareForReuse];
                 self.reusableQuestionView.transform = CGAffineTransformIdentity;
             }
         }];

@@ -322,23 +322,12 @@ extern NSString *const kLPEventAddedToCart;
  */
 - (void)beginChat;
 
-<<<<<<< HEAD
-
-/*!
- Calling this method while a chat is in progress will end the chat. Use the chatInProgress property to determine
- if a chat is in progress which needs to be ended. Use the showAlert parameter to specify if you would like an alert
- view to be shown to the user indicating that chat has ended.
- 
- @param showAlert A boolean value specifiying if an alert view should be shown to the user, alerting them that chat has
-=======
 /*!
  Calling this method while a chat is in progress will end the chat. Use the chatInProgress property to determine 
  if a chat is in progress which needs to be ended. Use the showAlert parameter to specify if you would like an alert
  view to be shown to the user indicating that chat has ended.
  
- @param showAlert A boolean value specifiying if an alert view should be shown to the user, alerting them that chat has  
->>>>>>> Add endChat methods for developers
- ended.
+ @param showAlert A boolean value specifiying if an alert view should be shown to the user, alerting them that chat has ended.
  */
 - (void)endChatAndShowAlert:(BOOL)showAlert;
 
