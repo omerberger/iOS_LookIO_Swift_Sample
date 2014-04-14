@@ -1289,9 +1289,9 @@
     newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
     self.lastClientLineId += 1;
     [self.messages addObject:newMessage];
-    
-    [self sendLineWithMessage:newMessage];
+
     [self.delegate engagement:self didSendMessage:newMessage];
+    [self sendLineWithMessage:newMessage];
     
     [self saveEngagementMessages];
 }
@@ -1307,8 +1307,8 @@
     self.lastClientLineId += 1;
     [self.messages addObject:newMessage];
     
-    [self sendMediaPacketWithMessage:newMessage];
     [self.delegate engagement:self didSendMessage:newMessage];
+    [self sendMediaPacketWithMessage:newMessage];
     
     [self saveEngagementMessages];
 }
