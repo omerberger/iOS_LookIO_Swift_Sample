@@ -930,6 +930,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.lookioWindow.rootViewController = self.containerViewController;
     }
     
+    [self.containerViewController startPresentationAnimation];
+    
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];
  

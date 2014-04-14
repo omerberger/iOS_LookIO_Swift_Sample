@@ -52,6 +52,7 @@ typedef enum {
 
 - (void)setBlurImage:(UIImage *)image;
 - (void)updateBlurImage:(UIImage *)image;
+- (void)startPresentationAnimation;
 
 - (void)presentChatForEngagement:(LIOEngagement *)anEngagement;
 - (void)presentPrechatSurveyForEngagement:(LIOEngagement *)anEngagement;
