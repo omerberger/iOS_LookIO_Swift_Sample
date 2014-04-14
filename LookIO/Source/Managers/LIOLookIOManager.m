@@ -1523,6 +1523,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
 {
+    // If surveys are disabled and visitor sent a message before chat was connected, chat should start
+    if (LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        if (![self.visit surveysEnabled])
+        {
+            self.visit.visitState = LIOVisitStateChatOpened;
+        }
+    }
+    
     // If chat was open and user sent a first message, visit states goes to started
     if (LIOVisitStateChatOpened == self.visit.visitState)
     {
