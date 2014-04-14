@@ -697,6 +697,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 break;
                 
             default:
+                [self.controlButton setLoadingMode];
+                [self.engagement acceptEngagementReconnect];
                 break;
         }
     }
@@ -770,48 +772,62 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (LIOAlertViewCrashReconnectPrompt == alertView.tag)
     {
-        if (buttonIndex == 0)
-        {
-            self.disconnectedEngagement = nil;
-        }
-        if (buttonIndex == 1)
-        {
-            self.engagement = self.disconnectedEngagement;
-            self.disconnectedEngagement = nil;
-            self.engagement.delegate = self;
-            
-            self.visit.visitState = LIOVisitStateChatActive;
-            [self.controlButton setLoadingMode];
-            
-            [self.engagement attemptReconnectionWithVisit:self.visit];
+        
+        switch (buttonIndex) {
+            case 0:
+                self.disconnectedEngagement = nil;
+                break;
+
+            case 1:
+                self.engagement = self.disconnectedEngagement;
+                self.disconnectedEngagement = nil;
+                self.engagement.delegate = self;
+
+                self.visit.visitState = LIOVisitStateChatActive;
+                [self.controlButton setLoadingMode];
+
+                [self.engagement attemptReconnectionWithVisit:self.visit];
+                break;
+
+            // In case alert view is dimissed by user or by other alert
+            default:
+                self.disconnectedEngagement = nil;
+                break;
         }
     }
     
     if (LIOAlertViewScreenshotPermission == alertView.tag)
     {
-        if (0 == buttonIndex)
-        {
-            [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"revoked", @"asset" : @"screenshare"}
-                                                  retries:0];
-        }
+        
+        switch (buttonIndex) {
+            case 0:
+                [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"revoked", @"asset" : @"screenshare"}
+                                                      retries:0];
+                break;
 
-        if (1 == buttonIndex) // "Yes"
-        {
-            [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"granted", @"asset" : @"screenshare"}
-                                                  retries:0];
-            
-            // TODO: Advacned screenshare stuff
-            // screenshotsAllowed = YES;
-            // statusBarUnderlay.hidden = NO;
-            // if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
-            //    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
-            // screenSharingStartedDate = [[NSDate date] retain];
-            
-            if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-            {
-                [self.containerViewController dismissCurrentViewController];
-            }
-            [self.engagement startScreenshare];
+            case 1:
+                [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"granted", @"asset" : @"screenshare"}
+                                                      retries:0];
+                
+                // TODO: Advacned screenshare stuff
+                // screenshotsAllowed = YES;
+                // statusBarUnderlay.hidden = NO;
+                // if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
+                //    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+                // screenSharingStartedDate = [[NSDate date] retain];
+
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self.containerViewController dismissCurrentViewController];
+                }
+                [self.engagement startScreenshare];
+                break;
+
+            // In case alert view is dimissed by user or by other alert
+            default:
+                [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"revoked", @"asset" : @"screenshare"}
+                                                      retries:0];
+                break;
         }
     }
 }
@@ -820,7 +836,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (self.alertView)
     {
-        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag)
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag))
         {
             // Special case - if chat ended and supposed to show a post chat survey,
             // window is hidden, don't dismiss the alert view so that the post chat
@@ -1523,6 +1539,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
 {
+    // If surveys are disabled and visitor sent a message before chat was connected, chat should start
+    if (LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        if (![self.visit surveysEnabled])
+        {
+            self.visit.visitState = LIOVisitStateChatOpened;
+        }
+    }
+    
     // If chat was open and user sent a first message, visit states goes to started
     if (LIOVisitStateChatOpened == self.visit.visitState)
     {
