@@ -716,6 +716,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             case 1:
                 if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
                 {
+                    if (self.engagement == nil)
+                        break;
+                    
                     [self presentLookIOWindow];
                     switch (self.visit.visitState) {
                         case LIOVisitStatePreChatSurvey:
@@ -926,6 +929,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.containerViewController.view.alpha = 0.0;
         self.lookioWindow.rootViewController = self.containerViewController;
     }
+    
+    [self.containerViewController startPresentationAnimation];
     
     for (UIWindow *window in [[UIApplication sharedApplication] windows])
         [window endEditing:YES];

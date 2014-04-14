@@ -52,9 +52,16 @@
 
 @property (nonatomic, strong) LIOSoundEffect *soundEffect;
 
+@property (nonatomic, assign) BOOL isAnimatingPresentation;
+
 @end
 
 @implementation LIOContainerViewController
+
+- (void)startPresentationAnimation
+{
+    self.isAnimatingPresentation = YES;
+}
 
 - (void)setBlurImage:(UIImage *)image
 {
@@ -63,7 +70,7 @@
         self.blurImageView.alpha = 1.0;
         self.view.alpha = 1.0;
     } completion:^(BOOL finished) {
-
+        self.isAnimatingPresentation = NO;
     }];
 }
 
@@ -337,7 +344,8 @@
 
 - (void)loadingViewControllerDidDismiss:(LIOLoadingViewController *)loadingViewController
 {
-    [self dismiss];
+    if (!self.isAnimatingPresentation)
+        [self dismiss];
 }
 
 #pragma mark -
