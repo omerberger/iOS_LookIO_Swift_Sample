@@ -353,7 +353,10 @@
     if (self.validationView)
     {
         [self.validationTimer stopTimer];
-        [self validationTimerDidFire];
+        self.validationTimer = nil;
+
+        self.validationView.delegate = nil;
+        [self.validationView hideAnimated];
     }
     
     [self.delegate surveyViewController:self didCancelSurvey:self.survey];
@@ -1098,7 +1101,6 @@
                                                               selector:@selector(validationTimerDidFire)];
 
 }
-
 
 - (void)validationTimerDidFire
 {
