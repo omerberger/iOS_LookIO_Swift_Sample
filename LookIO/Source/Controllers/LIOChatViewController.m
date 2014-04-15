@@ -1146,6 +1146,11 @@
                                                object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
@@ -1170,6 +1175,10 @@
                                                     name:UIKeyboardWillHideNotification
                                                   object:nil];
     
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardDidShowNotification
+                                                  object:nil];
+    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
         [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -1177,6 +1186,15 @@
                                                       object:nil];
     }
 }
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    if (LIOChatStateEmailChat == self.chatState)
+        return;
+    
+    [self keyboardWillShow:notification];
+}
+
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
