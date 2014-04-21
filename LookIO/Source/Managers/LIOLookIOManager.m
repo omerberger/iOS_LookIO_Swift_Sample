@@ -1001,10 +1001,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                             nil];
         [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
     }
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowChat:)])
+        [self.delegate lookIOManagerDidShowChat:self];
 }
 
 - (void)dismissLookIOWindow
 {
+    // If not visible, don't dismiss
+    if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+        return;
+    
     self.lookIOWindowState = LIOLookIOWindowStateDismissing;
     
     self.lookioWindow.hidden = YES;
@@ -1092,6 +1099,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.containerViewController = nil;
         self.lookioWindow.rootViewController = nil;
     }
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideChat:)])
+        [self.delegate lookIOManagerDidHideChat:self];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
