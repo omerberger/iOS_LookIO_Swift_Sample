@@ -650,6 +650,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return funnelState;
 }
 
+- (void)visitHasIncomingCall:(LIOVisit *)visit
+{
+    // If an incoming call starts, let's dismiss any alert view and the LookIOWindow
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self dismissExistingAlertView];
+        
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController dismissImmediatelyForBackgrounding];
+        }
+    });
+}
 
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods
