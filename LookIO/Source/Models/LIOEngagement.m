@@ -981,7 +981,7 @@
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         
-        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
+        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", nil];
         NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                   capsArray, @"capabilities",
                                   nil];
