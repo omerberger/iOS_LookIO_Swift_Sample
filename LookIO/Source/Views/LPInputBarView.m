@@ -220,9 +220,9 @@
     {
         CGRect frame = self.textView.frame;
         if (!padUI)
-            frame.size.height = (self.textView.contentSize.height > 80) ?  90 : self.textView.contentSize.height;
+            frame.size.height = (self.textView.contentSize.height > 80) ? expectedSize.height + 16 : self.textView.contentSize.height;
         else
-            frame.size.height = (self.textView.contentSize.height > 80) ?  (90 + 12) : (self.textView.contentSize.height + 12);
+            frame.size.height = (self.textView.contentSize.height > 80) ? expectedSize.height + 28 : (self.textView.contentSize.height + 12);
         self.textView.frame = frame;
     }
     
