@@ -1373,7 +1373,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatStarted == self.visit.visitState)
+    if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatActive;
         if (UIApplicationStateActive == [[UIApplication sharedApplication] applicationState])
