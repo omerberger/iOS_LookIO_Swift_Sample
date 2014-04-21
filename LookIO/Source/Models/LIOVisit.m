@@ -1751,6 +1751,8 @@
         if (call.callState == CTCallStateIncoming)
         {
             currentVisit.isCurrentCallOutgoingAndFirst = NO;
+            [currentVisit.delegate visitHasIncomingCall:currentVisit];
+        
         }
         if (call.callState == CTCallStateDialing)
         {

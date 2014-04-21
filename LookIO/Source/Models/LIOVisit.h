@@ -54,6 +54,7 @@ typedef enum
 - (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
 - (void)visitDidLaunch:(LIOVisit *)visit;
 - (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
+- (void)visitHasIncomingCall:(LIOVisit *)visit;
 
 @end
 
