@@ -588,6 +588,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+            return;
+        
         [self.controlButton show:YES];
         
         if (notifyDelegate)
@@ -650,6 +653,19 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return funnelState;
 }
 
+- (void)visitHasIncomingCall:(LIOVisit *)visit
+{
+    // If an incoming call starts, let's dismiss any alert view and the LookIOWindow
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self dismissExistingAlertView];
+        
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController dismissImmediatelyForBackgrounding];
+        }
+    });
+}
 
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods
@@ -675,6 +691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
     {
         self.visit.visitState = LIOVisitStatePostChatSurvey;
+        [self.visit refreshControlButtonVisibility];
         
         if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
         {
@@ -868,6 +885,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController
 {
     self.visit.visitState = LIOVisitStatePostChatSurvey;
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (void)containerViewControllerDidTapIntraAppLink:(NSURL *)link
@@ -971,6 +989,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (!self.visit.controlButtonHidden)
     {
         [self.controlButton hide:YES];
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
+            [self.delegate lookIOManagerDidHideControlButton:self];
     }
     [self.controlButton resetUnreadMessages];
     
@@ -988,10 +1008,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                             nil];
         [self.engagement sendAdvisoryPacketWithDict:chatUp retries:0];
     }
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowChat:)])
+        [self.delegate lookIOManagerDidShowChat:self];
 }
 
 - (void)dismissLookIOWindow
 {
+    // If not visible, don't dismiss
+    if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+        return;
+    
     self.lookIOWindowState = LIOLookIOWindowStateDismissing;
     
     self.lookioWindow.hidden = YES;
@@ -1001,6 +1028,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (!self.visit.controlButtonHidden)
     {
         [self.controlButton show:YES];
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
+            [self.delegate lookIOManagerDidShowControlButton:self];
     }
     [self.controlButton resetUnreadMessages];
     
@@ -1079,6 +1108,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         self.containerViewController = nil;
         self.lookioWindow.rootViewController = nil;
     }
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideChat:)])
+        [self.delegate lookIOManagerDidHideChat:self];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -1350,7 +1382,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatStarted == self.visit.visitState)
+    if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatActive;
         if (UIApplicationStateActive == [[UIApplication sharedApplication] applicationState])
@@ -1425,6 +1457,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             self.visit.visitState = LIOVisitStateOfflineSurvey;
             [self.containerViewController presentOfflineSurveyForEngagement:engagement];
+            [self.visit refreshControlButtonVisibility];
         }
     }
 }
