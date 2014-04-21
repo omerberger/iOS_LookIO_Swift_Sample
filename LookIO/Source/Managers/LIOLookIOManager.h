@@ -58,6 +58,20 @@ extern NSString *const kLPEventAddedToCart;
 - (void)lookIOManagerDidShowControlButton:(LIOLookIOManager *)aManager;
 
 /*!
+ Called whenever LP mobile shows its chat overlay.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ */
+- (void)lookIOManagerDidShowChat:(LIOLookIOManager *)aManager;
+
+/*!
+ Called whenever LP mobile hides its chat overlay.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ */
+- (void)lookIOManagerDidHideChat:(LIOLookIOManager *)aManager;
+
+/*!
  Called whenever a chat session has ended.
  
  @param aManager The LIOLookIOManager shared instance.
