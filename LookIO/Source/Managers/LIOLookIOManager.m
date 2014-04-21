@@ -588,6 +588,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     else
     {
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+            return;
+        
         [self.controlButton show:YES];
         
         if (notifyDelegate)
@@ -688,6 +691,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
     {
         self.visit.visitState = LIOVisitStatePostChatSurvey;
+        [self.visit refreshControlButtonVisibility];
         
         if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
         {
@@ -881,6 +885,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)containerViewControllerDidPresentPostChatSurvey:(LIOContainerViewController *)containerViewController
 {
     self.visit.visitState = LIOVisitStatePostChatSurvey;
+    [self.visit refreshControlButtonVisibility];
 }
 
 - (void)containerViewControllerDidTapIntraAppLink:(NSURL *)link
@@ -984,6 +989,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (!self.visit.controlButtonHidden)
     {
         [self.controlButton hide:YES];
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideControlButton:)])
+            [self.delegate lookIOManagerDidHideControlButton:self];
     }
     [self.controlButton resetUnreadMessages];
     
@@ -1021,6 +1028,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (!self.visit.controlButtonHidden)
     {
         [self.controlButton show:YES];
+        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowControlButton:)])
+            [self.delegate lookIOManagerDidShowControlButton:self];
     }
     [self.controlButton resetUnreadMessages];
     
@@ -1448,6 +1457,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             self.visit.visitState = LIOVisitStateOfflineSurvey;
             [self.containerViewController presentOfflineSurveyForEngagement:engagement];
+            [self.visit refreshControlButtonVisibility];
         }
     }
 }
