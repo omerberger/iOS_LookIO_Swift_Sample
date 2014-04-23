@@ -690,6 +690,15 @@
 - (void)inputBar:(LPInputBarView *)inputBar wantsNewHeight:(CGFloat)height
 {
     self.inputBarViewDesiredHeight = height;
+
+    if (self.keyboardIsAnimating)
+    {
+        if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+            [self updateSubviewFrames];
+        return;
+    }
+
+    
     [UIView animateWithDuration:0.3 animations:^{
         if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
             [self updateSubviewFrames];
@@ -903,6 +912,7 @@
     
     if (self.chatState == LIOChatStateEmailChat)
     {
+        [self.emailChatView cleanup];
         [self.emailChatView removeFromSuperview];
         self.emailChatView = nil;
     }
@@ -1092,6 +1102,8 @@
     if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
         tableViewFrame.size.height = inputBarViewFrame.origin.y + inputBarViewFrame.size.height;
     tableFooterViewFrame.size.height = tableViewFrame.size.height - [self heightForPreviousMessagesToShow];
+    if (tableFooterViewFrame.size.height < 0)
+        tableFooterViewFrame.size.height = inputBarViewFrame.size.height;
     
     self.emailChatView.frame = emailChatViewFrame;
 

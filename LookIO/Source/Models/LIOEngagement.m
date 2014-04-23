@@ -1284,7 +1284,16 @@
     newMessage.date = [NSDate date];
     newMessage.lineId = nil;
     newMessage.senderName = @"Me";
-    newMessage.text = text;
+    
+    if (self.visit.maskCreditCards)
+    {
+        newMessage.text = [self maskCreditCardForText:text];
+    }
+    else
+    {
+        newMessage.text = text;
+    }
+    
     [newMessage detectLinks];
     newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
     self.lastClientLineId += 1;
@@ -1527,5 +1536,41 @@
     }];
 }
 
+#pragma mark -
+#pragma mark Credit Card Masking Methods
+
+- (NSString *)maskCreditCardForText:(NSString *)text
+{
+    NSError *error = nil;
+    NSMutableString* mutableString = [text mutableCopy];
+    NSInteger offset = 0;
+    NSRegularExpression *regex = [NSRegularExpression
+                                  regularExpressionWithPattern:@"(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\\\d{3})\\\\d{11})"
+                                  options:0
+                                  error:&error];
+    if (error) {
+        return text;
+    }
+    
+    for (NSTextCheckingResult* result in [regex matchesInString:text options:0 range:NSMakeRange(0, [text length])]) {
+        
+        NSRange resultRange = [result range];
+        resultRange.location += offset;
+        NSString* match = [regex replacementStringForResult:result
+                                                   inString:mutableString
+                                                     offset:offset
+                                                   template:@"$0"];
+
+        NSString* replacement = [[match componentsSeparatedByCharactersInSet:[NSCharacterSet decimalDigitCharacterSet]] componentsJoinedByString:@"*"];
+        
+        // make the replacement
+        [mutableString replaceCharactersInRange:resultRange withString:replacement];
+        
+        // update the offset based on the replacement
+        offset += ([replacement length] - resultRange.length);
+    }
+    
+    return mutableString;
+}
 
 @end

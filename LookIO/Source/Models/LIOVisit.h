@@ -91,6 +91,7 @@ typedef enum
 - (BOOL)chatInProgress;
 - (BOOL)surveysEnabled;
 - (BOOL)hideEmailChat;
+- (BOOL)maskCreditCards;
 
 - (void)launchVisit;
 - (void)relaunchVisit;
@@ -113,5 +114,8 @@ typedef enum
 - (void)clearUDEs;
 - (void)addUDEs:(NSDictionary *)aDictionary;
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData;
+
+// Logging
+- (void)stopLogUploading;
 
 @end

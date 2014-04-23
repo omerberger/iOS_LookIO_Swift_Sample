@@ -352,6 +352,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(bundleDownloadDidFinish:)
+                                                 name:LIOBundleManagerBundleDownloadDidFinishNotification
+                                               object:nil];
+
+    
     [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
 }
 
@@ -792,7 +798,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (LIOAlertViewCrashReconnectPrompt == alertView.tag)
     {
-        
         switch (buttonIndex) {
             case 0:
                 self.disconnectedEngagement = nil;
@@ -809,7 +814,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.engagement attemptReconnectionWithVisit:self.visit];
                 break;
 
-            // In case alert view is dimissed by user or by other alert
+                // In case alert view is dimissed by user or by other alert
             default:
                 self.disconnectedEngagement = nil;
                 break;
@@ -818,13 +823,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (LIOAlertViewScreenshotPermission == alertView.tag)
     {
-        
         switch (buttonIndex) {
             case 0:
                 [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"revoked", @"asset" : @"screenshare"}
                                                       retries:0];
                 break;
-
             case 1:
                 [self.engagement sendPermissionPacketWithDict:@{@"permission" : @"granted", @"asset" : @"screenshare"}
                                                       retries:0];
@@ -835,7 +838,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 // if (NO == [[UIApplication sharedApplication] isStatusBarHidden])
                 //    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
                 // screenSharingStartedDate = [[NSDate date] retain];
-
                 if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
                 {
                     [self.containerViewController dismissCurrentViewController];
@@ -1295,6 +1297,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
     
+    if ([LIOBundleManager sharedBundleManager].isDownloadingBundle)
+    {
+        [self.containerViewController presentLoadingViewController];
+        return;
+    }
+    
+    [self presentContainerViewControllerForCurrentState];
+}
+
+- (void)presentContainerViewControllerForCurrentState
+{
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
             if (self.engagement)
@@ -1330,6 +1343,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         default:
             break;
     }
+}
+
+- (void)bundleDownloadDidFinish:(NSNotification *)notification
+{
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        [self presentContainerViewControllerForCurrentState];
 }
 
 - (void)showReconnectCancelAlert

@@ -89,6 +89,11 @@
 @property (nonatomic, assign) BOOL isCurrentCallOutgoingAndFirst;
 @property (nonatomic, copy) NSString *callVisitId;
 
+@property (nonatomic, assign) BOOL lastKnownCreditCardMaskingEnabled;
+
+@property (nonatomic, copy) NSString *lastKnownLoggingURL;
+@property (nonatomic, assign) BOOL loggingEnabled;
+@property (nonatomic, strong) NSTimer *loggingTimer;
 
 @end
 
@@ -121,6 +126,9 @@
         
         self.overrideButtonType = NO;
         self.disableSurveysOverride = NO;
+        
+        self.lastKnownCreditCardMaskingEnabled = NO;
+        self.loggingEnabled = NO;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -631,6 +639,14 @@
     if (brandingMd5String)
         [resolvedSettings setObject:brandingMd5String forKey:@"branding_md5"];
     
+    NSString *loggingUrl = [settingsDict objectForKey:@"logging_url"];
+    if (loggingUrl)
+        [resolvedSettings setObject:loggingUrl forKey:@"logging_url"];
+    
+    NSNumber *creditCardMaskingEnabledNumber = [settingsDict objectForKey:@"mask_cc"];
+    if (creditCardMaskingEnabledNumber)
+        [resolvedSettings setObject:creditCardMaskingEnabledNumber forKey:@"mask_cc"];
+    
     return resolvedSettings;
 }
 
@@ -808,6 +824,23 @@
                     [userDefaults setObject:brandingMd5 forKey:LIOBrandingManagerBrandingDictHashKey];
                 }
             }
+        }
+        
+        NSString* loggingURLString = [resolvedSettings objectForKey:@"logging_url"];
+        if ([loggingURLString length])
+        {
+            // Logging should start either if this is the first logging_url received
+            // of if it's different than the last logging url recieved
+            if (self.lastKnownLoggingURL == nil || ![self.lastKnownLoggingURL isEqualToString:loggingURLString])
+            {
+                [self startLogUploadingWithURL:loggingURLString];
+            }
+        }
+        
+        NSNumber *creditCardMaskingEnabledNumber = [resolvedSettings objectForKey:@"mask_cc"];
+        if (creditCardMaskingEnabledNumber)
+        {
+            self.lastKnownCreditCardMaskingEnabled = [creditCardMaskingEnabledNumber boolValue];
         }
         
         [userDefaults synchronize];
@@ -1144,6 +1177,11 @@
 - (BOOL)hideEmailChat
 {
     return self.lastKnownHideEmailChat;
+}
+
+- (BOOL)maskCreditCards
+{
+    return self.lastKnownCreditCardMaskingEnabled;
 }
 
 - (BOOL)surveysEnabled
@@ -1656,7 +1694,7 @@
     {
         
         NSError *writeError = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:NSJSONWritingPrettyPrinted error:&writeError];
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:nil error:&writeError];
 
         if (!writeError && jsonData)
         {
@@ -1682,7 +1720,7 @@
 {
     // We only allow JSONable objects.
     NSError *writeError = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:NSJSONWritingPrettyPrinted error:&writeError];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:nil error:&writeError];
     
     if (!writeError && jsonData)
     {
@@ -1801,6 +1839,30 @@
             }
         }
     };
+}
+
+#pragma mark -
+#pragma mark Logging Methods
+
+- (void)startLogUploadingWithURL:(NSString *)loggingURLString
+{
+    self.loggingEnabled = YES;
+    self.lastKnownLoggingURL = loggingURLString;
+    [LIOLogManager sharedLogManager].lastKnownLoggingUrl = loggingURLString;
+    self.loggingTimer = [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(loggingUploadTimerDidFire:) userInfo:nil repeats:YES];
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
+}
+
+- (void)stopLogUploading
+{
+    self.loggingEnabled = NO;
+    [self.loggingTimer invalidate];
+    self.loggingTimer = nil;
+}
+
+- (void)loggingUploadTimerDidFire:(NSTimer *)timer
+{
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
 }
 
 @end

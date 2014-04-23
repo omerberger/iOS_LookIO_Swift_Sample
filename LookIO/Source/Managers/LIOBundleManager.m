@@ -83,6 +83,8 @@ BOOL LIOIsUIKitFlatMode(void) {
     
     if (self)
     {
+        self.isDownloadingBundle = NO;
+        
         // Make sure the target dir exists.
         NSString *targetDir = [self targetDirectory];
         NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -264,6 +266,8 @@ BOOL LIOIsUIKitFlatMode(void) {
     }
     
     LIOLog(@"BUNDLE: Starting bundle download...");
+    
+    self.isDownloadingBundle = YES;
     
     [[NSFileManager defaultManager] removeItemAtPath:[self bundleZipPath] error:nil];
     bundleDownloadOutputStream = [[NSOutputStream outputStreamToFileAtPath:[self bundleZipPath] append:NO] retain];
@@ -874,7 +878,8 @@ BOOL LIOIsUIKitFlatMode(void) {
     [[NSFileManager defaultManager] removeItemAtPath:[self bundleZipPath] error:nil];
     
     LIOLog(@"BUNDLE: Warning! Bundle download failed with error: %@", [error localizedDescription]);
-    
+ 
+    self.isDownloadingBundle = NO;
     NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:error, LIOBundleManagerErrorKey, nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:LIOBundleManagerBundleDownloadDidFinishNotification
                                                         object:self
@@ -1064,6 +1069,7 @@ BOOL LIOIsUIKitFlatMode(void) {
         lioBundle = [[NSBundle bundleWithPath:[self bundlePath]] retain];
     }
     
+    self.isDownloadingBundle = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:LIOBundleManagerBundleDownloadDidFinishNotification
                                                         object:self
                                                       userInfo:userInfo];
