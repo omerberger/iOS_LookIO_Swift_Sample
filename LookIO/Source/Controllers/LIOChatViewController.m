@@ -912,6 +912,7 @@
     
     if (self.chatState == LIOChatStateEmailChat)
     {
+        [self.emailChatView cleanup];
         [self.emailChatView removeFromSuperview];
         self.emailChatView = nil;
     }

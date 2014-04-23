@@ -210,9 +210,14 @@
 - (void)layoutSubviews {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
+    CGFloat boundsDelta = 12.0;
+    // Different bounds delta for iOS 6.0/5.0 devices
+    if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+        boundsDelta = 16.0;
+    
     CGSize expectedSize;
     if (self.textView.text.length > 0)
-        expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - 12.0, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
+        expectedSize = [self.textView.text sizeWithFont:self.textView.font constrainedToSize:CGSizeMake(self.textView.bounds.size.width - boundsDelta, padUI ? 80.0 : 80.0) lineBreakMode:UILineBreakModeWordWrap];
     else
         expectedSize = self.singleLineSize;
     
@@ -235,6 +240,11 @@
     CGRect frame = self.textViewBackgroundView.frame;
     frame.size.height = expectedSize.height + (padUI ? 30.0 : 20.0);
     self.textViewBackgroundView.frame = frame;
+
+    if (!(LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")))
+    {
+        self.textView.frame = self.textViewBackgroundView.bounds;
+    }
     
     frame = self.placeholderLabel.frame;
     frame.size.height = self.textViewBackgroundView.bounds.size.height - 20.0;
