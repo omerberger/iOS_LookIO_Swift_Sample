@@ -30,6 +30,9 @@ typedef enum {
 
     NSString *lastKnownLoggingUrl;
     LIOVisit *visit;
+    
+    NSInteger failedLogUploadAttempts;
+    NSString *failedLogEntries;
 }
 
 @property (nonatomic, readonly) NSMutableArray *logEntries;
