@@ -850,8 +850,6 @@
     
     [self.tableView reloadData];
     
-    [self appearanceAnimationForKeyboardInitialPosition];
-    
     // If only one message appears, read it
     if (UIAccessibilityIsVoiceOverRunning())
     {
