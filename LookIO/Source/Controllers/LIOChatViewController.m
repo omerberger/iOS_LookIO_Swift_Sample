@@ -71,6 +71,10 @@
 
 @property (nonatomic, strong) NSURL *urlBeingLaunched;
 
+// A fix to make sure the intro animation appears even if "becomeFirstResponder" does not trigger 
+@property (nonatomic, assign) BOOL keyboardShouldAppear;
+@property (nonatomic, strong) NSTimer *keyboardShouldAppearTimer;
+
 @end
 
 @implementation LIOChatViewController
@@ -869,6 +873,8 @@
     {
         switch (initialPosition) {
             case LIOKeyboardInitialPositionUp:
+                self.keyboardShouldAppear = YES;
+                self.keyboardShouldAppearTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(keyboardShouldAppearTimerDidTrigger:) userInfo:nil repeats:NO];
                 [self.inputBarView.textView becomeFirstResponder];
                 break;
                 
@@ -883,6 +889,59 @@
             default:
                 break;
         }
+    }
+}
+
+- (void)keyboardShouldAppearTimerDidTrigger:(id)sender
+{
+    [self.keyboardShouldAppearTimer invalidate];
+    self.keyboardShouldAppearTimer = nil;
+    
+    if (self.keyboardShouldAppear) {
+        [self setDefaultKeyboardHeightsForOrientation:self.interfaceOrientation];
+
+        self.keyboardShouldAppear = NO;
+        self.keyboardIsAnimating = YES;
+        
+        BOOL introAnimation = NO;
+        if (LIOKeyboardStateIntroAnimation == self.keyboardState)
+            introAnimation = YES;
+        
+        self.keyboardState = LIOKeyboardStateKeyboard;
+        BOOL dontScrollToBottom = NO;
+        if (self.keyboardIsDraggingInKeyboardState)
+        {
+            self.keyboardIsDraggingInKeyboardState = NO;
+            dontScrollToBottom = YES;
+        }
+        
+        [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+                [self.delegate chatViewControllerLandscapeWantsHeaderBarHidden:YES];
+            
+            [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:YES maintainTableViewOffset:NO];
+            if (introAnimation)
+            {
+                CGRect frame = self.tableView.frame;
+                frame.origin.y = 0;
+                self.tableView.frame = frame;
+            }
+        } completion:^(BOOL finished) {
+            if (self.chatState == LIOChatStateChat && dontScrollToBottom == NO)
+                [self scrollToBottomDelayed:NO];
+            
+            if (introAnimation)
+                self.keyboardState = LIOKeyboardStateKeyboard;
+            
+            if (self.emailChatView)
+            {
+                [self.emailChatView removeFromSuperview];
+                [self.emailChatView cleanup];
+                self.emailChatView = nil;
+            }
+            
+            self.keyboardIsAnimating = NO;
+        }];
     }
 }
 
@@ -952,6 +1011,8 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+    self.keyboardShouldAppear = NO;
 
     self.chatState = LIOChatStateChat;
     
@@ -975,7 +1036,7 @@
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
         self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self.view addSubview:self.tableView];
-    
+
     self.keyboardState = LIOKeyboardStateIntroAnimation;
     CGRect frame = self.tableView.frame;
     frame.origin.y = -frame.size.height;
@@ -1208,6 +1269,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
+    self.keyboardShouldAppear = NO;
     self.keyboardIsAnimating = YES;
     
     // Acquire keyboard info
@@ -1348,7 +1410,10 @@
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    [self setDefaultKeyboardHeightsForOrientation:toInterfaceOrientation];
+    if (LIOKeyboardStateMenu == self.keyboardState)
+    {
+        [self setDefaultKeyboardHeightsForOrientation:toInterfaceOrientation];
+    }
     [self updateNumberOfMessagesToShowInScrollBackForOrientation:toInterfaceOrientation];
 }
 
