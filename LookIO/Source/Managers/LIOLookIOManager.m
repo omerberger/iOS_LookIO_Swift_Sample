@@ -1448,7 +1448,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatStarted == self.visit.visitState)
+    if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatActive == self.visit.visitState)
     {
         // Let's check if the developer has defined a custom action to use
         BOOL callChatNotAnsweredAfterDismissal = NO;
