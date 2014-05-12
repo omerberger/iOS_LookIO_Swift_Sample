@@ -194,7 +194,7 @@
     BOOL isLastQuestion = [self.survey isQuestionWithIndexLastQuestion:self.currentQuestionIndex];
     [self.currentQuestionView setupViewWithQuestion:currentQuestion isLastQuestion:isLastQuestion delegate:self];
     [self.scrollView addSubview:self.currentQuestionView];
-    [self.currentQuestionView becomeFirstResponder];
+    [self.currentQuestionView questionBecomeFirstResponder];
     [self.currentQuestionView questionViewDidAppear];
     
     // Set up the next question; If we get a FALSE response, we're at the last question
@@ -870,7 +870,7 @@
     
     [self.currentQuestionView endEditing:YES];
     [self.previousQuestionView setNeedsLayout];
-    [self.previousQuestionView becomeFirstResponder];
+    [self.previousQuestionView questionBecomeFirstResponder];
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     
@@ -964,7 +964,7 @@
     [self.currentQuestionView endEditing:YES];
     [self.nextQuestionView reloadTableViewDataIfNeeded];
     [self.nextQuestionView setNeedsLayout];
-    [self.nextQuestionView becomeFirstResponder];
+    [self.nextQuestionView questionBecomeFirstResponder];
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 

@@ -410,7 +410,7 @@
     }
 }
 
-- (void)becomeFirstResponder
+- (void)questionBecomeFirstResponder
 {
     if (LIOSurveyQuestionDisplayTypeTextField == self.question.displayType)
         [self.textField becomeFirstResponder];
