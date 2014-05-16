@@ -174,8 +174,8 @@ static LIOLogManager *sharedLogManager = nil;
     
         [NSURLConnection connectionWithRequest:uploadLogRequest delegate:self];
     
-        LIOLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
-        NSLog(@"Uploaded log content is <<<< %@ >>>>", allLogEntries);
+//        LIOLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
+//        NSLog(@"Uploaded log content is <<<< %@ >>>>", allLogEntries);
     
         [self deleteExistingLog];
     }
