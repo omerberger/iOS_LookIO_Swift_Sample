@@ -1404,9 +1404,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatActive;
+        
         if (UIApplicationStateActive == [[UIApplication sharedApplication] applicationState])
         {
-            [self.containerViewController presentChatForEngagement:engagement];
+            if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
+            {
+                [self.containerViewController presentChatForEngagement:engagement];
+            }
         }
     }
     
@@ -1444,7 +1448,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatStarted == self.visit.visitState)
+    if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatActive == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
     {
         // Let's check if the developer has defined a custom action to use
         BOOL callChatNotAnsweredAfterDismissal = NO;

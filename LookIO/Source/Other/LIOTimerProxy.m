@@ -14,7 +14,8 @@
 
 - (id)initWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)aUserInfo
 {
-    if (self == [super init])
+    self = [super init];
+    if (self)
     {
         userInfo = [aUserInfo retain];
         

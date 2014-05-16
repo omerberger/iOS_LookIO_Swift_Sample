@@ -152,6 +152,8 @@
         aLabel.frame = aFrame;
         if (expectedSize.width > self.frame.size.width)
             [self animateLongTextAnimationIfNeededForLabel:aLabel animated:NO];
+        else
+            self.animatingLongText = NO;
     }
     
     return newNotification;
