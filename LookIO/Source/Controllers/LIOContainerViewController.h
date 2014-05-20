@@ -66,7 +66,7 @@ typedef enum {
 
 - (void)dismissCurrentNotification;
 
-- (void)presentLoadingViewController;
+- (void)presentLoadingViewControllerWithQueueingMessage:(BOOL)withMessage;
 - (void)dismissCurrentViewController;
 - (void)dismissImmediatelyForBackgrounding;
 

@@ -54,6 +54,8 @@
 
 @property (nonatomic, assign) BOOL isAnimatingPresentation;
 
+@property (nonatomic, copy) NSString *lastReceivedNotification;
+
 @end
 
 @implementation LIOContainerViewController
@@ -225,6 +227,14 @@
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
+    // In oading state and showing the queueing notification, show the new message
+    self.lastReceivedNotification = notification;
+    if (LIOContainerViewStateLoading == self.containerViewState && self.loadingViewController.isShowingQueueingMessage)
+    {
+        [self.loadingViewController updateQueueingMessage:self.lastReceivedNotification];
+    }
+    
+    
     if (LIOContainerViewStateChat == self.containerViewState || LIOContainerViewStateLoading == self.containerViewState)
     {
         if (UIAccessibilityIsVoiceOverRunning())
@@ -482,10 +492,18 @@
 }
 
 
-- (void)presentLoadingViewController
+- (void)presentLoadingViewControllerWithQueueingMessage:(BOOL)withMessage
 {
     self.containerViewState = LIOContainerViewStateLoading;
-    [self.loadingViewController showBezel];
+    
+    if (LIOHeaderBarStateVisible == self.headerBarState)
+        [self dismissHeaderBarView:YES withState:LIOHeaderBarStateHidden];
+
+    
+    if (withMessage)
+        [self.loadingViewController showBezelForQueueingMessage:self.lastReceivedNotification];
+    else
+        [self.loadingViewController showBezel];
     
     if (self.currentViewController != self.loadingViewController)
         [self swapCurrentControllerWith:self.loadingViewController animated:YES];
@@ -567,7 +585,7 @@
             break;
             
         case LIOSurveyTypePrechat:
-            [self presentLoadingViewController];
+            [self presentLoadingViewControllerWithQueueingMessage:YES];
             break;
             
         default:

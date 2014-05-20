@@ -627,7 +627,7 @@
                 // If the dictionary is empty, just start the engagement
                 if ([preSurveyDict.allKeys count] == 0)
                 {
-                    [self.delegate engagementDidStart:self];
+                    [self.delegate engagementHasNoPrechatSurvey:self];
                 }
                 else
                 {
@@ -674,6 +674,11 @@
             
             self.isConnected = YES;
             [self.delegate engagementAgentIsReady:self];
+            
+            [self.delegate engagementDidStart:self];
+            [self saveEngagement];
+            [self saveEngagementMessages];
+
         }
         if ([action isEqualToString:@"unprovisioned"])
         {
@@ -725,9 +730,6 @@
         }
         if ([action isEqualToString:@"engagement_started"])
         {
-            [self.delegate engagementDidStart:self];
-            [self saveEngagement];
-            [self saveEngagementMessages];
         }
     }
     

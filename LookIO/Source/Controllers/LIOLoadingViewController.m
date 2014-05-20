@@ -14,6 +14,7 @@
 
 // Models
 #import "LIOSoundEffect.h"
+#import "LIOTimerProxy.h"
 
 @interface LIOLoadingViewController ()
 
@@ -24,6 +25,11 @@
 @property (nonatomic, strong) UIButton *dismissButton;
 
 @property (nonatomic, strong) LIOSoundEffect *soundEffect;
+
+// Animated Ellipsis
+@property (nonatomic, assign) BOOL isAnimatingEllipsis;
+@property (nonatomic, strong) LIOTimerProxy *animatedEllipsisTimer;
+
 
 @end
 
@@ -41,6 +47,12 @@
 
 - (void)viewDidDisappear:(BOOL)animated
 {
+    if (self.animatedEllipsisTimer)
+    {
+        [self.animatedEllipsisTimer stopTimer];
+        self.animatedEllipsisTimer = nil;
+    }
+    
     [super viewDidDisappear:animated];
 }
 
@@ -48,6 +60,8 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+    self.isShowingQueueingMessage = NO;
     
     self.view.backgroundColor = [UIColor clearColor];
     
@@ -67,12 +81,10 @@
             self.loadingImageView.image = [[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSpinningLoader"];
     }];
     self.loadingImageView.contentMode = UIViewContentModeScaleAspectFit;
-    self.loadingImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [self.bezelView addSubview:self.loadingImageView];
     
     self.loadingLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 80.0, self.bezelView.bounds.size.width, 20.0)];
     self.loadingLabel.backgroundColor = [UIColor clearColor];
-    self.loadingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.loadingLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreenTitle];
     self.loadingLabel.font = [[LIOBrandingManager brandingManager] boldFontForElement:LIOBrandingElementLoadingScreenTitle];
     self.loadingLabel.textAlignment = UITextAlignmentCenter;
@@ -81,7 +93,6 @@
     
     self.loadingSubLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 100.0, self.bezelView.bounds.size.width, 18.0)];
     self.loadingSubLabel.backgroundColor = [UIColor clearColor];
-    self.loadingSubLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.loadingSubLabel.textColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementLoadingScreenSubtitle];
     self.loadingSubLabel.font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementLoadingScreenSubtitle];
     self.loadingSubLabel.textAlignment = UITextAlignmentCenter;
@@ -126,14 +137,101 @@
     
     if (UIAccessibilityIsVoiceOverRunning())
     {
-        NSString *loadingMessage = [NSString stringWithFormat:@"%@ %@", self.loadingLabel.text, self.loadingSubLabel.text];
-        UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, loadingMessage);
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (self.isShowingQueueingMessage)
+            {
+                UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.loadingSubLabel.text);
+            }
+            else
+            {
+                NSString *loadingMessage = [NSString stringWithFormat:@"%@ %@", self.loadingLabel.text, self.loadingSubLabel.text];
+                UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, loadingMessage);
+            }
+        });
     }
 }
+
+- (void)updateEllipsisAnimationForMessage:(NSString *)message
+{
+    if (self.animatedEllipsisTimer)
+    {
+        [self.animatedEllipsisTimer stopTimer];
+        self.animatedEllipsisTimer = nil;
+    }
+    self.isAnimatingEllipsis = [message hasSuffix:@"..."];
+    if (self.isAnimatingEllipsis)
+    {
+        self.animatedEllipsisTimer = [[LIOTimerProxy alloc] initWithTimeInterval:0.5 target:self selector:@selector(animatedEllipsisTimerDidFire)];
+    }
+}
+
+- (void)showBezelForQueueingMessage:(NSString *)queueingMessage
+{
+    self.isShowingQueueingMessage = YES;
+    
+    // If there is no existing queueing message, just show the regular loading message.
+    // Once a message is received it will replace it
+    if (queueingMessage)
+    {
+        // Hide the loading sublabel
+        self.loadingLabel.alpha = 0.0;
+        self.loadingSubLabel.alpha = 1.0;
+    
+        self.loadingSubLabel.text = queueingMessage;
+        [self updateFramesForQueueingMessage];
+    }
+    
+    [self showBezel];
+}
+
+- (void)updateQueueingMessage:(NSString *)queueingMessage
+{
+    [UIView animateWithDuration:0.5 animations:^{
+        self.loadingSubLabel.alpha = 0.0;
+        self.loadingLabel.alpha = 0.0;
+    } completion:^(BOOL finished) {
+
+        self.loadingSubLabel.text = queueingMessage;
+        [self updateFramesForQueueingMessage];
+
+        [UIView animateWithDuration:0.5 animations:^{
+            self.loadingSubLabel.alpha = 1.0;
+        } completion:^(BOOL finished) {
+            if (UIAccessibilityIsVoiceOverRunning()) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.loadingSubLabel.text);
+                });
+            }
+        }];
+    }];
+}
+
+- (void)updateFramesForQueueingMessage
+{
+    CGSize expectedSize = [self.loadingSubLabel.text sizeWithFont:self.loadingSubLabel.font constrainedToSize:CGSizeMake(self.bezelView.bounds.size.width - 30.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    self.loadingSubLabel.numberOfLines = 0;
+    
+    CGRect frame = self.loadingSubLabel.frame;
+    frame.origin.x = (self.bezelView.bounds.size.width - expectedSize.width)/2;
+    frame.origin.y = 85.0;
+    frame.size = expectedSize;
+    self.loadingSubLabel.frame = frame;
+    [self.loadingSubLabel sizeThatFits:expectedSize];
+    
+    frame = self.bezelView.frame;
+    frame.size.height = self.loadingSubLabel.frame.origin.y + self.loadingSubLabel.frame.size.height + 20;
+    frame.origin.y = self.view.bounds.size.height/2 - frame.size.height/2;
+    self.bezelView.frame = frame;
+    
+    self.loadingSubLabel.textAlignment = UITextAlignmentCenter;
+    
+}
+
 
 - (void)hideBezel
 {
     self.bezelView.hidden = YES;
+    self.isShowingQueueingMessage = NO;
     
     [self.loadingImageView.layer removeAnimationForKey:@"animation"];
     if (self.soundEffect)
@@ -141,6 +239,23 @@
         self.soundEffect.shouldRepeat = NO;
         [self.soundEffect stop];
     }
+    
+    if (self.animatedEllipsisTimer)
+    {
+        [self.animatedEllipsisTimer stopTimer];
+        self.animatedEllipsisTimer = nil;
+    }
+}
+
+- (void)animatedEllipsisTimerDidFire
+{
+    UILabel *aLabel = self.loadingSubLabel;
+    if ([aLabel.text hasSuffix:@"..."])
+        aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 3, 3) withString:@"."];
+    else if ([aLabel.text hasSuffix:@".."])
+        aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 2, 2) withString:@"..."];
+    else if ([aLabel.text hasSuffix:@"."])
+        aLabel.text = [aLabel.text stringByReplacingCharactersInRange:NSMakeRange([aLabel.text length] - 1, 1) withString:@".."];
 }
 
 @end

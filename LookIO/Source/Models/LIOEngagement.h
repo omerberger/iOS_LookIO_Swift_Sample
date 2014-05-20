@@ -59,6 +59,7 @@ typedef enum
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
+- (void)engagementHasNoPrechatSurvey:(LIOEngagement *)engagement;
 
 // Others
 - (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;

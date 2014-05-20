@@ -1299,7 +1299,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if ([LIOBundleManager sharedBundleManager].isDownloadingBundle)
     {
-        [self.containerViewController presentLoadingViewController];
+        [self.containerViewController presentLoadingViewControllerWithQueueingMessage:NO];
         return;
     }
     
@@ -1321,7 +1321,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self.engagement startEngagement];
             
             if (self.visit.surveysEnabled)
-                [self.containerViewController presentLoadingViewController];
+                [self.containerViewController presentLoadingViewControllerWithQueueingMessage:NO];
             else
             {
                 [self.containerViewController presentChatForEngagement:self.engagement];
@@ -1329,7 +1329,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
             
         case LIOVisitStateChatStarted:
-            [self.containerViewController presentChatForEngagement:self.engagement];
+            [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
             break;
             
         case LIOVisitStateChatActive:
@@ -1399,6 +1399,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)engagementHasNoPrechatSurvey:(LIOEngagement *)engagement
+{
+    // If surveys are enabled, and no survey is available, an empty survey will be returned
+    // In this case, chat should just be displayed as if it was opened normally
+    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateChatOpened;
+        [self.containerViewController presentChatForEngagement:engagement];
+    }
+}
+
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
     if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
@@ -1412,14 +1423,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.containerViewController presentChatForEngagement:engagement];
             }
         }
-    }
-    
-    // If surveys are enabled, and no survey is available, an empty survey will be returned
-    // In this case, chat should just be displayed as if it was opened normally
-    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState)
-    {
-        self.visit.visitState = LIOVisitStateChatOpened;
-        [self.containerViewController presentChatForEngagement:engagement];
     }
 }
 
@@ -1613,6 +1616,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatOpened == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatStarted;
+        
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
+        }
     }
 }
 
