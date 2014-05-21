@@ -124,6 +124,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     [LIOStatusManager statusManager].badInitialization = nil == keyWindow;
+
+    if ([LIOStatusManager statusManager].badInitialization)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined. Make sure to run performSetupWithDelegate in your app delegate’s application:didFinishLaunchingWithOptions: method, after the method makeKeyAndVisible is called on the application’s main window."];
+    }
     
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
