@@ -625,7 +625,7 @@
             if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
             {
                 // If the dictionary is empty, just start the engagement
-                if ([preSurveyDict.allKeys count] == 0)
+                if ([preSurveyDict.allKeys count] == 0 || [self.visit surveysDisabled])
                 {
                     [self.delegate engagementHasNoPrechatSurvey:self];
                 }
@@ -1330,7 +1330,7 @@
 - (BOOL)shouldPresentPostChatSurvey
 {
     BOOL shouldPresentPostChatSurvey = NO;
-    if (self.visit.surveysEnabled && self.postchatSurvey)
+    if (self.postchatSurvey)
         shouldPresentPostChatSurvey = YES;
     
     return shouldPresentPostChatSurvey;
