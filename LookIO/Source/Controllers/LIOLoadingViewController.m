@@ -103,6 +103,41 @@
     self.dismissButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [self.dismissButton addTarget:self action:@selector(loadingViewDidDismiss:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.dismissButton];
+    
+    [self resetLoadingScreen];
+}
+
+- (void)resetLoadingScreen
+{
+    self.loadingLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingLabel");
+    
+    CGSize expectedSize = [self.loadingLabel.text sizeWithFont:self.loadingLabel.font constrainedToSize:CGSizeMake(self.bezelView.bounds.size.width - 30.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    self.loadingLabel.numberOfLines = 0;
+    
+    CGRect frame = self.loadingLabel.frame;
+    frame.origin.x = (self.bezelView.bounds.size.width - expectedSize.width)/2;
+    frame.origin.y = 80.0;
+    frame.size = expectedSize;
+    self.loadingLabel.frame = frame;
+    [self.loadingLabel sizeThatFits:expectedSize];
+    
+    self.loadingSubLabel.text = LIOLocalizedString(@"LIOAltChatViewController.LoadingSubLabel");
+    
+    expectedSize = [self.loadingSubLabel.text sizeWithFont:self.loadingSubLabel.font constrainedToSize:CGSizeMake(self.bezelView.bounds.size.width - 30.0, 9999) lineBreakMode:UILineBreakModeWordWrap];
+    self.loadingSubLabel.numberOfLines = 0;
+    
+    frame = self.loadingSubLabel.frame;
+    frame.origin.x = (self.bezelView.bounds.size.width - expectedSize.width)/2;
+    frame.origin.y = self.loadingLabel.frame.origin.y + self.loadingLabel.frame.size.height + 5;
+    frame.size = expectedSize;
+    self.loadingSubLabel.frame = frame;
+    [self.loadingSubLabel sizeThatFits:expectedSize];
+
+    frame = self.bezelView.frame;
+    frame.size.height = self.loadingSubLabel.frame.origin.y + self.loadingSubLabel.frame.size.height + 15;
+    frame.origin.y = self.view.bounds.size.height/2 - frame.size.height/2;
+    self.bezelView.frame = frame;
+    
 }
 
 #pragma mark -
@@ -232,6 +267,7 @@
 {
     self.bezelView.hidden = YES;
     self.isShowingQueueingMessage = NO;
+    [self resetLoadingScreen];
     
     [self.loadingImageView.layer removeAnimationForKey:@"animation"];
     if (self.soundEffect)
