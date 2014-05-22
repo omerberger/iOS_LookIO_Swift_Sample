@@ -430,9 +430,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (self.chatReceivedWhileAppBackgrounded)
         {
             self.chatReceivedWhileAppBackgrounded = NO;
-            
-            [self.containerViewController engagement:self.engagement didReceiveMessage:nil];
-            
             if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
             {
                 // Don't popup chat if an alertview is visible because chat ended while in background
