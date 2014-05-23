@@ -1469,6 +1469,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateOfflineSurvey;
             [self.containerViewController presentOfflineSurveyForEngagement:engagement];
             [self.visit refreshControlButtonVisibility];
+            
+            // Show chat UI if hidden
+            if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+            {
+                [self presentLookIOWindow];
+            }
         }
     }
 }
