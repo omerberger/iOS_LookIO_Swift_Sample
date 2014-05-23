@@ -77,8 +77,11 @@ typedef enum
 
 - (void)disableControlButton;
 - (void)undisableControlButton;
+
 - (void)disableSurveys;
 - (void)undisableSurveys;
+- (BOOL)surveysDisabled;
+
 - (void)useIconButton;
 - (void)useTextButton;
 - (void)useDefaultButton;
@@ -89,7 +92,6 @@ typedef enum
 
 - (BOOL)chatEnabled;
 - (BOOL)chatInProgress;
-- (BOOL)surveysEnabled;
 - (BOOL)hideEmailChat;
 - (BOOL)maskCreditCards;
 

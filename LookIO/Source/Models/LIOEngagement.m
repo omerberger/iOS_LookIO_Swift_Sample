@@ -625,9 +625,9 @@
             if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
             {
                 // If the dictionary is empty, just start the engagement
-                if ([preSurveyDict.allKeys count] == 0)
+                if ([preSurveyDict.allKeys count] == 0 || [self.visit surveysDisabled])
                 {
-                    [self.delegate engagementDidStart:self];
+                    [self.delegate engagementHasNoPrechatSurvey:self];
                 }
                 else
                 {
@@ -674,6 +674,11 @@
             
             self.isConnected = YES;
             [self.delegate engagementAgentIsReady:self];
+            
+            [self.delegate engagementDidStart:self];
+            [self saveEngagement];
+            [self saveEngagementMessages];
+
         }
         if ([action isEqualToString:@"unprovisioned"])
         {
@@ -725,9 +730,7 @@
         }
         if ([action isEqualToString:@"engagement_started"])
         {
-            [self.delegate engagementDidStart:self];
-            [self saveEngagement];
-            [self saveEngagementMessages];
+            [self.delegate engagementDidQueue:self];
         }
     }
     
@@ -1328,7 +1331,7 @@
 - (BOOL)shouldPresentPostChatSurvey
 {
     BOOL shouldPresentPostChatSurvey = NO;
-    if (self.visit.surveysEnabled && self.postchatSurvey)
+    if (self.postchatSurvey)
         shouldPresentPostChatSurvey = YES;
     
     return shouldPresentPostChatSurvey;

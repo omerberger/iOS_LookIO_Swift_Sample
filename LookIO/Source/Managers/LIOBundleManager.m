@@ -844,7 +844,8 @@ BOOL LIOIsUIKitFlatMode(void) {
                 NSString *aKey = [aLine substringWithRange:keyRange];
                 
                 NSString *aValue = [aLine substringWithRange:valueRange];
-                
+                aValue = [aValue stringByReplacingOccurrencesOfString:@"\\\"" withString:@"\""];
+                aValue = [aValue stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
                 [result setObject:aValue forKey:aKey];
             }
             else
