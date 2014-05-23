@@ -1105,6 +1105,9 @@
 
 - (void)updateSubviewFramesAndSaveTableViewFrames:(BOOL)saveTableViewFrames saveOtherFrames:(BOOL)saveOtherFrames maintainTableViewOffset:(BOOL)maintainTableViewOffset
 {
+    // Fix for case where views are updated before view has loaded
+    if (self.tableView.bounds.size.width == 0) return;
+    
     CGFloat tableViewContentOffsetY = self.tableView.contentOffset.y;
     CGRect tableViewFrame = self.tableView.frame;
     CGRect inputBarViewFrame = self.inputBarView.frame;

@@ -124,6 +124,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     [LIOStatusManager statusManager].badInitialization = nil == keyWindow;
+
+    if ([LIOStatusManager statusManager].badInitialization)
+    {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"Could not find host app's key window! Behavior from this point on is undefined. Make sure to run performSetupWithDelegate in your app delegate’s application:didFinishLaunchingWithOptions: method, after the method makeKeyAndVisible is called on the application’s main window."];
+    }
     
     self.lookioWindow = [[UIWindow alloc] initWithFrame:keyWindow.frame];
     self.lookioWindow.hidden = YES;
@@ -425,9 +430,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         if (self.chatReceivedWhileAppBackgrounded)
         {
             self.chatReceivedWhileAppBackgrounded = NO;
-            
-            [self.containerViewController engagement:self.engagement didReceiveMessage:nil];
-            
             if (LIOLookIOWindowStateHidden == self.lookIOWindowState)
             {
                 // Don't popup chat if an alertview is visible because chat ended while in background
@@ -1299,7 +1301,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if ([LIOBundleManager sharedBundleManager].isDownloadingBundle)
     {
-        [self.containerViewController presentLoadingViewController];
+        [self.containerViewController presentLoadingViewControllerWithQueueingMessage:NO];
         return;
     }
     
@@ -1320,16 +1322,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateChatRequested;
             [self.engagement startEngagement];
             
-            if (self.visit.surveysEnabled)
-                [self.containerViewController presentLoadingViewController];
-            else
-            {
-                [self.containerViewController presentChatForEngagement:self.engagement];
-            }
+            [self.containerViewController presentLoadingViewControllerWithQueueingMessage:NO];
             break;
             
         case LIOVisitStateChatStarted:
-            [self.containerViewController presentChatForEngagement:self.engagement];
+            [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
             break;
             
         case LIOVisitStateChatActive:
@@ -1368,14 +1365,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagementDidConnect:(LIOEngagement *)engagement
 {
-    if (LIOVisitStateChatRequested == self.visit.visitState)
-    {
-        if (![self.visit surveysEnabled])
-        {
-            self.visit.visitState = LIOVisitStateChatOpened;            
-        }
-    }
-    
     NSDictionary *chatUp = [NSDictionary dictionaryWithObjectsAndKeys:
                             @"chat_up", @"action",
                             nil];
@@ -1399,6 +1388,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)engagementHasNoPrechatSurvey:(LIOEngagement *)engagement
+{
+    // If surveys are enabled, and no survey is available, an empty survey will be returned
+    // In this case, chat should just be displayed as if it was opened normally
+    if (LIOVisitStateChatRequested == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateChatOpened;
+        [self.containerViewController presentChatForEngagement:engagement];
+    }
+}
+
+// Called when "connected" message is sent
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
     if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
@@ -1413,22 +1414,18 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             }
         }
     }
-    
-    // If surveys are enabled, and no survey is available, an empty survey will be returned
-    // In this case, chat should just be displayed as if it was opened normally
-    if (self.visit.surveysEnabled && LIOVisitStateChatRequested == self.visit.visitState)
+}
+
+- (void)engagementDidQueue:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatOpened == self.visit.visitState)
     {
-        self.visit.visitState = LIOVisitStateChatOpened;
-        [self.containerViewController presentChatForEngagement:engagement];
+        self.visit.visitState = LIOVisitStateChatStarted;
     }
 }
 
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement
 {
-    // If surveys aren't enabled, ignore this survey
-    if (!self.visit.surveysEnabled)
-        return;
-    
     if (LIOVisitStateChatRequested == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStatePreChatSurvey;
@@ -1481,6 +1478,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             self.visit.visitState = LIOVisitStateOfflineSurvey;
             [self.containerViewController presentOfflineSurveyForEngagement:engagement];
             [self.visit refreshControlButtonVisibility];
+            
+            // Show chat UI if hidden
+            if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+            {
+                [self presentLookIOWindow];
+            }
         }
     }
 }
@@ -1518,7 +1521,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     NSInteger alertViewTag;
     
     // If a post chat survey is available and surveys are enabled, keep the engagement object and show the survey
-    if (self.visit.surveysEnabled && self.engagement.postchatSurvey)
+    if (self.engagement.postchatSurvey)
     {
         alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
     }
@@ -1600,19 +1603,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)engagement:(LIOEngagement *)engagement didSendMessage:(LIOChatMessage *)message
 {
-    // If surveys are disabled and visitor sent a message before chat was connected, chat should start
-    if (LIOVisitStateChatRequested == self.visit.visitState)
-    {
-        if (![self.visit surveysEnabled])
-        {
-            self.visit.visitState = LIOVisitStateChatOpened;
-        }
-    }
-    
     // If chat was open and user sent a first message, visit states goes to started
     if (LIOVisitStateChatOpened == self.visit.visitState)
     {
         self.visit.visitState = LIOVisitStateChatStarted;
+        
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
+        }
     }
 }
 

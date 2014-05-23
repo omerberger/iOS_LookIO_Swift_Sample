@@ -64,9 +64,7 @@
 @property (nonatomic, assign) BOOL continueCallInProgress;
 @property (nonatomic, assign) NSInteger failedContinueCount;
 
-@property (nonatomic, assign) BOOL lastKnownSurveysEnabled;
 @property (nonatomic, assign) BOOL disableSurveysOverride;
-@property (nonatomic, assign) BOOL previousSurveysEnabledValue;
 
 @property (nonatomic, assign) BOOL overrideButtonType;
 @property (nonatomic, strong) NSNumber *previousButtonType;
@@ -216,13 +214,15 @@
 
 - (void)disableSurveys {
     self.disableSurveysOverride = YES;
-    self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
-    self.lastKnownSurveysEnabled = NO;
 }
 
 - (void)undisableSurveys {
     self.disableSurveysOverride = NO;
-    self.lastKnownSurveysEnabled = self.previousSurveysEnabledValue;
+}
+
+- (BOOL)surveysDisabled
+{
+    return self.disableSurveysOverride;
 }
 
 - (void)useIconButton
@@ -623,10 +623,6 @@
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
     
-    NSNumber *surveysEnabledNumber = [settingsDict objectForKey:@"surveys_enabled"];
-    if (surveysEnabledNumber)
-        [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
-    
     NSNumber *hideEmailChatNumber = [settingsDict objectForKey:@"hide_email_chat"];
     if (hideEmailChatNumber)
         [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
@@ -789,17 +785,6 @@
                                                                               target:self
                                                                             selector:@selector(continuationTimerDidFire)];
             }
-        }
-        
-        NSNumber *surveysEnabled = [resolvedSettings objectForKey:@"surveys_enabled"];
-        if (surveysEnabled)
-        {
-            self.lastKnownSurveysEnabled = [surveysEnabled boolValue];
-        }
-        
-        if (self.disableSurveysOverride) {
-            self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
-            self.lastKnownSurveysEnabled = NO;
         }
         
         NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
@@ -1182,11 +1167,6 @@
 - (BOOL)maskCreditCards
 {
     return self.lastKnownCreditCardMaskingEnabled;
-}
-
-- (BOOL)surveysEnabled
-{
-    return self.lastKnownSurveysEnabled;
 }
 
 - (void)setVisitState:(LIOVisitState)visitState
