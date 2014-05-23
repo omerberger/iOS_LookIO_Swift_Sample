@@ -39,6 +39,7 @@ typedef enum
 @protocol LIOEngagementDelegate <NSObject>
 
 // Engagement Lifecycle
+- (void)engagementDidQueue:(LIOEngagement *)engagement;
 - (void)engagementDidStart:(LIOEngagement *)engagement;
 - (void)engagementDidConnect:(LIOEngagement *)engagement;
 - (void)engagementAgentIsReady:(LIOEngagement *)engagement;

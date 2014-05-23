@@ -1399,6 +1399,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+// Called when "connected" message is sent
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
     if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
@@ -1412,6 +1413,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.containerViewController presentChatForEngagement:engagement];
             }
         }
+    }
+}
+
+- (void)engagementDidQueue:(LIOEngagement *)engagement
+{
+    if (LIOVisitStateChatOpened == self.visit.visitState)
+    {
+        self.visit.visitState = LIOVisitStateChatStarted;
     }
 }
 

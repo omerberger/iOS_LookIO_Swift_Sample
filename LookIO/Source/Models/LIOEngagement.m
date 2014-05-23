@@ -730,6 +730,7 @@
         }
         if ([action isEqualToString:@"engagement_started"])
         {
+            [self.delegate engagementDidQueue:self];
         }
     }
     
