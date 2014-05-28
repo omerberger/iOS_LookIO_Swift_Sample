@@ -28,6 +28,9 @@
 #import <CoreTelephony/CTCall.h>
 #import <CoreTelephony/CTCallCenter.h>
 
+// Models
+#import "LIOAccountSkillStatus.h"
+
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
@@ -93,6 +96,12 @@
 @property (nonatomic, assign) BOOL loggingEnabled;
 @property (nonatomic, strong) NSTimer *loggingTimer;
 
+// IAR
+@property (nonatomic, assign) BOOL isIAREnabled;
+@property (nonatomic, strong) NSMutableArray *accountSkills;
+@property (nonatomic, strong) LIOAccountSkillStatus *defaultAcccountSkill;
+@property (nonatomic, strong) LIOAccountSkillStatus *currentAccountSkill;
+
 @end
 
 @implementation LIOVisit
@@ -127,6 +136,11 @@
         
         self.lastKnownCreditCardMaskingEnabled = NO;
         self.loggingEnabled = NO;
+        
+        self.isIAREnabled = NO;
+        self.accountSkills = [NSMutableArray array];
+        self.defaultAcccountSkill = nil;
+        self.currentAccountSkill = nil;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -496,73 +510,110 @@
     NSDictionary *skillsDict = [settingsDict objectForKey:@"skills"];
     if (skillsDict)
     {
-        // Are these settings coming from a launch call? If so, replace current skill mapping wholesale.
-        if (NO == fromContinue)
+        NSArray *accounts = [skillsDict objectForKey:@"accounts"];
+        // This is an IAR enabled account
+        if (accounts)
         {
-            [resolvedSettings setObject:skillsDict forKey:@"skills"];
-        }
-        
-        // Merge existing skill map with the new one.
-        else
-        {
-            NSMutableDictionary *newMap = [self.multiskillMapping mutableCopy];
-            if (nil == newMap)
-                newMap = [NSMutableDictionary dictionary];
-            
-            if ([skillsDict count])
+            NSMutableArray *accountSkills = [NSMutableArray array];
+
+            for (NSDictionary *accountsDictionary in accounts)
             {
-                // Check for a "default=1" value.
-                NSString *newDefault = nil;
-                for (NSString *aSkillKey in skillsDict)
+                for (NSString *accountName in accountsDictionary.allKeys)
                 {
-                    NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
-                    NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
-                    if (YES == [defaultValue boolValue])
+                    NSDictionary *skillDictionary = [accountsDictionary objectForKey:accountName];
+                    for (NSString *skillName in skillDictionary)
                     {
-                        newDefault = aSkillKey;
-                        break;
+                        NSDictionary *skillStatus = [skillDictionary objectForKey:skillName];
+                        if (skillStatus == nil) continue;
+                        
+                        LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                        accountSkillStatus.account = accountName;
+                        accountSkillStatus.skill = skillName;
+                        
+                        NSNumber *defaultValue = [skillStatus objectForKey:@"default"];
+                        if (defaultValue) accountSkillStatus.isDefault = [defaultValue boolValue];
+                        
+                        NSNumber *enabledValue = [skillStatus objectForKey:@"enabled"];
+                        if (enabledValue) accountSkillStatus.isEnabled = [enabledValue boolValue];
+                        
+                        [accountSkills addObject:accountSkillStatus];
                     }
                 }
+            }
+
+            NSDictionary *skillsDict = [NSDictionary dictionaryWithObject:accountSkills forKey:@"accounts"];
+            [resolvedSettings setObject:skillsDict forKey:@"skills"];
+        }
+        else
+        {
+            // Are these settings coming from a launch call? If so, replace current skill mapping wholesale.
+            if (NO == fromContinue)
+            {
+                [resolvedSettings setObject:skillsDict forKey:@"skills"];
+            }
+            
+            // Merge existing skill map with the new one.
+            else
+            {
+                NSMutableDictionary *newMap = [self.multiskillMapping mutableCopy];
+                if (nil == newMap)
+                    newMap = [NSMutableDictionary dictionary];
                 
-                // Merge.
-                [newMap addEntriesFromDictionary:skillsDict];
-                
-                // Reset default values as needed.
-                if (newDefault)
+                if ([skillsDict count])
                 {
-                    NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
-                    for (NSString *aSkillKey in newMap)
+                    // Check for a "default=1" value.
+                    NSString *newDefault = nil;
+                    for (NSString *aSkillKey in skillsDict)
                     {
-                        NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
-                        NSNumber *defaultValue = [existingMap objectForKey:@"default"];
-                        if (defaultValue)
+                        NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
+                        NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
+                        if (YES == [defaultValue boolValue])
                         {
-                            if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
-                            {
-                                NSMutableDictionary *newDict = [existingMap mutableCopy];
-                                [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
-                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                            }
-                            else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
-                            {
-                                NSMutableDictionary *newDict = [existingMap mutableCopy];
-                                [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
-                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                            }
+                            newDefault = aSkillKey;
+                            break;
                         }
                     }
                     
-                    [newMap addEntriesFromDictionary:defaultReplacementDict];
+                    // Merge.
+                    [newMap addEntriesFromDictionary:skillsDict];
+                    
+                    // Reset default values as needed.
+                    if (newDefault)
+                    {
+                        NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
+                        for (NSString *aSkillKey in newMap)
+                        {
+                            NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
+                            NSNumber *defaultValue = [existingMap objectForKey:@"default"];
+                            if (defaultValue)
+                            {
+                                if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
+                                {
+                                    NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                    [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
+                                    [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                                }
+                                else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
+                                {
+                                    NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                    [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
+                                    [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                                }
+                            }
+                        }
+                        
+                        [newMap addEntriesFromDictionary:defaultReplacementDict];
+                    }
                 }
+                
+                // If the new skill map is an empty hash {}, do not merge; erase all entries.
+                else
+                {
+                    [newMap removeAllObjects];
+                }
+                
+                [resolvedSettings setObject:newMap forKey:@"skills"];
             }
-            
-            // If the new skill map is an empty hash {}, do not merge; erase all entries.
-            else
-            {
-                [newMap removeAllObjects];
-            }
-            
-            [resolvedSettings setObject:newMap forKey:@"skills"];
         }
     }
     
@@ -676,7 +727,45 @@
         NSDictionary *skillsMap = [resolvedSettings objectForKey:@"skills"];
         if (skillsMap)
         {
-            self.multiskillMapping = skillsMap;
+            // If an accounts array exists, use IAR
+            NSArray *accountSkillMap = [skillsMap objectForKey:@"accounts"];
+            if (accountSkillMap)
+            {
+                self.isIAREnabled = YES;
+                for (LIOAccountSkillStatus *newAccountSkill in accountSkillMap)
+                {
+                    // Check if this account-skill pair exists
+                    
+                    NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", newAccountSkill.account, newAccountSkill.skill];
+                    NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+
+                    // If exists
+                    if (predicateArray.count > 0)
+                    {
+                        LIOAccountSkillStatus *existingAccountSkill = [predicateArray objectAtIndex:0];
+
+                        // If changed, update the delegate
+                        if (existingAccountSkill.isEnabled != newAccountSkill.isEnabled)
+                            [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        
+                        existingAccountSkill.isDefault = newAccountSkill.isDefault;
+                        existingAccountSkill.isEnabled = newAccountSkill.isEnabled;
+                        
+                        if (existingAccountSkill.isDefault)
+                            self.defaultAcccountSkill = existingAccountSkill;
+                    }
+                    else
+                    {
+                        [self.accountSkills addObject:newAccountSkill];
+                        [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                    }
+                }
+            }
+            else
+            {
+                self.isIAREnabled = NO;
+                self.multiskillMapping = skillsMap;
+            }
         }
         
         [self.delegate visitChatEnabledDidUpdate:self];
@@ -860,6 +949,9 @@
 
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
+    
+    self.isIAREnabled = NO;
+    [self.accountSkills removeAllObjects];
     
     [self setupCallCenter];
     

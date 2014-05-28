@@ -55,6 +55,7 @@ typedef enum
 - (void)visitDidLaunch:(LIOVisit *)visit;
 - (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
 - (void)visitHasIncomingCall:(LIOVisit *)visit;
+- (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account;
 
 @end
 

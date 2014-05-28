@@ -582,6 +582,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
 }
 
+- (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookioManager:didChangeEnabled:forSkill:forAccount:)])
+        [self.delegate lookioManager:self didChangeEnabled:enabled forSkill:skill forAccount:account];    
+}
+
+
 - (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden notifyDelegate:(BOOL)notifyDelegate
 {
     if (isHidden)
@@ -1283,6 +1290,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginChat
 {
+    [self beginChatWithSkill:nil withAccount:nil];
+}
+
+- (void)beginChatWithSkill:(NSString *)skill
+{
+    [self beginChatWithSkill:skill withAccount:nil];
+}
+
+- (void)beginChatWithSkill:(NSString *)skill withAccount:(NSString *)account
+{
     if (LIOButtonModeLoading == self.controlButton.buttonMode)
     {
         [self showReconnectCancelAlert];
@@ -1294,7 +1311,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self presentEngagementDidFailToStartAlert];
         return;
     }
-
+    
     if (self.containerViewController != nil)
         [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
@@ -1305,10 +1322,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    [self presentContainerViewControllerForCurrentState];
+    [self presentContainerViewControllerForCurrentStateWithSkill:skill withAccount:account];
 }
 
-- (void)presentContainerViewControllerForCurrentState
+
+- (void)presentContainerViewControllerForCurrentStateWithSkill:(NSString *)skill withAccount:(NSString *)account
 {
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
@@ -1317,7 +1335,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.engagement cleanUpEngagement];
                 self.engagement = nil;
             }
-            self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit];
+            self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit skill:skill account:account];
             self.engagement.delegate = self;
             self.visit.visitState = LIOVisitStateChatRequested;
             [self.engagement startEngagement];
@@ -1345,7 +1363,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)bundleDownloadDidFinish:(NSNotification *)notification
 {
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-        [self presentContainerViewControllerForCurrentState];
+        [self presentContainerViewControllerForCurrentStateWithSkill:nil withAccount:nil];
 }
 
 - (void)showReconnectCancelAlert
