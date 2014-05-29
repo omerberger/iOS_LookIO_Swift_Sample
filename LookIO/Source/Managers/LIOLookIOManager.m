@@ -1302,6 +1302,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             [self beginChatWithSkill:self.visit.requiredAccountSkill.skill withAccount:self.visit.requiredAccountSkill.account];
         }
+        else
+        {
+            [self beginChatWithSkill:nil withAccount:nil];
+        }
     }
     else
     {

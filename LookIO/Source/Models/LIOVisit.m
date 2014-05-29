@@ -756,7 +756,9 @@
 
                         // If changed, update the delegate
                         if (existingAccountSkill.isEnabled != newAccountSkill.isEnabled)
+                        {
                             [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        }
                         
                         existingAccountSkill.isDefault = newAccountSkill.isDefault;
                         existingAccountSkill.isEnabled = newAccountSkill.isEnabled;
