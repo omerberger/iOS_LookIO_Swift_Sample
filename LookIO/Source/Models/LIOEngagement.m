@@ -831,7 +831,7 @@
         if (self.engagementSkill)
             [introParameters setObject:self.engagementSkill forKey:@"skill"];
         if (self.engagementAccount)
-            [introParameters setObject:self.engagementAccount forKey:@"account"];
+            [introParameters setObject:self.engagementAccount forKey:@"site_id"];
         
         [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters success:^(LPHTTPRequestOperation *operation, id responseObject) {
             
