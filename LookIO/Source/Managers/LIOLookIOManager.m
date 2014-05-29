@@ -576,6 +576,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.visit setSkill:aRequiredSkill];
 }
 
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account
+{
+    [self.visit setSkill:skill withAccount:account];
+}
+
+
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit
 {
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
@@ -1290,7 +1296,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginChat
 {
-    [self beginChatWithSkill:nil withAccount:nil];
+    if (self.visit)
+    {
+        if (self.visit.requiredAccountSkill)
+        {
+            [self beginChatWithSkill:self.visit.requiredAccountSkill.skill withAccount:self.visit.requiredAccountSkill.account];
+        }
+    }
+    else
+    {
+        [self beginChatWithSkill:nil withAccount:nil];
+    }
 }
 
 - (void)beginChatWithSkill:(NSString *)skill

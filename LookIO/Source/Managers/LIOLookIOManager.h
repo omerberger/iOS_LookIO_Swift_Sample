@@ -302,6 +302,23 @@ extern NSString *const kLPEventAddedToCart;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate;
 
 /*!
+ Returns a boolean value indicating if chat is enabled for a certain skill in the default account.
+ 
+ @param skill The name of the skill for which enabled is being checked.
+ */
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill;
+
+/*!
+ Returns a boolean value indicating if chat is enabled for a certain skill for a certain account.
+ 
+ @param skill The name of the skill for which chat enabled is being queried.
+ @param account The name of the account for which chat enabled is being queried.
+ */
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account;
+
+/*!
  Displays the LP Mobile chat view and start a chat from your own custom chat button or other UI
  element used to start a chat.
  */
@@ -402,6 +419,17 @@ extern NSString *const kLPEventAddedToCart;
  @param aRequiredSkill The skill required to answer questions at this point in your app.
  */
 - (void)setSkill:(NSString *)aRequiredSkill;
+
+
+/*!
+ Reports what sort of skill in which specific account is required to answer questions that the user might have 
+ while using a particular part of your app. This information will be viewable to all available agents.
+ 
+ @param skill The skill required to answer questions at this point in your app.
+ @param account The account required to answer questions at this point in your app.
+ */
+
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account;
 
 ///---------------------------------------------------------------------------------------
 /// @name Event Methods

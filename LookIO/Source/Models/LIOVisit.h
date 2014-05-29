@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+// Models
+#import "LIOAccountSkillStatus.h"
+
 typedef enum
 {
     LIOFunnelStateInitialized = 0,
@@ -76,6 +79,8 @@ typedef enum
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
 @property (nonatomic, copy) NSString *lastKnownButtonText;
 
+@property (nonatomic, strong) LIOAccountSkillStatus *requiredAccountSkill;
+
 - (void)disableControlButton;
 - (void)undisableControlButton;
 
@@ -102,6 +107,7 @@ typedef enum
 - (void)sendContinuationReport;
 
 - (void)setSkill:(NSString *)skill;
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account;
 
 - (void)setChatAvailable;
 - (void)setChatUnavailable;

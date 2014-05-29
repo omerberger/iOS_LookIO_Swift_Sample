@@ -28,9 +28,6 @@
 #import <CoreTelephony/CTCall.h>
 #import <CoreTelephony/CTCallCenter.h>
 
-// Models
-#import "LIOAccountSkillStatus.h"
-
 #define LIOLookIOManagerVersion @"1.1.0"
 
 #define LIOLookIOManagerDefaultContinuationReportInterval  60.0 // 1 minute
@@ -40,6 +37,8 @@
 // User defaults keys
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerVisitorIdKey                    @"LIOLookIOManagerVisitorIdKey"
+
+#define LIOVisitUnknownAccountName                      @"LIOVisitUnknownAccountName"
 
 @interface LIOVisit ()
 
@@ -99,8 +98,7 @@
 // IAR
 @property (nonatomic, assign) BOOL isIAREnabled;
 @property (nonatomic, strong) NSMutableArray *accountSkills;
-@property (nonatomic, strong) LIOAccountSkillStatus *defaultAcccountSkill;
-@property (nonatomic, strong) LIOAccountSkillStatus *currentAccountSkill;
+@property (nonatomic, strong) LIOAccountSkillStatus *defaultAccountSkill;
 
 @end
 
@@ -137,10 +135,10 @@
         self.lastKnownCreditCardMaskingEnabled = NO;
         self.loggingEnabled = NO;
         
-        self.isIAREnabled = NO;
+        self.isIAREnabled = YES;
         self.accountSkills = [NSMutableArray array];
-        self.defaultAcccountSkill = nil;
-        self.currentAccountSkill = nil;
+        self.defaultAccountSkill = nil;
+        self.requiredAccountSkill = nil;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -310,9 +308,22 @@
     
     if ([LIOStatusManager statusManager].badInitialization)
         [statusDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"bad_init"];
+
+    if (self.isIAREnabled)
+    {
+        if (self.requiredAccountSkill)
+        {
+            [statusDictionary setObject:self.requiredAccountSkill.skill forKey:@"skill"];
+            if (![self.requiredAccountSkill.account isEqualToString:LIOVisitUnknownAccountName])
+                [statusDictionary setObject:self.requiredAccountSkill.account forKey:@"site_id"];
+        }
+    }
+    else
+    {
+        if ([self.requiredSkill length])
+            [statusDictionary setObject:self.requiredSkill forKey:@"skill"];
+    }
     
-    if ([self.requiredSkill length])
-        [statusDictionary setObject:self.requiredSkill forKey:@"skill"];
     
     [statusDictionary setObject:[NSNumber numberWithBool:[LIOStatusManager statusManager].appForegrounded] forKey:@"app_foregrounded"];
     
@@ -735,7 +746,6 @@
                 for (LIOAccountSkillStatus *newAccountSkill in accountSkillMap)
                 {
                     // Check if this account-skill pair exists
-                    
                     NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", newAccountSkill.account, newAccountSkill.skill];
                     NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
 
@@ -752,12 +762,35 @@
                         existingAccountSkill.isEnabled = newAccountSkill.isEnabled;
                         
                         if (existingAccountSkill.isDefault)
-                            self.defaultAcccountSkill = existingAccountSkill;
+                            self.defaultAccountSkill = existingAccountSkill;
                     }
                     else
                     {
                         [self.accountSkills addObject:newAccountSkill];
                         [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        
+                        if (newAccountSkill.isDefault)
+                            self.defaultAccountSkill = newAccountSkill;
+                    }
+                }
+                
+                // Check that this isn't a skill that developer set before first continue call arrived
+                if (self.requiredAccountSkill && self.defaultAccountSkill)
+                {
+                    if ([self.requiredAccountSkill.account isEqualToString:LIOVisitUnknownAccountName])
+                    {
+                        self.requiredAccountSkill.account = self.defaultAccountSkill.account;
+                            
+                        // Check if this is duplicate to an existing skill, and if so, use the existing skill
+                        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", self.requiredAccountSkill.account, self.requiredAccountSkill.skill];
+                        NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+                            
+                        // If exists
+                        if (predicateArray.count > 0)
+                        {
+                            LIOAccountSkillStatus *actualRequiredAccountSkill = [predicateArray objectAtIndex:0];
+                            self.requiredAccountSkill = actualRequiredAccountSkill;
+                        }
                     }
                 }
             }
@@ -950,7 +983,7 @@
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
     
-    self.isIAREnabled = NO;
+    self.isIAREnabled = YES;
     [self.accountSkills removeAllObjects];
     
     [self setupCallCenter];
@@ -1174,13 +1207,27 @@
     }
     
     // Trump card #0: If we have no visibility information, button is hidden.
-    if (nil == self.lastKnownButtonVisibility || nil == self.multiskillMapping)
+    if (self.isIAREnabled)
     {
-        self.controlButtonHidden = YES;
-        LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
-        
-        return;
+        if (nil == self.lastKnownButtonVisibility || self.accountSkills.count == 0)
+        {
+            self.controlButtonHidden = YES;
+            LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+            [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
+            
+            return;
+        }
+    }
+    else
+    {
+        if (nil == self.lastKnownButtonVisibility || nil == self.multiskillMapping)
+        {
+            self.controlButtonHidden = YES;
+            LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+            [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
+            
+            return;
+        }
     }
     
     // Trump card #1: Not in a session, and not "enabled" from server-side settings.
@@ -1274,10 +1321,83 @@
 
 - (void)setSkill:(NSString *)skill
 {
-    self.requiredSkill = skill;
+    if (self.isIAREnabled)
+    {
+        // Since only a skill has been specified, we will use the default account here
+        if (self.defaultAccountSkill)
+        {
+            NSString *defaultAccount = self.defaultAccountSkill.account;
+            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
+            NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+
+            // If this skill exists for the default account, let's set it as the required account-skill
+            if (predicateArray.count > 0)
+            {
+                LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+                self.requiredAccountSkill = accountSkillStatus;
+            }
+            // If not, let's create it
+            else
+            {
+                LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                newAccountSkillStatus.skill = skill;
+                newAccountSkillStatus.account = defaultAccount;
+                newAccountSkillStatus.isEnabled = NO;
+                newAccountSkillStatus.isDefault = NO;
+             
+                self.requiredAccountSkill = newAccountSkillStatus;
+                [self.accountSkills addObject:newAccountSkillStatus];
+            }
+        }
+        // If there is no default, we haven't received it from server yet. Let's use a general key for that account name and update it later.
+        else
+        {
+            LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+            newAccountSkillStatus.skill = skill;
+            newAccountSkillStatus.account = LIOVisitUnknownAccountName;
+            newAccountSkillStatus.isEnabled = NO;
+            newAccountSkillStatus.isDefault = NO;
+            
+            // This one is not added to AccountSkills because it's only relevant as a required account skill
+            self.requiredAccountSkill = newAccountSkillStatus;
+        }
+    }
+    else
+    {
+        self.requiredSkill = skill;
+    }
+    
     [self sendContinuationReport];
     [self refreshControlButtonVisibility];
     
+    [self.delegate visitChatEnabledDidUpdate:self];
+}
+
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account
+{
+    // Let's check if this skill was received from the server
+    NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+    NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+    
+    // If exists
+    if (predicateArray.count > 0)
+    {
+        LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+        self.requiredAccountSkill = accountSkillStatus;
+    }
+    else
+    {
+        LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+        accountSkillStatus.skill = skill;
+        accountSkillStatus.account = account;
+        accountSkillStatus.isDefault = NO;
+        accountSkillStatus.isEnabled = NO;
+        
+        [self.accountSkills addObject:accountSkillStatus];
+        self.requiredAccountSkill = accountSkillStatus;
+    }
+    [self sendContinuationReport];
+    [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
 }
 
@@ -1299,36 +1419,64 @@
     if (self.developerDisabledChat)
         return NO;
     
-    // nil or empty
-    if (0 == [self.multiskillMapping count])
-        return NO;
-    
-    // See if the current skill has a mapping.
-    NSDictionary *aMap = [self.multiskillMapping objectForKey:self.requiredSkill];
-    if ([aMap count])
+    // IAR skill structure
+    if (self.isIAREnabled)
     {
-        NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
-        return [enabledValue boolValue];
-    }
-    
-    // Nope. No current skill set. Try to find the default.
-    if (0 == [self.requiredSkill length])
-    {
-        for (NSString *aSkillKey in self.multiskillMapping)
+        // If no account-skills, return NO
+        if (self.accountSkills.count == 0)
+            return NO;
+        
+        // If developer has set a required skill/account, return its status
+        if (self.requiredAccountSkill)
         {
-            NSDictionary *aMap = [self.multiskillMapping objectForKey:aSkillKey];
-            NSNumber *defaultValue = [aMap objectForKey:@"default"];
-            if (defaultValue && YES == [defaultValue boolValue])
-            {
-                NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
-                return [enabledValue boolValue];
-            }
+            return self.requiredAccountSkill.isEnabled;
         }
         
-        // No default? o_O
+        // If not, use the default skill
+        if (self.defaultAccountSkill)
+        {
+            return self.defaultAccountSkill.isEnabled;
+        }
+        
+        // If no skill-account set and no default, return NO
+        return NO;
+    }
+    // Classic skill structure
+    else
+    {
+        // nil or empty
+        if (0 == [self.multiskillMapping count])
+            return NO;
+        
+        // See if the current skill has a mapping.
+        NSDictionary *aMap = [self.multiskillMapping objectForKey:self.requiredSkill];
+        if ([aMap count])
+        {
+            NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+            return [enabledValue boolValue];
+        }
+        
+        // Nope. No current skill set. Try to find the default.
+        if (0 == [self.requiredSkill length])
+        {
+            for (NSString *aSkillKey in self.multiskillMapping)
+            {
+                NSDictionary *aMap = [self.multiskillMapping objectForKey:aSkillKey];
+                NSNumber *defaultValue = [aMap objectForKey:@"default"];
+                if (defaultValue && YES == [defaultValue boolValue])
+                {
+                    NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+                    return [enabledValue boolValue];
+                }
+            }
+            
+            // No default? o_O
+        }
+        
+        // Oh well.
+        return NO;
     }
     
-    // Oh well.
     return NO;
 }
 
