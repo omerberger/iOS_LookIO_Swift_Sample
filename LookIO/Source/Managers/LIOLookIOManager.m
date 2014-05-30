@@ -556,7 +556,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
+    if (self.visit == nil) return NO;
+    
     return self.visit.chatEnabled;
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill
+{
+    if (self.visit == nil) return NO;
+    
+    return [self.visit isChatEnabledForSkill:skill];
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    if (self.visit == nil) return NO;
+
+    return [self.visit isChatEnabledForSkill:skill forAccount:account];
 }
 
 - (void)setChatDisabled:(BOOL)disabled
@@ -1304,6 +1320,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self beginChatWithSkill:self.visit.requiredAccountSkill.skill withAccount:self.visit.requiredAccountSkill.account];
             return;
         }
+        
+        if (self.visit.defaultAccountSkill)
+        {
+            [self beginChatWithSkill:self.visit.defaultAccountSkill.skill withAccount:self.visit.defaultAccountSkill.account];
+            return;
+        }
     }
    
     // Otherwise start a chat without any parameters
@@ -1312,12 +1334,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginChatWithSkill:(NSString *)skill
 {
-    // If a required account-skill is set, we will use that account for chat with this skill
+    // If a default account exists, we will use that for
     if (self.visit)
     {
-        if (self.visit.requiredAccountSkill)
+        if (self.visit.defaultAccountSkill)
         {
-            [self beginChatWithSkill:skill withAccount:self.visit.requiredAccountSkill.account];
+            [self beginChatWithSkill:skill withAccount:self.visit.defaultAccountSkill.account];
             return;
         }
     }
@@ -1744,6 +1766,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return YES;
 
     return NO;
+}
+
+- (void)engagementRequestedToResendAllUDEs:(LIOEngagement *)engagement
+{
+    if (self.visit)
+    {
+        [self.visit sendContinuationReportAndResendAllUDEs];
+    }
 }
 
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement

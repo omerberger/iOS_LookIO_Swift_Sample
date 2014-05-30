@@ -682,7 +682,11 @@
     if ([type isEqualToString:@"advisory"])
     {
         NSString *action = [aPacket objectForKey:@"action"];
-    
+        
+        if ([action isEqualToString:@"send_udes"])
+        {
+            [self.delegate engagementRequestedToResendAllUDEs:self];
+        }
         if ([action isEqualToString:@"notification"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];

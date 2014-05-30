@@ -64,6 +64,7 @@ typedef enum
 
 // Others
 - (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;
+- (void)engagementRequestedToResendAllUDEs:(LIOEngagement *)engagement;
 
 // Reconnectiongs
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement;

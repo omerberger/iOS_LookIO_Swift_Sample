@@ -80,6 +80,7 @@ typedef enum
 @property (nonatomic, copy) NSString *lastKnownButtonText;
 
 @property (nonatomic, strong) LIOAccountSkillStatus *requiredAccountSkill;
+@property (nonatomic, strong) LIOAccountSkillStatus *defaultAccountSkill;
 
 - (void)disableControlButton;
 - (void)undisableControlButton;
@@ -98,6 +99,8 @@ typedef enum
 
 - (BOOL)chatEnabled;
 - (BOOL)chatInProgress;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account;
 - (BOOL)hideEmailChat;
 - (BOOL)maskCreditCards;
 
@@ -105,6 +108,7 @@ typedef enum
 - (void)relaunchVisit;
 - (void)stopVisit;
 - (void)sendContinuationReport;
+- (void)sendContinuationReportAndResendAllUDEs;
 
 - (void)setSkill:(NSString *)skill;
 - (void)setSkill:(NSString *)skill withAccount:(NSString *)account;

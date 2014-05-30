@@ -49,6 +49,7 @@
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
 @property (nonatomic, strong) NSMutableDictionary *lastReportedSettingsDictionary;
+@property (nonatomic, strong) NSMutableDictionary *lastReportedEventsDictionary;
 
 @property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
@@ -98,7 +99,7 @@
 // IAR
 @property (nonatomic, assign) BOOL isIAREnabled;
 @property (nonatomic, strong) NSMutableArray *accountSkills;
-@property (nonatomic, strong) LIOAccountSkillStatus *defaultAccountSkill;
+@property (nonatomic, assign) BOOL shouldNextContinueCallIncludeAllUDEs;
 
 @end
 
@@ -136,6 +137,7 @@
         self.loggingEnabled = NO;
         
         self.isIAREnabled = YES;
+        self.shouldNextContinueCallIncludeAllUDEs = NO;
         self.accountSkills = [NSMutableArray array];
         self.defaultAccountSkill = nil;
         self.requiredAccountSkill = nil;
@@ -181,6 +183,7 @@
         
         // Set up the pending events queue
         self.pendingEvents = [[NSMutableArray alloc] init];
+        self.lastReportedEventsDictionary = [[NSMutableDictionary alloc] init];
         
         // Set up the queued launch report queue
         self.queuedLaunchReportDates = [[userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey] mutableCopy];
@@ -269,7 +272,7 @@
 #pragma mark -
 #pragma mark Status Dictionary Methods
 
-- (NSDictionary *)statusDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType  includingEvents:(BOOL)includeEvents
+- (NSDictionary *)statusDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType  includingEvents:(BOOL)includeEvents resendAllUDEs:(BOOL)resendAllUDEs
 {
     NSMutableDictionary *statusDictionary = [[NSMutableDictionary alloc] init];
 
@@ -284,8 +287,19 @@
     [statusDictionary setObject:[LIOStatusManager udid] forKey:@"device_id"];
     
     // Pending Events
-    if (includeEvents && [self.pendingEvents count])
-        [statusDictionary setObject:self.pendingEvents forKey:@"events"];
+    if (resendAllUDEs)
+    {
+        NSArray *lastReportedEvents = [self.lastReportedEventsDictionary allValues];
+        if ([lastReportedEvents count])
+        {
+            [statusDictionary setObject:lastReportedEvents forKey:@"events"];
+        }
+    }
+    else
+    {
+        if (includeEvents && [self.pendingEvents count])
+            [statusDictionary setObject:self.pendingEvents forKey:@"events"];
+    }
     
     // Current Visit Id
     if ([self.currentVisitId length])
@@ -498,8 +512,16 @@
         if ([self.visitUDEs count])
             [extrasDict setDictionary:self.visitUDEs];
         
-        if ([detectedDict count])
-            [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        // If we are resending all UDEs, we should report the last reported settings as it incldues everything.
+        if (resendAllUDEs)
+        {
+            [extrasDict setObject:self.lastReportedSettingsDictionary forKey:@"detected_settings"];
+        }
+        else
+        {
+            if ([detectedDict count])
+                [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        }
         
         if ([self.lastKnownPageViewValue length])
             [extrasDict setObject:self.lastKnownPageViewValue forKey:@"view_name"];
@@ -960,7 +982,7 @@
 
 - (NSDictionary *)introDictionary
 {
-    NSDictionary *introDictionary = [self statusDictionaryIncludingExtras:YES includingType:YES includingEvents:YES];
+    NSDictionary *introDictionary = [self statusDictionaryIncludingExtras:YES includingType:YES includingEvents:YES resendAllUDEs:NO];
     
     return introDictionary;
 }
@@ -1005,7 +1027,7 @@
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateLaunching;
         
-        NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO];
+        NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO resendAllUDEs:NO];
         NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             LIOLog(@"<LAUNCH> Request successful with response: %@", responseObject);
@@ -1118,6 +1140,13 @@
     }
 }
 
+// Used as a response to "send_udes" packet which is used in IAR to send all previous UDEs to an IAR chat
+- (void)sendContinuationReportAndResendAllUDEs
+{
+    self.shouldNextContinueCallIncludeAllUDEs = YES;
+    [self sendContinuationReport];
+}
+
 - (void)sendContinuationReport
 {
     if (self.continueCallInProgress)
@@ -1128,13 +1157,19 @@
     
     self.continueCallInProgress = YES;
     
-    NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES];
+    BOOL continueCallIncludesResendAllUDEs = self.shouldNextContinueCallIncludeAllUDEs;
+    
+    NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES resendAllUDEs:continueCallIncludesResendAllUDEs];
     NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
 
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppContinueRequestURL parameters:continueDict headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            
+            if (continueCallIncludesResendAllUDEs)
+                self.shouldNextContinueCallIncludeAllUDEs = NO;
+
             self.continueCallInProgress = NO;
             self.failedContinueCount = 0;
             
@@ -1485,6 +1520,93 @@
         return NO;
     }
     
+    return NO;
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill
+{
+    // If no network, chat is not enabled
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+        return NO;
+    
+    // If chat is in progress, chat should always be enabled
+    if (self.chatInProgress)
+        return YES;
+    
+    // If developer explictly disabled chat, chat should be disabled
+    if (self.developerDisabledChat)
+        return NO;
+    
+    if (self.isIAREnabled)
+    {
+        
+        // If a default account exists, look for this skill within this account, and use that value.
+        if (self.defaultAccountSkill)
+        {
+            NSString *defaultAccount = self.defaultAccountSkill.account;
+            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
+            NSArray *accountSkillArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+            if (accountSkillArray.count > 0)
+            {
+                LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
+                return accountSkill.isEnabled;
+            }
+            
+            return NO;
+        }
+        
+        return NO;
+    } else {
+        // nil or empty
+        if (0 == [self.multiskillMapping count])
+            return NO;
+        
+        // See if the selected skill has a mapping.
+        NSDictionary *aMap = [self.multiskillMapping objectForKey:skill];
+        if ([aMap count])
+        {
+            NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+            return [enabledValue boolValue];
+        }
+        
+        // Oh well.
+        return NO;
+
+    }
+    
+    return NO;    
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    // If no network, chat is not enabled
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+        return NO;
+    
+    // If chat is in progress, chat should always be enabled
+    if (self.chatInProgress)
+        return YES;
+    
+    // If developer explictly disabled chat, chat should be disabled
+    if (self.developerDisabledChat)
+        return NO;
+    
+    if (self.isIAREnabled)
+    {
+        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+        NSArray *accountSkillArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+        if (accountSkillArray.count > 0)
+        {
+            LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
+            return accountSkill.isEnabled;
+        }
+        
+        return NO;
+    }
+    
+    // Without IAR, this isn't defined, because there is no account record to access
     return NO;
 }
 
@@ -1981,6 +2103,7 @@
     [newEvent setObject:[self.dateFormatter stringFromDate:[NSDate date]] forKey:@"timestamp"];
     
     [self.pendingEvents addObject:newEvent];
+    [self.lastReportedEventsDictionary setObject:newEvent forKey:anEvent];
     
     // Queue is capped. Remove oldest entry on overflow.
     if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
