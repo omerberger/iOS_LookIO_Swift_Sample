@@ -833,7 +833,9 @@
         if (self.engagementAccount)
             [introParameters setObject:self.engagementAccount forKey:@"site_id"];
         
-        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+
+        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             
             if (responseObject)
                 LIOLog(@"<INTRO> response: %@", responseObject);

@@ -1296,25 +1296,32 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginChat
 {
+    // If a required account skill is set, we will use that for chat
     if (self.visit)
     {
         if (self.visit.requiredAccountSkill)
         {
             [self beginChatWithSkill:self.visit.requiredAccountSkill.skill withAccount:self.visit.requiredAccountSkill.account];
-        }
-        else
-        {
-            [self beginChatWithSkill:nil withAccount:nil];
+            return;
         }
     }
-    else
-    {
-        [self beginChatWithSkill:nil withAccount:nil];
-    }
+   
+    // Otherwise start a chat without any parameters
+    [self beginChatWithSkill:nil withAccount:nil];
 }
 
 - (void)beginChatWithSkill:(NSString *)skill
 {
+    // If a required account-skill is set, we will use that account for chat with this skill
+    if (self.visit)
+    {
+        if (self.visit.requiredAccountSkill)
+        {
+            [self beginChatWithSkill:skill withAccount:self.visit.requiredAccountSkill.account];
+            return;
+        }
+    }
+    
     [self beginChatWithSkill:skill withAccount:nil];
 }
 
@@ -1382,6 +1389,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)bundleDownloadDidFinish:(NSNotification *)notification
 {
+    // TODO: Set the right account and skill here
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         [self presentContainerViewControllerForCurrentStateWithSkill:nil withAccount:nil];
 }

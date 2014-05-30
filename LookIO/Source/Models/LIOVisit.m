@@ -1377,27 +1377,33 @@
 
 - (void)setSkill:(NSString *)skill withAccount:(NSString *)account
 {
-    // Let's check if this skill was received from the server
-    NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
-    NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
-    
-    // If exists
-    if (predicateArray.count > 0)
-    {
-        LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
-        self.requiredAccountSkill = accountSkillStatus;
-    }
-    else
-    {
-        LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
-        accountSkillStatus.skill = skill;
-        accountSkillStatus.account = account;
-        accountSkillStatus.isDefault = NO;
-        accountSkillStatus.isEnabled = NO;
+    if (self.isIAREnabled) {
+        // Let's check if this skill was received from the server
+        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+        NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
         
-        [self.accountSkills addObject:accountSkillStatus];
-        self.requiredAccountSkill = accountSkillStatus;
+        // If exists
+        if (predicateArray.count > 0)
+        {
+            LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+            self.requiredAccountSkill = accountSkillStatus;
+        }
+        else
+        {
+            LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+            accountSkillStatus.skill = skill;
+            accountSkillStatus.account = account;
+            accountSkillStatus.isDefault = NO;
+            accountSkillStatus.isEnabled = NO;
+            
+            [self.accountSkills addObject:accountSkillStatus];
+            self.requiredAccountSkill = accountSkillStatus;
+        }
     }
+    else {
+        self.requiredSkill = skill;
+    }
+    
     [self sendContinuationReport];
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
