@@ -543,13 +543,24 @@
     NSDictionary *skillsDict = [settingsDict objectForKey:@"skills"];
     if (skillsDict)
     {
-        NSArray *accounts = [skillsDict objectForKey:@"accounts"];
+        id accountsObject = [skillsDict objectForKey:@"accounts"];
         // This is an IAR enabled account
-        if (accounts)
+        if (accountsObject)
         {
+            NSArray *accountsArray = nil;
+            if ([accountsObject isKindOfClass:[NSDictionary class]])
+            {
+                NSDictionary *singleAccountDictionary = (NSDictionary *)accountsObject;
+                accountsArray = [NSArray arrayWithObject:singleAccountDictionary];
+            }
+            if ([accountsObject isKindOfClass:[NSArray class]])
+            {
+                accountsArray = (NSArray *)accountsObject;
+            }
+            
             NSMutableArray *accountSkills = [NSMutableArray array];
 
-            for (NSDictionary *accountsDictionary in accounts)
+            for (NSDictionary *accountsDictionary in accountsArray)
             {
                 for (NSString *accountName in accountsDictionary.allKeys)
                 {

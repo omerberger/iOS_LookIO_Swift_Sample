@@ -166,11 +166,6 @@ static LPAPIClient *sharedClient = nil;
         NSString *headerValue = [headers objectForKey:header];
         [request setValue:headerValue forHTTPHeaderField:header];
     }
-    NSLog(@"Request headers are: ");
-    for (NSString *header in request.allHTTPHeaderFields.allKeys)
-    {
-        NSLog(@"Header: %@ Value: %@", header, [request.allHTTPHeaderFields objectForKey:header]);
-    }
     
 	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
