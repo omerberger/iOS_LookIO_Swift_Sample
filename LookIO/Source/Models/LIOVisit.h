@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+// Models
+#import "LIOAccountSkillStatus.h"
+
 typedef enum
 {
     LIOFunnelStateInitialized = 0,
@@ -55,6 +58,7 @@ typedef enum
 - (void)visitDidLaunch:(LIOVisit *)visit;
 - (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
 - (void)visitHasIncomingCall:(LIOVisit *)visit;
+- (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account;
 
 @end
 
@@ -75,6 +79,9 @@ typedef enum
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
 @property (nonatomic, copy) NSString *lastKnownButtonText;
 
+@property (nonatomic, strong) LIOAccountSkillStatus *requiredAccountSkill;
+@property (nonatomic, strong) LIOAccountSkillStatus *defaultAccountSkill;
+
 - (void)disableControlButton;
 - (void)undisableControlButton;
 
@@ -92,6 +99,8 @@ typedef enum
 
 - (BOOL)chatEnabled;
 - (BOOL)chatInProgress;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account;
 - (BOOL)hideEmailChat;
 - (BOOL)maskCreditCards;
 
@@ -99,8 +108,10 @@ typedef enum
 - (void)relaunchVisit;
 - (void)stopVisit;
 - (void)sendContinuationReport;
+- (void)sendContinuationReportAndResendAllUDEs;
 
 - (void)setSkill:(NSString *)skill;
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account;
 
 - (void)setChatAvailable;
 - (void)setChatUnavailable;

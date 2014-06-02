@@ -33,6 +33,8 @@
 #define LIOEngagementReconnectionAfterCrashTimeLimit    60.0 // 1 minutes
 #define LIOLookIOManagerMessageSeparator                @"!look.io!"
 #define LIOLookIOManagerScreenCaptureInterval           0.5
+#define LIOEngagementSSETimeout                         30
+#define LIOEngagementSSECheckTimeoutInterval            5
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
 
@@ -60,14 +62,24 @@
 @property (nonatomic, assign) unsigned long previousScreenshotHash;
 @property (nonatomic, strong) NSDate *screenSharingStartedDate;
 
+// These are used to check if the SSE channel has been quiet for over 20 seconds, and reconnect if so
+// This is to avoid cases where the connection does not disconnect but is no longer active
+@property (nonatomic, strong) NSDate *lastSSEEventDate;
+@property (nonatomic, strong) NSTimer *timeoutTimer;
+
+@property (nonatomic, assign) NSString *engagementSkill;
+@property (nonatomic, assign) NSString *engagementAccount;
+
 @end
 
 @implementation LIOEngagement
 
-- (id)initWithVisit:(LIOVisit *)aVisit {
+- (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account {
     self = [super init];
     if (self) {
         self.visit = aVisit;
+        self.engagementSkill = skill;
+        self.engagementAccount = account;
         
         self.messages = [[NSMutableArray alloc] init];
         [self populateFirstChatMessage];
@@ -82,6 +94,8 @@
         
         self.isConnected = NO;
         self.isAgentTyping = NO;
+        
+        self.lastSSEEventDate = [NSDate date];
     }
     return self;
 }
@@ -129,6 +143,12 @@
     
     if (self.isScreenShareActive)
         [self stopScreenshare];
+    
+    if (self.timeoutTimer)
+    {
+        [self.timeoutTimer invalidate];
+        self.timeoutTimer = nil;
+    }
 }
 
 - (void)startEngagement
@@ -345,9 +365,15 @@
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
+    // If disconnecting, no point in maintaining a timeout timer
+    if (self.timeoutTimer)
+    {
+        [self.timeoutTimer invalidate];
+        self.timeoutTimer = nil;
+    }
+    
     switch (self.sseChannelState) {
-
-            // If are not expecting a disconnect, we should try to reconnect
+        // If are not expecting a disconnect, we should try to reconnect
         case LIOSSEChannelStateConnected:
             self.sseChannelState = LIOSSEChannelStateReconnecting;
             [self connectSSESocket];
@@ -439,6 +465,8 @@
 
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent
 {
+    self.lastSSEEventDate = [NSDate date];
+    
     NSError *error = nil;
     NSDictionary *aPacket = [NSJSONSerialization JSONObjectWithData:[anEvent.data dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&error];
 
@@ -474,6 +502,15 @@
                 [self sendCapabilitiesPacketRetries:0];
                 [self.delegate engagementDidConnect:self];
             }
+            
+            // Start the timeout timer, which reconnects if the SSE channe is idle more than 30 seconds
+            if (self.timeoutTimer)
+            {
+                [self.timeoutTimer invalidate];
+                self.timeoutTimer = nil;
+            }
+            
+            self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:LIOEngagementSSECheckTimeoutInterval target:self selector:@selector(timeoutTimerDidFire:) userInfo:nil repeats:YES];
         }
         else
         {
@@ -645,7 +682,11 @@
     if ([type isEqualToString:@"advisory"])
     {
         NSString *action = [aPacket objectForKey:@"action"];
-    
+        
+        if ([action isEqualToString:@"send_udes"])
+        {
+            [self.delegate engagementRequestedToResendAllUDEs:self];
+        }
         if ([action isEqualToString:@"notification"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
@@ -788,7 +829,17 @@
         // Clear any existing cookies
         [[LPChatAPIClient sharedClient] clearCookies];
         
-        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:[self.visit introDictionary] success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSMutableDictionary *introParameters = [[self.visit introDictionary] mutableCopy];
+
+        // This will override any existing skill from the intro dictionary
+        if (self.engagementSkill)
+            [introParameters setObject:self.engagementSkill forKey:@"skill"];
+        if (self.engagementAccount)
+            [introParameters setObject:self.engagementAccount forKey:@"site_id"];
+        
+        NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+
+        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             
             if (responseObject)
                 LIOLog(@"<INTRO> response: %@", responseObject);
@@ -1574,6 +1625,23 @@
     }
     
     return mutableString;
+}
+
+#pragma mark -
+#pragma mark Timeout timer methods
+
+- (void)timeoutTimerDidFire:(id)sender
+{
+    // Don't attempt to reconnect when app is not active
+    if (UIApplicationStateActive != [UIApplication sharedApplication].applicationState) return;
+    
+    NSTimeInterval interval = [[NSDate date] timeIntervalSinceDate:self.lastSSEEventDate];
+    // If channel is connected and no event received in the last 30 seconds, disconnect to trigger a reconnect
+    if (interval > LIOEngagementSSETimeout && self.sseChannelState == LIOSSEChannelStateConnected)
+    {
+        LIOLog(@"<ENGAGEMENT> More than 30 seconds passed since last SSE event; Reconnecting...");
+        [self.sseManager disconnect];
+    }
 }
 
 @end

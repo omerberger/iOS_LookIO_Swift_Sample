@@ -24,6 +24,11 @@
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
 - (void)postPath:(NSString *)path
+      parameters:(NSDictionary *)parameters
+         headers:(NSDictionary *)headers
+         success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+         failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
+- (void)postPath:(NSString *)path
             data:(NSData *)data
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;

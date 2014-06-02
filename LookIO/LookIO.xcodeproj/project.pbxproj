@@ -41,6 +41,8 @@
 		A742967B18842D28007A0FC3 /* LPChatImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A742967918842D28007A0FC3 /* LPChatImageView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7548E70183A9BB200C5A6A9 /* LIOKeyboardMenu.h in Headers */ = {isa = PBXBuildFile; fileRef = A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */; };
 		A7548E71183A9BB200C5A6A9 /* LIOKeyboardMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A7616366193656850062F9C5 /* LIOAccountSkillStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = A7616364193656850062F9C5 /* LIOAccountSkillStatus.h */; };
+		A7616367193656850062F9C5 /* LIOAccountSkillStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = A7616365193656850062F9C5 /* LIOAccountSkillStatus.m */; };
 		A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7AE320518735E11002D9F23 /* LIOSurveyQuestionView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */ = {isa = PBXBuildFile; fileRef = A7913063187E0723001099ED /* LIOEmailChatView.h */; };
 		A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7913064187E0723001099ED /* LIOEmailChatView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -175,6 +177,8 @@
 		A7502FCC189C2F0C00DEED39 /* branding.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = branding.json; path = Resources/Branding/branding.json; sourceTree = "<group>"; };
 		A7548E6E183A9BB200C5A6A9 /* LIOKeyboardMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenu.h; path = Source/Views/LIOKeyboardMenu.h; sourceTree = "<group>"; };
 		A7548E6F183A9BB200C5A6A9 /* LIOKeyboardMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenu.m; path = Source/Views/LIOKeyboardMenu.m; sourceTree = "<group>"; };
+		A7616364193656850062F9C5 /* LIOAccountSkillStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOAccountSkillStatus.h; path = Source/Models/LIOAccountSkillStatus.h; sourceTree = "<group>"; };
+		A7616365193656850062F9C5 /* LIOAccountSkillStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOAccountSkillStatus.m; path = Source/Models/LIOAccountSkillStatus.m; sourceTree = "<group>"; };
 		A76DF2371799AF5800DDBC61 /* LIOImageBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOImageBubbleView.h; path = Source/Views/LIOImageBubbleView.h; sourceTree = "<group>"; };
 		A76DF2381799AF5800DDBC61 /* LIOImageBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOImageBubbleView.m; path = Source/Views/LIOImageBubbleView.m; sourceTree = "<group>"; };
 		A76E088C18A59C80002EC6B4 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Localizable.strings; sourceTree = "<group>"; };
@@ -412,6 +416,8 @@
 				A7F4622F187B31A700C0BD23 /* Surveys */,
 				A7A09CE518B6AEA8004180D6 /* LIOSoundEffect.h */,
 				A7A09CE618B6AEA8004180D6 /* LIOSoundEffect.m */,
+				A7616364193656850062F9C5 /* LIOAccountSkillStatus.h */,
+				A7616365193656850062F9C5 /* LIOAccountSkillStatus.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -988,6 +994,7 @@
 				A721D27E18513A6F0039395E /* LIOVisit.h in Headers */,
 				A721D28618513D860039395E /* LIONetworkManager.h in Headers */,
 				A711872F1868FE890070C22C /* LIOKeyboardMenuItem.h in Headers */,
+				A7616366193656850062F9C5 /* LIOAccountSkillStatus.h in Headers */,
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
@@ -1142,6 +1149,7 @@
 				D4868A79155AFE800081164D /* AsyncSocket.m in Sources */,
 				D42DE79B1563274B006DFE81 /* LIONotificationArea.m in Sources */,
 				D42DE8061565B86A006DFE81 /* LIOToasterView.m in Sources */,
+				A7616367193656850062F9C5 /* LIOAccountSkillStatus.m in Sources */,
 				A721D28B18513DFD0039395E /* LIOStatusManager.m in Sources */,
 				A721D27F18513A6F0039395E /* LIOVisit.m in Sources */,
 				D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */,
