@@ -155,6 +155,28 @@ static LPAPIClient *sharedClient = nil;
 }
 
 - (void)postPath:(NSString *)path
+      parameters:(NSDictionary *)parameters
+         headers:(NSDictionary *)headers
+         success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+         failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
+{
+	NSMutableURLRequest *request = [self requestWithMethod:@"POST" path:path parameters:parameters];
+    for (NSString *header in headers.allKeys)
+    {
+        NSString *headerValue = [headers objectForKey:header];
+        [request setValue:headerValue forHTTPHeaderField:header];
+    }
+    NSLog(@"Request headers are: ");
+    for (NSString *header in request.allHTTPHeaderFields.allKeys)
+    {
+        NSLog(@"Header: %@ Value: %@", header, [request.allHTTPHeaderFields objectForKey:header]);
+    }
+    
+	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    [self enqueueHTTPRequestOperation:operation];
+}
+
+- (void)postPath:(NSString *)path
             data:(NSData *)data
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure

@@ -556,7 +556,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)enabled
 {
+    if (self.visit == nil) return NO;
+    
     return self.visit.chatEnabled;
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill
+{
+    if (self.visit == nil) return NO;
+    
+    return [self.visit isChatEnabledForSkill:skill];
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    if (self.visit == nil) return NO;
+
+    return [self.visit isChatEnabledForSkill:skill forAccount:account];
 }
 
 - (void)setChatDisabled:(BOOL)disabled
@@ -576,11 +592,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.visit setSkill:aRequiredSkill];
 }
 
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account
+{
+    [self.visit setSkill:skill withAccount:account];
+}
+
+
 - (void)visitChatEnabledDidUpdate:(LIOVisit *)visit
 {
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManager:didUpdateEnabledStatus:)])
         [self.delegate lookIOManager:self didUpdateEnabledStatus:[self.visit chatEnabled]];
 }
+
+- (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookioManager:didChangeEnabled:forSkill:forAccount:)])
+        [self.delegate lookioManager:self didChangeEnabled:enabled forSkill:skill forAccount:account];    
+}
+
 
 - (void)visit:(LIOVisit *)visit controlButtonIsHiddenDidUpdate:(BOOL)isHidden notifyDelegate:(BOOL)notifyDelegate
 {
@@ -1283,6 +1312,43 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)beginChat
 {
+    // If a required account skill is set, we will use that for chat
+    if (self.visit)
+    {
+        if (self.visit.requiredAccountSkill)
+        {
+            [self beginChatWithSkill:self.visit.requiredAccountSkill.skill withAccount:self.visit.requiredAccountSkill.account];
+            return;
+        }
+        
+        if (self.visit.defaultAccountSkill)
+        {
+            [self beginChatWithSkill:self.visit.defaultAccountSkill.skill withAccount:self.visit.defaultAccountSkill.account];
+            return;
+        }
+    }
+   
+    // Otherwise start a chat without any parameters
+    [self beginChatWithSkill:nil withAccount:nil];
+}
+
+- (void)beginChatWithSkill:(NSString *)skill
+{
+    // If a default account exists, we will use that for
+    if (self.visit)
+    {
+        if (self.visit.defaultAccountSkill)
+        {
+            [self beginChatWithSkill:skill withAccount:self.visit.defaultAccountSkill.account];
+            return;
+        }
+    }
+    
+    [self beginChatWithSkill:skill withAccount:nil];
+}
+
+- (void)beginChatWithSkill:(NSString *)skill withAccount:(NSString *)account
+{
     if (LIOButtonModeLoading == self.controlButton.buttonMode)
     {
         [self showReconnectCancelAlert];
@@ -1294,7 +1360,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self presentEngagementDidFailToStartAlert];
         return;
     }
-
+    
     if (self.containerViewController != nil)
         [self.containerViewController updateStatusBarInset];
     [self presentLookIOWindow];
@@ -1305,10 +1371,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return;
     }
     
-    [self presentContainerViewControllerForCurrentState];
+    [self presentContainerViewControllerForCurrentStateWithSkill:skill withAccount:account];
 }
 
-- (void)presentContainerViewControllerForCurrentState
+
+- (void)presentContainerViewControllerForCurrentStateWithSkill:(NSString *)skill withAccount:(NSString *)account
 {
     switch (self.visit.visitState) {
         case LIOVisitStateVisitInProgress:
@@ -1317,7 +1384,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 [self.engagement cleanUpEngagement];
                 self.engagement = nil;
             }
-            self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit];
+            self.engagement = [[LIOEngagement alloc] initWithVisit:self.visit skill:skill account:account];
             self.engagement.delegate = self;
             self.visit.visitState = LIOVisitStateChatRequested;
             [self.engagement startEngagement];
@@ -1344,8 +1411,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)bundleDownloadDidFinish:(NSNotification *)notification
 {
+    // TODO: Set the right account and skill here
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-        [self presentContainerViewControllerForCurrentState];
+        [self presentContainerViewControllerForCurrentStateWithSkill:nil withAccount:nil];
 }
 
 - (void)showReconnectCancelAlert
@@ -1698,6 +1766,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return YES;
 
     return NO;
+}
+
+- (void)engagementRequestedToResendAllUDEs:(LIOEngagement *)engagement
+{
+    if (self.visit)
+    {
+        [self.visit sendContinuationReportAndResendAllUDEs];
+    }
 }
 
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement

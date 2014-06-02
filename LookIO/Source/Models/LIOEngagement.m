@@ -67,14 +67,19 @@
 @property (nonatomic, strong) NSDate *lastSSEEventDate;
 @property (nonatomic, strong) NSTimer *timeoutTimer;
 
+@property (nonatomic, assign) NSString *engagementSkill;
+@property (nonatomic, assign) NSString *engagementAccount;
+
 @end
 
 @implementation LIOEngagement
 
-- (id)initWithVisit:(LIOVisit *)aVisit {
+- (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account {
     self = [super init];
     if (self) {
         self.visit = aVisit;
+        self.engagementSkill = skill;
+        self.engagementAccount = account;
         
         self.messages = [[NSMutableArray alloc] init];
         [self populateFirstChatMessage];
@@ -677,7 +682,11 @@
     if ([type isEqualToString:@"advisory"])
     {
         NSString *action = [aPacket objectForKey:@"action"];
-    
+        
+        if ([action isEqualToString:@"send_udes"])
+        {
+            [self.delegate engagementRequestedToResendAllUDEs:self];
+        }
         if ([action isEqualToString:@"notification"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
@@ -820,7 +829,17 @@
         // Clear any existing cookies
         [[LPChatAPIClient sharedClient] clearCookies];
         
-        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:[self.visit introDictionary] success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSMutableDictionary *introParameters = [[self.visit introDictionary] mutableCopy];
+
+        // This will override any existing skill from the intro dictionary
+        if (self.engagementSkill)
+            [introParameters setObject:self.engagementSkill forKey:@"skill"];
+        if (self.engagementAccount)
+            [introParameters setObject:self.engagementAccount forKey:@"site_id"];
+        
+        NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+
+        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             
             if (responseObject)
                 LIOLog(@"<INTRO> response: %@", responseObject);
