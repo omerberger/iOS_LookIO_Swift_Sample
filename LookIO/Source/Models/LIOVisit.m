@@ -34,6 +34,9 @@
 #define LIOLookIOManagerMaxContinueFailures                3
 #define LIOLookIOMAnagerMaxEventQueueSize                  100
 
+#define LIOVisitMaxRelaunches                              50
+#define LIOVisitMaxRelaunchTimePeriod                      60
+
 // User defaults keys
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerVisitorIdKey                    @"LIOLookIOManagerVisitorIdKey"
@@ -101,6 +104,10 @@
 @property (nonatomic, strong) NSMutableArray *accountSkills;
 @property (nonatomic, assign) BOOL shouldNextContinueCallIncludeAllUDEs;
 
+// Timer and counter used to backoff from visit relaunching loop
+@property (nonatomic, assign) NSInteger relaunchCount;
+@property (nonatomic, strong) NSTimer *relaunchCountTimer;
+
 @end
 
 @implementation LIOVisit
@@ -141,6 +148,8 @@
         self.accountSkills = [NSMutableArray array];
         self.defaultAccountSkill = nil;
         self.requiredAccountSkill = nil;
+        
+        self.relaunchCount = 0;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -198,6 +207,8 @@
         
         // Default visibility is no - until recieving a different visibility setting
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
+        
+        self.relaunchCountTimer = [NSTimer scheduledTimerWithTimeInterval:LIOVisitMaxRelaunchTimePeriod target:self selector:@selector(visitMaxRelaunchTimerDidFire:) userInfo:nil repeats:YES];
         
         // Setup the call center object to monitor phone calls
         [self setupCallCenter];
@@ -1004,8 +1015,25 @@
 // Launch a new visit because of a 404 response
 // If chat is in progress, we need to maintain the previous visit state
 
+- (void)visitMaxRelaunchTimerDidFire:(NSTimer *)timer
+{
+    self.relaunchCount = 0;
+}
+
 - (void)relaunchVisit
 {
+    self.relaunchCount += 1;
+    if (self.relaunchCount > 50)
+    {
+        LIOLog(@"<VISIT> Attempted to relaunch more than %d times in %d seconds, stopping all future visits.", LIOVisitMaxRelaunches, LIOVisitMaxRelaunchTimePeriod);
+        
+        if (!self.chatInProgress)
+            self.visitState = LIOVisitStateFailed;
+        
+        self.multiskillMapping = nil;        
+        return;
+    }
+    
     [self.delegate visitWillRelaunch:self];
 
     // If this is a relaunch during chat, don't change visit state
