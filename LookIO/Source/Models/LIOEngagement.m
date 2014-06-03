@@ -1192,11 +1192,14 @@
                 
             case LIOSurveyTypeOffline:
                 surveyTypeString = @"offline";
+                [self.delegate engagementDidSubmitOfflineSurvey:self];
                 self.sseChannelState = LIOSSEChannelStateEnding;
+                
                 break;
                 
             case LIOSurveyTypePostchat:
                 surveyTypeString = @"postchat";
+                [self.delegate engagementDidSubmitPostchatSurvey:self];
                 self.sseChannelState = LIOSSEChannelStateEnding;
                 break;
                 

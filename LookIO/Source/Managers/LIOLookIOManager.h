@@ -35,6 +35,16 @@ extern NSString *const kLPEventAddedToCart;
 ///---------------------------------------------------------------------------------------
 
 /*!
+ Called whenever one of a set of predefined events occurs within the LPMobile library.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ @param eventName The name of the event that occured.
+ @param parameters The parameters associated with the occuring event, if relevant.
+ */
+
+- (void)lookIOManager:(LIOLookIOManager *)aManager onEvent:(NSString *)eventName withParameters:(NSDictionary *)parameters;
+
+/*!
  Called whenever chat is enabled or disabled due to a change in your agents’ availability status, when chat is directly
  disabled, or any other reason. This status can be used to reflect the new availability status in your app’s UI.
  
