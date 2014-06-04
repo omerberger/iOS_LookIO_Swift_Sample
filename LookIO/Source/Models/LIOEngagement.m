@@ -67,9 +67,6 @@
 @property (nonatomic, strong) NSDate *lastSSEEventDate;
 @property (nonatomic, strong) NSTimer *timeoutTimer;
 
-@property (nonatomic, assign) NSString *engagementSkill;
-@property (nonatomic, assign) NSString *engagementAccount;
-
 @end
 
 @implementation LIOEngagement
@@ -149,12 +146,16 @@
         [self.timeoutTimer invalidate];
         self.timeoutTimer = nil;
     }
+    
+    if (self.visit)
+        [self.visit updateAndReportFunnelState];
 }
 
 - (void)startEngagement
 {
     [self sendIntroPacket];
-    [self.visit updateAndReportFunnelState];
+    if (self.visit)
+        [self.visit updateAndReportFunnelState];
 }
 
 - (void)cancelEngagement

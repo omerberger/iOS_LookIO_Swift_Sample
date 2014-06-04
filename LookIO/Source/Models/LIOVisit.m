@@ -589,7 +589,7 @@
                         if (defaultValue) accountSkillStatus.isDefault = [defaultValue boolValue];
                         
                         NSNumber *enabledValue = [skillStatus objectForKey:@"enabled"];
-                        if (enabledValue) accountSkillStatus.isEnabled = [enabledValue boolValue];
+                        if (enabledValue) accountSkillStatus.isEnabledOnServer = [enabledValue boolValue];
                         
                         [accountSkills addObject:accountSkillStatus];
                     }
@@ -798,14 +798,21 @@
                     {
                         LIOAccountSkillStatus *existingAccountSkill = [predicateArray objectAtIndex:0];
 
-                        // If changed, update the delegate
-                        if (existingAccountSkill.isEnabled != newAccountSkill.isEnabled)
-                        {
-                            [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
-                        }
-                        
+                        // This will take into consideration if a chat is in progress or if developer disabled chat
+                        BOOL previousEnabledValue = existingAccountSkill.isEnabledLastReported;
+
                         existingAccountSkill.isDefault = newAccountSkill.isDefault;
-                        existingAccountSkill.isEnabled = newAccountSkill.isEnabled;
+                        existingAccountSkill.isEnabledOnServer = newAccountSkill.isEnabledOnServer;
+
+                        // This will take into consideration if a chat is in progress or if developer disabled chat
+                        BOOL newEnabledValue = [self isChatEnabledForSkill:existingAccountSkill.skill forAccount:existingAccountSkill.account];
+                        
+                        // If changed, update the delegate
+                        if (previousEnabledValue != newEnabledValue)
+                        {
+                            existingAccountSkill.isEnabledLastReported = newEnabledValue;
+                            [self.delegate visit:self didChangeEnabled:newEnabledValue forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        }
                         
                         if (existingAccountSkill.isDefault)
                             self.defaultAccountSkill = existingAccountSkill;
@@ -813,7 +820,8 @@
                     else
                     {
                         [self.accountSkills addObject:newAccountSkill];
-                        [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabled forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        newAccountSkill.isEnabledLastReported = [self isChatEnabledForSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabledLastReported forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
                         
                         if (newAccountSkill.isDefault)
                             self.defaultAccountSkill = newAccountSkill;
@@ -1053,6 +1061,7 @@
     
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
+    [self updateEnabledForAllAccountsAndSkills];
     
     [self launchVisit];
 }
@@ -1139,6 +1148,7 @@
     // Update button and enabled status
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
+    [self updateEnabledForAllAccountsAndSkills];
     [self.delegate visitReachabilityDidChange:self];
 
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
@@ -1419,7 +1429,8 @@
                 LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
                 newAccountSkillStatus.skill = skill;
                 newAccountSkillStatus.account = defaultAccount;
-                newAccountSkillStatus.isEnabled = NO;
+                newAccountSkillStatus.isEnabledOnServer = NO;
+                newAccountSkillStatus.isEnabledLastReported = NO;
                 newAccountSkillStatus.isDefault = NO;
              
                 self.requiredAccountSkill = newAccountSkillStatus;
@@ -1432,7 +1443,8 @@
             LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
             newAccountSkillStatus.skill = skill;
             newAccountSkillStatus.account = LIOVisitUnknownAccountName;
-            newAccountSkillStatus.isEnabled = NO;
+            newAccountSkillStatus.isEnabledOnServer = NO;
+            newAccountSkillStatus.isEnabledLastReported = NO;
             newAccountSkillStatus.isDefault = NO;
             
             // This one is not added to AccountSkills because it's only relevant as a required account skill
@@ -1469,7 +1481,8 @@
             accountSkillStatus.skill = skill;
             accountSkillStatus.account = account;
             accountSkillStatus.isDefault = NO;
-            accountSkillStatus.isEnabled = NO;
+            accountSkillStatus.isEnabledOnServer = NO;
+            accountSkillStatus.isEnabledLastReported = NO;
             
             [self.accountSkills addObject:accountSkillStatus];
             self.requiredAccountSkill = accountSkillStatus;
@@ -1486,6 +1499,17 @@
 
 #pragma mark -
 #pragma mark Chat Status Methods
+
+- (void)updateEnabledForAllAccountsAndSkills
+{
+    for (LIOAccountSkillStatus *accountSkillStatus in self.accountSkills)
+    {
+        BOOL previousEnabledValue = accountSkillStatus.isEnabledLastReported;
+        accountSkillStatus.isEnabledLastReported = [self isChatEnabledForSkill:accountSkillStatus.skill forAccount:accountSkillStatus.account];
+        if (previousEnabledValue != accountSkillStatus.isEnabledLastReported)
+            [self.delegate visit:self didChangeEnabled:accountSkillStatus.isEnabledLastReported forSkill:accountSkillStatus.skill forAccount:accountSkillStatus.account];
+    }
+}
 
 - (BOOL)chatEnabled
 {
@@ -1512,13 +1536,13 @@
         // If developer has set a required skill/account, return its status
         if (self.requiredAccountSkill)
         {
-            return self.requiredAccountSkill.isEnabled;
+            return self.requiredAccountSkill.isEnabledOnServer;
         }
         
         // If not, use the default skill
         if (self.defaultAccountSkill)
         {
-            return self.defaultAccountSkill.isEnabled;
+            return self.defaultAccountSkill.isEnabledOnServer;
         }
         
         // If no skill-account set and no default, return NO
@@ -1590,7 +1614,7 @@
             if (accountSkillArray.count > 0)
             {
                 LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
-                return accountSkill.isEnabled;
+                return accountSkill.isEnabledOnServer;
             }
             
             return NO;
@@ -1625,9 +1649,17 @@
     if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
         return NO;
     
-    // If chat is in progress, chat should always be enabled
+    // If chat is in progress, chat should be enabled for all skills in the account
     if (self.chatInProgress)
-        return YES;
+    {
+        NSString *engagementAccount = [self.delegate visitCurrentEngagementAccount:self];
+        if (engagementAccount == nil) return YES;
+        
+        if ([engagementAccount isEqualToString:account])
+            return YES;
+
+        // Otherwise, let's pass through and return the actual enabled status    
+    }
     
     // If developer explictly disabled chat, chat should be disabled
     if (self.developerDisabledChat)
@@ -1640,7 +1672,7 @@
         if (accountSkillArray.count > 0)
         {
             LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
-            return accountSkill.isEnabled;
+            return accountSkill.isEnabledOnServer;
         }
         
         return NO;

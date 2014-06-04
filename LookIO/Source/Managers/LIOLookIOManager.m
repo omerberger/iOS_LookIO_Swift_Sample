@@ -611,8 +611,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)setChatDisabled:(BOOL)disabled
 {
     self.visit.developerDisabledChat = disabled;
+    [self.visit updateEnabledForAllAccountsAndSkills];
+
     [self visitChatEnabledDidUpdate:self.visit];
     [self.visit refreshControlButtonVisibility];
+    [self.visit updateAndReportFunnelState];
 }
 
 - (BOOL)chatInProgress
@@ -1497,9 +1500,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)bundleDownloadDidFinish:(NSNotification *)notification
 {
-    // TODO: Set the right account and skill here
-    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-        [self presentContainerViewControllerForCurrentStateWithSkill:nil withAccount:nil];
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState && self.engagement)
+        [self presentContainerViewControllerForCurrentStateWithSkill:self.engagement.engagementSkill withAccount:self.engagement.engagementAccount];
 }
 
 - (void)showReconnectCancelAlert
@@ -1694,6 +1696,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
     
     [self visitChatEnabledDidUpdate:self.visit];
+    [self.visit updateEnabledForAllAccountsAndSkills];
     [self.controlButton setChatMode];
     [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
@@ -1726,6 +1729,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.containerViewController dismissCurrentNotification];
         
         [self visitChatEnabledDidUpdate:self.visit];
+        [self.visit updateEnabledForAllAccountsAndSkills];
         
         if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
             [self.delegate lookIOManagerDidEndChat:self];
@@ -1762,6 +1766,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.containerViewController dismissCurrentNotification];
     
     [self visitChatEnabledDidUpdate:self.visit];
+    [self.visit updateEnabledForAllAccountsAndSkills];
 
     self.visit.visitState = LIOVisitStateVisitInProgress;
 }

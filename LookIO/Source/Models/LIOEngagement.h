@@ -96,6 +96,9 @@ typedef enum
 @property (nonatomic, strong) LIOSurvey *postchatSurvey;
 @property (nonatomic, strong) LIOSurvey *offlineSurvey;
 
+@property (nonatomic, assign) NSString *engagementSkill;
+@property (nonatomic, assign) NSString *engagementAccount;
+
 - (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account;
 
 - (void)startEngagement;
