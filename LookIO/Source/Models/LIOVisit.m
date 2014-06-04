@@ -1070,6 +1070,8 @@
         NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
         [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             LIOLog(@"<LAUNCH> Request successful with response: %@", responseObject);
+            
+            [self.delegate visitReportDidLaunch:self];
  
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
@@ -1084,7 +1086,6 @@
             }
 
             [self updateAndReportFunnelState];
-
             [self.delegate visitDidLaunch:self];
             
             if (![self chatInProgress])
@@ -1818,6 +1819,7 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
         else
@@ -1826,6 +1828,7 @@
             self.funnelState = LIOFunnelStateHotlead;
             LIOLog(@"<FUNNEL STATE> Hotlead");
             [self sendFunnelPacketForState:self.funnelState];
+            [self.delegate visit:self didChangeFunnelState:self.funnelState];
         }
     }
     
@@ -1842,6 +1845,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
             {
@@ -1850,6 +1854,7 @@
                     self.funnelState = LIOFunnelStateInvitation;
                     LIOLog(@"<FUNNEL STATE> Invitation");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
         }
@@ -1860,6 +1865,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
     }
@@ -1874,6 +1880,7 @@
             self.funnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
             [self sendFunnelPacketForState:self.funnelState];
+            [self.delegate visit:self didChangeFunnelState:self.funnelState];
             return;
         }
         
@@ -1888,6 +1895,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
             {
@@ -1898,6 +1906,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
         }
@@ -1909,6 +1918,7 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
     }
@@ -1928,6 +1938,7 @@
                     self.funnelState = LIOFunnelStateVisit;
                     LIOLog(@"<FUNNEL STATE> Visit");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
                 
@@ -1937,6 +1948,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
                 
@@ -1944,6 +1956,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
                 
             } else {
@@ -1960,6 +1973,7 @@
                 }
                 
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
             }
         }
