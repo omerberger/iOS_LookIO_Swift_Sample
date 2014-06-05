@@ -536,7 +536,8 @@
         [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self setHiddenFrame];
         } completion:^(BOOL finished) {
-            self.hidden = YES;
+            if (!self.isVisible)
+                self.hidden = YES;
         }];
     }
     else

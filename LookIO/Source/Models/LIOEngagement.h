@@ -60,6 +60,8 @@ typedef enum
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidSubmitPostchatSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidSubmitOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementHasNoPrechatSurvey:(LIOEngagement *)engagement;
 
 // Others
@@ -93,6 +95,9 @@ typedef enum
 @property (nonatomic, strong) LIOSurvey *prechatSurvey;
 @property (nonatomic, strong) LIOSurvey *postchatSurvey;
 @property (nonatomic, strong) LIOSurvey *offlineSurvey;
+
+@property (nonatomic, assign) NSString *engagementSkill;
+@property (nonatomic, assign) NSString *engagementAccount;
 
 - (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account;
 

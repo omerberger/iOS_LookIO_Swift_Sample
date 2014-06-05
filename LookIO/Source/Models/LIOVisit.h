@@ -56,9 +56,13 @@ typedef enum
 - (void)visitReachabilityDidChange:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
 - (void)visitDidLaunch:(LIOVisit *)visit;
+- (void)visitReportDidLaunch:(LIOVisit *)visit;
 - (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
 - (void)visitHasIncomingCall:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account;
+- (void)visit:(LIOVisit *)visit didChangeFunnelState:(LIOFunnelState)funnelState;
+- (NSString *)visitCurrentEngagementAccount:(LIOVisit *)visit;
+- (NSString *)visitCurrentEngagementSkill:(LIOVisit *)visit;
 
 @end
 
@@ -94,7 +98,7 @@ typedef enum
 - (void)useDefaultButton;
 
 - (void)refreshControlButtonVisibility;
-
+- (void)updateEnabledForAllAccountsAndSkills;
 - (void)updateAndReportFunnelState;
 
 - (BOOL)chatEnabled;
