@@ -13,6 +13,7 @@
 @property (nonatomic, copy) NSString *account;
 @property (nonatomic, copy) NSString *skill;
 @property (nonatomic, assign) BOOL isDefault;
-@property (nonatomic, assign) BOOL isEnabled;
+@property (nonatomic, assign) BOOL isEnabledOnServer;
+@property (nonatomic, assign) BOOL isEnabledLastReported;
 
 @end
