@@ -1410,45 +1410,52 @@
 {
     if (self.isIAREnabled)
     {
-        // Since only a skill has been specified, we will use the default account here
-        if (self.defaultAccountSkill)
+        if (skill == nil)
         {
-            NSString *defaultAccount = self.defaultAccountSkill.account;
-            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
-            NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
-
-            // If this skill exists for the default account, let's set it as the required account-skill
-            if (predicateArray.count > 0)
+            self.requiredAccountSkill = nil;
+        }
+        else
+        {
+            // Since only a skill has been specified, we will use the default account here
+            if (self.defaultAccountSkill)
             {
-                LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
-                self.requiredAccountSkill = accountSkillStatus;
+                NSString *defaultAccount = self.defaultAccountSkill.account;
+                NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
+                NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+                
+                // If this skill exists for the default account, let's set it as the required account-skill
+                if (predicateArray.count > 0)
+                {
+                    LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+                    self.requiredAccountSkill = accountSkillStatus;
+                }
+                // If not, let's create it
+                else
+                {
+                    LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                    newAccountSkillStatus.skill = skill;
+                    newAccountSkillStatus.account = defaultAccount;
+                    newAccountSkillStatus.isEnabledOnServer = NO;
+                    newAccountSkillStatus.isEnabledLastReported = NO;
+                    newAccountSkillStatus.isDefault = NO;
+                    
+                    self.requiredAccountSkill = newAccountSkillStatus;
+                    [self.accountSkills addObject:newAccountSkillStatus];
+                }
             }
-            // If not, let's create it
+            // If there is no default, we haven't received it from server yet. Let's use a general key for that account name and update it later.
             else
             {
                 LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
                 newAccountSkillStatus.skill = skill;
-                newAccountSkillStatus.account = defaultAccount;
+                newAccountSkillStatus.account = LIOVisitUnknownAccountName;
                 newAccountSkillStatus.isEnabledOnServer = NO;
                 newAccountSkillStatus.isEnabledLastReported = NO;
                 newAccountSkillStatus.isDefault = NO;
-             
+                
+                // This one is not added to AccountSkills because it's only relevant as a required account skill
                 self.requiredAccountSkill = newAccountSkillStatus;
-                [self.accountSkills addObject:newAccountSkillStatus];
             }
-        }
-        // If there is no default, we haven't received it from server yet. Let's use a general key for that account name and update it later.
-        else
-        {
-            LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
-            newAccountSkillStatus.skill = skill;
-            newAccountSkillStatus.account = LIOVisitUnknownAccountName;
-            newAccountSkillStatus.isEnabledOnServer = NO;
-            newAccountSkillStatus.isEnabledLastReported = NO;
-            newAccountSkillStatus.isDefault = NO;
-            
-            // This one is not added to AccountSkills because it's only relevant as a required account skill
-            self.requiredAccountSkill = newAccountSkillStatus;
         }
     }
     else
@@ -1465,27 +1472,34 @@
 - (void)setSkill:(NSString *)skill withAccount:(NSString *)account
 {
     if (self.isIAREnabled) {
-        // Let's check if this skill was received from the server
-        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
-        NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
-        
-        // If exists
-        if (predicateArray.count > 0)
+        if (skill == nil || account == nil)
         {
-            LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
-            self.requiredAccountSkill = accountSkillStatus;
+            self.requiredAccountSkill = nil;
         }
         else
         {
-            LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
-            accountSkillStatus.skill = skill;
-            accountSkillStatus.account = account;
-            accountSkillStatus.isDefault = NO;
-            accountSkillStatus.isEnabledOnServer = NO;
-            accountSkillStatus.isEnabledLastReported = NO;
+            // Let's check if this skill was received from the server
+            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+            NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
             
-            [self.accountSkills addObject:accountSkillStatus];
-            self.requiredAccountSkill = accountSkillStatus;
+            // If exists
+            if (predicateArray.count > 0)
+            {
+                LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+                self.requiredAccountSkill = accountSkillStatus;
+            }
+            else
+            {
+                LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                accountSkillStatus.skill = skill;
+                accountSkillStatus.account = account;
+                accountSkillStatus.isDefault = NO;
+                accountSkillStatus.isEnabledOnServer = NO;
+                accountSkillStatus.isEnabledLastReported = NO;
+                
+                [self.accountSkills addObject:accountSkillStatus];
+                self.requiredAccountSkill = accountSkillStatus;
+            }
         }
     }
     else {
