@@ -692,7 +692,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.controlButton.buttonKind = [self.visit.lastKnownButtonType integerValue];
     [self.controlButton updateBaseValues];
     
-    [self checkAndReconnectDisconnectedEngagement];
+    // Check and reconnect a disconnected engagement, only if it's disconnected
+    if (LIOVisitStateVisitInProgress == self.visit.visitState)
+        [self checkAndReconnectDisconnectedEngagement];
 }
 
 - (void)visitWillRelaunch:(LIOVisit *)visit
