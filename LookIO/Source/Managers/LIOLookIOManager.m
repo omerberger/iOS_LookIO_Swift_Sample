@@ -777,6 +777,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return nil;
 }
 
+- (NSString *)visitCurrentEngagementSkill:(LIOVisit *)visit
+{
+    if (self.engagement)
+        return self.engagement.engagementSkill;
+    
+    return nil;
+}
+
 
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods

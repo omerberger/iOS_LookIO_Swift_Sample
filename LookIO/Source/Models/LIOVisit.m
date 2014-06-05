@@ -1666,10 +1666,11 @@
     // If chat is in progress, chat should be enabled for all skills in the account
     if (self.chatInProgress)
     {
+        NSString *engagementSkill = [self.delegate visitCurrentEngagementSkill:self];
         NSString *engagementAccount = [self.delegate visitCurrentEngagementAccount:self];
-        if (engagementAccount == nil) return YES;
+        if (engagementAccount == nil || engagementSkill == nil) return YES;
         
-        if ([engagementAccount isEqualToString:account])
+        if ([engagementAccount isEqualToString:account] && [engagementSkill isEqualToString:skill])
             return YES;
 
         // Otherwise, let's pass through and return the actual enabled status    
