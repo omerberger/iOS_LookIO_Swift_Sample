@@ -769,6 +769,8 @@
         // the lib to report "disabled" back to the host app.
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
         
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateFailed;
@@ -786,6 +788,9 @@
             NSArray *accountSkillMap = [skillsMap objectForKey:@"accounts"];
             if (accountSkillMap)
             {
+                // Main another array of existing account-skills, so we can delete any account-skill that has been deleted since
+                NSMutableArray *accountSkillsToDelete = [[NSMutableArray alloc] initWithArray:self.accountSkills];
+                
                 self.isIAREnabled = YES;
                 for (LIOAccountSkillStatus *newAccountSkill in accountSkillMap)
                 {
@@ -797,6 +802,9 @@
                     if (predicateArray.count > 0)
                     {
                         LIOAccountSkillStatus *existingAccountSkill = [predicateArray objectAtIndex:0];
+                        
+                        // No need to delete this account-skill
+                        [accountSkillsToDelete removeObject:existingAccountSkill];
 
                         // This will take into consideration if a chat is in progress or if developer disabled chat
                         BOOL previousEnabledValue = existingAccountSkill.isEnabledLastReported;
@@ -826,6 +834,29 @@
                         if (newAccountSkill.isDefault)
                             self.defaultAccountSkill = newAccountSkill;
                     }
+                }
+                
+                if (accountSkillsToDelete.count > 0)
+                {
+                    // Don't delete a skill set by the developer, but set it to disabled if it was enabled
+                    if (self.requiredAccountSkill)
+                    {
+                        if ([accountSkillsToDelete containsObject:self.requiredAccountSkill])
+                        {
+                            self.requiredAccountSkill.isEnabledOnServer = NO;
+                            if (self.requiredAccountSkill.isEnabledLastReported == YES)
+                                [self.delegate visit:self didChangeEnabled:NO forSkill:self.requiredAccountSkill.skill forAccount:self.requiredAccountSkill.account];
+                            [accountSkillsToDelete removeObject:self.requiredAccountSkill];
+                        }
+                    }
+                    
+                    for (LIOAccountSkillStatus *accountSkill in accountSkillsToDelete)
+                    {
+                        if (accountSkill.isEnabledLastReported == YES)
+                            [self.delegate visit:self didChangeEnabled:NO forSkill:accountSkill.skill forAccount:accountSkill.account];
+                    }
+                    
+                    [self.accountSkills removeObjectsInArray:accountSkillsToDelete];
                 }
                 
                 // Check that this isn't a skill that developer set before first continue call arrived
@@ -1038,7 +1069,10 @@
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateFailed;
         
-        self.multiskillMapping = nil;        
+        self.multiskillMapping = nil;
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
+
         return;
     }
     
@@ -1053,15 +1087,15 @@
 
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
-    
-    self.isIAREnabled = YES;
-    [self.accountSkills removeAllObjects];
-    
-    [self setupCallCenter];
-    
+
+    if (self.isIAREnabled)
+        [self removeAllIARAccountSkills];
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
-    [self updateEnabledForAllAccountsAndSkills];
+
+    self.isIAREnabled = YES;
+    
+    [self setupCallCenter];
     
     [self launchVisit];
 }
@@ -1114,6 +1148,9 @@
  
             self.multiskillMapping = nil;
             [self.delegate visitSkillMappingDidChange:self];
+            
+            if (self.isIAREnabled)
+                [self removeAllIARAccountSkills];
         }];
     }
     else
@@ -1127,6 +1164,9 @@
         // the lib to report "disabled" back to the host app.
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
+        
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
     }
 }
 
@@ -1222,7 +1262,7 @@
 
             self.continueCallInProgress = NO;
             self.failedContinueCount = 0;
-            
+                        
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             LIOLog(@"<CONTINUE> Success. HTTP code: %d. Response: %@", operation.responseCode, responseDict);
             
@@ -1271,6 +1311,9 @@
                     self.lastKnownVisitURL = nil;
                     
                     self.multiskillMapping = nil;
+                    if (self.isIAREnabled)
+                        [self removeAllIARAccountSkills];
+
                     if (!self.chatInProgress)
                         self.visitState = LIOVisitStateFailed;
                 }
@@ -1513,6 +1556,30 @@
 
 #pragma mark -
 #pragma mark Chat Status Methods
+
+- (void)removeAllIARAccountSkills
+{
+    // There is no more default account-skill
+    self.defaultAccountSkill = nil;
+
+    // Disable all account skills, and report their new status
+    for (LIOAccountSkillStatus *accountSkillStatus in self.accountSkills)
+    {
+        accountSkillStatus.isEnabledOnServer = NO;
+    }
+    [self updateEnabledForAllAccountsAndSkills];
+
+    // Remove all skills, except the one set as required, which
+    NSMutableArray *accountSkillsToRemove = [NSMutableArray arrayWithArray:self.accountSkills];
+    if (self.requiredAccountSkill)
+    {
+        if ([accountSkillsToRemove containsObject:self.requiredAccountSkill])
+        {
+            [accountSkillsToRemove removeObject:self.requiredAccountSkill];
+        }
+    }
+    [self.accountSkills removeObjectsInArray:accountSkillsToRemove];
+}
 
 - (void)updateEnabledForAllAccountsAndSkills
 {
