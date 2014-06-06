@@ -771,6 +771,7 @@
         [self.delegate visitSkillMappingDidChange:self];
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
         
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateFailed;
@@ -1072,6 +1073,7 @@
         self.multiskillMapping = nil;
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
 
         return;
     }
@@ -1151,6 +1153,7 @@
             
             if (self.isIAREnabled)
                 [self removeAllIARAccountSkills];
+            [self refreshControlButtonVisibility];
         }];
     }
     else
@@ -1167,6 +1170,7 @@
         
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
     }
 }
 
@@ -1313,6 +1317,7 @@
                     self.multiskillMapping = nil;
                     if (self.isIAREnabled)
                         [self removeAllIARAccountSkills];
+                    [self refreshControlButtonVisibility];
 
                     if (!self.chatInProgress)
                         self.visitState = LIOVisitStateFailed;
