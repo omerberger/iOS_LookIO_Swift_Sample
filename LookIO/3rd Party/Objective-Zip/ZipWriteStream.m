@@ -34,13 +34,13 @@
 #import "ZipWriteStream.h"
 #import "ZipException.h"
 
-#include "zip.h"
+#include "zip_LIO.h"
 
 
 @implementation ZipWriteStream_LIO
 
 
-- (id) initWithZipFileStruct:(zipFile)zipFile fileNameInZip:(NSString *)fileNameInZip {
+- (id) initWithZipFileStruct:(zipFile_LIO)zipFile fileNameInZip:(NSString *)fileNameInZip {
 	if ((self= [super init])) {
 		_zipFile= zipFile;
 		_fileNameInZip= fileNameInZip;
@@ -50,7 +50,7 @@
 }
 
 - (void) writeData:(NSData *)data {
-	int err= zipWriteInFileInZip(_zipFile, [data bytes], (unsigned)[data length]);
+	int err= zipWriteInFileInZip_LIO(_zipFile, [data bytes], (unsigned)[data length]);
 	if (err < 0) {
 		NSString *reason= [NSString stringWithFormat:@"Error in writing '%@' in the zipfile", _fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
@@ -58,8 +58,8 @@
 }
 
 - (void) finishedWriting {
-	int err= zipCloseFileInZip(_zipFile);
-	if (err != ZIP_OK) {
+	int err= zipCloseFileInZip_LIO(_zipFile);
+	if (err != ZIP_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in closing '%@' in the zipfile", _fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}

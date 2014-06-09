@@ -34,13 +34,13 @@
 #import "ZipReadStream.h"
 #import "ZipException.h"
 
-#include "unzip.h"
+#include "unzip_LIO.h"
 
 
 @implementation ZipReadStream_LIO
 
 
-- (id) initWithUnzFileStruct:(unzFile)unzFile fileNameInZip:(NSString *)fileNameInZip {
+- (id) initWithUnzFileStruct:(unzFile_LIO)unzFile fileNameInZip:(NSString *)fileNameInZip {
 	if ((self= [super init])) {
 		_unzFile= unzFile;
 		_fileNameInZip= fileNameInZip;
@@ -51,7 +51,7 @@
 
 - (NSData *)readDataOfLength:(NSUInteger)length {
 	NSMutableData *data = [NSMutableData dataWithLength:length];
-	int bytes = unzReadCurrentFile(_unzFile, [data mutableBytes], (unsigned)length);
+	int bytes = unzReadCurrentFile_LIO(_unzFile, [data mutableBytes], (unsigned)length);
 	if (bytes < 0) {
 		NSString *reason= [NSString stringWithFormat:@"Error in reading '%@' in the zipfile", _fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:bytes reason:reason] autorelease];
@@ -62,8 +62,8 @@
 }
 
 - (void) finishedReading {
-	int err= unzCloseCurrentFile(_unzFile);
-	if (err != UNZ_OK) {
+	int err= unzCloseCurrentFile_LIO(_unzFile);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in closing '%@' in the zipfile", _fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
