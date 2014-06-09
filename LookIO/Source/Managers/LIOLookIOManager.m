@@ -107,6 +107,10 @@ typedef void (^LIOCompletionBlock)(void);
 
 @property (nonatomic, strong) NSTimer *bringButtonToFrontTimer;
 
+@property (nonatomic, copy) NSString *bundleDownloadEngagementSkill;
+@property (nonatomic, copy) NSString *bundleDownloadEngagementAccount;
+
+
 @end
 
 @implementation LIOLookIOManager
@@ -193,6 +197,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.clickView.frame = CGRectMake(-self.clickView.frame.size.width, -self.clickView.frame.size.height, self.clickView.frame.size.width, self.clickView.frame.size.height);
     self.clickView.hidden = YES;
     [keyWindow addSubview:self.clickView];
+    
+    self.bundleDownloadEngagementAccount = nil;
+    self.bundleDownloadEngagementSkill = nil;
     
     // Setup list of plist based backup orientations
     
@@ -1463,6 +1470,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if ([LIOBundleManager sharedBundleManager].isDownloadingBundle)
     {
+        self.bundleDownloadEngagementSkill = skill;
+        self.bundleDownloadEngagementAccount = account;
+        
         [self.containerViewController presentLoadingViewControllerWithQueueingMessage:NO];
         return;
     }
@@ -1510,8 +1520,23 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (void)bundleDownloadDidFinish:(NSNotification *)notification
 {
-    if (LIOLookIOWindowStateVisible == self.lookIOWindowState && self.engagement)
-        [self presentContainerViewControllerForCurrentStateWithSkill:self.engagement.engagementSkill withAccount:self.engagement.engagementAccount];
+    // If the bundle finished downloading when the window is visible, we should start the chat with the last used account and skill, or default if those
+    // do not exist for some reason
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+    {
+        if (self.bundleDownloadEngagementSkill && self.bundleDownloadEngagementAccount)
+        {
+            [self presentContainerViewControllerForCurrentStateWithSkill:self.bundleDownloadEngagementSkill withAccount:self.bundleDownloadEngagementAccount];
+            
+            self.bundleDownloadEngagementAccount = nil;
+            self.bundleDownloadEngagementSkill = nil;
+        }
+        else
+        {
+            if (self.visit.defaultAccountSkill)
+                [self presentContainerViewControllerForCurrentStateWithSkill:self.visit.defaultAccountSkill.skill withAccount:self.visit.defaultAccountSkill.account];
+        }
+    }
 }
 
 - (void)showReconnectCancelAlert
