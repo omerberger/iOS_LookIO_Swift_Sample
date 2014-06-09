@@ -50,7 +50,7 @@
 		
 		switch (mode) {
 			case ZipFileModeUnzip:
-				_unzFile= unzOpen([_fileName cStringUsingEncoding:NSUTF8StringEncoding]);
+				_unzFile= unzOpen_LIO([_fileName cStringUsingEncoding:NSUTF8StringEncoding]);
 				if (_unzFile == NULL) {
 					NSString *reason= [NSString stringWithFormat:@"Can't open '%@'", _fileName];
 					@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
@@ -58,7 +58,7 @@
 				break;
 				
 			case ZipFileModeCreate:
-				_zipFile= zipOpen([_fileName cStringUsingEncoding:NSUTF8StringEncoding], APPEND_STATUS_CREATE);
+				_zipFile= zipOpen_LIO([_fileName cStringUsingEncoding:NSUTF8StringEncoding], APPEND_STATUS_CREATE);
 				if (_zipFile == NULL) {
 					NSString *reason= [NSString stringWithFormat:@"Can't open '%@'", _fileName];
 					@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
@@ -66,7 +66,7 @@
 				break;
 				
 			case ZipFileModeAppend:
-				_zipFile= zipOpen([_fileName cStringUsingEncoding:NSUTF8StringEncoding], APPEND_STATUS_ADDINZIP);
+				_zipFile= zipOpen_LIO([_fileName cStringUsingEncoding:NSUTF8StringEncoding], APPEND_STATUS_ADDINZIP);
 				if (_zipFile == NULL) {
 					NSString *reason= [NSString stringWithFormat:@"Can't open '%@'", _fileName];
 					@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
@@ -97,7 +97,7 @@
 	NSDate *now= [NSDate date];
 	NSCalendar *calendar= [NSCalendar currentCalendar];
 	NSDateComponents *date= [calendar components:(NSSecondCalendarUnit | NSMinuteCalendarUnit | NSHourCalendarUnit | NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit) fromDate:now];	
-	zip_fileinfo zi;
+	zip_fileinfo_LIO zi;
 	zi.tmz_date.tm_sec= (uInt)[date second];
 	zi.tmz_date.tm_min= (uInt)[date minute];
 	zi.tmz_date.tm_hour= (uInt)[date hour];
@@ -108,7 +108,7 @@
 	zi.external_fa= 0;
 	zi.dosDate= 0;
 	
-	int err= zipOpenNewFileInZip3(
+	int err= zipOpenNewFileInZip3_LIO(
 								  _zipFile,
 								  [fileNameInZip cStringUsingEncoding:NSUTF8StringEncoding],
 								  &zi,
@@ -117,7 +117,7 @@
 								  compressionLevel, 0,
 								  -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
 								  NULL, 0);
-	if (err != ZIP_OK) {
+	if (err != ZIP_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in opening '%@' in zipfile", fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -133,7 +133,7 @@
 	
 	NSCalendar *calendar= [NSCalendar currentCalendar];
 	NSDateComponents *date= [calendar components:(NSSecondCalendarUnit | NSMinuteCalendarUnit | NSHourCalendarUnit | NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit) fromDate:fileDate];	
-	zip_fileinfo zi;
+	zip_fileinfo_LIO zi;
 	zi.tmz_date.tm_sec= (uInt)[date second];
 	zi.tmz_date.tm_min= (uInt)[date minute];
 	zi.tmz_date.tm_hour= (uInt)[date hour];
@@ -144,7 +144,7 @@
 	zi.external_fa= 0;
 	zi.dosDate= 0;
 	
-	int err= zipOpenNewFileInZip3(
+	int err= zipOpenNewFileInZip3_LIO(
 								  _zipFile,
 								  [fileNameInZip cStringUsingEncoding:NSUTF8StringEncoding],
 								  &zi,
@@ -153,7 +153,7 @@
 								  compressionLevel, 0,
 								  -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
 								  NULL, 0);
-	if (err != ZIP_OK) {
+	if (err != ZIP_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in opening '%@' in zipfile", fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -169,7 +169,7 @@
 	
 	NSCalendar *calendar= [NSCalendar currentCalendar];
 	NSDateComponents *date= [calendar components:(NSSecondCalendarUnit | NSMinuteCalendarUnit | NSHourCalendarUnit | NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit) fromDate:fileDate];	
-	zip_fileinfo zi;
+	zip_fileinfo_LIO zi;
 	zi.tmz_date.tm_sec= (uInt)[date second];
 	zi.tmz_date.tm_min= (uInt)[date minute];
 	zi.tmz_date.tm_hour= (uInt)[date hour];
@@ -180,7 +180,7 @@
 	zi.external_fa= 0;
 	zi.dosDate= 0;
 	
-	int err= zipOpenNewFileInZip3(
+	int err= zipOpenNewFileInZip3_LIO(
 								  _zipFile,
 								  [fileNameInZip cStringUsingEncoding:NSUTF8StringEncoding],
 								  &zi,
@@ -189,7 +189,7 @@
 								  compressionLevel, 0,
 								  -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
 								  [password cStringUsingEncoding:NSUTF8StringEncoding], crc32);
-	if (err != ZIP_OK) {
+	if (err != ZIP_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in opening '%@' in zipfile", fileNameInZip];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -203,9 +203,9 @@
 		@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
 	}
 	
-	unz_global_info gi;
-	int err= unzGetGlobalInfo(_unzFile, &gi);
-	if (err != UNZ_OK) {
+	unz_global_info_LIO gi;
+	int err= unzGetGlobalInfo_LIO(_unzFile, &gi);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in getting global info in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -238,8 +238,8 @@
 		@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
 	}
 	
-	int err= unzGoToFirstFile(_unzFile);
-	if (err != UNZ_OK) {
+	int err= unzGoToFirstFile_LIO(_unzFile);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in going to first file in zip in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -251,11 +251,11 @@
 		@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
 	}
 	
-	int err= unzGoToNextFile(_unzFile);
-	if (err == UNZ_END_OF_LIST_OF_FILE)
+	int err= unzGoToNextFile_LIO(_unzFile);
+	if (err == UNZ_END_OF_LIST_OF_FILE_LIO)
 		return NO;
 
-	if (err != UNZ_OK) {
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in going to next file in zip in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -269,11 +269,11 @@
 		@throw [[[ZipException_LIO alloc] initWithReason:reason] autorelease];
 	}
 	
-	int err= unzLocateFile(_unzFile, [fileNameInZip cStringUsingEncoding:NSUTF8StringEncoding], 1);
-	if (err == UNZ_END_OF_LIST_OF_FILE)
+	int err= unzLocateFile_LIO(_unzFile, [fileNameInZip cStringUsingEncoding:NSUTF8StringEncoding], 1);
+	if (err == UNZ_END_OF_LIST_OF_FILE_LIO)
 		return NO;
 
-	if (err != UNZ_OK) {
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in going to next file in zip in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -288,10 +288,10 @@
 	}
 
 	char filename_inzip[FILE_IN_ZIP_MAX_NAME_LENGTH];
-	unz_file_info file_info;
+	unz_file_info_LIO file_info;
 	
-	int err= unzGetCurrentFileInfo(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
-	if (err != UNZ_OK) {
+	int err= unzGetCurrentFileInfo_LIO(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in getting current file info in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -338,18 +338,18 @@
 	}
 
 	char filename_inzip[FILE_IN_ZIP_MAX_NAME_LENGTH];
-	unz_file_info file_info;
+	unz_file_info_LIO file_info;
 	
-	int err= unzGetCurrentFileInfo(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
-	if (err != UNZ_OK) {
+	int err= unzGetCurrentFileInfo_LIO(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in getting current file info in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
 	
 	NSString *fileNameInZip= [NSString stringWithCString:filename_inzip encoding:NSUTF8StringEncoding];
 	
-	err= unzOpenCurrentFilePassword(_unzFile, NULL);
-	if (err != UNZ_OK) {
+	err= unzOpenCurrentFilePassword_LIO(_unzFile, NULL);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in opening current file in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -364,18 +364,18 @@
 	}
 	
 	char filename_inzip[FILE_IN_ZIP_MAX_NAME_LENGTH];
-	unz_file_info file_info;
+	unz_file_info_LIO file_info;
 	
-	int err= unzGetCurrentFileInfo(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
-	if (err != UNZ_OK) {
+	int err= unzGetCurrentFileInfo_LIO(_unzFile, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in getting current file info in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
 	
 	NSString *fileNameInZip= [NSString stringWithCString:filename_inzip encoding:NSUTF8StringEncoding];
 
-	err= unzOpenCurrentFilePassword(_unzFile, [password cStringUsingEncoding:NSUTF8StringEncoding]);
-	if (err != UNZ_OK) {
+	err= unzOpenCurrentFilePassword_LIO(_unzFile, [password cStringUsingEncoding:NSUTF8StringEncoding]);
+	if (err != UNZ_OK_LIO) {
 		NSString *reason= [NSString stringWithFormat:@"Error in opening current file in '%@'", _fileName];
 		@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 	}
@@ -386,8 +386,8 @@
 - (void) close {
 	switch (_mode) {
 		case ZipFileModeUnzip: {
-			int err= unzClose(_unzFile);
-			if (err != UNZ_OK) {
+			int err= unzClose_LIO(_unzFile);
+			if (err != UNZ_OK_LIO) {
 				NSString *reason= [NSString stringWithFormat:@"Error in closing '%@'", _fileName];
 				@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 			}
@@ -395,8 +395,8 @@
 		}
 			
 		case ZipFileModeCreate: {
-			int err= zipClose(_zipFile, NULL);
-			if (err != ZIP_OK) {
+			int err= zipClose_LIO(_zipFile, NULL);
+			if (err != ZIP_OK_LIO) {
 				NSString *reason= [NSString stringWithFormat:@"Error in closing '%@'", _fileName];
 				@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 			}
@@ -404,8 +404,8 @@
 		}
 			
 		case ZipFileModeAppend: {
-			int err= zipClose(_zipFile, NULL);
-			if (err != ZIP_OK) {
+			int err= zipClose_LIO(_zipFile, NULL);
+			if (err != ZIP_OK_LIO) {
 				NSString *reason= [NSString stringWithFormat:@"Error in closing '%@'", _fileName];
 				@throw [[[ZipException_LIO alloc] initWithError:err reason:reason] autorelease];
 			}

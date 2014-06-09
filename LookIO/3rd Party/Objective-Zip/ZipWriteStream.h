@@ -33,17 +33,17 @@
 
 #import <Foundation/Foundation.h>
 
-#include "zip.h"
+#include "zip_LIO.h"
 
 
 @interface ZipWriteStream_LIO : NSObject {
 	NSString *_fileNameInZip;
 
 @private
-	zipFile _zipFile;
+	zipFile_LIO _zipFile;
 }
 
-- (id) initWithZipFileStruct:(zipFile)zipFile fileNameInZip:(NSString *)fileNameInZip;
+- (id) initWithZipFileStruct:(zipFile_LIO)zipFile fileNameInZip:(NSString *)fileNameInZip;
 
 - (void) writeData:(NSData *)data;
 - (void) finishedWriting;

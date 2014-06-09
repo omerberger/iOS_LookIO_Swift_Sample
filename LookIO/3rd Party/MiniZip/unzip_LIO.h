@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
 #ifndef _ZLIBIOAPI_H
-#include "ioapi.h"
+#include "ioapi_LIO.h"
 #endif
 
 #if defined(STRICTUNZIP) || defined(STRICTZIPUNZIP)
@@ -63,21 +63,21 @@ extern "C" {
 typedef struct TagunzFile__ { int unused; } unzFile__;
 typedef unzFile__ *unzFile;
 #else
-typedef voidp unzFile;
+typedef voidp unzFile_LIO;
 #endif
 
 
-#define UNZ_OK                          (0)
-#define UNZ_END_OF_LIST_OF_FILE         (-100)
-#define UNZ_ERRNO                       (Z_ERRNO)
-#define UNZ_EOF                         (0)
-#define UNZ_PARAMERROR                  (-102)
-#define UNZ_BADZIPFILE                  (-103)
-#define UNZ_INTERNALERROR               (-104)
-#define UNZ_CRCERROR                    (-105)
+#define UNZ_OK_LIO                          (0)
+#define UNZ_END_OF_LIST_OF_FILE_LIO         (-100)
+#define UNZ_ERRNO_LIO                       (Z_ERRNO)
+#define UNZ_EOF_LIO                         (0)
+#define UNZ_PARAMERROR_LIO                  (-102)
+#define UNZ_BADZIPFILE_LIO                  (-103)
+#define UNZ_INTERNALERROR_LIO               (-104)
+#define UNZ_CRCERROR_LIO                    (-105)
 
 /* tm_unz contain date/time info */
-typedef struct tm_unz_s
+typedef struct tm_unz_s_LIO
 {
     uInt tm_sec;            /* seconds after the minute - [0,59] */
     uInt tm_min;            /* minutes after the hour - [0,59] */
@@ -89,16 +89,16 @@ typedef struct tm_unz_s
 
 /* unz_global_info structure contain global data about the ZIPfile
    These data comes from the end of central dir */
-typedef struct unz_global_info_s
+typedef struct unz_global_info_s_LIO
 {
     uLong number_entry;         /* total number of entries in
                        the central dir on this disk */
     uLong size_comment;         /* size of the global comment of the zipfile */
-} unz_global_info;
+} unz_global_info_LIO;
 
 
 /* unz_file_info contain information about a file in the zipfile */
-typedef struct unz_file_info_s
+typedef struct unz_file_info_s_LIO
 {
     uLong version;              /* version made by                 2 bytes */
     uLong version_needed;       /* version needed to extract       2 bytes */
@@ -117,9 +117,9 @@ typedef struct unz_file_info_s
     uLong external_fa;          /* external file attributes        4 bytes */
 
     tm_unz tmu_date;
-} unz_file_info;
+} unz_file_info_LIO;
 
-extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
+extern int ZEXPORT unzStringFileNameCompare_LIO OF ((const char* fileName1,
                                                  const char* fileName2,
                                                  int iCaseSensitivity));
 /*
@@ -132,7 +132,7 @@ extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
 */
 
 
-extern unzFile ZEXPORT unzOpen OF((const char *path));
+extern unzFile_LIO ZEXPORT unzOpen_LIO OF((const char *path));
 /*
   Open a Zip file. path contain the full pathname (by example,
      on a Windows XP computer "c:\\zlib\\zlib113.zip" or on an Unix computer
@@ -143,29 +143,29 @@ extern unzFile ZEXPORT unzOpen OF((const char *path));
        of this unzip package.
 */
 
-extern unzFile ZEXPORT unzOpen2 OF((const char *path,
-                                    zlib_filefunc_def* pzlib_filefunc_def));
+extern unzFile_LIO ZEXPORT unzOpen2_LIO OF((const char *path,
+                                    zlib_filefunc_def_LIO* pzlib_filefunc_def));
 /*
    Open a Zip file, like unzOpen, but provide a set of file low level API
       for read/write the zip file (see ioapi.h)
 */
 
-extern int ZEXPORT unzClose OF((unzFile file));
+extern int ZEXPORT unzClose_LIO OF((unzFile_LIO file));
 /*
   Close a ZipFile opened with unzipOpen.
   If there is files inside the .Zip opened with unzOpenCurrentFile (see later),
     these files MUST be closed with unzipCloseCurrentFile before call unzipClose.
   return UNZ_OK if there is no problem. */
 
-extern int ZEXPORT unzGetGlobalInfo OF((unzFile file,
-                                        unz_global_info *pglobal_info));
+extern int ZEXPORT unzGetGlobalInfo_LIO OF((unzFile_LIO file,
+                                        unz_global_info_LIO *pglobal_info));
 /*
   Write info about the ZipFile in the *pglobal_info structure.
   No preparation of the structure is needed
   return UNZ_OK if there is no problem. */
 
 
-extern int ZEXPORT unzGetGlobalComment OF((unzFile file,
+extern int ZEXPORT unzGetGlobalComment_LIO OF((unzFile_LIO file,
                                            char *szComment,
                                            uLong uSizeBuf));
 /*
@@ -178,20 +178,20 @@ extern int ZEXPORT unzGetGlobalComment OF((unzFile file,
 /***************************************************************************/
 /* Unzip package allow you browse the directory of the zipfile */
 
-extern int ZEXPORT unzGoToFirstFile OF((unzFile file));
+extern int ZEXPORT unzGoToFirstFile_LIO OF((unzFile_LIO file));
 /*
   Set the current file of the zipfile to the first file.
   return UNZ_OK if there is no problem
 */
 
-extern int ZEXPORT unzGoToNextFile OF((unzFile file));
+extern int ZEXPORT unzGoToNextFile_LIO OF((unzFile_LIO file));
 /*
   Set the current file of the zipfile to the next file.
   return UNZ_OK if there is no problem
   return UNZ_END_OF_LIST_OF_FILE if the actual file was the latest.
 */
 
-extern int ZEXPORT unzLocateFile OF((unzFile file,
+extern int ZEXPORT unzLocateFile_LIO OF((unzFile_LIO file,
                      const char *szFileName,
                      int iCaseSensitivity));
 /*
@@ -207,24 +207,24 @@ extern int ZEXPORT unzLocateFile OF((unzFile file,
 /* ****************************************** */
 /* Ryan supplied functions */
 /* unz_file_info contain information about a file in the zipfile */
-typedef struct unz_file_pos_s
+typedef struct unz_file_pos_s_LIO
 {
     uLong pos_in_zip_directory;   /* offset in zip file directory */
     uLong num_of_file;            /* # of file */
-} unz_file_pos;
+} unz_file_pos_LIO;
 
-extern int ZEXPORT unzGetFilePos(
-    unzFile file,
-    unz_file_pos* file_pos);
+extern int ZEXPORT unzGetFilePos_LIO(
+    unzFile_LIO file,
+    unz_file_pos_LIO* file_pos);
 
-extern int ZEXPORT unzGoToFilePos(
-    unzFile file,
-    unz_file_pos* file_pos);
+extern int ZEXPORT unzGoToFilePos_LIO(
+    unzFile_LIO file,
+    unz_file_pos_LIO* file_pos);
 
 /* ****************************************** */
 
-extern int ZEXPORT unzGetCurrentFileInfo OF((unzFile file,
-                         unz_file_info *pfile_info,
+extern int ZEXPORT unzGetCurrentFileInfo_LIO OF((unzFile_LIO file,
+                         unz_file_info_LIO *pfile_info,
                          char *szFileName,
                          uLong fileNameBufferSize,
                          void *extraField,
@@ -249,13 +249,13 @@ extern int ZEXPORT unzGetCurrentFileInfo OF((unzFile file,
    from it, and close it (you can close it before reading all the file)
    */
 
-extern int ZEXPORT unzOpenCurrentFile OF((unzFile file));
+extern int ZEXPORT unzOpenCurrentFile_LIO OF((unzFile_LIO file));
 /*
   Open for reading data the current file in the zipfile.
   If there is no error, the return value is UNZ_OK.
 */
 
-extern int ZEXPORT unzOpenCurrentFilePassword OF((unzFile file,
+extern int ZEXPORT unzOpenCurrentFilePassword_LIO OF((unzFile_LIO file,
                                                   const char* password));
 /*
   Open for reading data the current file in the zipfile.
@@ -263,7 +263,7 @@ extern int ZEXPORT unzOpenCurrentFilePassword OF((unzFile file,
   If there is no error, the return value is UNZ_OK.
 */
 
-extern int ZEXPORT unzOpenCurrentFile2 OF((unzFile file,
+extern int ZEXPORT unzOpenCurrentFile2_LIO OF((unzFile_LIO file,
                                            int* method,
                                            int* level,
                                            int raw));
@@ -276,7 +276,7 @@ extern int ZEXPORT unzOpenCurrentFile2 OF((unzFile file,
          but you CANNOT set method parameter as NULL
 */
 
-extern int ZEXPORT unzOpenCurrentFile3 OF((unzFile file,
+extern int ZEXPORT unzOpenCurrentFile3_LIO OF((unzFile_LIO file,
                                            int* method,
                                            int* level,
                                            int raw,
@@ -291,13 +291,13 @@ extern int ZEXPORT unzOpenCurrentFile3 OF((unzFile file,
 */
 
 
-extern int ZEXPORT unzCloseCurrentFile OF((unzFile file));
+extern int ZEXPORT unzCloseCurrentFile_LIO OF((unzFile_LIO file));
 /*
   Close the file in zip opened with unzOpenCurrentFile
   Return UNZ_CRCERROR if all the file was read but the CRC is not good
 */
 
-extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
+extern int ZEXPORT unzReadCurrentFile_LIO OF((unzFile_LIO file,
                       voidp buf,
                       unsigned len));
 /*
@@ -311,17 +311,17 @@ extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
 
-extern z_off_t ZEXPORT unztell OF((unzFile file));
+extern z_off_t ZEXPORT unztell_LIO OF((unzFile_LIO file));
 /*
   Give the current position in uncompressed data
 */
 
-extern int ZEXPORT unzeof OF((unzFile file));
+extern int ZEXPORT unzeof_LIO OF((unzFile_LIO file));
 /*
   return 1 if the end of file was reached, 0 elsewhere
 */
 
-extern int ZEXPORT unzGetLocalExtrafield OF((unzFile file,
+extern int ZEXPORT unzGetLocalExtrafield_LIO OF((unzFile_LIO file,
                                              voidp buf,
                                              unsigned len));
 /*
@@ -340,10 +340,10 @@ extern int ZEXPORT unzGetLocalExtrafield OF((unzFile file,
 /***************************************************************************/
 
 /* Get the current file offset */
-extern uLong ZEXPORT unzGetOffset (unzFile file);
+extern uLong ZEXPORT unzGetOffset_LIO (unzFile_LIO file);
 
 /* Set the current file offset */
-extern int ZEXPORT unzSetOffset (unzFile file, uLong pos);
+extern int ZEXPORT unzSetOffset_LIO (unzFile_LIO file, uLong pos);
 
 
 

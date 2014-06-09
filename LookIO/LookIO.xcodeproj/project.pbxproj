@@ -15,6 +15,14 @@
 		A70B676817ABFA600053A62E /* LIOBlurImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A70B676617ABFA600053A62E /* LIOBlurImageView.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A711872F1868FE890070C22C /* LIOKeyboardMenuItem.h in Headers */ = {isa = PBXBuildFile; fileRef = A711872D1868FE890070C22C /* LIOKeyboardMenuItem.h */; };
 		A71187301868FE890070C22C /* LIOKeyboardMenuItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A711872E1868FE890070C22C /* LIOKeyboardMenuItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A71E16D919460CEA00ABF4FD /* ioapi_LIO.c in Sources */ = {isa = PBXBuildFile; fileRef = A71E16D119460CEA00ABF4FD /* ioapi_LIO.c */; };
+		A71E16DA19460CEA00ABF4FD /* ioapi_LIO.h in Headers */ = {isa = PBXBuildFile; fileRef = A71E16D219460CEA00ABF4FD /* ioapi_LIO.h */; };
+		A71E16DB19460CEA00ABF4FD /* mztools_LIO.c in Sources */ = {isa = PBXBuildFile; fileRef = A71E16D319460CEA00ABF4FD /* mztools_LIO.c */; };
+		A71E16DC19460CEA00ABF4FD /* mztools_LIO.h in Headers */ = {isa = PBXBuildFile; fileRef = A71E16D419460CEA00ABF4FD /* mztools_LIO.h */; };
+		A71E16DD19460CEA00ABF4FD /* unzip_LIO.c in Sources */ = {isa = PBXBuildFile; fileRef = A71E16D519460CEA00ABF4FD /* unzip_LIO.c */; };
+		A71E16DE19460CEA00ABF4FD /* unzip_LIO.h in Headers */ = {isa = PBXBuildFile; fileRef = A71E16D619460CEA00ABF4FD /* unzip_LIO.h */; };
+		A71E16DF19460CEA00ABF4FD /* zip_LIO.c in Sources */ = {isa = PBXBuildFile; fileRef = A71E16D719460CEA00ABF4FD /* zip_LIO.c */; };
+		A71E16E019460CEA00ABF4FD /* zip_LIO.h in Headers */ = {isa = PBXBuildFile; fileRef = A71E16D819460CEA00ABF4FD /* zip_LIO.h */; };
 		A721D273185136580039395E /* LIOLookIOManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D271185136580039395E /* LIOLookIOManager.h */; };
 		A721D274185136580039395E /* LIOLookIOManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A721D272185136580039395E /* LIOLookIOManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A721D2771851367D0039395E /* LIOChatViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A721D2751851367D0039395E /* LIOChatViewController.h */; };
@@ -107,14 +115,6 @@
 		D4868A79155AFE800081164D /* AsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = D4868A77155AFE800081164D /* AsyncSocket.m */; };
 		D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */; };
 		D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */; };
-		D486D7281521303B007C9AF8 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7151521303B007C9AF8 /* ioapi.c */; };
-		D486D7291521303B007C9AF8 /* ioapi.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7161521303B007C9AF8 /* ioapi.h */; };
-		D486D72A1521303B007C9AF8 /* mztools.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7171521303B007C9AF8 /* mztools.c */; };
-		D486D72B1521303B007C9AF8 /* mztools.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7181521303B007C9AF8 /* mztools.h */; };
-		D486D72C1521303B007C9AF8 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D7191521303B007C9AF8 /* unzip.c */; };
-		D486D72D1521303B007C9AF8 /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71A1521303B007C9AF8 /* unzip.h */; };
-		D486D72E1521303B007C9AF8 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D486D71B1521303B007C9AF8 /* zip.c */; };
-		D486D72F1521303B007C9AF8 /* zip.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71C1521303B007C9AF8 /* zip.h */; };
 		D486D7301521303B007C9AF8 /* FileInZipInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D71E1521303B007C9AF8 /* FileInZipInfo.h */; };
 		D486D7311521303B007C9AF8 /* FileInZipInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D486D71F1521303B007C9AF8 /* FileInZipInfo.m */; };
 		D486D7321521303B007C9AF8 /* ZipException.h in Headers */ = {isa = PBXBuildFile; fileRef = D486D7201521303B007C9AF8 /* ZipException.h */; };
@@ -150,6 +150,14 @@
 		A70B677317AC237A0053A62E /* LIOWebViewChatModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOWebViewChatModule.m; path = Source/Other/ChatModules/LIOWebViewChatModule.m; sourceTree = "<group>"; };
 		A711872D1868FE890070C22C /* LIOKeyboardMenuItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOKeyboardMenuItem.h; path = Source/Models/LIOKeyboardMenuItem.h; sourceTree = "<group>"; };
 		A711872E1868FE890070C22C /* LIOKeyboardMenuItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOKeyboardMenuItem.m; path = Source/Models/LIOKeyboardMenuItem.m; sourceTree = "<group>"; };
+		A71E16D119460CEA00ABF4FD /* ioapi_LIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi_LIO.c; sourceTree = "<group>"; };
+		A71E16D219460CEA00ABF4FD /* ioapi_LIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi_LIO.h; sourceTree = "<group>"; };
+		A71E16D319460CEA00ABF4FD /* mztools_LIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools_LIO.c; sourceTree = "<group>"; };
+		A71E16D419460CEA00ABF4FD /* mztools_LIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools_LIO.h; sourceTree = "<group>"; };
+		A71E16D519460CEA00ABF4FD /* unzip_LIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip_LIO.c; sourceTree = "<group>"; };
+		A71E16D619460CEA00ABF4FD /* unzip_LIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip_LIO.h; sourceTree = "<group>"; };
+		A71E16D719460CEA00ABF4FD /* zip_LIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_LIO.c; sourceTree = "<group>"; };
+		A71E16D819460CEA00ABF4FD /* zip_LIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip_LIO.h; sourceTree = "<group>"; };
 		A721D271185136580039395E /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = Source/Managers/LIOLookIOManager.h; sourceTree = "<group>"; };
 		A721D272185136580039395E /* LIOLookIOManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOLookIOManager.m; path = Source/Managers/LIOLookIOManager.m; sourceTree = "<group>"; };
 		A721D2751851367D0039395E /* LIOChatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOChatViewController.h; path = Source/Controllers/LIOChatViewController.h; sourceTree = "<group>"; };
@@ -287,14 +295,6 @@
 		D4868A77155AFE800081164D /* AsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncSocket.m; sourceTree = "<group>"; };
 		D486D7051520EBEA007C9AF8 /* LIOBundleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOBundleManager.h; path = Source/Managers/LIOBundleManager.h; sourceTree = "<group>"; };
 		D486D7061520EBEA007C9AF8 /* LIOBundleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LIOBundleManager.m; path = Source/Managers/LIOBundleManager.m; sourceTree = "<group>"; };
-		D486D7151521303B007C9AF8 /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
-		D486D7161521303B007C9AF8 /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
-		D486D7171521303B007C9AF8 /* mztools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools.c; sourceTree = "<group>"; };
-		D486D7181521303B007C9AF8 /* mztools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools.h; sourceTree = "<group>"; };
-		D486D7191521303B007C9AF8 /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
-		D486D71A1521303B007C9AF8 /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
-		D486D71B1521303B007C9AF8 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
-		D486D71C1521303B007C9AF8 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
 		D486D71E1521303B007C9AF8 /* FileInZipInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileInZipInfo.h; sourceTree = "<group>"; };
 		D486D71F1521303B007C9AF8 /* FileInZipInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileInZipInfo.m; sourceTree = "<group>"; };
 		D486D7201521303B007C9AF8 /* ZipException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipException.h; sourceTree = "<group>"; };
@@ -839,14 +839,14 @@
 		D486D7141521303B007C9AF8 /* MiniZip */ = {
 			isa = PBXGroup;
 			children = (
-				D486D7151521303B007C9AF8 /* ioapi.c */,
-				D486D7161521303B007C9AF8 /* ioapi.h */,
-				D486D7171521303B007C9AF8 /* mztools.c */,
-				D486D7181521303B007C9AF8 /* mztools.h */,
-				D486D7191521303B007C9AF8 /* unzip.c */,
-				D486D71A1521303B007C9AF8 /* unzip.h */,
-				D486D71B1521303B007C9AF8 /* zip.c */,
-				D486D71C1521303B007C9AF8 /* zip.h */,
+				A71E16D119460CEA00ABF4FD /* ioapi_LIO.c */,
+				A71E16D219460CEA00ABF4FD /* ioapi_LIO.h */,
+				A71E16D319460CEA00ABF4FD /* mztools_LIO.c */,
+				A71E16D419460CEA00ABF4FD /* mztools_LIO.h */,
+				A71E16D519460CEA00ABF4FD /* unzip_LIO.c */,
+				A71E16D619460CEA00ABF4FD /* unzip_LIO.h */,
+				A71E16D719460CEA00ABF4FD /* zip_LIO.c */,
+				A71E16D819460CEA00ABF4FD /* zip_LIO.h */,
 			);
 			path = MiniZip;
 			sourceTree = "<group>";
@@ -961,6 +961,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A71E16DC19460CEA00ABF4FD /* mztools_LIO.h in Headers */,
 				D4ADC7B014F3215A00713F29 /* LIOAnalyticsManager.h in Headers */,
 				A7A4CB2D18A43B7100D05C1D /* LIOPopupLabel.h in Headers */,
 				A7DBE938189948B100AD300F /* LIOWebViewController.h in Headers */,
@@ -977,13 +978,10 @@
 				A7913065187E0723001099ED /* LIOEmailChatView.h in Headers */,
 				A73D44381856776A0030FF44 /* LIOContainerViewController.h in Headers */,
 				A739FA8C1864C77600CA35C4 /* LIOChatTableViewCell.h in Headers */,
+				A71E16DE19460CEA00ABF4FD /* unzip_LIO.h in Headers */,
 				D486D7071520EBEA007C9AF8 /* LIOBundleManager.h in Headers */,
-				D486D7291521303B007C9AF8 /* ioapi.h in Headers */,
-				D486D72B1521303B007C9AF8 /* mztools.h in Headers */,
 				A793E80D1880B49C0083B079 /* LIOChatTableViewImageCell.h in Headers */,
-				D486D72D1521303B007C9AF8 /* unzip.h in Headers */,
 				A7AE320818735EDC002D9F23 /* LPSurveyViewController.h in Headers */,
-				D486D72F1521303B007C9AF8 /* zip.h in Headers */,
 				D486D7301521303B007C9AF8 /* FileInZipInfo.h in Headers */,
 				D486D7321521303B007C9AF8 /* ZipException.h in Headers */,
 				D486D7341521303B007C9AF8 /* ZipFile.h in Headers */,
@@ -1011,10 +1009,12 @@
 				A7C8593D1779E45C00493BF8 /* GCDAsyncSocket.h in Headers */,
 				A7C85943177B3F1900493BF8 /* LPAPIClient.h in Headers */,
 				A742967A18842D28007A0FC3 /* LPChatImageView.h in Headers */,
+				A71E16DA19460CEA00ABF4FD /* ioapi_LIO.h in Headers */,
 				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
 				A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */,
 				A7A397371892B7E30073A41C /* LIOBadgeView.h in Headers */,
 				A721D273185136580039395E /* LIOLookIOManager.h in Headers */,
+				A71E16E019460CEA00ABF4FD /* zip_LIO.h in Headers */,
 				A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */,
 				A7D4E845177498AB0037E47B /* LIOStarRatingView.h in Headers */,
 				A703A0461795C23C00914649 /* LPChatAPIClient.h in Headers */,
@@ -1128,14 +1128,11 @@
 				A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */,
 				A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */,
 				A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */,
+				A71E16DB19460CEA00ABF4FD /* mztools_LIO.c in Sources */,
 				A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */,
 				A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */,
 				D486D7081520EBEA007C9AF8 /* LIOBundleManager.m in Sources */,
-				D486D7281521303B007C9AF8 /* ioapi.c in Sources */,
 				A7A4CB3218A527EB00D05C1D /* LIOApprovePhotoView.m in Sources */,
-				D486D72A1521303B007C9AF8 /* mztools.c in Sources */,
-				D486D72C1521303B007C9AF8 /* unzip.c in Sources */,
-				D486D72E1521303B007C9AF8 /* zip.c in Sources */,
 				D486D7311521303B007C9AF8 /* FileInZipInfo.m in Sources */,
 				D486D7331521303B007C9AF8 /* ZipException.m in Sources */,
 				D486D7351521303B007C9AF8 /* ZipFile.m in Sources */,
@@ -1155,15 +1152,18 @@
 				D41F9437158AA52C004BE9A0 /* LIOSurveyQuestion.m in Sources */,
 				A721D28718513D860039395E /* LIONetworkManager.m in Sources */,
 				D41F943D158AA625004BE9A0 /* LIOSurveyPickerEntry.m in Sources */,
+				A71E16DD19460CEA00ABF4FD /* unzip_LIO.c in Sources */,
 				A7AE3203187343A0002D9F23 /* LPSurveyViewController.m in Sources */,
 				A7DBE939189948B100AD300F /* LIOWebViewController.m in Sources */,
 				A739FA8D1864C77600CA35C4 /* LIOChatTableViewCell.m in Sources */,
 				D4137A151592948F0097E385 /* LIOSurveyValidationView.m in Sources */,
 				A71187301868FE890070C22C /* LIOKeyboardMenuItem.m in Sources */,
 				D447AC9C17381460008919A1 /* LIOMediaManager.m in Sources */,
+				A71E16DF19460CEA00ABF4FD /* zip_LIO.c in Sources */,
 				A7C8593A1779E26B00493BF8 /* LPSSEManager.m in Sources */,
 				A7C85944177B3F1900493BF8 /* LPAPIClient.m in Sources */,
 				A7C85948177B458700493BF8 /* LPHTTPRequestOperation.m in Sources */,
+				A71E16D919460CEA00ABF4FD /* ioapi_LIO.c in Sources */,
 				A721D28318513A8A0039395E /* LIOEngagement.m in Sources */,
 				A7CF049A177C833200AFDC5D /* LPSSEvent.m in Sources */,
 				A7A397381892B7E30073A41C /* LIOBadgeView.m in Sources */,

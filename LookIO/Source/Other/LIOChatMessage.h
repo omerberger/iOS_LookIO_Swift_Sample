@@ -36,7 +36,7 @@ typedef enum
 @property (nonatomic, copy) NSString *originalRawString;
 @property (nonatomic, strong) NSURL *URL;
 @property (nonatomic, copy) NSString *scheme;
-@property (nonatomic, assign) NSTextCheckingType* checkingType;
+@property (nonatomic, assign) NSTextCheckingType checkingType;
 @property (nonatomic, assign) BOOL isIntraAppLink;
 
 @end

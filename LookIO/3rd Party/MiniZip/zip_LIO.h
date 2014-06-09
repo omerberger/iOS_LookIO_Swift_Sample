@@ -55,24 +55,24 @@ extern "C" {
 #endif
 
 #ifndef _ZLIBIOAPI_H
-#include "ioapi.h"
+#include "ioapi_LIO.h"
 #endif
 
 #if defined(STRICTZIP) || defined(STRICTZIPUNZIP)
 /* like the STRICT of WIN32, we define a pointer that cannot be converted
     from (void*) without cast */
-typedef struct TagzipFile__ { int unused; } zipFile__;
-typedef zipFile__ *zipFile;
+typedef struct TagzipFile__LIO { int unused; } zipFile__LIO;
+typedef zipFile__LIO *zipFile_LIO;
 #else
-typedef voidp zipFile;
+typedef voidp zipFile_LIO;
 #endif
 
-#define ZIP_OK                          (0)
-#define ZIP_EOF                         (0)
-#define ZIP_ERRNO                       (Z_ERRNO)
-#define ZIP_PARAMERROR                  (-102)
-#define ZIP_BADZIPFILE                  (-103)
-#define ZIP_INTERNALERROR               (-104)
+#define ZIP_OK_LIO                          (0)
+#define ZIP_EOF_LIO                         (0)
+#define ZIP_ERRNO_LIO                       (Z_ERRNO)
+#define ZIP_PARAMERROR_LIO                  (-102)
+#define ZIP_BADZIPFILE_LIO                  (-103)
+#define ZIP_INTERNALERROR_LIO               (-104)
 
 #ifndef DEF_MEM_LEVEL
 #  if MAX_MEM_LEVEL >= 8
@@ -84,7 +84,7 @@ typedef voidp zipFile;
 /* default memLevel */
 
 /* tm_zip contain date/time info */
-typedef struct tm_zip_s
+typedef struct tm_zip_s_LIO
 {
     uInt tm_sec;            /* seconds after the minute - [0,59] */
     uInt tm_min;            /* minutes after the hour - [0,59] */
@@ -92,17 +92,17 @@ typedef struct tm_zip_s
     uInt tm_mday;           /* day of the month - [1,31] */
     uInt tm_mon;            /* months since January - [0,11] */
     uInt tm_year;           /* years - [1980..2044] */
-} tm_zip;
+} tm_zip_LIO;
 
 typedef struct
 {
-    tm_zip      tmz_date;       /* date in understandable format           */
+    tm_zip_LIO      tmz_date;       /* date in understandable format           */
     uLong       dosDate;       /* if dos_date == 0, tmu_date is used      */
 /*    uLong       flag;        */   /* general purpose bit flag        2 bytes */
 
     uLong       internal_fa;    /* internal file attributes        2 bytes */
     uLong       external_fa;    /* external file attributes        4 bytes */
-} zip_fileinfo;
+} zip_fileinfo_LIO;
 
 typedef const char* zipcharpc;
 
@@ -111,7 +111,7 @@ typedef const char* zipcharpc;
 #define APPEND_STATUS_CREATEAFTER   (1)
 #define APPEND_STATUS_ADDINZIP      (2)
 
-extern zipFile ZEXPORT zipOpen OF((const char *pathname, int append));
+extern zipFile_LIO ZEXPORT zipOpen_LIO OF((const char *pathname, int append));
 /*
   Create a zipfile.
      pathname contain on Windows XP a filename like "c:\\zlib\\zlib113.zip" or on
@@ -131,14 +131,14 @@ extern zipFile ZEXPORT zipOpen OF((const char *pathname, int append));
    Of couse, you can use RAW reading and writing to copy the file you did not want delte
 */
 
-extern zipFile ZEXPORT zipOpen2 OF((const char *pathname,
+extern zipFile_LIO ZEXPORT zipOpen2_LIO OF((const char *pathname,
                                    int append,
                                    zipcharpc* globalcomment,
-                                   zlib_filefunc_def* pzlib_filefunc_def));
+                                   zlib_filefunc_def_LIO* pzlib_filefunc_def));
 
-extern int ZEXPORT zipOpenNewFileInZip OF((zipFile file,
+extern int ZEXPORT zipOpenNewFileInZip_LIO OF((zipFile_LIO file,
                        const char* filename,
-                       const zip_fileinfo* zipfi,
+                       const zip_fileinfo_LIO* zipfi,
                        const void* extrafield_local,
                        uInt size_extrafield_local,
                        const void* extrafield_global,
@@ -160,9 +160,9 @@ extern int ZEXPORT zipOpenNewFileInZip OF((zipFile file,
 */
 
 
-extern int ZEXPORT zipOpenNewFileInZip2 OF((zipFile file,
+extern int ZEXPORT zipOpenNewFileInZip2_LIO OF((zipFile_LIO file,
                                             const char* filename,
-                                            const zip_fileinfo* zipfi,
+                                            const zip_fileinfo_LIO* zipfi,
                                             const void* extrafield_local,
                                             uInt size_extrafield_local,
                                             const void* extrafield_global,
@@ -176,9 +176,9 @@ extern int ZEXPORT zipOpenNewFileInZip2 OF((zipFile file,
   Same than zipOpenNewFileInZip, except if raw=1, we write raw file
  */
 
-extern int ZEXPORT zipOpenNewFileInZip3 OF((zipFile file,
+extern int ZEXPORT zipOpenNewFileInZip3_LIO OF((zipFile_LIO file,
                                             const char* filename,
-                                            const zip_fileinfo* zipfi,
+                                            const zip_fileinfo_LIO* zipfi,
                                             const void* extrafield_local,
                                             uInt size_extrafield_local,
                                             const void* extrafield_global,
@@ -201,19 +201,19 @@ extern int ZEXPORT zipOpenNewFileInZip3 OF((zipFile file,
  */
 
 
-extern int ZEXPORT zipWriteInFileInZip OF((zipFile file,
+extern int ZEXPORT zipWriteInFileInZip_LIO OF((zipFile_LIO file,
                        const void* buf,
                        unsigned len));
 /*
   Write data in the zipfile
 */
 
-extern int ZEXPORT zipCloseFileInZip OF((zipFile file));
+extern int ZEXPORT zipCloseFileInZip_LIO OF((zipFile_LIO file));
 /*
   Close the current file in the zipfile
 */
 
-extern int ZEXPORT zipCloseFileInZipRaw OF((zipFile file,
+extern int ZEXPORT zipCloseFileInZipRaw_LIO OF((zipFile_LIO file,
                                             uLong uncompressed_size,
                                             uLong crc32));
 /*
@@ -222,7 +222,7 @@ extern int ZEXPORT zipCloseFileInZipRaw OF((zipFile file,
   uncompressed_size and crc32 are value for the uncompressed size
 */
 
-extern int ZEXPORT zipClose OF((zipFile file,
+extern int ZEXPORT zipClose_LIO OF((zipFile_LIO file,
                 const char* global_comment));
 /*
   Close the zipfile
