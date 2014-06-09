@@ -165,12 +165,12 @@ typedef struct
 */
 
 
-local int unzlocal_getByte OF((
+local int unzlocal_getByte_LIO OF((
     const zlib_filefunc_def_LIO* pzlib_filefunc_def,
     voidpf filestream,
     int *pi));
 
-local int unzlocal_getByte(pzlib_filefunc_def,filestream,pi)
+local int unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,pi)
     const zlib_filefunc_def_LIO* pzlib_filefunc_def;
     voidpf filestream;
     int *pi;
@@ -195,12 +195,12 @@ local int unzlocal_getByte(pzlib_filefunc_def,filestream,pi)
 /* ===========================================================================
    Reads a long in LSB order from the given gz_stream. Sets
 */
-local int unzlocal_getShort OF((
+local int unzlocal_getShort_LIO OF((
     const zlib_filefunc_def_LIO* pzlib_filefunc_def,
     voidpf filestream,
     uLong *pX));
 
-local int unzlocal_getShort (pzlib_filefunc_def,filestream,pX)
+local int unzlocal_getShort_LIO (pzlib_filefunc_def,filestream,pX)
     const zlib_filefunc_def_LIO* pzlib_filefunc_def;
     voidpf filestream;
     uLong *pX;
@@ -209,11 +209,11 @@ local int unzlocal_getShort (pzlib_filefunc_def,filestream,pX)
     int i;
     int err;
 
-    err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+    err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x = (uLong)i;
 
     if (err==UNZ_OK_LIO)
-        err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+        err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x += ((uLong)i)<<8;
 
     if (err==UNZ_OK_LIO)
@@ -223,12 +223,12 @@ local int unzlocal_getShort (pzlib_filefunc_def,filestream,pX)
     return err;
 }
 
-local int unzlocal_getLong OF((
+local int unzlocal_getLong_LIO OF((
     const zlib_filefunc_def_LIO* pzlib_filefunc_def,
     voidpf filestream,
     uLong *pX));
 
-local int unzlocal_getLong (pzlib_filefunc_def,filestream,pX)
+local int unzlocal_getLong_LIO (pzlib_filefunc_def,filestream,pX)
     const zlib_filefunc_def_LIO* pzlib_filefunc_def;
     voidpf filestream;
     uLong *pX;
@@ -237,19 +237,19 @@ local int unzlocal_getLong (pzlib_filefunc_def,filestream,pX)
     int i;
     int err;
 
-    err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+    err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x = (uLong)i;
 
     if (err==UNZ_OK_LIO)
-        err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+        err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x += ((uLong)i)<<8;
 
     if (err==UNZ_OK_LIO)
-        err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+        err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x += ((uLong)i)<<16;
 
     if (err==UNZ_OK_LIO)
-        err = unzlocal_getByte(pzlib_filefunc_def,filestream,&i);
+        err = unzlocal_getByte_LIO(pzlib_filefunc_def,filestream,&i);
     x += ((uLong)i)<<24;
 
     if (err==UNZ_OK_LIO)
@@ -261,7 +261,7 @@ local int unzlocal_getLong (pzlib_filefunc_def,filestream,pX)
 
 
 /* My own strcmpi / strcasecmp */
-local int strcmpcasenosensitive_internal (fileName1,fileName2)
+local int strcmpcasenosensitive_internal_LIO (fileName1,fileName2)
     const char* fileName1;
     const char* fileName2;
 {
@@ -292,7 +292,7 @@ local int strcmpcasenosensitive_internal (fileName1,fileName2)
 #endif
 
 #ifndef STRCMPCASENOSENTIVEFUNCTION
-#define STRCMPCASENOSENTIVEFUNCTION strcmpcasenosensitive_internal
+#define STRCMPCASENOSENTIVEFUNCTION strcmpcasenosensitive_internal_LIO
 #endif
 
 /*
@@ -326,11 +326,11 @@ extern int ZEXPORT unzStringFileNameCompare_LIO (fileName1,fileName2,iCaseSensit
   Locate the Central directory of a zipfile (at the end, just before
     the global comment)
 */
-local uLong unzlocal_SearchCentralDir OF((
+local uLong unzlocal_SearchCentralDir_LIO OF((
     const zlib_filefunc_def_LIO* pzlib_filefunc_def,
     voidpf filestream));
 
-local uLong unzlocal_SearchCentralDir(pzlib_filefunc_def,filestream)
+local uLong unzlocal_SearchCentralDir_LIO(pzlib_filefunc_def,filestream)
     const zlib_filefunc_def_LIO* pzlib_filefunc_def;
     voidpf filestream;
 {
@@ -429,7 +429,7 @@ extern unzFile_LIO ZEXPORT unzOpen2_LIO (path, pzlib_filefunc_def)
     if (us.filestream==NULL)
         return NULL;
 
-    central_pos = unzlocal_SearchCentralDir(&us.z_filefunc,us.filestream);
+    central_pos = unzlocal_SearchCentralDir_LIO(&us.z_filefunc,us.filestream);
     if (central_pos==0)
         err=UNZ_ERRNO_LIO;
 
@@ -438,23 +438,23 @@ extern unzFile_LIO ZEXPORT unzOpen2_LIO (path, pzlib_filefunc_def)
         err=UNZ_ERRNO_LIO;
 
     /* the signature, already checked */
-    if (unzlocal_getLong(&us.z_filefunc, us.filestream,&uL)!=UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&us.z_filefunc, us.filestream,&uL)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* number of this disk */
-    if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_disk)!=UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&us.z_filefunc, us.filestream,&number_disk)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* number of the disk with the start of the central directory */
-    if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_disk_with_CD)!=UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&us.z_filefunc, us.filestream,&number_disk_with_CD)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* total number of entries in the central dir on this disk */
-    if (unzlocal_getShort(&us.z_filefunc, us.filestream,&us.gi.number_entry)!=UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&us.z_filefunc, us.filestream,&us.gi.number_entry)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* total number of entries in the central dir */
-    if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_entry_CD)!=UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&us.z_filefunc, us.filestream,&number_entry_CD)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     if ((number_entry_CD!=us.gi.number_entry) ||
@@ -463,16 +463,16 @@ extern unzFile_LIO ZEXPORT unzOpen2_LIO (path, pzlib_filefunc_def)
         err=UNZ_BADZIPFILE_LIO;
 
     /* size of the central directory */
-    if (unzlocal_getLong(&us.z_filefunc, us.filestream,&us.size_central_dir)!=UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&us.z_filefunc, us.filestream,&us.size_central_dir)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* offset of start of central directory with respect to the
           starting disk number */
-    if (unzlocal_getLong(&us.z_filefunc, us.filestream,&us.offset_central_dir)!=UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&us.z_filefunc, us.filestream,&us.offset_central_dir)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     /* zipfile comment length */
-    if (unzlocal_getShort(&us.z_filefunc, us.filestream,&us.gi.size_comment)!=UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&us.z_filefunc, us.filestream,&us.gi.size_comment)!=UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     if ((central_pos<us.offset_central_dir+us.size_central_dir) &&
@@ -547,7 +547,7 @@ extern int ZEXPORT unzGetGlobalInfo_LIO (file,pglobal_info)
 /*
    Translate date/time from Dos format to tm_unz (readable more easilty)
 */
-local void unzlocal_DosDateToTmuDate (ulDosDate, ptm)
+local void unzlocal_DosDateToTmuDate_LIO (ulDosDate, ptm)
     uLong ulDosDate;
     tm_unz* ptm;
 {
@@ -565,7 +565,7 @@ local void unzlocal_DosDateToTmuDate (ulDosDate, ptm)
 /*
   Get Info about the current file in the zipfile, with internal only info
 */
-local int unzlocal_GetCurrentFileInfoInternal OF((unzFile_LIO file,
+local int unzlocal_GetCurrentFileInfoInternal_LIO OF((unzFile_LIO file,
                                                   unz_file_info_LIO *pfile_info,
                                                   unz_file_info_internal_LIO
                                                   *pfile_info_internal,
@@ -576,7 +576,7 @@ local int unzlocal_GetCurrentFileInfoInternal OF((unzFile_LIO file,
                                                   char *szComment,
                                                   uLong commentBufferSize));
 
-local int unzlocal_GetCurrentFileInfoInternal (file,
+local int unzlocal_GetCurrentFileInfoInternal_LIO (file,
                                               pfile_info,
                                               pfile_info_internal,
                                               szFileName, fileNameBufferSize,
@@ -610,56 +610,56 @@ local int unzlocal_GetCurrentFileInfoInternal (file,
 
     /* we check the magic */
     if (err==UNZ_OK_LIO)
-        if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uMagic) != UNZ_OK_LIO)
+        if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uMagic) != UNZ_OK_LIO)
             err=UNZ_ERRNO_LIO;
         else if (uMagic!=0x02014b50)
             err=UNZ_BADZIPFILE_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.version) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.version) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.version_needed) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.version_needed) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.flag) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.flag) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.compression_method) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.compression_method) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info.dosDate) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info.dosDate) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    unzlocal_DosDateToTmuDate(file_info.dosDate,&file_info.tmu_date);
+    unzlocal_DosDateToTmuDate_LIO(file_info.dosDate,&file_info.tmu_date);
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info.crc) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info.crc) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info.compressed_size) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info.compressed_size) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info.uncompressed_size) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info.uncompressed_size) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.size_filename) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.size_filename) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.size_file_extra) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.size_file_extra) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.size_file_comment) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.size_file_comment) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.disk_num_start) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.disk_num_start) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&file_info.internal_fa) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&file_info.internal_fa) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info.external_fa) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info.external_fa) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&file_info_internal.offset_curfile) != UNZ_OK_LIO)
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&file_info_internal.offset_curfile) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
     lSeek+=file_info.size_filename;
@@ -757,7 +757,7 @@ extern int ZEXPORT unzGetCurrentFileInfo_LIO (file,
     char *szComment;
     uLong commentBufferSize;
 {
-    return unzlocal_GetCurrentFileInfoInternal(file,pfile_info,NULL,
+    return unzlocal_GetCurrentFileInfoInternal_LIO(file,pfile_info,NULL,
                                                 szFileName,fileNameBufferSize,
                                                 extraField,extraFieldBufferSize,
                                                 szComment,commentBufferSize);
@@ -777,7 +777,7 @@ extern int ZEXPORT unzGoToFirstFile_LIO (file)
     s=(unz_s_LIO*)file;
     s->pos_in_central_dir=s->offset_central_dir;
     s->num_file=0;
-    err=unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
+    err=unzlocal_GetCurrentFileInfoInternal_LIO(file,&s->cur_file_info,
                                              &s->cur_file_info_internal,
                                              NULL,0,NULL,0,NULL,0);
     s->current_file_ok = (err == UNZ_OK_LIO);
@@ -807,7 +807,7 @@ extern int ZEXPORT unzGoToNextFile_LIO (file)
     s->pos_in_central_dir += SIZECENTRALDIRITEM + s->cur_file_info.size_filename +
             s->cur_file_info.size_file_extra + s->cur_file_info.size_file_comment ;
     s->num_file++;
-    err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
+    err = unzlocal_GetCurrentFileInfoInternal_LIO(file,&s->cur_file_info,
                                                &s->cur_file_info_internal,
                                                NULL,0,NULL,0,NULL,0);
     s->current_file_ok = (err == UNZ_OK_LIO);
@@ -936,7 +936,7 @@ extern int ZEXPORT unzGoToFilePos_LIO(file, file_pos)
     s->num_file           = file_pos->num_of_file;
 
     /* set the current file */
-    err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
+    err = unzlocal_GetCurrentFileInfoInternal_LIO(file,&s->cur_file_info,
                                                &s->cur_file_info_internal,
                                                NULL,0,NULL,0,NULL,0);
     /* return results */
@@ -979,21 +979,21 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
 
 
     if (err==UNZ_OK_LIO)
-        if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uMagic) != UNZ_OK_LIO)
+        if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uMagic) != UNZ_OK_LIO)
             err=UNZ_ERRNO_LIO;
         else if (uMagic!=0x04034b50)
             err=UNZ_BADZIPFILE_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 /*
     else if ((err==UNZ_OK) && (uData!=s->cur_file_info.wVersion))
         err=UNZ_BADZIPFILE;
 */
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&uFlags) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&uFlags) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
     else if ((err==UNZ_OK_LIO) && (uData!=s->cur_file_info.compression_method))
         err=UNZ_BADZIPFILE_LIO;
@@ -1002,36 +1002,36 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
                          (s->cur_file_info.compression_method!=Z_DEFLATED))
         err=UNZ_BADZIPFILE_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* date/time */
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* date/time */
         err=UNZ_ERRNO_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* crc */
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* crc */
         err=UNZ_ERRNO_LIO;
     else if ((err==UNZ_OK_LIO) && (uData!=s->cur_file_info.crc) &&
                               ((uFlags & 8)==0))
         err=UNZ_BADZIPFILE_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* size compr */
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* size compr */
         err=UNZ_ERRNO_LIO;
     else if ((err==UNZ_OK_LIO) && (uData!=s->cur_file_info.compressed_size) &&
                               ((uFlags & 8)==0))
         err=UNZ_BADZIPFILE_LIO;
 
-    if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* size uncompr */
+    if (unzlocal_getLong_LIO(&s->z_filefunc, s->filestream,&uData) != UNZ_OK_LIO) /* size uncompr */
         err=UNZ_ERRNO_LIO;
     else if ((err==UNZ_OK_LIO) && (uData!=s->cur_file_info.uncompressed_size) &&
                               ((uFlags & 8)==0))
         err=UNZ_BADZIPFILE_LIO;
 
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&size_filename) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&size_filename) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
     else if ((err==UNZ_OK_LIO) && (size_filename!=s->cur_file_info.size_filename))
         err=UNZ_BADZIPFILE_LIO;
 
     *piSizeVar += (uInt)size_filename;
 
-    if (unzlocal_getShort(&s->z_filefunc, s->filestream,&size_extra_field) != UNZ_OK_LIO)
+    if (unzlocal_getShort_LIO(&s->z_filefunc, s->filestream,&size_extra_field) != UNZ_OK_LIO)
         err=UNZ_ERRNO_LIO;
     *poffset_local_extrafield= s->cur_file_info_internal.offset_curfile +
                                     SIZEZIPLOCALHEADER + size_filename;
@@ -1592,7 +1592,7 @@ extern int ZEXPORT unzSetOffset_LIO (file, pos)
 
     s->pos_in_central_dir = pos;
     s->num_file = s->gi.number_entry;      /* hack */
-    err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
+    err = unzlocal_GetCurrentFileInfoInternal_LIO(file,&s->cur_file_info,
                                               &s->cur_file_info_internal,
                                               NULL,0,NULL,0,NULL,0);
     s->current_file_ok = (err == UNZ_OK_LIO);

@@ -427,11 +427,11 @@ local int ziplocal_getLong_LIO (pzlib_filefunc_def,filestream,pX)
   Locate the Central directory of a zipfile (at the end, just before
     the global comment)
 */
-local uLong ziplocal_SearchCentralDir OF((
+local uLong ziplocal_SearchCentralDir_LIO OF((
     const zlib_filefunc_def_LIO* pzlib_filefunc_def,
     voidpf filestream));
 
-local uLong ziplocal_SearchCentralDir(pzlib_filefunc_def,filestream)
+local uLong ziplocal_SearchCentralDir_LIO(pzlib_filefunc_def,filestream)
     const zlib_filefunc_def_LIO* pzlib_filefunc_def;
     voidpf filestream;
 {
@@ -551,7 +551,7 @@ extern zipFile_LIO ZEXPORT zipOpen2_LIO (pathname, append, globalcomment, pzlib_
                                     (same than number_entry on nospan) */
         uLong size_comment;
 
-        central_pos = ziplocal_SearchCentralDir(&ziinit.z_filefunc,ziinit.filestream);
+        central_pos = ziplocal_SearchCentralDir_LIO(&ziinit.z_filefunc,ziinit.filestream);
         if (central_pos==0)
             err=ZIP_ERRNO_LIO;
 
