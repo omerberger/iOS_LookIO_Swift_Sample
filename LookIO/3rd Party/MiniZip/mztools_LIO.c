@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "zlib.h"
-#include "unzip.h"
-#include "mztools.h"
+#include "unzip_LIO.h"
+#include "mztools_LIO.h"
 
 #define READ_8(adr)  ((unsigned char)*(adr))
 #define READ_16(adr) ( READ_8(adr) | (READ_8(adr+1) << 8) )
@@ -28,7 +28,7 @@
   WRITE_16((unsigned char*)(buff) + 2, (n) >> 16); \
 } while(0)
 
-extern int ZEXPORT unzRepair(file, fileOut, fileOutTmp, nRecovered, bytesRecovered)
+extern int ZEXPORT unzRepair_LIO(file, fileOut, fileOutTmp, nRecovered, bytesRecovered)
 const char* file;
 const char* fileOut;
 const char* fileOutTmp;

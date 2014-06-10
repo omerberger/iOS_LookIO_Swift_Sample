@@ -108,6 +108,9 @@
 @property (nonatomic, assign) NSInteger relaunchCount;
 @property (nonatomic, strong) NSTimer *relaunchCountTimer;
 
+// To support the coldLead event
+@property (nonatomic, assign) BOOL didReportInitialColdLead;
+
 @end
 
 @implementation LIOVisit
@@ -148,6 +151,8 @@
         self.accountSkills = [NSMutableArray array];
         self.defaultAccountSkill = nil;
         self.requiredAccountSkill = nil;
+        
+        self.didReportInitialColdLead = NO;
         
         self.relaunchCount = 0;
         
@@ -771,6 +776,7 @@
         [self.delegate visitSkillMappingDidChange:self];
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
         
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateFailed;
@@ -1072,6 +1078,7 @@
         self.multiskillMapping = nil;
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
 
         return;
     }
@@ -1094,6 +1101,7 @@
     [self.delegate visitChatEnabledDidUpdate:self];
 
     self.isIAREnabled = YES;
+    self.didReportInitialColdLead = NO;
     
     [self setupCallCenter];
     
@@ -1122,12 +1130,12 @@
             // If this is a relaunch during chat, don't change visit state
             if (!self.chatInProgress)
             {
-                self.funnelState = LIOFunnelStateVisit;
-                LIOLog(@"<FUNNEL STATE> Visit");
-
                 self.visitState = LIOVisitStateVisitInProgress;
             }
-
+            
+            self.funnelState = LIOFunnelStateVisit;
+            LIOLog(@"<FUNNEL STATE> Visit");
+            
             [self updateAndReportFunnelState];
             [self.delegate visitDidLaunch:self];
             
@@ -1151,6 +1159,7 @@
             
             if (self.isIAREnabled)
                 [self removeAllIARAccountSkills];
+            [self refreshControlButtonVisibility];
         }];
     }
     else
@@ -1167,6 +1176,7 @@
         
         if (self.isIAREnabled)
             [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
     }
 }
 
@@ -1252,6 +1262,7 @@
     NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES resendAllUDEs:continueCallIncludesResendAllUDEs];
     NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
 
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
@@ -1285,10 +1296,24 @@
 
             if (operation.responseCode == 404)
             {
-                // New launch
-                LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                if (self.currentVisitId)
+                {
+                    if ([self.currentVisitId isEqualToString:currentVisitId])
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
 
-                [self relaunchVisit];
+                        // New launch
+                        [self relaunchVisit];
+                    }
+                    else
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    }
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                }
             }
             else
             {
@@ -1313,6 +1338,7 @@
                     self.multiskillMapping = nil;
                     if (self.isIAREnabled)
                         [self removeAllIARAccountSkills];
+                    [self refreshControlButtonVisibility];
 
                     if (!self.chatInProgress)
                         self.visitState = LIOVisitStateFailed;
@@ -1320,8 +1346,6 @@
             }
         }];
     }
-    
-    [self updateAndReportFunnelState];
 }
 
 - (void)refreshControlButtonVisibility
@@ -1893,26 +1917,38 @@
 
 - (void)setChatAvailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = YES;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setChatUnavailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = YES;
-    [self updateAndReportFunnelState];
+
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationNotShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 #pragma mark -
@@ -1920,6 +1956,12 @@
 
 - (void)updateAndReportFunnelState
 {
+    // Don't update and report funnel state if visit is not active. This will be called when a new visit is launched
+    if (LIOVisitStateInitialized == self.visitState || LIOVisitStateLaunching == self.visitState || LIOVisitStateQueued == self.visitState || LIOVisitStateEnding == self.visitState || LIOVisitStateFailed == self.visitState)
+    {
+        return;
+    }
+    
     // For visit state, let's see if we can upgrade to hotlead
     if (self.funnelState == LIOFunnelStateVisit)
     {
@@ -1934,6 +1976,8 @@
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
+                
+                self.didReportInitialColdLead = YES;
             }
         }
         else
@@ -1943,7 +1987,16 @@
             LIOLog(@"<FUNNEL STATE> Hotlead");
             [self sendFunnelPacketForState:self.funnelState];
             [self.delegate visit:self didChangeFunnelState:self.funnelState];
+
+            self.didReportInitialColdLead = YES;
         }
+    }
+    
+    // If we haven't reported the initial coldLead yet, and we didn't just report a hotLead, we should report a coldLead
+    if (!self.didReportInitialColdLead && LIOFunnelStateVisit == self.funnelState)
+    {
+        self.didReportInitialColdLead = YES;
+        [self.delegate visit:self didChangeFunnelState:self.funnelState];
     }
     
     // If we're at the hot lead state, let's check if we can upgrade to invitation, or downgrade to visit
@@ -2145,6 +2198,7 @@
     if ([currentStateString isEqualToString:@""])
         return;
     
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     NSDictionary* buttonFunnelDict = [NSDictionary dictionaryWithObject:currentStateString forKey:@"current_state"];
     NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
     
@@ -2161,12 +2215,27 @@
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         if (operation.responseCode == 404)
         {
-            LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
-            
             self.funnelRequestIsActive = NO;
             self.failedFunnelCount = 0;
-            
-            [self relaunchVisit];
+
+            if (self.currentVisitId)
+            {
+                if ([self.currentVisitId isEqualToString:currentVisitId])
+                {
+                    LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                    [self relaunchVisit];
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    [self handleFunnelQueueIfNeeded];
+                }
+            }
+            else
+            {
+                LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                [self handleFunnelQueueIfNeeded];
+            }
         }
         else
         {
