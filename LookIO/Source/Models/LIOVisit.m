@@ -1917,26 +1917,38 @@
 
 - (void)setChatAvailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = YES;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setChatUnavailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = YES;
-    [self updateAndReportFunnelState];
+
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationNotShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 #pragma mark -
@@ -1944,6 +1956,12 @@
 
 - (void)updateAndReportFunnelState
 {
+    // Don't update and report funnel state if visit is not active. This will be called when a new visit is launched
+    if (LIOVisitStateInitialized == self.visitState || LIOVisitStateLaunching == self.visitState || LIOVisitStateQueued == self.visitState || LIOVisitStateEnding == self.visitState || LIOVisitStateFailed == self.visitState)
+    {
+        return;
+    }
+    
     // For visit state, let's see if we can upgrade to hotlead
     if (self.funnelState == LIOFunnelStateVisit)
     {
