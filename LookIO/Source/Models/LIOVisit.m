@@ -108,6 +108,9 @@
 @property (nonatomic, assign) NSInteger relaunchCount;
 @property (nonatomic, strong) NSTimer *relaunchCountTimer;
 
+// To support the coldLead event
+@property (nonatomic, assign) BOOL didReportInitialColdLead;
+
 @end
 
 @implementation LIOVisit
@@ -148,6 +151,8 @@
         self.accountSkills = [NSMutableArray array];
         self.defaultAccountSkill = nil;
         self.requiredAccountSkill = nil;
+        
+        self.didReportInitialColdLead = NO;
         
         self.relaunchCount = 0;
         
@@ -1096,6 +1101,7 @@
     [self.delegate visitChatEnabledDidUpdate:self];
 
     self.isIAREnabled = YES;
+    self.didReportInitialColdLead = NO;
     
     [self setupCallCenter];
     
@@ -1939,6 +1945,8 @@
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
+                
+                self.didReportInitialColdLead = YES;
             }
         }
         else
@@ -1948,7 +1956,16 @@
             LIOLog(@"<FUNNEL STATE> Hotlead");
             [self sendFunnelPacketForState:self.funnelState];
             [self.delegate visit:self didChangeFunnelState:self.funnelState];
+
+            self.didReportInitialColdLead = YES;
         }
+    }
+    
+    // If we haven't reported the initial coldLead yet, and we didn't just report a hotLead, we should report a coldLead
+    if (!self.didReportInitialColdLead && LIOFunnelStateVisit == self.funnelState)
+    {
+        self.didReportInitialColdLead = YES;
+        [self.delegate visit:self didChangeFunnelState:self.funnelState];
     }
     
     // If we're at the hot lead state, let's check if we can upgrade to invitation, or downgrade to visit

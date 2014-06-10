@@ -53,6 +53,7 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 
 // Reported event constants
 NSString *const LPDevEventVisitStart           = @"visitStart";
+NSString *const LPDevEventColdLead             = @"coldLead";
 NSString *const LPDevEventHotLead              = @"hotLead";
 NSString *const LPDevEventInvitationShown      = @"invitationShown";
 NSString *const LPDevEventEnabledChange        = @"enabledChange";
@@ -759,6 +760,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)visit:(LIOVisit *)visit didChangeFunnelState:(LIOFunnelState)funnelState
 {
     switch (funnelState) {
+        case LIOFunnelStateVisit:
+            [self reportDeveloperEvent:LPDevEventColdLead];
+            break;
+            
         case LIOFunnelStateHotlead:
             [self reportDeveloperEvent:LPDevEventHotLead];
             break;
