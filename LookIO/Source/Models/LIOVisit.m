@@ -1130,12 +1130,12 @@
             // If this is a relaunch during chat, don't change visit state
             if (!self.chatInProgress)
             {
-                self.funnelState = LIOFunnelStateVisit;
-                LIOLog(@"<FUNNEL STATE> Visit");
-
                 self.visitState = LIOVisitStateVisitInProgress;
             }
-
+            
+            self.funnelState = LIOFunnelStateVisit;
+            LIOLog(@"<FUNNEL STATE> Visit");
+            
             [self updateAndReportFunnelState];
             [self.delegate visitDidLaunch:self];
             
@@ -1262,6 +1262,7 @@
     NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES resendAllUDEs:continueCallIncludesResendAllUDEs];
     NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
 
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
@@ -1295,10 +1296,24 @@
 
             if (operation.responseCode == 404)
             {
-                // New launch
-                LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                if (self.currentVisitId)
+                {
+                    if ([self.currentVisitId isEqualToString:currentVisitId])
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
 
-                [self relaunchVisit];
+                        // New launch
+                        [self relaunchVisit];
+                    }
+                    else
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    }
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                }
             }
             else
             {
@@ -1331,8 +1346,6 @@
             }
         }];
     }
-    
-    [self updateAndReportFunnelState];
 }
 
 - (void)refreshControlButtonVisibility
@@ -2167,6 +2180,7 @@
     if ([currentStateString isEqualToString:@""])
         return;
     
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     NSDictionary* buttonFunnelDict = [NSDictionary dictionaryWithObject:currentStateString forKey:@"current_state"];
     NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
     
@@ -2183,12 +2197,27 @@
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         if (operation.responseCode == 404)
         {
-            LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
-            
             self.funnelRequestIsActive = NO;
             self.failedFunnelCount = 0;
-            
-            [self relaunchVisit];
+
+            if (self.currentVisitId)
+            {
+                if ([self.currentVisitId isEqualToString:currentVisitId])
+                {
+                    LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                    [self relaunchVisit];
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    [self handleFunnelQueueIfNeeded];
+                }
+            }
+            else
+            {
+                LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                [self handleFunnelQueueIfNeeded];
+            }
         }
         else
         {
