@@ -37,6 +37,8 @@
 #define LIOVisitMaxRelaunches                              50
 #define LIOVisitMaxRelaunchTimePeriod                      60
 
+#define LIOPendingEventsTimerInterval                      2.0
+
 // User defaults keys
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerVisitorIdKey                    @"LIOLookIOManagerVisitorIdKey"
@@ -67,6 +69,7 @@
 @property (nonatomic, copy) NSString *lastKnownVisitURL;
 @property (nonatomic, assign) NSTimeInterval nextTimeInterval;
 @property (nonatomic, strong) LIOTimerProxy *continuationTimer;
+@property (nonatomic, strong) LIOTimerProxy *pendingEventsTimer;
 @property (nonatomic, assign) BOOL continueCallInProgress;
 @property (nonatomic, assign) NSInteger failedContinueCount;
 
@@ -992,11 +995,17 @@
             [self.continuationTimer stopTimer];
             self.continuationTimer = nil;
             
+            [self.pendingEventsTimer stopTimer];
+            self.pendingEventsTimer = nil;
+            
             if (self.visitState != LIOVisitStateEnding)
             {
                 self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
                                                                               target:self
                                                                             selector:@selector(continuationTimerDidFire)];
+                self.pendingEventsTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOPendingEventsTimerInterval
+                                                                               target:self
+                                                                             selector:@selector(pendingEventsTimerDidFire)];
             }
         }
         
@@ -1094,6 +1103,9 @@
 
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
+    
+    [self.pendingEventsTimer stopTimer];
+    self.pendingEventsTimer = nil;
 
     if (self.isIAREnabled)
         [self removeAllIARAccountSkills];
@@ -1188,6 +1200,9 @@
     
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
+    
+    [self.pendingEventsTimer stopTimer];
+    self.pendingEventsTimer = nil;
 }
 
 #pragma mark -
@@ -1226,7 +1241,7 @@
 {
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
-
+    
     if (0.0 == self.nextTimeInterval)
         self.nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
@@ -1238,6 +1253,12 @@
                                                            selector:@selector(continuationTimerDidFire)];
         [self sendContinuationReport];
     }
+}
+
+- (void)pendingEventsTimerDidFire
+{
+    if (self.pendingEvents.count > 0)
+        [self sendContinuationReport];
 }
 
 // Used as a response to "send_udes" packet which is used in IAR to send all previous UDEs to an IAR chat
@@ -1260,6 +1281,7 @@
     BOOL continueCallIncludesResendAllUDEs = self.shouldNextContinueCallIncludeAllUDEs;
     
     NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES resendAllUDEs:continueCallIncludesResendAllUDEs];
+    NSArray *reportedEvents = [NSArray arrayWithArray:self.pendingEvents];
     NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
 
     NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
@@ -1280,7 +1302,7 @@
             [self parseAndSaveSettingsPayload:responseDict fromContinue:YES];
             
             // Continue call succeeded! Purge the event queue.
-            [self.pendingEvents removeAllObjects];
+            [self.pendingEvents removeObjectsInArray:reportedEvents];
             
             [self updateAndReportFunnelState];
             
@@ -1332,6 +1354,9 @@
                     
                     [self.continuationTimer stopTimer];
                     self.continuationTimer = nil;
+                    
+                    [self.pendingEventsTimer stopTimer];
+                    self.pendingEventsTimer = nil;
                     
                     self.lastKnownVisitURL = nil;
                     
@@ -2345,9 +2370,6 @@
     if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
         [self.pendingEvents removeObjectAtIndex:0];
     
-    // Immediately make a continue call
-    [self sendContinuationReport];
-
     // For PageView event, also record the last known page view
     if (YES == [anEvent isEqualToString:kLPEventPageView])
     {
