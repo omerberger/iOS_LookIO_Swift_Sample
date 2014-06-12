@@ -555,7 +555,12 @@
     if (LIOSurveyTypePostchat == survey.surveyType)
     {
         if ([survey anyQuestionsAnswered] && [survey allMandatoryQuestionsAnswered])
-            [self.engagement submitSurvey:survey retries:0];
+        {
+            // Let's mark it as uncompleted, so that we don't report a related developer event
+            survey.isSubmittedUncompletedPostChatSurvey = YES;
+            
+            [self.engagement submitSurvey:survey retries:0];            
+        }
     }
   
     [self dismiss];

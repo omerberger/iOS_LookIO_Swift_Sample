@@ -1200,7 +1200,9 @@
                 
             case LIOSurveyTypePostchat:
                 surveyTypeString = @"postchat";
-                [self.delegate engagementDidSubmitPostchatSurvey:self];
+                // Trigger an event reporting that the survey was submitted, unless it wasn't completed.
+                if (!survey.isSubmittedUncompletedPostChatSurvey)
+                    [self.delegate engagementDidSubmitPostchatSurvey:self];
                 self.sseChannelState = LIOSSEChannelStateEnding;
                 break;
                 

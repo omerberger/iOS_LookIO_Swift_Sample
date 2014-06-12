@@ -28,6 +28,8 @@ typedef enum
 @property (nonatomic, assign) NSInteger lastCompletedQuestionIndex;
 @property (nonatomic, assign) NSInteger lastSeenQuestionIndex;
 
+@property (nonatomic, assign) BOOL isSubmittedUncompletedPostChatSurvey;
+
 - (id)initWithSurveyDictionary:(NSDictionary *)aDictionary surveyType:(LIOSurveyType)surveyType;
 - (id)initWithDefaultOfflineSurveyWithResponse:(NSString *)response;
 
