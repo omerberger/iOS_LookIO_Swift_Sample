@@ -1612,7 +1612,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
             {
-                [self reportDeveloperEvent:LPDevEventWindowShow];
                 [self.containerViewController presentChatForEngagement:engagement];
             }
         }
@@ -1641,9 +1640,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement
 {
     // Report event
+    [self reportDeveloperEvent:LPDevEventPrechatSurveySubmit];
     if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
         [self reportDeveloperEvent:LPDevEventWindowShow];
-    [self reportDeveloperEvent:LPDevEventPrechatSurveySubmit];
     
     [self.controlButton setChatMode];
     
