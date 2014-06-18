@@ -783,6 +783,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (BOOL)doesCurrentEngagementExist:(LIOVisit *)visit
+{
+    return (self.engagement != nil);
+}
+
 - (NSString *)visitCurrentEngagementAccount:(LIOVisit *)visit
 {
     if (self.engagement)
