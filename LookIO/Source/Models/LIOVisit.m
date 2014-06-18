@@ -1779,17 +1779,21 @@
     if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
         return NO;
     
-    // If chat is in progress, chat should be enabled for all skills in the account
+    // If chat is in progress, chat should be enabled for only the engagement skill and engagement account
     if (self.chatInProgress)
     {
-        NSString *engagementSkill = [self.delegate visitCurrentEngagementSkill:self];
-        NSString *engagementAccount = [self.delegate visitCurrentEngagementAccount:self];
-        if (engagementAccount == nil || engagementSkill == nil) return YES;
+        // Let's make we only check case where the engagement really exists
+        BOOL engagementExists = [self.delegate doesCurrentEngagementExist:self];
+        if (engagementExists)
+        {
+            NSString *engagementSkill = [self.delegate visitCurrentEngagementSkill:self];
+            NSString *engagementAccount = [self.delegate visitCurrentEngagementAccount:self];
+            if (engagementAccount == nil || engagementSkill == nil) return YES;
         
-        if ([engagementAccount isEqualToString:account] && [engagementSkill isEqualToString:skill])
-            return YES;
-
-        // Otherwise, let's pass through and return the actual enabled status    
+            if ([engagementAccount isEqualToString:account] && [engagementSkill isEqualToString:skill])
+                return YES;
+        }
+        // Otherwise, let's pass through and return the actual enabled status
     }
     
     // If developer explictly disabled chat, chat should be disabled

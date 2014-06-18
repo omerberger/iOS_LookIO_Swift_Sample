@@ -55,15 +55,17 @@ NSString *const kLPEventAddedToCart = @"LPEventAddedToCart";
 NSString *const LPDevEventVisitStart           = @"visitStart";
 NSString *const LPDevEventColdLead             = @"coldLead";
 NSString *const LPDevEventHotLead              = @"hotLead";
-NSString *const LPDevEventInvitationShown      = @"invitationShown";
+NSString *const LPDevEventInvitationShown      = @"invitationShow";
 NSString *const LPDevEventEnabledChange        = @"enabledChange";
 NSString *const LPDevEventWindowShow           = @"windowShow";
 NSString *const LPDevEventWindowHide           = @"windowHide";
-NSString *const LPDevEventInvitationAccepted   = @"invitationAccepted";
+NSString *const LPDevEventChatWindowShow       = @"chatWindowShow";
+NSString *const LPDevEventChatWindowHide       = @"chatWindowHide";
+NSString *const LPDevEventInvitationAccepted   = @"invitationAccept";
 NSString *const LPDevEventChatInteractive      = @"chatInteractive";
 NSString *const LPDevEventPrechatSurveyShow    = @"prechatSurveyShow";
 NSString *const LPDevEventPrechatSurveySubmit  = @"prechatSurveySubmit";
-NSString *const LPDevEventPrechatSurveyCancel  = @"prechatSurveyCanceled";
+NSString *const LPDevEventPrechatSurveyCancel  = @"prechatSurveyCancel";
 NSString *const LPDevEventPostchatSurveyShow   = @"postchatSurveyShow";
 NSString *const LPDevEventPostchatSurveySubmit = @"postchatSurveySubmit";
 NSString *const LPDevEventOfflineSurveyShow    = @"offlineSurveyShow";
@@ -781,6 +783,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (BOOL)doesCurrentEngagementExist:(LIOVisit *)visit
+{
+    return (self.engagement != nil);
+}
+
 - (NSString *)visitCurrentEngagementAccount:(LIOVisit *)visit
 {
     if (self.engagement)
@@ -823,13 +830,20 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         self.visit.visitState = LIOVisitStatePostChatSurvey;
         [self.visit refreshControlButtonVisibility];
-        
+
+        // Report event
+        if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+        {
+            [self reportDeveloperEvent:LPDevEventChatWindowHide];
+        }
         if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
         {
             [self presentLookIOWindow];            
         }
+
         // Report event
         [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
+
 
         [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
     }
@@ -1016,7 +1030,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     // Report event
     if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
-        [self reportDeveloperEvent:LPDevEventWindowHide];
+        [self reportDeveloperEvent:LPDevEventChatWindowHide];
     
     [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
     
@@ -1147,6 +1161,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidShowChat:)])
         [self.delegate lookIOManagerDidShowChat:self];
+    
+    [self reportDeveloperEvent:LPDevEventWindowShow];
+
 }
 
 - (void)dismissLookIOWindow
@@ -1172,7 +1189,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     switch (self.visit.visitState) {
         // If chat was opened but not started, we cancel the engagement
         case LIOVisitStateChatOpened:
-            [self reportDeveloperEvent:LPDevEventWindowHide];
+            [self reportDeveloperEvent:LPDevEventChatWindowHide];
             self.visit.visitState = LIOVisitStateVisitInProgress;
             [self.engagement cancelEngagement];
             break;
@@ -1211,12 +1228,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
             
         case LIOVisitStateChatActive:
-            [self reportDeveloperEvent:LPDevEventWindowHide];
+            [self reportDeveloperEvent:LPDevEventChatWindowHide];
             [self.controlButton presentMessage:@"Tap to continue chat"];
             break;
             
         case LIOVisitStateChatStarted:
-            [self reportDeveloperEvent:LPDevEventWindowHide];
             [self.controlButton presentMessage:@"Tap to continue chat"];
             break;
             
@@ -1252,6 +1268,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidHideChat:)])
         [self.delegate lookIOManagerDidHideChat:self];
+    
+    [self reportDeveloperEvent:LPDevEventWindowHide];
 }
 
 - (void)takeScreenshotAndSetBlurImageView {
@@ -1505,12 +1523,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             break;
             
         case LIOVisitStateChatStarted:
-            [self reportDeveloperEvent:LPDevEventWindowShow];
             [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
             break;
             
         case LIOVisitStateChatActive:
-            [self reportDeveloperEvent:LPDevEventWindowShow];
+            [self reportDeveloperEvent:LPDevEventChatWindowShow];
             [self.containerViewController presentChatForEngagement:self.engagement];
             break;
             
@@ -1591,7 +1608,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     if (LIOVisitStateChatRequested == self.visit.visitState)
     {
         if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
-            [self reportDeveloperEvent:LPDevEventWindowShow];
+            [self reportDeveloperEvent:LPDevEventChatWindowShow];
 
         self.visit.visitState = LIOVisitStateChatOpened;
         [self.containerViewController presentChatForEngagement:engagement];
@@ -1612,7 +1629,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
             {
-                [self reportDeveloperEvent:LPDevEventWindowShow];
+                [self reportDeveloperEvent:LPDevEventChatWindowShow];
                 [self.containerViewController presentChatForEngagement:engagement];
             }
         }
@@ -1641,8 +1658,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement
 {
     // Report event
-    if (self.lookIOWindowState == LIOLookIOWindowStateVisible)
-        [self reportDeveloperEvent:LPDevEventWindowShow];
     [self reportDeveloperEvent:LPDevEventPrechatSurveySubmit];
     
     [self.controlButton setChatMode];
@@ -1695,10 +1710,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         }
         else
         {
-            // Report event
-            if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
-                [self reportDeveloperEvent:LPDevEventWindowHide];
-            
             [self reportDeveloperEvent:LPDevEventOfflineSurveyShow];
             
             self.visit.visitState = LIOVisitStateOfflineSurvey;
@@ -1763,6 +1774,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         // Report event
         [self reportDeveloperEvent:LPDevEventChatEnd];
+        [self reportDeveloperEvent:LPDevEventChatWindowHide];
 
         [self.engagement cleanUpEngagement];
         self.engagement = nil;
@@ -1859,6 +1871,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
         {
+            [self reportDeveloperEvent:LPDevEventChatWindowHide];
             [self.containerViewController presentLoadingViewControllerWithQueueingMessage:YES];
         }
     }
@@ -1879,7 +1892,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             {
                 [self presentLookIOWindow];
                 [self.containerViewController presentChatForEngagement:engagement];
-                [self reportDeveloperEvent:LPDevEventWindowShow];
+                [self reportDeveloperEvent:LPDevEventChatWindowShow];
             }
             else
             {
