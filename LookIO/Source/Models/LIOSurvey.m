@@ -35,6 +35,8 @@
         self.responses = [[NSMutableDictionary alloc] init];
         self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
+        
+        self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
     return self;
@@ -53,6 +55,8 @@
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateTemplateWithDictionary:aDictionary];
+        
+        self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
     return self;
@@ -69,6 +73,8 @@
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateDefaultOfflineSurveyWithResponse:response];
+
+        self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
     return self;
