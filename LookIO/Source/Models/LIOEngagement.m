@@ -489,7 +489,7 @@
     if ([type isEqualToString:@"reintroed"])
     {
         NSNumber *success = [aPacket objectForKey:@"success"];
-        if (success)
+        if ([success boolValue] == YES)
         {
             if (LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
             {
