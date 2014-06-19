@@ -53,6 +53,7 @@
         UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
         tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [tappableDismissBackgroundButton setAccessibilityLabel:LIOLocalizedString(@"LIOEmailHistoryViewController.NavLeftButton")];
         [self.scrollView addSubview:tappableDismissBackgroundButton];
                 
         self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];

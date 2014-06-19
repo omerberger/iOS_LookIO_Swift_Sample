@@ -1139,16 +1139,20 @@
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
  
-            // If this is a relaunch during chat, don't change visit state
+            // If this is a relaunch during chat, don't change visit and funnel states
             if (!self.chatInProgress)
             {
                 self.visitState = LIOVisitStateVisitInProgress;
+
+                self.funnelState = LIOFunnelStateVisit;
+                LIOLog(@"<FUNNEL STATE> Visit");
+                [self updateAndReportFunnelState];
+            }
+            else
+            {
+                self.funnelState = LIOFunnelStateClicked;
             }
             
-            self.funnelState = LIOFunnelStateVisit;
-            LIOLog(@"<FUNNEL STATE> Visit");
-            
-            [self updateAndReportFunnelState];
             [self.delegate visitDidLaunch:self];
             
             if (![self chatInProgress])
