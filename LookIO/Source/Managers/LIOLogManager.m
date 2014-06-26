@@ -29,16 +29,13 @@ static LIOLogManager *sharedLogManager = nil;
 {
     if ((self = [super init]))
     {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(applicationWillResignActive:)
-                                                     name:UIApplicationWillResignActiveNotification
-                                                   object:nil];
-        
         logEntries = [[NSMutableArray alloc] init];
         
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm'Z'";
         dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+
+        failedLogEntries = nil;
         
         [self deleteExistingLogIfOversized];
     }
@@ -115,6 +112,11 @@ static LIOLogManager *sharedLogManager = nil;
     va_start(args, formatString);
     NSString *stringToLog = [[[NSString alloc] initWithFormat:formatString arguments:args] autorelease];
     va_end(args);
+
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"  +" options:NSRegularExpressionCaseInsensitive error:&error];
+    stringToLog = [[stringToLog componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] componentsJoinedByString:@" "];
+    stringToLog = [regex stringByReplacingMatchesInString:stringToLog options:0 range:NSMakeRange(0, [stringToLog length]) withTemplate:@""];
     
     NSMutableString *result = [NSMutableString string];
     [result appendFormat:@"%@ ", [dateFormatter stringFromDate:[NSDate date]]];
@@ -136,29 +138,91 @@ static LIOLogManager *sharedLogManager = nil;
         [self flush];
 }
 
-- (void)uploadLog
+- (void)uploadLogForVisit:(LIOVisit *)visitForUpload
 {
-    // TODO: Do it?
-    return;
-    
     [self flush];
     
-    NSString *allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
-                                                        encoding:NSUTF8StringEncoding
-                                                           error:nil];
+    NSString *allLogEntries;
+    if (failedLogEntries == nil)
+    {
+        allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
+                                    encoding:NSUTF8StringEncoding
+                                       error:nil];
+    }
+    else
+    {
+        allLogEntries = [failedLogEntries stringByAppendingString:[NSString stringWithContentsOfFile:[self logPath]
+                                                                                            encoding:NSUTF8StringEncoding
+                                                                                               error:nil]];
+        [failedLogEntries release];
+        failedLogEntries = nil;
+    }
+    
+    failedLogEntries = [[allLogEntries copy] retain];
+    visit = visitForUpload;
     
     if ([allLogEntries length])
-        [[LIOLookIOManager sharedLookIOManager] uploadLog:allLogEntries];
+    {
+        NSURL *url = [NSURL URLWithString:self.lastKnownLoggingUrl];
     
-    [self deleteExistingLog];
+        NSMutableURLRequest *uploadLogRequest = [NSMutableURLRequest requestWithURL:url
+                                                                        cachePolicy:NSURLCacheStorageNotAllowed
+                                                                    timeoutInterval:10.0];
+        [uploadLogRequest addValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+        [uploadLogRequest setHTTPBody:[allLogEntries dataUsingEncoding:NSUTF8StringEncoding]];
+        [uploadLogRequest setHTTPMethod:@"PUT"];
+    
+        [NSURLConnection connectionWithRequest:uploadLogRequest delegate:self];
+    
+//        LIOLog(@"Uploading LookIO log to %@ ...", [url absoluteString]);
+//        NSLog(@"Uploaded log content is <<<< %@ >>>>", allLogEntries);
+    
+        [self deleteExistingLog];
+    }
 }
 
-#pragma mark -
-#pragma mark Notification handlers
 
-- (void)applicationWillResignActive:(NSNotification *)aNotification
+#pragma mark -
+#pragma mark Log upload handlers
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    [self uploadLog];
+    LIOLog(@"<<<LOG UPLOAD>>> Upload log failed with error %@", error);
+    
+    failedLogUploadAttempts += 1;
+    
+    if (failedLogUploadAttempts == 3)
+    {
+        LIOLog(@"<<<LOG UPLOAD>>> Upload log failed with error %@, stopping after 3 retries", error);
+
+        failedLogUploadAttempts = 0;
+        if (visit != nil)
+        {
+            [visit stopLogUploading];
+        }
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+    NSInteger responseStatusCode = [httpResponse statusCode];
+    LIOLog(@"<<<LOG UPLOAD>>> Log upload response is %ld", (long)responseStatusCode);
+    if (200 == responseStatusCode)
+    {
+        [failedLogEntries release];
+        failedLogEntries = nil;
+        failedLogUploadAttempts = 0;
+    }
+    if (404 == responseStatusCode && visit != nil)
+    {
+        [failedLogEntries release];
+        failedLogEntries = nil;
+        failedLogUploadAttempts = 0;
+        
+        LIOLog(@"<<<LOG UPLOAD>>> Stopping logging due to 404", (long)responseStatusCode);
+        [visit stopLogUploading];
+    }
 }
 
 @end

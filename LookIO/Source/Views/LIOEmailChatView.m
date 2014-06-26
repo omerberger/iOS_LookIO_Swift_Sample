@@ -53,6 +53,7 @@
         UIButton *tappableDismissBackgroundButton = [[UIButton alloc] initWithFrame:self.bounds];
         tappableDismissBackgroundButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [tappableDismissBackgroundButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [tappableDismissBackgroundButton setAccessibilityLabel:LIOLocalizedString(@"LIOEmailHistoryViewController.NavLeftButton")];
         [self.scrollView addSubview:tappableDismissBackgroundButton];
                 
         self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -187,7 +188,6 @@
         frame.size.width = self.bounds.size.width - 2*LIOEmailChatViewOuterMarginPhone;
     }
     self.backgroundView.frame = frame;
-
     
     frame = self.titleLabel.frame;
     CGSize expectedSize = [self.titleLabel.text sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(self.backgroundView.bounds.size.width - 2*LIOEmailChatViewInnerMargin, self.backgroundView.bounds.size.height - 2*LIOEmailChatViewInnerMargin) lineBreakMode:UILineBreakModeWordWrap];
@@ -256,9 +256,23 @@
 - (void)updateScrollView
 {
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    BOOL landscape = UIInterfaceOrientationIsLandscape(actualInterfaceOrientation);
 
     if (!padUI)
     {
+        CGRect frame = self.backgroundView.frame;
+        if (!landscape)
+        {
+            frame.size.height = self.emailTextFieldBackgroundView.frame.origin.y + self.emailTextFieldBackgroundView.frame.size.height + 15.0;
+        }
+        else
+        {
+            frame.size.height = self.emailTextFieldBackgroundView.frame.origin.y + self.emailTextFieldBackgroundView.frame.size.height + 15.0;
+        }
+        
+        self.backgroundView.frame = frame;
+
         self.scrollView.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height - self.lastKeyboardHeight);
         self.scrollView.contentSize = CGSizeMake(self.bounds.size.width, self.backgroundView.frame.origin.y + self.backgroundView.bounds.size.height + 10.0);
     }

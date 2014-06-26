@@ -17,6 +17,8 @@
 #import "LIOTimerProxy.h"
 #import "LIOAnimatedKeyboardIcon.h"
 
+#define LIONotificationAreaBrandingImageViewTag 1050
+
 @interface LIONotificationArea ()
 
 @property (nonatomic, strong) UIView *defaultNotification;
@@ -55,6 +57,7 @@
         if (!padUI)
         {
             UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 32.0)];
+            brandingImageView.tag = LIONotificationAreaBrandingImageViewTag;
             brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
             
             brandingImageView.userInteractionEnabled = NO;
@@ -84,12 +87,27 @@
                                                  selector:@selector(didChangeStatusBarOrientation:)
                                                      name:UIApplicationDidChangeStatusBarOrientationNotification
                                                    object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(resetHeaderBarLogoAfterBundleDownload:)
+                                                     name:LIOBundleManagerBundleDownloadDidFinishNotification
+                                                   object:nil];
     }
     
     return self;
 }
 
--(void)plusButtonWasTapped {
+- (void)resetHeaderBarLogoAfterBundleDownload:(NSNotification *)notification
+{
+    if (NO == self.hasCustomBranding)
+    {
+        UIImageView *brandingImageView = (UIImageView*)[self.defaultNotification viewWithTag:LIONotificationAreaBrandingImageViewTag];
+        [brandingImageView setImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOLivePersonMobileLogo"]];
+        brandingImageView.contentMode = UIViewContentModeCenter;
+    }
+}
+
+- (void)plusButtonWasTapped {
     
 }
 
@@ -134,6 +152,8 @@
         aLabel.frame = aFrame;
         if (expectedSize.width > self.frame.size.width)
             [self animateLongTextAnimationIfNeededForLabel:aLabel animated:NO];
+        else
+            self.animatingLongText = NO;
     }
     
     return newNotification;

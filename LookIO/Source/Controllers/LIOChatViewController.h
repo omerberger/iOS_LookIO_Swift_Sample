@@ -58,4 +58,6 @@ typedef enum {
 
 - (void)dismissExistingAlertView;
 
+- (void)appearanceAnimationForKeyboardInitialPosition;
+
 @end

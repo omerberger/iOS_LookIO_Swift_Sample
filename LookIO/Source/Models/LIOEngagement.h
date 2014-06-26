@@ -39,6 +39,7 @@ typedef enum
 @protocol LIOEngagementDelegate <NSObject>
 
 // Engagement Lifecycle
+- (void)engagementDidQueue:(LIOEngagement *)engagement;
 - (void)engagementDidStart:(LIOEngagement *)engagement;
 - (void)engagementDidConnect:(LIOEngagement *)engagement;
 - (void)engagementAgentIsReady:(LIOEngagement *)engagement;
@@ -59,9 +60,13 @@ typedef enum
 - (void)engagementDidReceivePrechatSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidReceiveOfflineSurvey:(LIOEngagement *)engagement;
 - (void)engagementDidSubmitPrechatSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidSubmitPostchatSurvey:(LIOEngagement *)engagement;
+- (void)engagementDidSubmitOfflineSurvey:(LIOEngagement *)engagement;
+- (void)engagementHasNoPrechatSurvey:(LIOEngagement *)engagement;
 
 // Others
 - (BOOL)engagementShouldShowSendPhotoKeyboardItem:(LIOEngagement *)engagement;
+- (void)engagementRequestedToResendAllUDEs:(LIOEngagement *)engagement;
 
 // Reconnectiongs
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement;
@@ -91,7 +96,10 @@ typedef enum
 @property (nonatomic, strong) LIOSurvey *postchatSurvey;
 @property (nonatomic, strong) LIOSurvey *offlineSurvey;
 
-- (id)initWithVisit:(LIOVisit *)aVisit;
+@property (nonatomic, assign) NSString *engagementSkill;
+@property (nonatomic, assign) NSString *engagementAccount;
+
+- (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account;
 
 - (void)startEngagement;
 - (void)attemptReconnectionWithVisit:(LIOVisit *)aVisit;

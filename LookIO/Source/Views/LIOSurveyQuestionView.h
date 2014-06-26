@@ -39,7 +39,7 @@ typedef enum
 @property (nonatomic, strong) UITextView *textView;
 
 - (void)prepareForReuse;
-- (void)becomeFirstResponder;
+- (void)questionBecomeFirstResponder;
 - (void)questionViewDidAppear;
 - (void)questionViewDidDisappear;
 - (void)reloadTableViewDataIfNeeded;

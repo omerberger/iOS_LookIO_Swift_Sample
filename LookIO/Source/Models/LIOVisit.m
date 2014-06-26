@@ -34,9 +34,16 @@
 #define LIOLookIOManagerMaxContinueFailures                3
 #define LIOLookIOMAnagerMaxEventQueueSize                  100
 
+#define LIOVisitMaxRelaunches                              50
+#define LIOVisitMaxRelaunchTimePeriod                      60
+
+#define LIOPendingEventsTimerInterval                      2.0
+
 // User defaults keys
 #define LIOLookIOManagerLaunchReportQueueKey            @"LIOLookIOManagerLaunchReportQueueKey"
 #define LIOLookIOManagerVisitorIdKey                    @"LIOLookIOManagerVisitorIdKey"
+
+#define LIOVisitUnknownAccountName                      @"LIOVisitUnknownAccountName"
 
 @interface LIOVisit ()
 
@@ -47,6 +54,7 @@
 @property (nonatomic, copy) NSString *lastKnownPageViewValue;
 
 @property (nonatomic, strong) NSMutableDictionary *lastReportedSettingsDictionary;
+@property (nonatomic, strong) NSMutableDictionary *lastReportedEventsDictionary;
 
 @property (nonatomic, assign) LIOFunnelState funnelState;
 @property (nonatomic, assign) BOOL funnelRequestIsActive;
@@ -61,12 +69,11 @@
 @property (nonatomic, copy) NSString *lastKnownVisitURL;
 @property (nonatomic, assign) NSTimeInterval nextTimeInterval;
 @property (nonatomic, strong) LIOTimerProxy *continuationTimer;
+@property (nonatomic, strong) LIOTimerProxy *pendingEventsTimer;
 @property (nonatomic, assign) BOOL continueCallInProgress;
 @property (nonatomic, assign) NSInteger failedContinueCount;
 
-@property (nonatomic, assign) BOOL lastKnownSurveysEnabled;
 @property (nonatomic, assign) BOOL disableSurveysOverride;
-@property (nonatomic, assign) BOOL previousSurveysEnabledValue;
 
 @property (nonatomic, assign) BOOL overrideButtonType;
 @property (nonatomic, strong) NSNumber *previousButtonType;
@@ -89,6 +96,23 @@
 @property (nonatomic, assign) BOOL isCurrentCallOutgoingAndFirst;
 @property (nonatomic, copy) NSString *callVisitId;
 
+@property (nonatomic, assign) BOOL lastKnownCreditCardMaskingEnabled;
+
+@property (nonatomic, copy) NSString *lastKnownLoggingURL;
+@property (nonatomic, assign) BOOL loggingEnabled;
+@property (nonatomic, strong) NSTimer *loggingTimer;
+
+// IAR
+@property (nonatomic, assign) BOOL isIAREnabled;
+@property (nonatomic, strong) NSMutableArray *accountSkills;
+@property (nonatomic, assign) BOOL shouldNextContinueCallIncludeAllUDEs;
+
+// Timer and counter used to backoff from visit relaunching loop
+@property (nonatomic, assign) NSInteger relaunchCount;
+@property (nonatomic, strong) NSTimer *relaunchCountTimer;
+
+// To support the coldLead event
+@property (nonatomic, assign) BOOL didReportInitialColdLead;
 
 @end
 
@@ -121,6 +145,19 @@
         
         self.overrideButtonType = NO;
         self.disableSurveysOverride = NO;
+        
+        self.lastKnownCreditCardMaskingEnabled = NO;
+        self.loggingEnabled = NO;
+        
+        self.isIAREnabled = YES;
+        self.shouldNextContinueCallIncludeAllUDEs = NO;
+        self.accountSkills = [NSMutableArray array];
+        self.defaultAccountSkill = nil;
+        self.requiredAccountSkill = nil;
+        
+        self.didReportInitialColdLead = NO;
+        
+        self.relaunchCount = 0;
         
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
@@ -163,6 +200,7 @@
         
         // Set up the pending events queue
         self.pendingEvents = [[NSMutableArray alloc] init];
+        self.lastReportedEventsDictionary = [[NSMutableDictionary alloc] init];
         
         // Set up the queued launch report queue
         self.queuedLaunchReportDates = [[userDefaults objectForKey:LIOLookIOManagerLaunchReportQueueKey] mutableCopy];
@@ -177,6 +215,8 @@
         
         // Default visibility is no - until recieving a different visibility setting
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
+        
+        self.relaunchCountTimer = [NSTimer scheduledTimerWithTimeInterval:LIOVisitMaxRelaunchTimePeriod target:self selector:@selector(visitMaxRelaunchTimerDidFire:) userInfo:nil repeats:YES];
         
         // Setup the call center object to monitor phone calls
         [self setupCallCenter];
@@ -208,13 +248,15 @@
 
 - (void)disableSurveys {
     self.disableSurveysOverride = YES;
-    self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
-    self.lastKnownSurveysEnabled = NO;
 }
 
 - (void)undisableSurveys {
     self.disableSurveysOverride = NO;
-    self.lastKnownSurveysEnabled = self.previousSurveysEnabledValue;
+}
+
+- (BOOL)surveysDisabled
+{
+    return self.disableSurveysOverride;
 }
 
 - (void)useIconButton
@@ -249,7 +291,7 @@
 #pragma mark -
 #pragma mark Status Dictionary Methods
 
-- (NSDictionary *)statusDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType  includingEvents:(BOOL)includeEvents
+- (NSDictionary *)statusDictionaryIncludingExtras:(BOOL)includeExtras includingType:(BOOL)includesType  includingEvents:(BOOL)includeEvents resendAllUDEs:(BOOL)resendAllUDEs
 {
     NSMutableDictionary *statusDictionary = [[NSMutableDictionary alloc] init];
 
@@ -264,8 +306,19 @@
     [statusDictionary setObject:[LIOStatusManager udid] forKey:@"device_id"];
     
     // Pending Events
-    if (includeEvents && [self.pendingEvents count])
-        [statusDictionary setObject:self.pendingEvents forKey:@"events"];
+    if (resendAllUDEs)
+    {
+        NSArray *lastReportedEvents = [self.lastReportedEventsDictionary allValues];
+        if ([lastReportedEvents count])
+        {
+            [statusDictionary setObject:lastReportedEvents forKey:@"events"];
+        }
+    }
+    else
+    {
+        if (includeEvents && [self.pendingEvents count])
+            [statusDictionary setObject:self.pendingEvents forKey:@"events"];
+    }
     
     // Current Visit Id
     if ([self.currentVisitId length])
@@ -288,9 +341,22 @@
     
     if ([LIOStatusManager statusManager].badInitialization)
         [statusDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"bad_init"];
+
+    if (self.isIAREnabled)
+    {
+        if (self.requiredAccountSkill)
+        {
+            [statusDictionary setObject:self.requiredAccountSkill.skill forKey:@"skill"];
+            if (![self.requiredAccountSkill.account isEqualToString:LIOVisitUnknownAccountName])
+                [statusDictionary setObject:self.requiredAccountSkill.account forKey:@"site_id"];
+        }
+    }
+    else
+    {
+        if ([self.requiredSkill length])
+            [statusDictionary setObject:self.requiredSkill forKey:@"skill"];
+    }
     
-    if ([self.requiredSkill length])
-        [statusDictionary setObject:self.requiredSkill forKey:@"skill"];
     
     [statusDictionary setObject:[NSNumber numberWithBool:[LIOStatusManager statusManager].appForegrounded] forKey:@"app_foregrounded"];
     
@@ -465,8 +531,16 @@
         if ([self.visitUDEs count])
             [extrasDict setDictionary:self.visitUDEs];
         
-        if ([detectedDict count])
-            [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        // If we are resending all UDEs, we should report the last reported settings as it incldues everything.
+        if (resendAllUDEs)
+        {
+            [extrasDict setObject:self.lastReportedSettingsDictionary forKey:@"detected_settings"];
+        }
+        else
+        {
+            if ([detectedDict count])
+                [extrasDict setObject:detectedDict forKey:@"detected_settings"];
+        }
         
         if ([self.lastKnownPageViewValue length])
             [extrasDict setObject:self.lastKnownPageViewValue forKey:@"view_name"];
@@ -488,73 +562,121 @@
     NSDictionary *skillsDict = [settingsDict objectForKey:@"skills"];
     if (skillsDict)
     {
-        // Are these settings coming from a launch call? If so, replace current skill mapping wholesale.
-        if (NO == fromContinue)
+        id accountsObject = [skillsDict objectForKey:@"accounts"];
+        // This is an IAR enabled account
+        if (accountsObject)
         {
-            [resolvedSettings setObject:skillsDict forKey:@"skills"];
-        }
-        
-        // Merge existing skill map with the new one.
-        else
-        {
-            NSMutableDictionary *newMap = [self.multiskillMapping mutableCopy];
-            if (nil == newMap)
-                newMap = [NSMutableDictionary dictionary];
-            
-            if ([skillsDict count])
+            NSArray *accountsArray = nil;
+            if ([accountsObject isKindOfClass:[NSDictionary class]])
             {
-                // Check for a "default=1" value.
-                NSString *newDefault = nil;
-                for (NSString *aSkillKey in skillsDict)
+                NSDictionary *singleAccountDictionary = (NSDictionary *)accountsObject;
+                accountsArray = [NSArray arrayWithObject:singleAccountDictionary];
+            }
+            if ([accountsObject isKindOfClass:[NSArray class]])
+            {
+                accountsArray = (NSArray *)accountsObject;
+            }
+            
+            NSMutableArray *accountSkills = [NSMutableArray array];
+
+            for (NSDictionary *accountsDictionary in accountsArray)
+            {
+                for (NSString *accountName in accountsDictionary.allKeys)
                 {
-                    NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
-                    NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
-                    if (YES == [defaultValue boolValue])
+                    NSDictionary *skillDictionary = [accountsDictionary objectForKey:accountName];
+                    for (NSString *skillName in skillDictionary)
                     {
-                        newDefault = aSkillKey;
-                        break;
+                        NSDictionary *skillStatus = [skillDictionary objectForKey:skillName];
+                        if (skillStatus == nil) continue;
+                        
+                        LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                        accountSkillStatus.account = accountName;
+                        accountSkillStatus.skill = skillName;
+                        
+                        NSNumber *defaultValue = [skillStatus objectForKey:@"default"];
+                        if (defaultValue) accountSkillStatus.isDefault = [defaultValue boolValue];
+                        
+                        NSNumber *enabledValue = [skillStatus objectForKey:@"enabled"];
+                        if (enabledValue) accountSkillStatus.isEnabledOnServer = [enabledValue boolValue];
+                        
+                        [accountSkills addObject:accountSkillStatus];
                     }
                 }
+            }
+
+            NSDictionary *skillsDict = [NSDictionary dictionaryWithObject:accountSkills forKey:@"accounts"];
+            [resolvedSettings setObject:skillsDict forKey:@"skills"];
+        }
+        else
+        {
+            // Are these settings coming from a launch call? If so, replace current skill mapping wholesale.
+            if (NO == fromContinue)
+            {
+                [resolvedSettings setObject:skillsDict forKey:@"skills"];
+            }
+            
+            // Merge existing skill map with the new one.
+            else
+            {
+                NSMutableDictionary *newMap = [self.multiskillMapping mutableCopy];
+                if (nil == newMap)
+                    newMap = [NSMutableDictionary dictionary];
                 
-                // Merge.
-                [newMap addEntriesFromDictionary:skillsDict];
-                
-                // Reset default values as needed.
-                if (newDefault)
+                if ([skillsDict count])
                 {
-                    NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
-                    for (NSString *aSkillKey in newMap)
+                    // Check for a "default=1" value.
+                    NSString *newDefault = nil;
+                    for (NSString *aSkillKey in skillsDict)
                     {
-                        NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
-                        NSNumber *defaultValue = [existingMap objectForKey:@"default"];
-                        if (defaultValue)
+                        NSDictionary *aSkillMap = [skillsDict objectForKey:aSkillKey];
+                        NSNumber *defaultValue = [aSkillMap objectForKey:@"default"];
+                        if (YES == [defaultValue boolValue])
                         {
-                            if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
-                            {
-                                NSMutableDictionary *newDict = [existingMap mutableCopy];
-                                [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
-                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                            }
-                            else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
-                            {
-                                NSMutableDictionary *newDict = [existingMap mutableCopy];
-                                [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
-                                [defaultReplacementDict setObject:newDict forKey:aSkillKey];
-                            }
+                            newDefault = aSkillKey;
+                            break;
                         }
                     }
                     
-                    [newMap addEntriesFromDictionary:defaultReplacementDict];
+                    // Merge.
+                    [newMap addEntriesFromDictionary:skillsDict];
+                    
+                    // Reset default values as needed.
+                    if (newDefault)
+                    {
+                        NSMutableDictionary *defaultReplacementDict = [NSMutableDictionary dictionary];
+                        for (NSString *aSkillKey in newMap)
+                        {
+                            NSDictionary *existingMap = [newMap objectForKey:aSkillKey];
+                            NSNumber *defaultValue = [existingMap objectForKey:@"default"];
+                            if (defaultValue)
+                            {
+                                if (YES == [defaultValue boolValue] && NO == [newDefault isEqualToString:aSkillKey])
+                                {
+                                    NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                    [newDict setObject:[NSNumber numberWithBool:NO] forKey:@"default"];
+                                    [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                                }
+                                else if (NO == [defaultValue boolValue] && YES == [newDefault isEqualToString:aSkillKey])
+                                {
+                                    NSMutableDictionary *newDict = [existingMap mutableCopy];
+                                    [newDict setObject:[NSNumber numberWithBool:YES] forKey:@"default"];
+                                    [defaultReplacementDict setObject:newDict forKey:aSkillKey];
+                                }
+                            }
+                        }
+                        
+                        [newMap addEntriesFromDictionary:defaultReplacementDict];
+                    }
                 }
+                
+                // If the new skill map is an empty hash {}, do not merge; erase all entries.
+                else
+                {
+                    [newMap removeAllObjects];
+                }
+                
+                [resolvedSettings setObject:newMap forKey:@"skills"];
             }
-            
-            // If the new skill map is an empty hash {}, do not merge; erase all entries.
-            else
-            {
-                [newMap removeAllObjects];
-            }
-            
-            [resolvedSettings setObject:newMap forKey:@"skills"];
         }
     }
     
@@ -615,10 +737,6 @@
     if (nextIntervalNumber)
         [resolvedSettings setObject:nextIntervalNumber forKey:@"next_interval"];
     
-    NSNumber *surveysEnabledNumber = [settingsDict objectForKey:@"surveys_enabled"];
-    if (surveysEnabledNumber)
-        [resolvedSettings setObject:surveysEnabledNumber forKey:@"surveys_enabled"];
-    
     NSNumber *hideEmailChatNumber = [settingsDict objectForKey:@"hide_email_chat"];
     if (hideEmailChatNumber)
         [resolvedSettings setObject:hideEmailChatNumber forKey:@"hide_email_chat"];
@@ -630,6 +748,14 @@
     NSString *brandingMd5String = [settingsDict objectForKey:@"branding_md5"];
     if (brandingMd5String)
         [resolvedSettings setObject:brandingMd5String forKey:@"branding_md5"];
+    
+    NSString *loggingUrl = [settingsDict objectForKey:@"logging_url"];
+    if (loggingUrl)
+        [resolvedSettings setObject:loggingUrl forKey:@"logging_url"];
+    
+    NSNumber *creditCardMaskingEnabledNumber = [settingsDict objectForKey:@"mask_cc"];
+    if (creditCardMaskingEnabledNumber)
+        [resolvedSettings setObject:creditCardMaskingEnabledNumber forKey:@"mask_cc"];
     
     return resolvedSettings;
 }
@@ -651,6 +777,9 @@
         // the lib to report "disabled" back to the host app.
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
         
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateFailed;
@@ -664,7 +793,106 @@
         NSDictionary *skillsMap = [resolvedSettings objectForKey:@"skills"];
         if (skillsMap)
         {
-            self.multiskillMapping = skillsMap;
+            // If an accounts array exists, use IAR
+            NSArray *accountSkillMap = [skillsMap objectForKey:@"accounts"];
+            if (accountSkillMap)
+            {
+                // Main another array of existing account-skills, so we can delete any account-skill that has been deleted since
+                NSMutableArray *accountSkillsToDelete = [[NSMutableArray alloc] initWithArray:self.accountSkills];
+                
+                self.isIAREnabled = YES;
+                for (LIOAccountSkillStatus *newAccountSkill in accountSkillMap)
+                {
+                    // Check if this account-skill pair exists
+                    NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", newAccountSkill.account, newAccountSkill.skill];
+                    NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+
+                    // If exists
+                    if (predicateArray.count > 0)
+                    {
+                        LIOAccountSkillStatus *existingAccountSkill = [predicateArray objectAtIndex:0];
+                        
+                        // No need to delete this account-skill
+                        [accountSkillsToDelete removeObject:existingAccountSkill];
+
+                        // This will take into consideration if a chat is in progress or if developer disabled chat
+                        BOOL previousEnabledValue = existingAccountSkill.isEnabledLastReported;
+
+                        existingAccountSkill.isDefault = newAccountSkill.isDefault;
+                        existingAccountSkill.isEnabledOnServer = newAccountSkill.isEnabledOnServer;
+
+                        // This will take into consideration if a chat is in progress or if developer disabled chat
+                        BOOL newEnabledValue = [self isChatEnabledForSkill:existingAccountSkill.skill forAccount:existingAccountSkill.account];
+                        
+                        // If changed, update the delegate
+                        if (previousEnabledValue != newEnabledValue)
+                        {
+                            existingAccountSkill.isEnabledLastReported = newEnabledValue;
+                            [self.delegate visit:self didChangeEnabled:newEnabledValue forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        }
+                        
+                        if (existingAccountSkill.isDefault)
+                            self.defaultAccountSkill = existingAccountSkill;
+                    }
+                    else
+                    {
+                        [self.accountSkills addObject:newAccountSkill];
+                        newAccountSkill.isEnabledLastReported = [self isChatEnabledForSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        [self.delegate visit:self didChangeEnabled:newAccountSkill.isEnabledLastReported forSkill:newAccountSkill.skill forAccount:newAccountSkill.account];
+                        
+                        if (newAccountSkill.isDefault)
+                            self.defaultAccountSkill = newAccountSkill;
+                    }
+                }
+                
+                if (accountSkillsToDelete.count > 0)
+                {
+                    // Don't delete a skill set by the developer, but set it to disabled if it was enabled
+                    if (self.requiredAccountSkill)
+                    {
+                        if ([accountSkillsToDelete containsObject:self.requiredAccountSkill])
+                        {
+                            self.requiredAccountSkill.isEnabledOnServer = NO;
+                            if (self.requiredAccountSkill.isEnabledLastReported == YES)
+                                [self.delegate visit:self didChangeEnabled:NO forSkill:self.requiredAccountSkill.skill forAccount:self.requiredAccountSkill.account];
+                            [accountSkillsToDelete removeObject:self.requiredAccountSkill];
+                        }
+                    }
+                    
+                    for (LIOAccountSkillStatus *accountSkill in accountSkillsToDelete)
+                    {
+                        if (accountSkill.isEnabledLastReported == YES)
+                            [self.delegate visit:self didChangeEnabled:NO forSkill:accountSkill.skill forAccount:accountSkill.account];
+                    }
+                    
+                    [self.accountSkills removeObjectsInArray:accountSkillsToDelete];
+                }
+                
+                // Check that this isn't a skill that developer set before first continue call arrived
+                if (self.requiredAccountSkill && self.defaultAccountSkill)
+                {
+                    if ([self.requiredAccountSkill.account isEqualToString:LIOVisitUnknownAccountName])
+                    {
+                        self.requiredAccountSkill.account = self.defaultAccountSkill.account;
+                            
+                        // Check if this is duplicate to an existing skill, and if so, use the existing skill
+                        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", self.requiredAccountSkill.account, self.requiredAccountSkill.skill];
+                        NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+                            
+                        // If exists
+                        if (predicateArray.count > 0)
+                        {
+                            LIOAccountSkillStatus *actualRequiredAccountSkill = [predicateArray objectAtIndex:0];
+                            self.requiredAccountSkill = actualRequiredAccountSkill;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                self.isIAREnabled = NO;
+                self.multiskillMapping = skillsMap;
+            }
         }
         
         [self.delegate visitChatEnabledDidUpdate:self];
@@ -767,23 +995,18 @@
             [self.continuationTimer stopTimer];
             self.continuationTimer = nil;
             
+            [self.pendingEventsTimer stopTimer];
+            self.pendingEventsTimer = nil;
+            
             if (self.visitState != LIOVisitStateEnding)
             {
                 self.continuationTimer = [[LIOTimerProxy alloc] initWithTimeInterval:self.nextTimeInterval
                                                                               target:self
                                                                             selector:@selector(continuationTimerDidFire)];
+                self.pendingEventsTimer = [[LIOTimerProxy alloc] initWithTimeInterval:LIOPendingEventsTimerInterval
+                                                                               target:self
+                                                                             selector:@selector(pendingEventsTimerDidFire)];
             }
-        }
-        
-        NSNumber *surveysEnabled = [resolvedSettings objectForKey:@"surveys_enabled"];
-        if (surveysEnabled)
-        {
-            self.lastKnownSurveysEnabled = [surveysEnabled boolValue];
-        }
-        
-        if (self.disableSurveysOverride) {
-            self.previousSurveysEnabledValue = self.lastKnownSurveysEnabled;
-            self.lastKnownSurveysEnabled = NO;
         }
         
         NSNumber *hideEmailChat = [resolvedSettings objectForKey:@"hide_email_chat"];
@@ -810,6 +1033,23 @@
             }
         }
         
+        NSString* loggingURLString = [resolvedSettings objectForKey:@"logging_url"];
+        if ([loggingURLString length])
+        {
+            // Logging should start either if this is the first logging_url received
+            // of if it's different than the last logging url recieved
+            if (self.lastKnownLoggingURL == nil || ![self.lastKnownLoggingURL isEqualToString:loggingURLString])
+            {
+                [self startLogUploadingWithURL:loggingURLString];
+            }
+        }
+        
+        NSNumber *creditCardMaskingEnabledNumber = [resolvedSettings objectForKey:@"mask_cc"];
+        if (creditCardMaskingEnabledNumber)
+        {
+            self.lastKnownCreditCardMaskingEnabled = [creditCardMaskingEnabledNumber boolValue];
+        }
+        
         [userDefaults synchronize];
         [self refreshControlButtonVisibility];
         [self.delegate controlButtonCharacteristsDidChange:self];
@@ -818,7 +1058,7 @@
 
 - (NSDictionary *)introDictionary
 {
-    NSDictionary *introDictionary = [self statusDictionaryIncludingExtras:YES includingType:YES includingEvents:YES];
+    NSDictionary *introDictionary = [self statusDictionaryIncludingExtras:YES includingType:YES includingEvents:YES resendAllUDEs:NO];
     
     return introDictionary;
 }
@@ -829,8 +1069,29 @@
 // Launch a new visit because of a 404 response
 // If chat is in progress, we need to maintain the previous visit state
 
+- (void)visitMaxRelaunchTimerDidFire:(NSTimer *)timer
+{
+    self.relaunchCount = 0;
+}
+
 - (void)relaunchVisit
 {
+    self.relaunchCount += 1;
+    if (self.relaunchCount > 50)
+    {
+        LIOLog(@"<VISIT> Attempted to relaunch more than %d times in %d seconds, stopping all future visits.", LIOVisitMaxRelaunches, LIOVisitMaxRelaunchTimePeriod);
+        
+        if (!self.chatInProgress)
+            self.visitState = LIOVisitStateFailed;
+        
+        self.multiskillMapping = nil;
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
+
+        return;
+    }
+    
     [self.delegate visitWillRelaunch:self];
 
     // If this is a relaunch during chat, don't change visit state
@@ -843,10 +1104,18 @@
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
     
-    [self setupCallCenter];
-    
+    [self.pendingEventsTimer stopTimer];
+    self.pendingEventsTimer = nil;
+
+    if (self.isIAREnabled)
+        [self removeAllIARAccountSkills];
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
+
+    self.isIAREnabled = YES;
+    self.didReportInitialColdLead = NO;
+    
+    [self setupCallCenter];
     
     [self launchVisit];
 }
@@ -860,24 +1129,30 @@
         if (!self.chatInProgress)
             self.visitState = LIOVisitStateLaunching;
         
-        NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO];
-        [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSDictionary *statusDictionary = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:NO resendAllUDEs:NO];
+        NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+        [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppLaunchRequestURL parameters:statusDictionary headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             LIOLog(@"<LAUNCH> Request successful with response: %@", responseObject);
+            
+            [self.delegate visitReportDidLaunch:self];
  
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             [self parseAndSaveSettingsPayload:responseDict fromContinue:NO];
  
-            // If this is a relaunch during chat, don't change visit state
+            // If this is a relaunch during chat, don't change visit and funnel states
             if (!self.chatInProgress)
             {
+                self.visitState = LIOVisitStateVisitInProgress;
+
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
-
-                self.visitState = LIOVisitStateVisitInProgress;
+                [self updateAndReportFunnelState];
             }
-
-            [self updateAndReportFunnelState];
-
+            else
+            {
+                self.funnelState = LIOFunnelStateClicked;
+            }
+            
             [self.delegate visitDidLaunch:self];
             
             if (![self chatInProgress])
@@ -897,6 +1172,10 @@
  
             self.multiskillMapping = nil;
             [self.delegate visitSkillMappingDidChange:self];
+            
+            if (self.isIAREnabled)
+                [self removeAllIARAccountSkills];
+            [self refreshControlButtonVisibility];
         }];
     }
     else
@@ -910,6 +1189,10 @@
         // the lib to report "disabled" back to the host app.
         self.multiskillMapping = nil;
         [self.delegate visitSkillMappingDidChange:self];
+        
+        if (self.isIAREnabled)
+            [self removeAllIARAccountSkills];
+        [self refreshControlButtonVisibility];
     }
 }
 
@@ -921,6 +1204,9 @@
     
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
+    
+    [self.pendingEventsTimer stopTimer];
+    self.pendingEventsTimer = nil;
 }
 
 #pragma mark -
@@ -931,6 +1217,7 @@
     // Update button and enabled status
     [self refreshControlButtonVisibility];
     [self.delegate visitChatEnabledDidUpdate:self];
+    [self updateEnabledForAllAccountsAndSkills];
     [self.delegate visitReachabilityDidChange:self];
 
     switch ([LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
@@ -958,7 +1245,7 @@
 {
     [self.continuationTimer stopTimer];
     self.continuationTimer = nil;
-
+    
     if (0.0 == self.nextTimeInterval)
         self.nextTimeInterval = LIOLookIOManagerDefaultContinuationReportInterval;
     
@@ -972,6 +1259,19 @@
     }
 }
 
+- (void)pendingEventsTimerDidFire
+{
+    if (self.pendingEvents.count > 0)
+        [self sendContinuationReport];
+}
+
+// Used as a response to "send_udes" packet which is used in IAR to send all previous UDEs to an IAR chat
+- (void)sendContinuationReportAndResendAllUDEs
+{
+    self.shouldNextContinueCallIncludeAllUDEs = YES;
+    [self sendContinuationReport];
+}
+
 - (void)sendContinuationReport
 {
     if (self.continueCallInProgress)
@@ -982,22 +1282,31 @@
     
     self.continueCallInProgress = YES;
     
-    NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES];
+    BOOL continueCallIncludesResendAllUDEs = self.shouldNextContinueCallIncludeAllUDEs;
     
+    NSDictionary *continueDict = [self statusDictionaryIncludingExtras:YES includingType:NO includingEvents:YES resendAllUDEs:continueCallIncludesResendAllUDEs];
+    NSArray *reportedEvents = [NSArray arrayWithArray:self.pendingEvents];
+    NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
-        [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppContinueRequestURL parameters:continueDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerAppContinueRequestURL parameters:continueDict headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
+            
+            if (continueCallIncludesResendAllUDEs)
+                self.shouldNextContinueCallIncludeAllUDEs = NO;
+
             self.continueCallInProgress = NO;
             self.failedContinueCount = 0;
-            
+                        
             NSDictionary *responseDict = (NSDictionary *)responseObject;
             LIOLog(@"<CONTINUE> Success. HTTP code: %d. Response: %@", operation.responseCode, responseDict);
             
             [self parseAndSaveSettingsPayload:responseDict fromContinue:YES];
             
             // Continue call succeeded! Purge the event queue.
-            [self.pendingEvents removeAllObjects];
+            [self.pendingEvents removeObjectsInArray:reportedEvents];
             
             [self updateAndReportFunnelState];
             
@@ -1013,10 +1322,24 @@
 
             if (operation.responseCode == 404)
             {
-                // New launch
-                LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                if (self.currentVisitId)
+                {
+                    if ([self.currentVisitId isEqualToString:currentVisitId])
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
 
-                [self relaunchVisit];
+                        // New launch
+                        [self relaunchVisit];
+                    }
+                    else
+                    {
+                        LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    }
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                }
             }
             else
             {
@@ -1036,17 +1359,22 @@
                     [self.continuationTimer stopTimer];
                     self.continuationTimer = nil;
                     
+                    [self.pendingEventsTimer stopTimer];
+                    self.pendingEventsTimer = nil;
+                    
                     self.lastKnownVisitURL = nil;
                     
                     self.multiskillMapping = nil;
+                    if (self.isIAREnabled)
+                        [self removeAllIARAccountSkills];
+                    [self refreshControlButtonVisibility];
+
                     if (!self.chatInProgress)
                         self.visitState = LIOVisitStateFailed;
                 }
             }
         }];
     }
-    
-    [self updateAndReportFunnelState];
 }
 
 - (void)refreshControlButtonVisibility
@@ -1062,13 +1390,27 @@
     }
     
     // Trump card #0: If we have no visibility information, button is hidden.
-    if (nil == self.lastKnownButtonVisibility || nil == self.multiskillMapping)
+    if (self.isIAREnabled)
     {
-        self.controlButtonHidden = YES;
-        LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
-        [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
-        
-        return;
+        if (nil == self.lastKnownButtonVisibility || self.accountSkills.count == 0)
+        {
+            self.controlButtonHidden = YES;
+            LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+            [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
+            
+            return;
+        }
+    }
+    else
+    {
+        if (nil == self.lastKnownButtonVisibility || nil == self.multiskillMapping)
+        {
+            self.controlButtonHidden = YES;
+            LIOLog(@"<<CONTROL>> Hiding. Reason: never got any visibility or enabled-status settings from the server.");
+            [self.delegate visit:self controlButtonIsHiddenDidUpdate:self.controlButtonHidden notifyDelegate:NO];
+            
+            return;
+        }
     }
     
     // Trump card #1: Not in a session, and not "enabled" from server-side settings.
@@ -1146,9 +1488,9 @@
     return self.lastKnownHideEmailChat;
 }
 
-- (BOOL)surveysEnabled
+- (BOOL)maskCreditCards
 {
-    return self.lastKnownSurveysEnabled;
+    return self.lastKnownCreditCardMaskingEnabled;
 }
 
 - (void)setVisitState:(LIOVisitState)visitState
@@ -1162,15 +1504,146 @@
 
 - (void)setSkill:(NSString *)skill
 {
-    self.requiredSkill = skill;
+    if (self.isIAREnabled)
+    {
+        if (skill == nil)
+        {
+            self.requiredAccountSkill = nil;
+        }
+        else
+        {
+            // Since only a skill has been specified, we will use the default account here
+            if (self.defaultAccountSkill)
+            {
+                NSString *defaultAccount = self.defaultAccountSkill.account;
+                NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
+                NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+                
+                // If this skill exists for the default account, let's set it as the required account-skill
+                if (predicateArray.count > 0)
+                {
+                    LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+                    self.requiredAccountSkill = accountSkillStatus;
+                }
+                // If not, let's create it
+                else
+                {
+                    LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                    newAccountSkillStatus.skill = skill;
+                    newAccountSkillStatus.account = defaultAccount;
+                    newAccountSkillStatus.isEnabledOnServer = NO;
+                    newAccountSkillStatus.isEnabledLastReported = NO;
+                    newAccountSkillStatus.isDefault = NO;
+                    
+                    self.requiredAccountSkill = newAccountSkillStatus;
+                    [self.accountSkills addObject:newAccountSkillStatus];
+                }
+            }
+            // If there is no default, we haven't received it from server yet. Let's use a general key for that account name and update it later.
+            else
+            {
+                LIOAccountSkillStatus *newAccountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                newAccountSkillStatus.skill = skill;
+                newAccountSkillStatus.account = LIOVisitUnknownAccountName;
+                newAccountSkillStatus.isEnabledOnServer = NO;
+                newAccountSkillStatus.isEnabledLastReported = NO;
+                newAccountSkillStatus.isDefault = NO;
+                
+                // This one is not added to AccountSkills because it's only relevant as a required account skill
+                self.requiredAccountSkill = newAccountSkillStatus;
+            }
+        }
+    }
+    else
+    {
+        self.requiredSkill = skill;
+    }
+    
     [self sendContinuationReport];
     [self refreshControlButtonVisibility];
     
     [self.delegate visitChatEnabledDidUpdate:self];
 }
 
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account
+{
+    if (self.isIAREnabled) {
+        if (skill == nil || account == nil)
+        {
+            self.requiredAccountSkill = nil;
+        }
+        else
+        {
+            // Let's check if this skill was received from the server
+            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+            NSArray *predicateArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+            
+            // If exists
+            if (predicateArray.count > 0)
+            {
+                LIOAccountSkillStatus *accountSkillStatus = [predicateArray objectAtIndex:0];
+                self.requiredAccountSkill = accountSkillStatus;
+            }
+            else
+            {
+                LIOAccountSkillStatus *accountSkillStatus = [[LIOAccountSkillStatus alloc] init];
+                accountSkillStatus.skill = skill;
+                accountSkillStatus.account = account;
+                accountSkillStatus.isDefault = NO;
+                accountSkillStatus.isEnabledOnServer = NO;
+                accountSkillStatus.isEnabledLastReported = NO;
+                
+                [self.accountSkills addObject:accountSkillStatus];
+                self.requiredAccountSkill = accountSkillStatus;
+            }
+        }
+    }
+    else {
+        self.requiredSkill = skill;
+    }
+    
+    [self sendContinuationReport];
+    [self refreshControlButtonVisibility];
+    [self.delegate visitChatEnabledDidUpdate:self];
+}
+
 #pragma mark -
 #pragma mark Chat Status Methods
+
+- (void)removeAllIARAccountSkills
+{
+    // There is no more default account-skill
+    self.defaultAccountSkill = nil;
+
+    // Disable all account skills, and report their new status
+    for (LIOAccountSkillStatus *accountSkillStatus in self.accountSkills)
+    {
+        accountSkillStatus.isEnabledOnServer = NO;
+    }
+    [self updateEnabledForAllAccountsAndSkills];
+
+    // Remove all skills, except the one set as required, which
+    NSMutableArray *accountSkillsToRemove = [NSMutableArray arrayWithArray:self.accountSkills];
+    if (self.requiredAccountSkill)
+    {
+        if ([accountSkillsToRemove containsObject:self.requiredAccountSkill])
+        {
+            [accountSkillsToRemove removeObject:self.requiredAccountSkill];
+        }
+    }
+    [self.accountSkills removeObjectsInArray:accountSkillsToRemove];
+}
+
+- (void)updateEnabledForAllAccountsAndSkills
+{
+    for (LIOAccountSkillStatus *accountSkillStatus in self.accountSkills)
+    {
+        BOOL previousEnabledValue = accountSkillStatus.isEnabledLastReported;
+        accountSkillStatus.isEnabledLastReported = [self isChatEnabledForSkill:accountSkillStatus.skill forAccount:accountSkillStatus.account];
+        if (previousEnabledValue != accountSkillStatus.isEnabledLastReported)
+            [self.delegate visit:self didChangeEnabled:accountSkillStatus.isEnabledLastReported forSkill:accountSkillStatus.skill forAccount:accountSkillStatus.account];
+    }
+}
 
 - (BOOL)chatEnabled
 {
@@ -1187,36 +1660,164 @@
     if (self.developerDisabledChat)
         return NO;
     
-    // nil or empty
-    if (0 == [self.multiskillMapping count])
-        return NO;
-    
-    // See if the current skill has a mapping.
-    NSDictionary *aMap = [self.multiskillMapping objectForKey:self.requiredSkill];
-    if ([aMap count])
+    // IAR skill structure
+    if (self.isIAREnabled)
     {
-        NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
-        return [enabledValue boolValue];
-    }
-    
-    // Nope. No current skill set. Try to find the default.
-    if (0 == [self.requiredSkill length])
-    {
-        for (NSString *aSkillKey in self.multiskillMapping)
+        // If no account-skills, return NO
+        if (self.accountSkills.count == 0)
+            return NO;
+        
+        // If developer has set a required skill/account, return its status
+        if (self.requiredAccountSkill)
         {
-            NSDictionary *aMap = [self.multiskillMapping objectForKey:aSkillKey];
-            NSNumber *defaultValue = [aMap objectForKey:@"default"];
-            if (defaultValue && YES == [defaultValue boolValue])
-            {
-                NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
-                return [enabledValue boolValue];
-            }
+            return self.requiredAccountSkill.isEnabledOnServer;
         }
         
-        // No default? o_O
+        // If not, use the default skill
+        if (self.defaultAccountSkill)
+        {
+            return self.defaultAccountSkill.isEnabledOnServer;
+        }
+        
+        // If no skill-account set and no default, return NO
+        return NO;
+    }
+    // Classic skill structure
+    else
+    {
+        // nil or empty
+        if (0 == [self.multiskillMapping count])
+            return NO;
+        
+        // See if the current skill has a mapping.
+        NSDictionary *aMap = [self.multiskillMapping objectForKey:self.requiredSkill];
+        if ([aMap count])
+        {
+            NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+            return [enabledValue boolValue];
+        }
+        
+        // Nope. No current skill set. Try to find the default.
+        if (0 == [self.requiredSkill length])
+        {
+            for (NSString *aSkillKey in self.multiskillMapping)
+            {
+                NSDictionary *aMap = [self.multiskillMapping objectForKey:aSkillKey];
+                NSNumber *defaultValue = [aMap objectForKey:@"default"];
+                if (defaultValue && YES == [defaultValue boolValue])
+                {
+                    NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+                    return [enabledValue boolValue];
+                }
+            }
+            
+            // No default? o_O
+        }
+        
+        // Oh well.
+        return NO;
     }
     
-    // Oh well.
+    return NO;
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill
+{
+    // If no network, chat is not enabled
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+        return NO;
+    
+    // If chat is in progress, chat should always be enabled
+    if (self.chatInProgress)
+        return YES;
+    
+    // If developer explictly disabled chat, chat should be disabled
+    if (self.developerDisabledChat)
+        return NO;
+    
+    if (self.isIAREnabled)
+    {
+        
+        // If a default account exists, look for this skill within this account, and use that value.
+        if (self.defaultAccountSkill)
+        {
+            NSString *defaultAccount = self.defaultAccountSkill.account;
+            NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", defaultAccount, skill];
+            NSArray *accountSkillArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+            if (accountSkillArray.count > 0)
+            {
+                LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
+                return accountSkill.isEnabledOnServer;
+            }
+            
+            return NO;
+        }
+        
+        return NO;
+    } else {
+        // nil or empty
+        if (0 == [self.multiskillMapping count])
+            return NO;
+        
+        // See if the selected skill has a mapping.
+        NSDictionary *aMap = [self.multiskillMapping objectForKey:skill];
+        if ([aMap count])
+        {
+            NSNumber *enabledValue = [aMap objectForKey:@"enabled"];
+            return [enabledValue boolValue];
+        }
+        
+        // Oh well.
+        return NO;
+
+    }
+    
+    return NO;    
+}
+
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account
+{
+    // If no network, chat is not enabled
+    [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
+    if (LIOAnalyticsManagerReachabilityStatusDisconnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
+        return NO;
+    
+    // If chat is in progress, chat should be enabled for only the engagement skill and engagement account
+    if (self.chatInProgress)
+    {
+        // Let's make we only check case where the engagement really exists
+        BOOL engagementExists = [self.delegate doesCurrentEngagementExist:self];
+        if (engagementExists)
+        {
+            NSString *engagementSkill = [self.delegate visitCurrentEngagementSkill:self];
+            NSString *engagementAccount = [self.delegate visitCurrentEngagementAccount:self];
+            if (engagementAccount == nil || engagementSkill == nil) return YES;
+        
+            if ([engagementAccount isEqualToString:account] && [engagementSkill isEqualToString:skill])
+                return YES;
+        }
+        // Otherwise, let's pass through and return the actual enabled status
+    }
+    
+    // If developer explictly disabled chat, chat should be disabled
+    if (self.developerDisabledChat)
+        return NO;
+    
+    if (self.isIAREnabled)
+    {
+        NSPredicate *accountSkillPredicate = [NSPredicate predicateWithFormat:@"account = %@ AND skill = %@", account, skill];
+        NSArray *accountSkillArray = [self.accountSkills filteredArrayUsingPredicate:accountSkillPredicate];
+        if (accountSkillArray.count > 0)
+        {
+            LIOAccountSkillStatus *accountSkill = [accountSkillArray objectAtIndex:0];
+            return accountSkill.isEnabledOnServer;
+        }
+        
+        return NO;
+    }
+    
+    // Without IAR, this isn't defined, because there is no account record to access
     return NO;
 }
 
@@ -1349,26 +1950,38 @@
 
 - (void)setChatAvailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = YES;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setChatUnavailable
 {
+    BOOL previousValue = self.customButtonChatAvailable;
     self.customButtonChatAvailable = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = YES;
-    [self updateAndReportFunnelState];
+
+    if (previousValue == NO)
+        [self updateAndReportFunnelState];
 }
 
 - (void)setInvitationNotShown
 {
+    BOOL previousValue = self.customButtonInvitationShown;
     self.customButtonInvitationShown = NO;
-    [self updateAndReportFunnelState];
+    
+    if (previousValue == YES)
+        [self updateAndReportFunnelState];
 }
 
 #pragma mark -
@@ -1376,6 +1989,12 @@
 
 - (void)updateAndReportFunnelState
 {
+    // Don't update and report funnel state if visit is not active. This will be called when a new visit is launched
+    if (LIOVisitStateInitialized == self.visitState || LIOVisitStateLaunching == self.visitState || LIOVisitStateQueued == self.visitState || LIOVisitStateEnding == self.visitState || LIOVisitStateFailed == self.visitState)
+    {
+        return;
+    }
+    
     // For visit state, let's see if we can upgrade to hotlead
     if (self.funnelState == LIOFunnelStateVisit)
     {
@@ -1389,6 +2008,9 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
+                
+                self.didReportInitialColdLead = YES;
             }
         }
         else
@@ -1397,7 +2019,17 @@
             self.funnelState = LIOFunnelStateHotlead;
             LIOLog(@"<FUNNEL STATE> Hotlead");
             [self sendFunnelPacketForState:self.funnelState];
+            [self.delegate visit:self didChangeFunnelState:self.funnelState];
+
+            self.didReportInitialColdLead = YES;
         }
+    }
+    
+    // If we haven't reported the initial coldLead yet, and we didn't just report a hotLead, we should report a coldLead
+    if (!self.didReportInitialColdLead && LIOFunnelStateVisit == self.funnelState)
+    {
+        self.didReportInitialColdLead = YES;
+        [self.delegate visit:self didChangeFunnelState:self.funnelState];
     }
     
     // If we're at the hot lead state, let's check if we can upgrade to invitation, or downgrade to visit
@@ -1413,6 +2045,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
             {
@@ -1421,6 +2054,7 @@
                     self.funnelState = LIOFunnelStateInvitation;
                     LIOLog(@"<FUNNEL STATE> Invitation");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
         }
@@ -1431,6 +2065,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
     }
@@ -1445,6 +2080,7 @@
             self.funnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
             [self sendFunnelPacketForState:self.funnelState];
+            [self.delegate visit:self didChangeFunnelState:self.funnelState];
             return;
         }
         
@@ -1459,6 +2095,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
             {
@@ -1469,6 +2106,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
         }
@@ -1480,6 +2118,7 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
     }
@@ -1499,6 +2138,7 @@
                     self.funnelState = LIOFunnelStateVisit;
                     LIOLog(@"<FUNNEL STATE> Visit");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
                 
@@ -1508,6 +2148,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     [self sendFunnelPacketForState:self.funnelState];
+                    [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
                 
@@ -1515,6 +2156,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
                 
             } else {
@@ -1531,6 +2173,7 @@
                 }
                 
                 [self sendFunnelPacketForState:self.funnelState];
+                [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
             }
         }
@@ -1588,6 +2231,7 @@
     if ([currentStateString isEqualToString:@""])
         return;
     
+    NSString *currentVisitId = [NSString stringWithFormat:@"%@", self.currentVisitId];
     NSDictionary* buttonFunnelDict = [NSDictionary dictionaryWithObject:currentStateString forKey:@"current_state"];
     NSDictionary *funnelDict = [NSDictionary dictionaryWithObject:buttonFunnelDict forKey:@"button_funnel"];
     
@@ -1604,12 +2248,27 @@
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         if (operation.responseCode == 404)
         {
-            LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
-            
             self.funnelRequestIsActive = NO;
             self.failedFunnelCount = 0;
-            
-            [self relaunchVisit];
+
+            if (self.currentVisitId)
+            {
+                if ([self.currentVisitId isEqualToString:currentVisitId])
+                {
+                    LIOLog(@"<FUNNEL> Failure. HTTP code: 404. The visit no longer exists. Starting a clean visit.");
+                    [self relaunchVisit];
+                }
+                else
+                {
+                    LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                    [self handleFunnelQueueIfNeeded];
+                }
+            }
+            else
+            {
+                LIOLog(@"<CONTINUE> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
+                [self handleFunnelQueueIfNeeded];
+            }
         }
         else
         {
@@ -1656,7 +2315,7 @@
     {
         
         NSError *writeError = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:NSJSONWritingPrettyPrinted error:&writeError];
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[NSArray arrayWithObject:anObject] options:nil error:&writeError];
 
         if (!writeError && jsonData)
         {
@@ -1682,7 +2341,7 @@
 {
     // We only allow JSONable objects.
     NSError *writeError = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:NSJSONWritingPrettyPrinted error:&writeError];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDictionary options:nil error:&writeError];
     
     if (!writeError && jsonData)
     {
@@ -1713,14 +2372,12 @@
     [newEvent setObject:[self.dateFormatter stringFromDate:[NSDate date]] forKey:@"timestamp"];
     
     [self.pendingEvents addObject:newEvent];
+    [self.lastReportedEventsDictionary setObject:newEvent forKey:anEvent];
     
     // Queue is capped. Remove oldest entry on overflow.
     if ([self.pendingEvents count] > LIOLookIOMAnagerMaxEventQueueSize)
         [self.pendingEvents removeObjectAtIndex:0];
     
-    // Immediately make a continue call
-    [self sendContinuationReport];
-
     // For PageView event, also record the last known page view
     if (YES == [anEvent isEqualToString:kLPEventPageView])
     {
@@ -1751,6 +2408,8 @@
         if (call.callState == CTCallStateIncoming)
         {
             currentVisit.isCurrentCallOutgoingAndFirst = NO;
+            [currentVisit.delegate visitHasIncomingCall:currentVisit];
+        
         }
         if (call.callState == CTCallStateDialing)
         {
@@ -1799,6 +2458,30 @@
             }
         }
     };
+}
+
+#pragma mark -
+#pragma mark Logging Methods
+
+- (void)startLogUploadingWithURL:(NSString *)loggingURLString
+{
+    self.loggingEnabled = YES;
+    self.lastKnownLoggingURL = loggingURLString;
+    [LIOLogManager sharedLogManager].lastKnownLoggingUrl = loggingURLString;
+    self.loggingTimer = [NSTimer scheduledTimerWithTimeInterval:60.0 target:self selector:@selector(loggingUploadTimerDidFire:) userInfo:nil repeats:YES];
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
+}
+
+- (void)stopLogUploading
+{
+    self.loggingEnabled = NO;
+    [self.loggingTimer invalidate];
+    self.loggingTimer = nil;
+}
+
+- (void)loggingUploadTimerDidFire:(NSTimer *)timer
+{
+    [[LIOLogManager sharedLogManager] uploadLogForVisit:self];
 }
 
 @end

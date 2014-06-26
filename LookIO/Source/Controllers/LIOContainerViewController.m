@@ -54,6 +54,8 @@
 
 @property (nonatomic, assign) BOOL isAnimatingPresentation;
 
+@property (nonatomic, copy) NSString *lastReceivedNotification;
+
 @end
 
 @implementation LIOContainerViewController
@@ -70,6 +72,12 @@
         self.blurImageView.alpha = 1.0;
         self.view.alpha = 1.0;
     } completion:^(BOOL finished) {
+        // If this is part of the intro presentation, show the keyboard
+        if (self.containerViewState == LIOContainerViewStateChat && self.isAnimatingPresentation)
+        {
+            [self.chatViewController appearanceAnimationForKeyboardInitialPosition];
+        }
+
         self.isAnimatingPresentation = NO;
     }];
 }
@@ -219,6 +227,14 @@
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
 {
+    // In oading state and showing the queueing notification, show the new message
+    self.lastReceivedNotification = notification;
+    if (LIOContainerViewStateLoading == self.containerViewState && self.loadingViewController.isShowingQueueingMessage)
+    {
+        [self.loadingViewController updateQueueingMessage:self.lastReceivedNotification];
+    }
+    
+    
     if (LIOContainerViewStateChat == self.containerViewState || LIOContainerViewStateLoading == self.containerViewState)
     {
         if (UIAccessibilityIsVoiceOverRunning())
@@ -427,6 +443,13 @@
             self.headerBarState = LIOHeaderBarStateLandscapeHidden;
         [self presentChatViewController:YES];
         
+        if (!self.isAnimatingPresentation)
+        {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self.chatViewController appearanceAnimationForKeyboardInitialPosition];
+            });
+        }
+        
         if (self.engagement.isAgentTyping)
         {
             [self playAccessibilityTypingSoundEffect];
@@ -469,10 +492,18 @@
 }
 
 
-- (void)presentLoadingViewController
+- (void)presentLoadingViewControllerWithQueueingMessage:(BOOL)withMessage
 {
     self.containerViewState = LIOContainerViewStateLoading;
-    [self.loadingViewController showBezel];
+    
+    if (LIOHeaderBarStateVisible == self.headerBarState)
+        [self dismissHeaderBarView:YES withState:LIOHeaderBarStateHidden];
+
+    
+    if (withMessage)
+        [self.loadingViewController showBezelForQueueingMessage:self.lastReceivedNotification];
+    else
+        [self.loadingViewController showBezel];
     
     if (self.currentViewController != self.loadingViewController)
         [self swapCurrentControllerWith:self.loadingViewController animated:YES];
@@ -524,7 +555,12 @@
     if (LIOSurveyTypePostchat == survey.surveyType)
     {
         if ([survey anyQuestionsAnswered] && [survey allMandatoryQuestionsAnswered])
-            [self.engagement submitSurvey:survey retries:0];
+        {
+            // Let's mark it as uncompleted, so that we don't report a related developer event
+            survey.isSubmittedUncompletedPostChatSurvey = YES;
+            
+            [self.engagement submitSurvey:survey retries:0];            
+        }
     }
   
     [self dismiss];
@@ -554,7 +590,7 @@
             break;
             
         case LIOSurveyTypePrechat:
-            [self presentLoadingViewController];
+            [self presentLoadingViewControllerWithQueueingMessage:YES];
             break;
             
         default:

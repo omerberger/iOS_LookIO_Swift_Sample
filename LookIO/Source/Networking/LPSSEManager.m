@@ -251,10 +251,10 @@
             partialPacket = nil;
         }
         
-        LIOLog(@"\n\n<LPSSEManager> Read Event Stream:\n%@\n----------<END>----------\n\n", readString);
+        LIOLog(@"\n\n<LPSSEManager> Read Event Stream:\n%@\n<END>\n\n", readString);
         
         NSRange sepRange = [readString rangeOfString:@"\n\n"];
-        if (sepRange.location != NSNotFound)
+        if (sepRange.location != NSNotFound && [readString hasSuffix:@"\n\n"])
         {
             NSArray *eventStreamStrings = [readString componentsSeparatedByString:@"\n\n"];
 

@@ -72,7 +72,7 @@ static LPAPIClient *sharedClient = nil;
             [request setURL:url];
         } else {
             NSError *jsonError = nil;
-            NSData *parametersJSONEncoded = [NSJSONSerialization dataWithJSONObject:parameters options:NSJSONWritingPrettyPrinted error:&jsonError];
+            NSData *parametersJSONEncoded = [NSJSONSerialization dataWithJSONObject:parameters options:nil error:&jsonError];
             [request setHTTPBody:parametersJSONEncoded];
             LIOLog(@"Request:\n%@", [[[NSString alloc] initWithData:parametersJSONEncoded encoding:NSUTF8StringEncoding] autorelease]);
         }
@@ -150,6 +150,23 @@ static LPAPIClient *sharedClient = nil;
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
 {
 	NSURLRequest *request = [self requestWithMethod:@"POST" path:path parameters:parameters];
+	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    [self enqueueHTTPRequestOperation:operation];
+}
+
+- (void)postPath:(NSString *)path
+      parameters:(NSDictionary *)parameters
+         headers:(NSDictionary *)headers
+         success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
+         failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
+{
+	NSMutableURLRequest *request = [self requestWithMethod:@"POST" path:path parameters:parameters];
+    for (NSString *header in headers.allKeys)
+    {
+        NSString *headerValue = [headers objectForKey:header];
+        [request setValue:headerValue forHTTPHeaderField:header];
+    }
+    
 	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];
 }

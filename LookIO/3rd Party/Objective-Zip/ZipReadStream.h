@@ -33,17 +33,17 @@
 
 #import <Foundation/Foundation.h>
 
-#include "unzip.h"
+#include "unzip_LIO.h"
 
 
 @interface ZipReadStream_LIO : NSObject {
 	NSString *_fileNameInZip;
 	
 @private
-	unzFile _unzFile;
+	unzFile_LIO _unzFile;
 }
 
-- (id) initWithUnzFileStruct:(unzFile)unzFile fileNameInZip:(NSString *)fileNameInZip;
+- (id) initWithUnzFileStruct:(unzFile_LIO)unzFile fileNameInZip:(NSString *)fileNameInZip;
 
 - (NSData *)readDataOfLength:(NSUInteger)length;
 - (void) finishedReading;

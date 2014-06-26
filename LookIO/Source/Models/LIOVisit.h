@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+// Models
+#import "LIOAccountSkillStatus.h"
+
 typedef enum
 {
     LIOFunnelStateInitialized = 0,
@@ -53,7 +56,14 @@ typedef enum
 - (void)visitReachabilityDidChange:(LIOVisit *)visit;
 - (void)visit:(LIOVisit *)visit wantsToShowMessage:(NSString *)message;
 - (void)visitDidLaunch:(LIOVisit *)visit;
+- (void)visitReportDidLaunch:(LIOVisit *)visit;
 - (int)visit:(LIOVisit *)visit engagementFunnelStateForFunnelState:(LIOFunnelState)funnelState;
+- (void)visitHasIncomingCall:(LIOVisit *)visit;
+- (void)visit:(LIOVisit *)visit didChangeEnabled:(BOOL)enabled forSkill:(NSString *)skill forAccount:(NSString *)account;
+- (void)visit:(LIOVisit *)visit didChangeFunnelState:(LIOFunnelState)funnelState;
+- (NSString *)visitCurrentEngagementAccount:(LIOVisit *)visit;
+- (NSString *)visitCurrentEngagementSkill:(LIOVisit *)visit;
+- (BOOL)doesCurrentEngagementExist:(LIOVisit *)visit;
 
 @end
 
@@ -74,29 +84,39 @@ typedef enum
 @property (nonatomic, copy) NSString *lastKnownButtonTextColor;
 @property (nonatomic, copy) NSString *lastKnownButtonText;
 
+@property (nonatomic, strong) LIOAccountSkillStatus *requiredAccountSkill;
+@property (nonatomic, strong) LIOAccountSkillStatus *defaultAccountSkill;
+
 - (void)disableControlButton;
 - (void)undisableControlButton;
+
 - (void)disableSurveys;
 - (void)undisableSurveys;
+- (BOOL)surveysDisabled;
+
 - (void)useIconButton;
 - (void)useTextButton;
 - (void)useDefaultButton;
 
 - (void)refreshControlButtonVisibility;
-
+- (void)updateEnabledForAllAccountsAndSkills;
 - (void)updateAndReportFunnelState;
 
 - (BOOL)chatEnabled;
 - (BOOL)chatInProgress;
-- (BOOL)surveysEnabled;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill;
+- (BOOL)isChatEnabledForSkill:(NSString *)skill forAccount:(NSString *)account;
 - (BOOL)hideEmailChat;
+- (BOOL)maskCreditCards;
 
 - (void)launchVisit;
 - (void)relaunchVisit;
 - (void)stopVisit;
 - (void)sendContinuationReport;
+- (void)sendContinuationReportAndResendAllUDEs;
 
 - (void)setSkill:(NSString *)skill;
+- (void)setSkill:(NSString *)skill withAccount:(NSString *)account;
 
 - (void)setChatAvailable;
 - (void)setChatUnavailable;
@@ -112,5 +132,8 @@ typedef enum
 - (void)clearUDEs;
 - (void)addUDEs:(NSDictionary *)aDictionary;
 - (void)reportEvent:(NSString *)anEvent withData:(id<NSObject>)someData;
+
+// Logging
+- (void)stopLogUploading;
 
 @end

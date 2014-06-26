@@ -33,6 +33,8 @@
 #define LIOEngagementReconnectionAfterCrashTimeLimit    60.0 // 1 minutes
 #define LIOLookIOManagerMessageSeparator                @"!look.io!"
 #define LIOLookIOManagerScreenCaptureInterval           0.5
+#define LIOEngagementSSETimeout                         30
+#define LIOEngagementSSECheckTimeoutInterval            5
 
 @interface LIOEngagement () <LPSSEManagerDelegate>
 
@@ -60,14 +62,21 @@
 @property (nonatomic, assign) unsigned long previousScreenshotHash;
 @property (nonatomic, strong) NSDate *screenSharingStartedDate;
 
+// These are used to check if the SSE channel has been quiet for over 20 seconds, and reconnect if so
+// This is to avoid cases where the connection does not disconnect but is no longer active
+@property (nonatomic, strong) NSDate *lastSSEEventDate;
+@property (nonatomic, strong) NSTimer *timeoutTimer;
+
 @end
 
 @implementation LIOEngagement
 
-- (id)initWithVisit:(LIOVisit *)aVisit {
+- (id)initWithVisit:(LIOVisit *)aVisit skill:(NSString *)skill account:(NSString *)account {
     self = [super init];
     if (self) {
         self.visit = aVisit;
+        self.engagementSkill = skill;
+        self.engagementAccount = account;
         
         self.messages = [[NSMutableArray alloc] init];
         [self populateFirstChatMessage];
@@ -82,6 +91,8 @@
         
         self.isConnected = NO;
         self.isAgentTyping = NO;
+        
+        self.lastSSEEventDate = [NSDate date];
     }
     return self;
 }
@@ -129,12 +140,22 @@
     
     if (self.isScreenShareActive)
         [self stopScreenshare];
+    
+    if (self.timeoutTimer)
+    {
+        [self.timeoutTimer invalidate];
+        self.timeoutTimer = nil;
+    }
+    
+    if (self.visit)
+        [self.visit updateAndReportFunnelState];
 }
 
 - (void)startEngagement
 {
     [self sendIntroPacket];
-    [self.visit updateAndReportFunnelState];
+    if (self.visit)
+        [self.visit updateAndReportFunnelState];
 }
 
 - (void)cancelEngagement
@@ -345,9 +366,15 @@
 
 - (void)sseManagerDidDisconnect:(LPSSEManager *)aManager
 {
+    // If disconnecting, no point in maintaining a timeout timer
+    if (self.timeoutTimer)
+    {
+        [self.timeoutTimer invalidate];
+        self.timeoutTimer = nil;
+    }
+    
     switch (self.sseChannelState) {
-
-            // If are not expecting a disconnect, we should try to reconnect
+        // If are not expecting a disconnect, we should try to reconnect
         case LIOSSEChannelStateConnected:
             self.sseChannelState = LIOSSEChannelStateReconnecting;
             [self connectSSESocket];
@@ -439,6 +466,8 @@
 
 - (void)sseManager:(LPSSEManager *)aManager didDispatchEvent:(LPSSEvent *)anEvent
 {
+    self.lastSSEEventDate = [NSDate date];
+    
     NSError *error = nil;
     NSDictionary *aPacket = [NSJSONSerialization JSONObjectWithData:[anEvent.data dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&error];
 
@@ -460,7 +489,7 @@
     if ([type isEqualToString:@"reintroed"])
     {
         NSNumber *success = [aPacket objectForKey:@"success"];
-        if (success)
+        if ([success boolValue] == YES)
         {
             if (LIOSSEChannelStateReconnectPrompt == self.sseChannelState)
             {
@@ -474,6 +503,15 @@
                 [self sendCapabilitiesPacketRetries:0];
                 [self.delegate engagementDidConnect:self];
             }
+            
+            // Start the timeout timer, which reconnects if the SSE channe is idle more than 30 seconds
+            if (self.timeoutTimer)
+            {
+                [self.timeoutTimer invalidate];
+                self.timeoutTimer = nil;
+            }
+            
+            self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:LIOEngagementSSECheckTimeoutInterval target:self selector:@selector(timeoutTimerDidFire:) userInfo:nil repeats:YES];
         }
         else
         {
@@ -625,9 +663,9 @@
             if (preSurveyDict && [preSurveyDict isKindOfClass:[NSDictionary class]])
             {
                 // If the dictionary is empty, just start the engagement
-                if ([preSurveyDict.allKeys count] == 0)
+                if ([preSurveyDict.allKeys count] == 0 || [self.visit surveysDisabled])
                 {
-                    [self.delegate engagementDidStart:self];
+                    [self.delegate engagementHasNoPrechatSurvey:self];
                 }
                 else
                 {
@@ -645,7 +683,11 @@
     if ([type isEqualToString:@"advisory"])
     {
         NSString *action = [aPacket objectForKey:@"action"];
-    
+        
+        if ([action isEqualToString:@"send_udes"])
+        {
+            [self.delegate engagementRequestedToResendAllUDEs:self];
+        }
         if ([action isEqualToString:@"notification"])
         {
             NSDictionary *data = [aPacket objectForKey:@"data"];
@@ -674,6 +716,11 @@
             
             self.isConnected = YES;
             [self.delegate engagementAgentIsReady:self];
+            
+            [self.delegate engagementDidStart:self];
+            [self saveEngagement];
+            [self saveEngagementMessages];
+
         }
         if ([action isEqualToString:@"unprovisioned"])
         {
@@ -725,9 +772,7 @@
         }
         if ([action isEqualToString:@"engagement_started"])
         {
-            [self.delegate engagementDidStart:self];
-            [self saveEngagement];
-            [self saveEngagementMessages];
+            [self.delegate engagementDidQueue:self];
         }
     }
     
@@ -785,7 +830,17 @@
         // Clear any existing cookies
         [[LPChatAPIClient sharedClient] clearCookies];
         
-        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:[self.visit introDictionary] success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        NSMutableDictionary *introParameters = [[self.visit introDictionary] mutableCopy];
+
+        // This will override any existing skill from the intro dictionary
+        if (self.engagementSkill)
+            [introParameters setObject:self.engagementSkill forKey:@"skill"];
+        if (self.engagementAccount)
+            [introParameters setObject:self.engagementAccount forKey:@"site_id"];
+        
+        NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
+
+        [[LPChatAPIClient sharedClient] postPath:LIOLookIOManagerChatIntroRequestURL parameters:introParameters headers:headersDictionary success:^(LPHTTPRequestOperation *operation, id responseObject) {
             
             if (responseObject)
                 LIOLog(@"<INTRO> response: %@", responseObject);
@@ -981,7 +1036,7 @@
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         
-        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", nil];
+        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", nil];
         NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                   capsArray, @"capabilities",
                                   nil];
@@ -1138,11 +1193,16 @@
                 
             case LIOSurveyTypeOffline:
                 surveyTypeString = @"offline";
+                [self.delegate engagementDidSubmitOfflineSurvey:self];
                 self.sseChannelState = LIOSSEChannelStateEnding;
+                
                 break;
                 
             case LIOSurveyTypePostchat:
                 surveyTypeString = @"postchat";
+                // Trigger an event reporting that the survey was submitted, unless it wasn't completed.
+                if (!survey.isSubmittedUncompletedPostChatSurvey)
+                    [self.delegate engagementDidSubmitPostchatSurvey:self];
                 self.sseChannelState = LIOSSEChannelStateEnding;
                 break;
                 
@@ -1284,7 +1344,16 @@
     newMessage.date = [NSDate date];
     newMessage.lineId = nil;
     newMessage.senderName = @"Me";
-    newMessage.text = text;
+    
+    if (self.visit.maskCreditCards)
+    {
+        newMessage.text = [self maskCreditCardForText:text];
+    }
+    else
+    {
+        newMessage.text = text;
+    }
+    
     [newMessage detectLinks];
     newMessage.clientLineId = [NSString stringWithFormat:@"%ld", (long)self.lastClientLineId];
     self.lastClientLineId += 1;
@@ -1319,7 +1388,7 @@
 - (BOOL)shouldPresentPostChatSurvey
 {
     BOOL shouldPresentPostChatSurvey = NO;
-    if (self.visit.surveysEnabled && self.postchatSurvey)
+    if (self.postchatSurvey)
         shouldPresentPostChatSurvey = YES;
     
     return shouldPresentPostChatSurvey;
@@ -1527,5 +1596,58 @@
     }];
 }
 
+#pragma mark -
+#pragma mark Credit Card Masking Methods
+
+- (NSString *)maskCreditCardForText:(NSString *)text
+{
+    NSError *error = nil;
+    NSMutableString* mutableString = [text mutableCopy];
+    NSInteger offset = 0;
+    NSRegularExpression *regex = [NSRegularExpression
+                                  regularExpressionWithPattern:@"(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\\\d{3})\\\\d{11})"
+                                  options:0
+                                  error:&error];
+    if (error) {
+        return text;
+    }
+    
+    for (NSTextCheckingResult* result in [regex matchesInString:text options:0 range:NSMakeRange(0, [text length])]) {
+        
+        NSRange resultRange = [result range];
+        resultRange.location += offset;
+        NSString* match = [regex replacementStringForResult:result
+                                                   inString:mutableString
+                                                     offset:offset
+                                                   template:@"$0"];
+
+        NSString* replacement = [[match componentsSeparatedByCharactersInSet:[NSCharacterSet decimalDigitCharacterSet]] componentsJoinedByString:@"*"];
+        
+        // make the replacement
+        [mutableString replaceCharactersInRange:resultRange withString:replacement];
+        
+        // update the offset based on the replacement
+        offset += ([replacement length] - resultRange.length);
+    }
+    
+    return mutableString;
+}
+
+#pragma mark -
+#pragma mark Timeout timer methods
+
+- (void)timeoutTimerDidFire:(id)sender
+{
+    // Don't attempt to reconnect when app is not active
+    if (UIApplicationStateActive != [UIApplication sharedApplication].applicationState) return;
+    
+    NSTimeInterval interval = [[NSDate date] timeIntervalSinceDate:self.lastSSEEventDate];
+    // If channel is connected and no event received in the last 30 seconds, disconnect to trigger a reconnect
+    if (interval > LIOEngagementSSETimeout && self.sseChannelState == LIOSSEChannelStateConnected)
+    {
+        LIOLog(@"<ENGAGEMENT> More than 30 seconds passed since last SSE event; Reconnecting...");
+        [self.sseManager disconnect];
+    }
+}
 
 @end

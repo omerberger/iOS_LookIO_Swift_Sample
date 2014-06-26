@@ -19,8 +19,11 @@
 @interface LIOLoadingViewController : UIViewController
 
 @property (nonatomic, assign) id <LIOLoadingViewControllerDelegate> delegate;
+@property (nonatomic, assign) BOOL isShowingQueueingMessage;
 
 - (void)showBezel;
 - (void)hideBezel;
+- (void)showBezelForQueueingMessage:(NSString *)queueingMessage;
+- (void)updateQueueingMessage:(NSString *)queueingMessage;
 
 @end
