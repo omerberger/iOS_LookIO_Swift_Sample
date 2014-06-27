@@ -269,6 +269,8 @@
 
 - (void)setTransformForInterfaceOrienation:(UIInterfaceOrientation)orientation
 {
+    self.transform = CGAffineTransformIdentity;
+
     switch (orientation) {
         case UIInterfaceOrientationPortrait:
             self.transform = CGAffineTransformIdentity;
@@ -301,6 +303,9 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
 
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -386,6 +391,8 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -432,6 +439,9 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
     
     CGFloat verticalPosition = [[LIOBrandingManager brandingManager] verticalPositionForElement:LIOBrandingElementControlButton];
@@ -477,6 +487,8 @@
 {
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
@@ -775,6 +787,8 @@
     // Toggle text button alpha when dragging
     BOOL goingToAttachToRight = self.isAttachedToRight;
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
@@ -839,6 +853,8 @@
         
         UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
         if (self.ignoreActualInterfaceOrientation)
+            actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
             actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
         if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {

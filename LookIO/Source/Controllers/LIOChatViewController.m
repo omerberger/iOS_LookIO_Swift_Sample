@@ -1300,7 +1300,15 @@
     }
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
@@ -1428,6 +1436,28 @@
         [self updateSubviewFrames];
     }
 }
+
+// iOS 8.0
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    UIInterfaceOrientation interfaceOrientation = size.width > size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
+    
+    if (LIOKeyboardStateMenu == self.keyboardState)
+    {
+        [self setDefaultKeyboardHeightsForOrientation:interfaceOrientation];
+    }
+    [self updateNumberOfMessagesToShowInScrollBackForOrientation:interfaceOrientation];
+
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+        {
+            [self.tableView reloadData];
+            [self updateSubviewFrames];
+        }
+    } completion:nil];
+}
+
 
 #pragma mark -
 #pragma mark UIGestureRecognizerDelegate method
