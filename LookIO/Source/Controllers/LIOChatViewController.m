@@ -1492,7 +1492,7 @@
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     
     UIInterfaceOrientation interfaceOrientation = size.width < size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
-    
+ 
     if (LIOKeyboardStateMenu == self.keyboardState)
     {
         [self setDefaultKeyboardHeightsForOrientation:interfaceOrientation];
@@ -1508,7 +1508,6 @@
     } completion:nil];
 }
 */
-
 
 #pragma mark -
 #pragma mark UIGestureRecognizerDelegate method
