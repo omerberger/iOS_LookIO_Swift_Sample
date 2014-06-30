@@ -88,6 +88,7 @@ typedef enum
 
 @property (nonatomic, assign) BOOL isConnected;
 @property (nonatomic, assign) BOOL isAgentTyping;
+@property (nonatomic, assign) BOOL didReportChatInteractive;
 
 @property (nonatomic, assign) NSInteger lastClientLineId;
 @property (nonatomic, strong) NSMutableArray *messages;

@@ -91,6 +91,7 @@
         
         self.isConnected = NO;
         self.isAgentTyping = NO;
+        self.didReportChatInteractive = NO;
         
         self.lastSSEEventDate = [NSDate date];
     }
