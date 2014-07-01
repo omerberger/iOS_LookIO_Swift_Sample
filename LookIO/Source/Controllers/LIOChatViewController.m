@@ -723,7 +723,7 @@
 #pragma mark Keyboard Menu Methods
 
 - (void)setDefaultKeyboardHeightsForOrientation:(UIInterfaceOrientation)orientation
-{    
+{
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI) {
@@ -1490,7 +1490,6 @@
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
     UIInterfaceOrientation interfaceOrientation = size.width < size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
  
     if (LIOKeyboardStateMenu == self.keyboardState)
