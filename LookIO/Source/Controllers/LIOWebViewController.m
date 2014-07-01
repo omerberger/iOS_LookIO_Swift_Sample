@@ -269,6 +269,25 @@
     }
 }
 
+// iOS 8.0
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    if (self.controlButton)
+    {
+        [self.controlButton hide:NO];
+    }
+    
+    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (self.controlButton)
+        {
+            [self.controlButton resetFrame];
+            [self.controlButton show:YES];
+        }
+    }];    
+}
+
 - (void)reportUnreadMessage
 {
     if (self.controlButton)

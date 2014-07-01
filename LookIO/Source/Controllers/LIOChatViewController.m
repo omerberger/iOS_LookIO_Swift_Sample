@@ -724,6 +724,11 @@
 
 - (void)setDefaultKeyboardHeightsForOrientation:(UIInterfaceOrientation)orientation
 {
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        orientation = self.view.bounds.size.width < self.view.bounds.size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
+    }
+    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI) {
@@ -770,7 +775,10 @@
         if (self.lastKeyboardHeight == 0.0)
         {
             UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-            
+            if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            {
+                actualOrientation = self.view.bounds.size.width > self.view.bounds.size.height ?UIInterfaceOrientationLandscapeLeft : UIInterfaceOrientationPortrait;
+            }
             [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
         }
         
@@ -1362,7 +1370,15 @@
     self.keyboardIsDraggingInKeyboardState = NO;
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
     
     [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:NO maintainTableViewOffset:YES];
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
@@ -1441,7 +1457,9 @@
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-    UIInterfaceOrientation interfaceOrientation = size.width > size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    UIInterfaceOrientation interfaceOrientation = size.width < size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
     
     if (LIOKeyboardStateMenu == self.keyboardState)
     {
@@ -1582,6 +1600,10 @@
     if (shouldAnimateToEndState)
     {
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        {
+            actualOrientation = self.view.bounds.size.width > self.view.bounds.size.height ? UIInterfaceOrientationMaskLandscapeLeft : UIInterfaceOrientationMaskPortrait;
+        }
         [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
 
         [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{

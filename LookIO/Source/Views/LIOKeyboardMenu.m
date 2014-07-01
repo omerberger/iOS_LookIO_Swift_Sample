@@ -122,7 +122,11 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     NSInteger rowWidth = padUI ? 160 : 105;
-    NSInteger rowHeight = padUI ? 120 : 100;
+    NSInteger rowHeight = padUI ? 120 : 90;
+    
+    // Ensure at least two rows of buttons
+    NSInteger maximumHeight = self.bounds.size.height/2;
+    if (maximumHeight > 0) rowHeight = maximumHeight;
     
     if (self.bounds.size.width < rowWidth || self.bounds.size.height < rowHeight)
         return;

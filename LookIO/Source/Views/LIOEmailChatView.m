@@ -172,6 +172,11 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(actualInterfaceOrientation);
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        landscape = self.superview.bounds.size.width > self.superview.bounds.size.height;
+    }    
 
     CGRect frame = self.backgroundView.frame;
     if (padUI)
@@ -204,7 +209,7 @@
     frame.size.width = self.backgroundView.frame.size.width - 2*LIOEmailChatViewTextFieldMargin;
     frame.size.height = 40.0;
     self.emailTextFieldBackgroundView.frame = frame;
-    
+        
     if (!padUI)
     {
         frame = self.backgroundView.frame;
@@ -250,6 +255,8 @@
         self.cancelButton.frame = frame;
     }
     
+    NSLog(@"Email view origin x is %f", self.emailTextFieldBackgroundView.frame.origin.x);
+
     [self updateScrollView];
 }
 
@@ -258,6 +265,10 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     BOOL landscape = UIInterfaceOrientationIsLandscape(actualInterfaceOrientation);
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        landscape = self.superview.bounds.size.width > self.superview.bounds.size.height;
+    }
 
     if (!padUI)
     {
@@ -417,7 +428,15 @@
     [[info objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardRect];
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
+    
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         CGRect frame = self.frame;

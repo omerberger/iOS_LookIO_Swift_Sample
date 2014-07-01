@@ -415,8 +415,14 @@
 {
     // This is only relevant if we are in landscape and in chat and not on iPad
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
+    BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        landscape = self.view.bounds.size.width > self.view.bounds.size.height;
+    }
 
-    if (!padUI && (LIOContainerViewStateChat == self.containerViewState) && UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+    if (!padUI && (LIOContainerViewStateChat == self.containerViewState) && landscape)
     {
         if (hidden)
         {
@@ -863,6 +869,30 @@
     }
     if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
         [self presentHeaderBarView:NO];
+}
+
+// iOS 8.0
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    [self updateStatusBarInset];
+    
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        UIInterfaceOrientation toInterfaceOrientation = size.width < size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
+        
+        if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
+        {
+            if (LIOContainerViewStateChat == self.containerViewState)
+                if (![self.chatViewController shouldHideHeaderBarForLandscape])
+                    return;
+            
+            [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
+        }
+        if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
+            [self presentHeaderBarView:NO];
+    } completion:nil];
 }
 
 

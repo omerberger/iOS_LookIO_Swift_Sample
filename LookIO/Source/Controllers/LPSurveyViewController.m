@@ -269,7 +269,14 @@
     
     // Set new keyboard state and size
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         [self updateSubviewFrames];
@@ -816,6 +823,10 @@
 {
     UIInterfaceOrientation currentInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     BOOL landscape = UIInterfaceOrientationIsLandscape(currentInterfaceOrientation);
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        landscape = self.view.bounds.size.width > self.view.bounds.size.height;
+    }        
 
     CGRect aFrame = CGRectZero;
     CGFloat offset;
@@ -1523,9 +1534,53 @@
         self.previousQuestionView.scrollView.frame = frame;
         
     }
-    
-    
 }
 
+
+// iOS 8.0
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self updateScrollView];
+        
+        if (self.currentQuestionView)
+        {
+            [self.currentQuestionView reloadTableViewDataIfNeeded];
+            [self.currentQuestionView setNeedsLayout];
+        }
+        if (self.nextQuestionView)
+        {
+            [self.nextQuestionView reloadTableViewDataIfNeeded];
+            [self.nextQuestionView setNeedsLayout];
+        }
+        if (self.previousQuestionView)
+        {
+            [self.previousQuestionView reloadTableViewDataIfNeeded];
+            [self.previousQuestionView setNeedsLayout];
+        }
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+        if (!padUI)
+        {
+            CGRect frame = self.currentQuestionView.scrollView.frame;
+            frame.size.width = self.view.frame.size.width;
+            frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+            self.currentQuestionView.scrollView.frame = frame;
+            
+            frame = self.nextQuestionView.scrollView.frame;
+            frame.size.width = self.view.frame.size.width;
+            frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+            self.nextQuestionView.scrollView.frame = frame;
+            
+            frame = self.previousQuestionView.scrollView.frame;
+            frame.size.width = self.view.frame.size.width;
+            frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+            self.previousQuestionView.scrollView.frame = frame;
+        }
+    }];
+}
 
 @end
