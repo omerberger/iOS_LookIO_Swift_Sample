@@ -723,12 +723,7 @@
 #pragma mark Keyboard Menu Methods
 
 - (void)setDefaultKeyboardHeightsForOrientation:(UIInterfaceOrientation)orientation
-{
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
-    {
-        orientation = self.view.bounds.size.width < self.view.bounds.size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
-    }
-    
+{    
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
 
     if (padUI) {
@@ -1052,7 +1047,7 @@
     
     CGFloat inputBarHeight = padUI ? 85 : 50;
     self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - inputBarHeight, self.view.bounds.size.width, inputBarHeight)];
-    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
     self.inputBarView.textView.inputAccessoryView = [[LIOObservingInputAccessoryView alloc] init];
@@ -1065,7 +1060,7 @@
     self.tableView.tableFooterView = self.tableFooterView;
     
     self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
-    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.keyboardMenu.delegate = self;
     [self.keyboardMenu setDefaultButtonItems];
     [self.view addSubview:self.keyboardMenu];
@@ -1272,6 +1267,9 @@
 - (void)keyboardDidShow:(NSNotification *)notification
 {
     if (LIOChatStateEmailChat == self.chatState)
+        return;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         return;
     
     [self keyboardWillShow:notification];

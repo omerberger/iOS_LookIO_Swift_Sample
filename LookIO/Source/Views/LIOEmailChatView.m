@@ -45,7 +45,8 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         
         self.scrollView = [[UIScrollView alloc] initWithFrame:self.bounds];
-        self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.scrollView.showsHorizontalScrollIndicator = NO;
         self.scrollView.showsVerticalScrollIndicator = NO;
         [self addSubview:self.scrollView];
@@ -255,8 +256,6 @@
         self.cancelButton.frame = frame;
     }
     
-    NSLog(@"Email view origin x is %f", self.emailTextFieldBackgroundView.frame.origin.x);
-
     [self updateScrollView];
 }
 

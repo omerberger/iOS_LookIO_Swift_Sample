@@ -279,14 +279,20 @@
     }
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        [self updateSubviewFrames];
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        if (self.currentQuestionView)
-            [self.currentQuestionView setNeedsLayout];
-        if (self.nextQuestionView)
-            [self.nextQuestionView setNeedsLayout];
-        if (self.previousQuestionView)
-            [self.previousQuestionView setNeedsLayout];
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            [self updateSubviewFrames];
+        else
+        {
+            if (self.currentQuestionView)
+                [self.currentQuestionView setNeedsLayout];
+            if (self.nextQuestionView)
+                [self.nextQuestionView setNeedsLayout];
+            if (self.previousQuestionView)
+                [self.previousQuestionView setNeedsLayout];
+        }
     }];
 }
 
@@ -313,14 +319,20 @@
     self.lastKeyboardHeight = 0;
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        [self updateSubviewFrames];
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        if (self.currentQuestionView)
-            [self.currentQuestionView setNeedsLayout];
-        if (self.nextQuestionView)
-            [self.nextQuestionView setNeedsLayout];
-        if (self.previousQuestionView)
-            [self.previousQuestionView setNeedsLayout];
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            [self updateSubviewFrames];
+        else
+        {
+            if (self.currentQuestionView)
+                [self.currentQuestionView setNeedsLayout];
+            if (self.nextQuestionView)
+                [self.nextQuestionView setNeedsLayout];
+            if (self.previousQuestionView)
+                [self.previousQuestionView setNeedsLayout];
+        }
     }];
 }
 
