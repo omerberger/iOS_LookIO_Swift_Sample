@@ -256,8 +256,6 @@
         self.cancelButton.frame = frame;
     }
     
-    NSLog(@"Email view origin x is %f", self.emailTextFieldBackgroundView.frame.origin.x);
-
     [self updateScrollView];
 }
 
