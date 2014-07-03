@@ -113,8 +113,9 @@
     
     if (anError)
     {
-        LIOLog(@"<LPSSEManager> Couldn't connect: %@", anError);
+        LIOLog(@"<LPSSEManager> Couldn't connect to host %@ port %d: %@", self.host, self.port, anError);
         [delegate sseManagerWillDisconnect:self withError:anError];
+        [delegate sseManagerDidDisconnect:self];
         return;
     }
 }
