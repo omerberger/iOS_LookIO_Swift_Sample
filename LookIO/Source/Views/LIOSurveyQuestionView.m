@@ -211,6 +211,11 @@
         self.nextButton.hidden = NO;
         self.cancelButton.hidden = NO;
         
+        if (!question.mandatory)
+            self.subtitleLabel.text = @"";
+        else
+            self.subtitleLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
+
         self.questionViewType = LIOSurveyQuestionViewNoKeyboard;
     }
     
