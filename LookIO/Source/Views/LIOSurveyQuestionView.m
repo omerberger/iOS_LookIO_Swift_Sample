@@ -198,7 +198,7 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];    
     
     self.titleLabel.text = question.label;
-    if (question.mandatory)
+    if (question.mandatory && LIOSurveyQuestionDisplayTypeIntro != question.displayType)
         self.titleLabel.text = [NSString stringWithFormat:@"%@ *", self.titleLabel.text];
     
     self.subtitleLabel.hidden = YES;
