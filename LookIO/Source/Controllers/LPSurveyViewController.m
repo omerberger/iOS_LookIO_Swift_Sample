@@ -279,20 +279,14 @@
     }
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
-            [self updateSubviewFrames];
+        [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
-            [self updateSubviewFrames];
-        else
-        {
-            if (self.currentQuestionView)
-                [self.currentQuestionView setNeedsLayout];
-            if (self.nextQuestionView)
-                [self.nextQuestionView setNeedsLayout];
-            if (self.previousQuestionView)
-                [self.previousQuestionView setNeedsLayout];
-        }
+        if (self.currentQuestionView)
+            [self.currentQuestionView setNeedsLayout];
+        if (self.nextQuestionView)
+            [self.nextQuestionView setNeedsLayout];
+        if (self.previousQuestionView)
+            [self.previousQuestionView setNeedsLayout];
     }];
 }
 
@@ -321,17 +315,12 @@
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
             [self updateSubviewFrames];
     } completion:^(BOOL finished) {
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
-            [self updateSubviewFrames];
-        else
-        {
-            if (self.currentQuestionView)
-                [self.currentQuestionView setNeedsLayout];
-            if (self.nextQuestionView)
-                [self.nextQuestionView setNeedsLayout];
-            if (self.previousQuestionView)
-                [self.previousQuestionView setNeedsLayout];
-        }
+        if (self.currentQuestionView)
+            [self.currentQuestionView setNeedsLayout];
+        if (self.nextQuestionView)
+            [self.nextQuestionView setNeedsLayout];
+        if (self.previousQuestionView)
+            [self.previousQuestionView setNeedsLayout];
     }];
 }
 
