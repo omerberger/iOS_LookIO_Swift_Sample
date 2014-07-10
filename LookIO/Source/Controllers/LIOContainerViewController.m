@@ -826,6 +826,10 @@
             statusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
         }
 
+        // On iOS 8, status bar is hidden in landscape
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") && UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
+            statusBarHidden = YES;
+        
         statusBarInsetToReturn = statusBarHidden ? 0.0 : 20.0;
     }
     else
@@ -872,7 +876,7 @@
 }
 
 // iOS 8.0
-
+/*
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -894,6 +898,7 @@
             [self presentHeaderBarView:NO];
     } completion:nil];
 }
+*/
 
 
 #pragma mark -

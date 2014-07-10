@@ -1944,6 +1944,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
 - (BOOL)canShowLocalNotification
 {
+    return YES;
+    /*
     BOOL shouldShowNotification = YES;
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
     {
@@ -1952,6 +1954,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             shouldShowNotification = NO;
     }
     return shouldShowNotification;
+     */
 }
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification

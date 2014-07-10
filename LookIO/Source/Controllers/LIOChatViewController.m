@@ -1486,6 +1486,7 @@
 
 // iOS 8.0
 
+/*
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -1506,6 +1507,7 @@
         }
     } completion:nil];
 }
+*/
 
 
 #pragma mark -

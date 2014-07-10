@@ -276,6 +276,7 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 - (BOOL)pushEnabled
 {
     BOOL enabled = NO;
+    /*
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
     {
         UIUserNotificationSettings *settings = [[UIApplication sharedApplication] currentUserNotificationSettings];
@@ -286,7 +287,10 @@ static void reachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
     {
         enabled = [[UIApplication sharedApplication] enabledRemoteNotificationTypes] != UIRemoteNotificationTypeNone;
     }
+    */
     
+    enabled = [[UIApplication sharedApplication] enabledRemoteNotificationTypes] != UIRemoteNotificationTypeNone;
+
     return enabled;
 }
 
