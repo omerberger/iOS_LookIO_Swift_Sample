@@ -198,7 +198,7 @@
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];    
     
     self.titleLabel.text = question.label;
-    if (question.mandatory)
+    if (question.mandatory && LIOSurveyQuestionDisplayTypeIntro != question.displayType)
         self.titleLabel.text = [NSString stringWithFormat:@"%@ *", self.titleLabel.text];
     
     self.subtitleLabel.hidden = YES;
@@ -211,6 +211,11 @@
         self.nextButton.hidden = NO;
         self.cancelButton.hidden = NO;
         
+        if (!question.mandatory)
+            self.subtitleLabel.text = @"";
+        else
+            self.subtitleLabel.text = LIOLocalizedString(@"LIOSurveyViewController.MandatoryQuestionsTitle");
+
         self.questionViewType = LIOSurveyQuestionViewNoKeyboard;
     }
     

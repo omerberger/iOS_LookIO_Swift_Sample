@@ -32,6 +32,8 @@
     
     if (self)
     {
+        self.hasMandatoryQuestions = NO;
+
         self.responses = [[NSMutableDictionary alloc] init];
         self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
@@ -49,7 +51,8 @@
     if (self)
     {
         self.surveyType = surveyType;
-        
+        self.hasMandatoryQuestions = NO;
+
         self.responses = [[NSMutableDictionary alloc] init];
         self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
@@ -68,6 +71,8 @@
     
     if (self)
     {
+        self.hasMandatoryQuestions = NO;
+
         self.responses = [[NSMutableDictionary alloc] init];
         self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
@@ -350,6 +355,8 @@
         
         newQuestion.questionId = [aQuestionId integerValue];
         newQuestion.mandatory = [[aQuestionDict objectForKey:@"mandatory"] boolValue];
+        if (newQuestion.mandatory)
+            self.hasMandatoryQuestions = YES;
         newQuestion.order = [[aQuestionDict objectForKey:@"order"] integerValue];
         newQuestion.label = [aQuestionDict objectForKey:@"label"];
         newQuestion.logicId = [[aQuestionDict objectForKey:@"logic_id"] integerValue];
@@ -452,6 +459,9 @@
     LIOSurveyQuestion *question = [[LIOSurveyQuestion alloc] init];
     question.displayType = LIOSurveyQuestionDisplayTypeIntro;
     question.label = self.header;
+    // The mandatory field for the intro question will be used to indicate if the mandatory questions
+    // subtitles should be shown
+    question.mandatory = self.hasMandatoryQuestions;
     
     return question;    
 }

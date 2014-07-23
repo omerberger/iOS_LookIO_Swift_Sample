@@ -1619,7 +1619,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)engagementDidStart:(LIOEngagement *)engagement
 {
     // Report event
-    [self reportDeveloperEvent:LPDevEventChatInteractive];
+    if (!engagement.didReportChatInteractive)
+    {
+        engagement.didReportChatInteractive = YES;
+        [self reportDeveloperEvent:LPDevEventChatInteractive];
+    }
     
     if (LIOVisitStateChatStarted == self.visit.visitState || LIOVisitStateChatOpened == self.visit.visitState)
     {
