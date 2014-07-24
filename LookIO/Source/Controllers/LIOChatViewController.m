@@ -1232,22 +1232,12 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(keyboardWillChangeFrame:)
-                                                     name:UIKeyboardWillChangeFrameNotification
-                                                   object:nil];
-    }
-    else
-    {
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-        {
-            [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(observingAccessoryViewDidChange:)
                                                      name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
                                                    object:nil];
-        }
     }
 }
 
@@ -1266,20 +1256,11 @@
                                                     name:UIKeyboardDidShowNotification
                                                   object:nil];
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
         [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:UIKeyboardWillChangeFrameNotification
-                                                      object:nil];
-    }
-    else
-    {
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-        {
-            [[NSNotificationCenter defaultCenter] removeObserver:self
                                                         name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
                                                       object:nil];
-        }
     }
 }
 
@@ -1411,20 +1392,6 @@
     } completion:^(BOOL finished) {
         self.keyboardIsAnimating = NO;
     }];
-}
-
-- (void)keyboardWillChangeFrame:(NSNotification *)notification
-{
-    if (self.keyboardState == LIOKeyboardStateKeyboard)
-    {
-        LIOObservingInputAccessoryView *accessoryView = (LIOObservingInputAccessoryView *)self.inputBarView.textView.inputAccessoryView;
-
-        CGRect frame = [self.view convertRect:accessoryView.frame fromView:accessoryView];
-        self.lastKeyboardHeight = self.view.bounds.size.height - frame.origin.y;
-        
-        [self updateSubviewFrames];
-        self.keyboardIsDraggingInKeyboardState = YES;
-    }
 }
 
 - (void)observingAccessoryViewDidChange:(NSNotification *)notification
