@@ -2056,7 +2056,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             }
-            
             self.chatReceivedWhileAppBackgrounded = YES;
         }
     }
