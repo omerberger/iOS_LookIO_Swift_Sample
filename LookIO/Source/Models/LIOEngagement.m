@@ -441,7 +441,7 @@
             break;
             
         case LIOSSEChannelStateReconnecting:
-            if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState)
+            if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState || (LIOVisitStatePreChatSurvey == self.visit.visitState && ![self.prechatSurvey anyQuestionsAnswered]))
             {
                 self.sseChannelState = LIOSSEChannelStateInitialized;
                 self.isAgentTyping = NO;

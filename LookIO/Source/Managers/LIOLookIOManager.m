@@ -917,8 +917,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (LIOAlertViewNextStepCancelReconnect == alertView.tag)
     {
-        if (buttonIndex == 0)
-            [self.engagement cancelReconnect];
+        if (buttonIndex == 0) {
+            if (self.engagement)
+                [self.engagement cancelReconnect];
+            else
+                [self engagementDidEnd:self.engagement];
+        }
     }
     
     if (LIOAlertViewNextStepEndEngagement == alertView.tag)
