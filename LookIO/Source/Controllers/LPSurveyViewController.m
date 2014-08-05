@@ -250,6 +250,48 @@
         [self.previousQuestionView setNeedsLayout];
 }
 
+- (void)updateCurrentFrame {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+    {
+        CGRect frame = self.currentQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.currentQuestionView.scrollView.frame = frame;
+    }
+    
+    if (self.currentQuestionView)
+        [self.currentQuestionView setNeedsLayout];
+}
+
+- (void)updatePageControl {
+    CGRect frame = self.pageControl.frame;
+    frame.origin.y = self.view.bounds.size.height - self.lastKeyboardHeight - frame.size.height;
+    self.pageControl.frame = frame;
+}
+
+- (void)updateNextPrevFrame {
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    if (!padUI)
+    {
+        CGRect frame = self.nextQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.nextQuestionView.scrollView.frame = frame;
+        
+        frame = self.previousQuestionView.scrollView.frame;
+        frame.size.width = self.view.frame.size.width;
+        frame.size.height = self.view.bounds.size.height - self.lastKeyboardHeight;
+        self.previousQuestionView.scrollView.frame = frame;
+    }
+    
+    if (self.nextQuestionView)
+        [self.nextQuestionView setNeedsLayout];
+    if (self.previousQuestionView)
+        [self.previousQuestionView setNeedsLayout];
+    
+}
+
 
 #pragma mark Keyboard Methods
 
@@ -278,9 +320,20 @@
         self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
     }
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
-        [self updateSubviewFrames];
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") || padUI)
+            [self updateSubviewFrames];
+        else {
+            [self updatePageControl];
+        }
     } completion:^(BOOL finished) {
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") && !padUI) {
+            [self updateNextPrevFrame];
+            [self updateCurrentFrame];
+        }
+        
         if (self.currentQuestionView)
             [self.currentQuestionView setNeedsLayout];
         if (self.nextQuestionView)
@@ -312,9 +365,20 @@
     
     self.lastKeyboardHeight = 0;
     
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") || padUI)
             [self updateSubviewFrames];
+        else {
+            [self updatePageControl];
+            [self updateNextPrevFrame];
+        }
     } completion:^(BOOL finished) {
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0") && !padUI) {
+            [self updateCurrentFrame];
+        }
+
         if (self.currentQuestionView)
             [self.currentQuestionView setNeedsLayout];
         if (self.nextQuestionView)
