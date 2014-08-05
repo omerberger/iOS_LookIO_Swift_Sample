@@ -1366,7 +1366,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     UIGraphicsBeginImageContextWithOptions(screenSize, NO, [[UIScreen mainScreen] scale]);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    NSArray *windows = previousOnly ? @[self.previousKeyWindow] : [[UIApplication sharedApplication] windows];
+    NSArray *windows = nil;
+    if (previousOnly) {
+        if (self.previousKeyWindow) {
+            windows = @[self.previousKeyWindow];
+        }
+    }
+    else
+    {
+        windows = [[UIApplication sharedApplication] windows];
+    }    
     
     // Iterate over every window from back to front
     for (UIWindow *window in windows)
