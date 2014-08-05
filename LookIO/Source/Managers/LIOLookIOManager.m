@@ -1357,26 +1357,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
 
-        switch (actualOrientation) {
-            case UIInterfaceOrientationPortrait:
-                self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
-                break;
-
-            case UIInterfaceOrientationLandscapeLeft:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationLandscapeRight:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationPortraitUpsideDown:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
-                break;
-                
-            default:
-                break;
-                
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        {            
+            switch (actualOrientation) {
+                case UIInterfaceOrientationPortrait:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeLeft:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeRight:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationPortraitUpsideDown:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
+                    break;
+                    
+                default:
+                    break;
+            }
         }
         self.containerViewController.blurImageView.frame = self.containerViewController.view.bounds;
     });
