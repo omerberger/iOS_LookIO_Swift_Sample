@@ -1022,6 +1022,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (void)dismissExistingAlertViewIgnoringTag:(NSInteger)tag {
+    if (self.alertView)
+    {
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag))
+        {
+            // Special case - if chat ended and supposed to show a post chat survey,
+            // window is hidden, don't dismiss the alert view so that the post chat
+            // survey can still be shown.
+        }
+        else
+        {
+            if (self.alertView.tag != tag) {
+                [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+                self.alertView = nil;
+            }
+        }
+    }
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+    {
+        [self.containerViewController dismissExistingAlertView];
+    }
+}
+
 #pragma mark -
 #pragma mark Container View Controller Delegate Methods
 
@@ -2031,7 +2054,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.controlButton setChatMode];
     }
 
-    [self dismissExistingAlertView];
+    // In case the reconnect prompt alertview is still present, we shouldn't call it's default functionality
+    // This issue appeared in iOS 8 because of changes to the way the alertview works
+    [self dismissExistingAlertViewIgnoringTag:LIOAlertViewRegularReconnectPrompt];
+    
     self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
                                                        delegate:self
