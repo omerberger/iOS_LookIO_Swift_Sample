@@ -26,9 +26,9 @@ then
     COMMIT_DESCRIPTION="Unstable Enterprise version $1"
 fi
 
-if [ $2 == "nextgen" ]
+if [ $2 == "ios8" ]
 then
-    COMMIT_DESCRIPTION="Nextgen version $1"
+    COMMIT_DESCRIPTION="iOS8 version $1"
 fi
 
 cd /Users/marc/Development/ios_lib

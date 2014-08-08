@@ -26,7 +26,7 @@ sed -i "" "s/##UNKNOWN_VERSION##/$1/g" ./LookIO/Source/Managers/LIOLookIOManager
 # First, build the "arm" library: arm7, arm7s.
 #
 rm -rf LookIO/build
-PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH xcodebuild -project 'LookIO/LookIO.xcodeproj' -target LookIO -configuration 'Release' -sdk 'iphoneos7.1' clean build ARCHS='armv7 armv7s' IPHONEOS_DEPLOYMENT_TARGET='4.3' TARGET_BUILD_DIR='./build-arm' BUILT_PRODUCTS_DIR='./build-arm' &>$LOG_FILE_ARM
+PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH xcodebuild -project 'LookIO/LookIO.xcodeproj' -target LookIO -configuration 'Release' -sdk 'iphoneos8.0' clean build ARCHS='armv7 armv7s' IPHONEOS_DEPLOYMENT_TARGET='4.3' TARGET_BUILD_DIR='./build-arm' BUILT_PRODUCTS_DIR='./build-arm' &>$LOG_FILE_ARM
 
 if [ $? -ne 0 ]
 then
