@@ -25,11 +25,12 @@
 // Views
 #import "LIODraggableButton.h"
 
-#define LIOAlertViewNextStepDismissLookIOWindow 2001
-#define LIOAlertViewNextStepShowPostChatSurvey  2002
-#define LIOAlertViewNextStepEngagementDidEnd    2003
-#define LIOAlertViewNextStepCancelReconnect     2004
-#define LIOAlertViewNextStepEndEngagement       2005
+#define LIOAlertViewNextStepDismissLookIOWindow        2001
+#define LIOAlertViewNextStepShowPostChatSurvey         2002
+#define LIOAlertViewNextStepEngagementDidEnd           2003
+#define LIOAlertViewNextStepCancelReconnect            2004
+#define LIOAlertViewNextStepEndEngagement              2005
+#define LIOAlertViewNextStepShowPostChatSurveyQuestion 2006
 
 #define LIOAlertViewRegularReconnectPrompt      2010
 #define LIOAlertViewRegularReconnectSuccess     2011
@@ -825,6 +826,47 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self.containerViewController dismissCurrentViewController];
         }
     }
+    
+    if (LIOAlertViewNextStepShowPostChatSurveyQuestion == alertView.tag)
+    {
+        switch (buttonIndex) {
+            case 0:
+                [self cleanUpEngagementAfterEnd];
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self.containerViewController dismissCurrentViewController];
+                }
+                break;
+                
+            case 1:
+                self.visit.visitState = LIOVisitStatePostChatSurvey;
+                [self.visit refreshControlButtonVisibility];
+                
+                // Report event
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self reportDeveloperEvent:LPDevEventChatWindowHide];
+                }
+                if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+                {
+                    [self presentLookIOWindow];
+                }
+                
+                // Report event
+                [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
+                [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
+
+                break;
+                
+            default:
+                [self cleanUpEngagementAfterEnd];
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self.containerViewController dismissCurrentViewController];
+                }
+                break;
+        }
+    }
 
     if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
     {
@@ -843,8 +885,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         // Report event
         [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
-
-
         [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
     }
 
@@ -998,13 +1038,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 break;
         }
     }
+    
+    // Clear alertview tag so that it will not called again when dismissed (Happens in iOS 8 Beta 5)
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        alertView.tag = 0;
 }
 
 - (void)dismissExistingAlertView
 {
     if (self.alertView)
     {
-        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag))
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
         {
             // Special case - if chat ended and supposed to show a post chat survey,
             // window is hidden, don't dismiss the alert view so that the post chat
@@ -1025,7 +1069,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)dismissExistingAlertViewIgnoringTag:(NSInteger)tag {
     if (self.alertView)
     {
-        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag))
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
         {
             // Special case - if chat ended and supposed to show a post chat survey,
             // window is hidden, don't dismiss the alert view so that the post chat
@@ -1043,10 +1087,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [self.containerViewController dismissExistingAlertView];
     }
-    
-    // Clear alertview tag so that it will not called again when dismissed (Happens in iOS 8 Beta 5)
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
-        alertView.tag = 0;
 }
 
 #pragma mark -
@@ -1811,37 +1851,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // If a post chat survey is available and surveys are enabled, keep the engagement object and show the survey
     if (self.engagement.postchatSurvey)
     {
-        alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
+         if (self.visit.lastKnownButtonPopupChat == NO && self.lookIOWindowState != LIOLookIOWindowStateVisible)
+             alertViewTag = LIOAlertViewNextStepShowPostChatSurveyQuestion;
+        else
+            alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
     }
     else
     {
         // Otherwise, clear the engagement and dismiss the window after dismissing the alert
         
         alertViewTag = LIOAlertViewNextStepDismissLookIOWindow;
-        
-        // Report event
-        [self reportDeveloperEvent:LPDevEventChatEnd];
-        [self reportDeveloperEvent:LPDevEventChatWindowHide];
-
-        [self.engagement cleanUpEngagement];
-        self.engagement = nil;
-        [self.containerViewController dismissCurrentNotification];
-        
-        [self visitChatEnabledDidUpdate:self.visit];
-        [self.visit updateEnabledForAllAccountsAndSkills];
-        
-        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
-            [self.delegate lookIOManagerDidEndChat:self];
-        
-        self.visit.visitState = LIOVisitStateVisitInProgress;
+        [self cleanUpEngagementAfterEnd];
     }
     
     [self dismissExistingAlertView];
-    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
-                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                        delegate:self
-                                               cancelButtonTitle:nil
-                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    
+    // If there is a post chat survey, and pop up chat is disabled,
+    // ask the user if he wants to see it. Otherwise, just notify that the session has ended.
+    if (LIOAlertViewNextStepShowPostChatSurveyQuestion == alertViewTag) {
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertTitle")
+                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertBody")
+                                                   delegate:self
+                                          cancelButtonTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertButtonCancel")
+                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertButtonAccept"), nil];
+    }
+    else
+    {
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                   delegate:self
+                                          cancelButtonTitle:nil
+                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    }
     self.alertView.tag = alertViewTag;
     
     if (withAlert)
@@ -1856,6 +1897,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.controlButton setChatMode];
     [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
+}
+
+- (void)cleanUpEngagementAfterEnd {
+    // Report event
+    [self reportDeveloperEvent:LPDevEventChatEnd];
+    [self reportDeveloperEvent:LPDevEventChatWindowHide];
+    
+    [self.engagement cleanUpEngagement];
+    self.engagement = nil;
+    [self.containerViewController dismissCurrentNotification];
+    
+    [self visitChatEnabledDidUpdate:self.visit];
+    [self.visit updateEnabledForAllAccountsAndSkills];
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+        [self.delegate lookIOManagerDidEndChat:self];
+    
+    self.visit.visitState = LIOVisitStateVisitInProgress;
 }
 
 - (void)engagementDidCancel:(LIOEngagement *)engagement
