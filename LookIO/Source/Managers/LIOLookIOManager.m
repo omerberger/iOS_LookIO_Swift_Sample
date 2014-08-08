@@ -1043,6 +1043,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         [self.containerViewController dismissExistingAlertView];
     }
+    
+    // Clear alertview tag so that it will not called again when dismissed (Happens in iOS 8 Beta 5)
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        alertView.tag = 0;
 }
 
 #pragma mark -
