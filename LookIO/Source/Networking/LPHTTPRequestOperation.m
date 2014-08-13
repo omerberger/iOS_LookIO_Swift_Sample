@@ -39,6 +39,7 @@
     self.state = LPOperationReadyState;
     self.retriesLeft = LIOHTTPRequestOperationRetries;
     self.requestFailed = NO;
+    self.redirectURLs = [[[NSMutableArray alloc] init] autorelease];
     
     responseData = [[[NSMutableData alloc] init] retain];
 
@@ -52,6 +53,8 @@
         [responseData release];
     if (responseString)
         [responseString release];
+    
+    [self.redirectURLs removeAllObjects];
     
     [super dealloc];
 }
@@ -146,7 +149,16 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     NSError *jsonError = nil;
                     NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&jsonError];
-                    success(self, responseDict);
+                    if (!self.allowStringResponse) {
+                        success(self, responseDict);
+                    } else {
+                        if (!jsonError) {
+                            success(self, responseDict);
+                        } else {
+                            NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+                            success (self, stringResponse);
+                        }
+                    }
                 });
             }
         }
@@ -227,6 +239,17 @@
         self.connection = nil;
         [responseData release];
     }
+}
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection
+             willSendRequest:(NSURLRequest *)sendRequest
+             redirectResponse:(NSURLResponse *)redirectResponse
+{
+    if (redirectResponse) {
+        LIOLog(@"<LPHTTPRequestOperation> Redirected to %@", sendRequest.URL.absoluteString);
+        [self.redirectURLs addObject:sendRequest.URL];
+    }
+    return sendRequest;
 }
 
 @end

@@ -2367,6 +2367,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return aFrame;
 }
 
+- (BOOL)engagementShouldUseSSO:(LIOEngagement *)engagement
+{
+    BOOL shouldUseSSO = NO;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnEnabled:)])
+        shouldUseSSO = [self.delegate lookIOManagerSingleSignOnEnabled:self];
+    
+    return shouldUseSSO;
+}
+
+- (NSURL *)engagementSSOKeyGenURL:(LIOEngagement *)engagement
+{
+    NSURL *SSOKeyGenURL = nil;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnKeygenURL:)])
+        SSOKeyGenURL = [self.delegate lookIOManagerSingleSignOnKeygenURL:self];
+    
+    return SSOKeyGenURL;
+}
+
 #pragma mark -
 #pragma mark Custom Variables
 
