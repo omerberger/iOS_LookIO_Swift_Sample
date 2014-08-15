@@ -1167,6 +1167,11 @@
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
             }
             
+            if (500 == operation.responseCode)
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported an error with your app. This may be caused by a bad configuration - Please contact mobile@liveperson.com for assistance."];
+            }
+            
             if (!self.chatInProgress)
                 self.visitState = LIOVisitStateFailed;
  
