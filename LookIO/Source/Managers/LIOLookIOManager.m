@@ -1246,8 +1246,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.lookIOWindowState = LIOLookIOWindowStateDismissing;
     
     self.lookioWindow.hidden = YES;
-    [self.previousKeyWindow makeKeyAndVisible];
-    self.previousKeyWindow = nil;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [self.previousKeyWindow makeKeyAndVisible];
+        self.previousKeyWindow = nil;
+    } else {
+        // This fixes a bug with UIWindow and modal view controllers on iOS 5.0
+        [self.previousKeyWindow makeKeyWindow];
+        self.previousKeyWindow.hidden = NO;
+        self.previousKeyWindow = nil;
+    }
     
     if (!self.visit.controlButtonHidden)
     {
