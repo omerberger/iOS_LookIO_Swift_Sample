@@ -622,7 +622,16 @@
             break;
             
         case LIOKeyboardStateMenu:
-            [self dismissKeyboardMenu];
+            if (self.inputBarView.textView.text.length > 0)
+            {
+                [self inputBarDidStopTyping:self.inputBarView];
+                [self sendLineWithText:self.inputBarView.textView.text];
+                [self.inputBarView clearTextView];
+                
+                [self updateSubviewFrames];
+            } else
+                [self dismissKeyboardMenu];
+            
             break;
             
         case LIOKeyboardStateKeyboard:
