@@ -1229,11 +1229,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             
         case LIOVisitStateChatActive:
             [self reportDeveloperEvent:LPDevEventChatWindowHide];
-            [self.controlButton presentMessage:@"Tap to continue chat"];
+            [self.controlButton presentMessage:LIOLocalizedString(@"LIOControlButtonView.ChatContinuePopupMessage")];
             break;
             
         case LIOVisitStateChatStarted:
-            [self.controlButton presentMessage:@"Tap to continue chat"];
+            [self.controlButton presentMessage:LIOLocalizedString(@"LIOControlButtonView.ChatContinuePopupMessage")];
             break;
             
         default:
