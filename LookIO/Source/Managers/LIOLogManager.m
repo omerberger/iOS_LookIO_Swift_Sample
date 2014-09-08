@@ -80,6 +80,7 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)flush
 {
+    /*
     NSOutputStream *outputStream = [[NSOutputStream alloc] initToFileAtPath:[self logPath] append:YES];
     [outputStream open];
     for (NSString *aLogEntry in logEntries)
@@ -91,10 +92,11 @@ static LIOLogManager *sharedLogManager = nil;
         [outputStream write:&separator maxLength:1];
     }
     
-    [logEntries removeAllObjects];
     [outputStream close];
     [outputStream release];
+    */
     
+    [logEntries removeAllObjects];
     residentLogCharacters = 0;
 }
 
@@ -140,20 +142,16 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)uploadLogForVisit:(LIOVisit *)visitForUpload
 {
-    [self flush];
-    
     NSString *allLogEntries;
     if (failedLogEntries == nil)
     {
-        allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
-                                    encoding:NSUTF8StringEncoding
-                                       error:nil];
+        allLogEntries = [self.logEntries componentsJoinedByString:@""];
+        [self flush];
     }
     else
     {
-        allLogEntries = [failedLogEntries stringByAppendingString:[NSString stringWithContentsOfFile:[self logPath]
-                                                                                            encoding:NSUTF8StringEncoding
-                                                                                               error:nil]];
+        allLogEntries = [failedLogEntries stringByAppendingString:[self.logEntries componentsJoinedByString:@""]];
+        [self flush];
         [failedLogEntries release];
         failedLogEntries = nil;
     }

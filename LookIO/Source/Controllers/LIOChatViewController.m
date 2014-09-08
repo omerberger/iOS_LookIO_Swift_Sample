@@ -183,14 +183,14 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(){
             if (self.lastScrollId == scrollId)
             {
-                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+                NSIndexPath *lastRow = (self.engagement.messages.count == 0) ? 0 : [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
                 [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
             }
         });
     }
     else
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+        NSIndexPath *lastRow = (self.engagement.messages.count == 0) ? 0 : [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
         [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }

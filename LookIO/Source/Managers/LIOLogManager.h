@@ -12,7 +12,7 @@
 #define LIOLog(...) [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityDebug format:__VA_ARGS__]
 
 #define LIOLogManagerMaxResidentLogCharacters   128000
-#define LIOLogManagerMaxLogFileSize             512000
+#define LIOLogManagerMaxLogFileSize             0
 
 typedef enum {
     LIOLogManagerSeverityDebug,

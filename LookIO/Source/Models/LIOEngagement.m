@@ -619,6 +619,7 @@
             {
                 [self.messages addObject:newMessage];
                 [self saveEngagementMessages];
+                [self saveEngagement];
                 
                 [self.delegate engagement:self didReceiveMessage:newMessage];
             }
@@ -1446,8 +1447,11 @@
 
 - (void)saveEngagementMessages
 {
+    // Check if enagagement messages should be saved
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+    if ([self.delegate engagementShouldCacheChatMessages:self]) {
+        [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+    }
     [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
     [userDefaults synchronize];
 }
