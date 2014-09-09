@@ -1440,20 +1440,22 @@
 
 - (void)saveEngagement
 {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self] forKey:LIOLookIOManagerLastKnownEngagementKey];
-    [userDefaults synchronize];
+    if ([self.delegate engagementShouldCacheChatMessages:self]) {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self] forKey:LIOLookIOManagerLastKnownEngagementKey];
+        [userDefaults synchronize];
+    }
 }
 
 - (void)saveEngagementMessages
 {
     // Check if enagagement messages should be saved
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([self.delegate engagementShouldCacheChatMessages:self]) {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
+        [userDefaults synchronize];
     }
-    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
-    [userDefaults synchronize];
 }
 
 - (void)loadEngagementMessages
