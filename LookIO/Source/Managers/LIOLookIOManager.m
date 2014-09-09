@@ -1685,13 +1685,14 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
          if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
          {
-            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
- 
-            self.chatReceivedWhileAppBackgrounded = YES;
+             if ([self canShowLocalNotification]) {
+                 UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                 localNotification.soundName = @"LookIODing.caf";
+                 localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+                 localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
+                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+             }
+             self.chatReceivedWhileAppBackgrounded = YES;
          }
     }
 }
@@ -2036,15 +2037,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
-            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            if ([self canShowLocalNotification]) {
+                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
             
             self.chatReceivedWhileAppBackgrounded = YES;
         }
     }
+}
+
+- (BOOL)canShowLocalNotification
+{
+    BOOL shouldShowNotification = YES;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        UIUserNotificationSettings *settings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+        if (!(settings.types & UIUserNotificationTypeAlert))
+            shouldShowNotification = NO;
+    }
+    return shouldShowNotification;
 }
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
@@ -2189,11 +2204,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
-            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            if ([self canShowLocalNotification]) {
+                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
         }
     }
     

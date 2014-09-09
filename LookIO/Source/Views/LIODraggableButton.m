@@ -653,7 +653,11 @@
         }
     }
     
-    [self.externalMessageLabel setNeedsLayout];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+        [self.externalMessageLabel layoutSubviews];
+    } else {
+        [self.externalMessageLabel setNeedsLayout];
+    }
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
@@ -700,12 +704,11 @@
     CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-        {
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+            self.externalMessageLabel.alpha = 0.0;
+        } else if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
             self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
-        }
-        else
-        {
+        } else {
             self.externalMessageLabel.alpha = 0.0;
         }
     } completion:^(BOOL finished) {

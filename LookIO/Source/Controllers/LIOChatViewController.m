@@ -1241,8 +1241,9 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-    {
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+        
+    } else if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(observingAccessoryViewDidChange:)
                                                      name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
@@ -1462,7 +1463,6 @@
 
 // iOS 8.0
 
-/*
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -1482,7 +1482,6 @@
         }
     } completion:nil];
 }
-*/
 
 #pragma mark -
 #pragma mark UIGestureRecognizerDelegate method
