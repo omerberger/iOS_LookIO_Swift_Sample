@@ -1045,7 +1045,7 @@
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.showsVerticalScrollIndicator = NO;
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self.view addSubview:self.tableView];
 
@@ -1508,7 +1508,7 @@
 - (void)tableViewDidPan:(id)sender
 {
     // Only allow dragging for keyboard menu on iOS 7.0
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
     {
         if (!(self.keyboardState == LIOKeyboardStateMenu || self.keyboardState == LIOKeyboardStateMenuDragging))
             return;
@@ -1537,7 +1537,7 @@
                     // Let's see if we've started to drag the actual menu
                     if (locationPoint.y > (self.view.bounds.size.height - self.keyboardMenu.frame.size.height))
                     {
-                        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+                        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") || LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
                         {
                             [self dismissKeyboardMenu];
                             return;
