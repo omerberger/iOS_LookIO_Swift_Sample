@@ -60,16 +60,14 @@ git push origin $2
 otool -f iOS/libLookIO.a
 
 #
-# Only non-enterprise release builds have their bundle uploaded to the CDN.
+# Upload the bundle to the CDN
 #
-if [ $2 == "master" ]
-then
-    echo "Uploading LookIO.bundle (as bundle.zip) and to CDN..."
-    popd
-    # Standard bundle
-	zip -j ./bundle.zip ~/Development/LookIO-Libraries/iOS/LookIO.bundle/*
-  python ./upload_bundle.py --version $1 --key AKIAIKCREXYCWO5PI2AA --secret 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
-  rm -rf ./bundle.zip
-fi
+
+echo "Uploading LookIO.bundle (as bundle.zip) and to CDN..."
+popd
+# Standard bundle
+zip -j ./bundle.zip ~/Development/LookIO-Libraries/iOS/LookIO.bundle/*
+python ./upload_bundle.py --version $1 --key AKIAIKCREXYCWO5PI2AA --secret 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
+rm -rf ./bundle.zip
 
 echo Build script finished.
