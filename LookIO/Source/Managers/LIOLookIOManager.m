@@ -1047,7 +1047,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 {
     if (self.alertView)
     {
-        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
         {
             // Special case - if chat ended and supposed to show a post chat survey,
             // window is hidden, don't dismiss the alert view so that the post chat

@@ -798,6 +798,8 @@
                 self.tableView.frame = frame;
             }
         } completion:^(BOOL finished) {
+            if (self.chatState == LIOChatStateChat      )
+                [self scrollToBottomDelayed:NO];
         }];
     }
 }
