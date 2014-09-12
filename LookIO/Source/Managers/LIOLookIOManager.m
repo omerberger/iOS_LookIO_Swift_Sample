@@ -1204,9 +1204,11 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.lookioWindow.backgroundColor = [UIColor clearColor];
     [self.lookioWindow makeKeyAndVisible];
-
-    self.lookioWindow.frame = [UIScreen mainScreen].bounds;
-    self.containerViewController.view.frame = self.lookioWindow.bounds;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+        self.lookioWindow.frame = [UIScreen mainScreen].bounds;
+        self.containerViewController.view.frame = self.lookioWindow.bounds;
+    }
     
     // Control Button
     if (!self.visit.controlButtonHidden)
