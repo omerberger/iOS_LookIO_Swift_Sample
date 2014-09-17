@@ -269,6 +269,8 @@
 
 - (void)setTransformForInterfaceOrienation:(UIInterfaceOrientation)orientation
 {
+    self.transform = CGAffineTransformIdentity;
+
     switch (orientation) {
         case UIInterfaceOrientationPortrait:
             self.transform = CGAffineTransformIdentity;
@@ -301,6 +303,9 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
 
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -386,6 +391,8 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
     UIWindow *buttonWindow = (UIWindow *)self.superview;
     CGSize screenSize = [buttonWindow bounds].size;
@@ -432,6 +439,9 @@
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+
     [self setTransformForInterfaceOrienation:actualInterfaceOrientation];
     
     CGFloat verticalPosition = [[LIOBrandingManager brandingManager] verticalPositionForElement:LIOBrandingElementControlButton];
@@ -477,6 +487,8 @@
 {
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     if (self.ignoreActualInterfaceOrientation)
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
     UIFont *font = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementControlButton];
@@ -641,7 +653,11 @@
         }
     }
     
-    [self.externalMessageLabel setNeedsLayout];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+        [self.externalMessageLabel layoutSubviews];
+    } else {
+        [self.externalMessageLabel setNeedsLayout];
+    }
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
@@ -688,12 +704,11 @@
     CGFloat translationFactor = self.isAttachedToRight ? self.externalMessageLabel.frame.size.width*0.6 : -self.externalMessageLabel.frame.size.width*0.6;
     
     [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-        {
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+            self.externalMessageLabel.alpha = 0.0;
+        } else if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
             self.externalMessageLabel.transform = CGAffineTransformConcat(CGAffineTransformMakeScale(0.0, 0.0), CGAffineTransformMakeTranslation(translationFactor, 0));
-        }
-        else
-        {
+        } else {
             self.externalMessageLabel.alpha = 0.0;
         }
     } completion:^(BOOL finished) {
@@ -775,6 +790,8 @@
     // Toggle text button alpha when dragging
     BOOL goingToAttachToRight = self.isAttachedToRight;
     UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        actualInterfaceOrientation = UIInterfaceOrientationPortrait;
     if (self.ignoreActualInterfaceOrientation)
         actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
@@ -839,6 +856,8 @@
         
         UIInterfaceOrientation actualInterfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
         if (self.ignoreActualInterfaceOrientation)
+            actualInterfaceOrientation = UIInterfaceOrientationPortrait;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
             actualInterfaceOrientation = UIInterfaceOrientationPortrait;
 
         if (actualInterfaceOrientation == UIInterfaceOrientationPortrait) {

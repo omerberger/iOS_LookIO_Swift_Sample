@@ -25,11 +25,12 @@
 // Views
 #import "LIODraggableButton.h"
 
-#define LIOAlertViewNextStepDismissLookIOWindow 2001
-#define LIOAlertViewNextStepShowPostChatSurvey  2002
-#define LIOAlertViewNextStepEngagementDidEnd    2003
-#define LIOAlertViewNextStepCancelReconnect     2004
-#define LIOAlertViewNextStepEndEngagement       2005
+#define LIOAlertViewNextStepDismissLookIOWindow        2001
+#define LIOAlertViewNextStepShowPostChatSurvey         2002
+#define LIOAlertViewNextStepEngagementDidEnd           2003
+#define LIOAlertViewNextStepCancelReconnect            2004
+#define LIOAlertViewNextStepEndEngagement              2005
+#define LIOAlertViewNextStepShowPostChatSurveyQuestion 2006
 
 #define LIOAlertViewRegularReconnectPrompt      2010
 #define LIOAlertViewRegularReconnectSuccess     2011
@@ -703,7 +704,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.controlButton updateBaseValues];
     
     // Check and reconnect a disconnected engagement, only if it's disconnected
-    if (LIOVisitStateVisitInProgress == self.visit.visitState)
+    if (LIOVisitStateVisitInProgress == self.visit.visitState && [self engagementShouldCacheChatMessages:nil])
         [self checkAndReconnectDisconnectedEngagement];
 }
 
@@ -804,7 +805,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     return nil;
 }
 
-
 #pragma mark -
 #pragma mark DraggableButtonDelegate Methods
 
@@ -825,6 +825,47 @@ static LIOLookIOManager *sharedLookIOManager = nil;
             [self.containerViewController dismissCurrentViewController];
         }
     }
+    
+    if (LIOAlertViewNextStepShowPostChatSurveyQuestion == alertView.tag)
+    {
+        switch (buttonIndex) {
+            case 0:
+                [self cleanUpEngagementAfterEnd];
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self.containerViewController dismissCurrentViewController];
+                }
+                break;
+                
+            case 1:
+                self.visit.visitState = LIOVisitStatePostChatSurvey;
+                [self.visit refreshControlButtonVisibility];
+                
+                // Report event
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self reportDeveloperEvent:LPDevEventChatWindowHide];
+                }
+                if (LIOLookIOWindowStateVisible != self.lookIOWindowState)
+                {
+                    [self presentLookIOWindow];
+                }
+                
+                // Report event
+                [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
+                [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
+
+                break;
+                
+            default:
+                [self cleanUpEngagementAfterEnd];
+                if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+                {
+                    [self.containerViewController dismissCurrentViewController];
+                }
+                break;
+        }
+    }
 
     if (LIOAlertViewNextStepShowPostChatSurvey == alertView.tag)
     {
@@ -843,8 +884,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         // Report event
         [self reportDeveloperEvent:LPDevEventPostchatSurveyShow];
-
-
         [self.containerViewController presentPostchatSurveyForEngagement:self.engagement];
     }
 
@@ -917,8 +956,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     if (LIOAlertViewNextStepCancelReconnect == alertView.tag)
     {
-        if (buttonIndex == 0)
-            [self.engagement cancelReconnect];
+        if (buttonIndex == 0) {
+            if (self.engagement)
+                [self.engagement cancelReconnect];
+            else
+                [self engagementDidEnd:self.engagement];
+        }
     }
     
     if (LIOAlertViewNextStepEndEngagement == alertView.tag)
@@ -994,13 +1037,17 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 break;
         }
     }
+    
+    // Clear alertview tag so that it will not called again when dismissed (Happens in iOS 8 Beta 5)
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        alertView.tag = 0;
 }
 
 - (void)dismissExistingAlertView
 {
     if (self.alertView)
     {
-        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag))
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
         {
             // Special case - if chat ended and supposed to show a post chat survey,
             // window is hidden, don't dismiss the alert view so that the post chat
@@ -1010,6 +1057,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         {
             [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
             self.alertView = nil;
+        }
+    }
+    if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
+    {
+        [self.containerViewController dismissExistingAlertView];
+    }
+}
+
+- (void)dismissExistingAlertViewIgnoringTag:(NSInteger)tag {
+    if (self.alertView)
+    {
+        if (LIOLookIOWindowStateHidden == self.lookIOWindowState && (LIOAlertViewNextStepShowPostChatSurvey == self.alertView.tag || LIOAlertViewCrashReconnectPrompt == self.alertView.tag || LIOAlertViewRegularReconnectSuccess == self.alertView.tag || LIOAlertViewNextStepShowPostChatSurveyQuestion == self.alertView.tag))
+        {
+            // Special case - if chat ended and supposed to show a post chat survey,
+            // window is hidden, don't dismiss the alert view so that the post chat
+            // survey can still be shown.
+        }
+        else
+        {
+            if (self.alertView.tag != tag) {
+                [self.alertView dismissWithClickedButtonIndex:-1 animated:NO];
+                self.alertView = nil;
+            }
         }
     }
     if (LIOLookIOWindowStateVisible == self.lookIOWindowState)
@@ -1134,7 +1204,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.lookioWindow.backgroundColor = [UIColor clearColor];
     [self.lookioWindow makeKeyAndVisible];
-
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0")) {
+        self.lookioWindow.frame = [UIScreen mainScreen].bounds;
+        self.containerViewController.view.frame = self.lookioWindow.bounds;
+    }
+    
     // Control Button
     if (!self.visit.controlButtonHidden)
     {
@@ -1175,8 +1250,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     self.lookIOWindowState = LIOLookIOWindowStateDismissing;
     
     self.lookioWindow.hidden = YES;
-    [self.previousKeyWindow makeKeyAndVisible];
-    self.previousKeyWindow = nil;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
+    {
+        [self.previousKeyWindow makeKeyAndVisible];
+        self.previousKeyWindow = nil;
+    } else {
+        // This fixes a bug with UIWindow and modal view controllers on iOS 5.0
+        [self.previousKeyWindow makeKeyWindow];
+        self.previousKeyWindow.hidden = NO;
+        self.previousKeyWindow = nil;
+    }
     
     if (!self.visit.controlButtonHidden)
     {
@@ -1279,26 +1362,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
 
-        switch (actualOrientation) {
-            case UIInterfaceOrientationPortrait:
-                self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
-                break;
-
-            case UIInterfaceOrientationLandscapeLeft:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationLandscapeRight:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationPortraitUpsideDown:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
-                break;
-                
-            default:
-                break;
-                
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        {            
+            switch (actualOrientation) {
+                case UIInterfaceOrientationPortrait:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeLeft:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeRight:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationPortraitUpsideDown:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
+                    break;
+                    
+                default:
+                    break;
+            }
         }
         self.containerViewController.blurImageView.frame = self.containerViewController.view.bounds;
     });
@@ -1312,25 +1397,28 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 
         self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
         
-        switch (actualOrientation) {
-            case UIInterfaceOrientationPortrait:
-                self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
-                break;
-                
-            case UIInterfaceOrientationLandscapeLeft:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationLandscapeRight:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
-                break;
-                
-            case UIInterfaceOrientationPortraitUpsideDown:
-                self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
-                break;
-                
-            default:
-                break;
+        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        {
+            switch (actualOrientation) {
+                case UIInterfaceOrientationPortrait:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformIdentity;
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeLeft:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationLandscapeRight:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(-M_PI/2);
+                    break;
+                    
+                case UIInterfaceOrientationPortraitUpsideDown:
+                    self.containerViewController.blurImageView.transform = CGAffineTransformMakeRotation(M_PI);
+                    break;
+                    
+                default:
+                    break;
+            }
         }
         
         self.containerViewController.blurImageView.frame = self.containerViewController.view.bounds;
@@ -1359,7 +1447,16 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     UIGraphicsBeginImageContextWithOptions(screenSize, NO, [[UIScreen mainScreen] scale]);
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    NSArray *windows = previousOnly ? @[self.previousKeyWindow] : [[UIApplication sharedApplication] windows];
+    NSArray *windows = nil;
+    if (previousOnly) {
+        if (self.previousKeyWindow) {
+            windows = @[self.previousKeyWindow];
+        }
+    }
+    else
+    {
+        windows = [[UIApplication sharedApplication] windows];
+    }    
     
     // Iterate over every window from back to front
     for (UIWindow *window in windows)
@@ -1590,12 +1687,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
          if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
          {
-             UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-             localNotification.soundName = @"LookIODing.caf";
-             localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
-             localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
-             [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
- 
+             if ([self canShowLocalNotification]) {
+                 UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                 localNotification.soundName = @"LookIODing.caf";
+                 localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyBody");
+                 localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationReadyButton");
+                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+             }
              self.chatReceivedWhileAppBackgrounded = YES;
          }
     }
@@ -1768,37 +1866,38 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     // If a post chat survey is available and surveys are enabled, keep the engagement object and show the survey
     if (self.engagement.postchatSurvey)
     {
-        alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
+         if (self.visit.lastKnownButtonPopupChat == NO && self.lookIOWindowState != LIOLookIOWindowStateVisible)
+             alertViewTag = LIOAlertViewNextStepShowPostChatSurveyQuestion;
+        else
+            alertViewTag = LIOAlertViewNextStepShowPostChatSurvey;
     }
     else
     {
         // Otherwise, clear the engagement and dismiss the window after dismissing the alert
         
         alertViewTag = LIOAlertViewNextStepDismissLookIOWindow;
-        
-        // Report event
-        [self reportDeveloperEvent:LPDevEventChatEnd];
-        [self reportDeveloperEvent:LPDevEventChatWindowHide];
-
-        [self.engagement cleanUpEngagement];
-        self.engagement = nil;
-        [self.containerViewController dismissCurrentNotification];
-        
-        [self visitChatEnabledDidUpdate:self.visit];
-        [self.visit updateEnabledForAllAccountsAndSkills];
-        
-        if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
-            [self.delegate lookIOManagerDidEndChat:self];
-        
-        self.visit.visitState = LIOVisitStateVisitInProgress;
+        [self cleanUpEngagementAfterEnd];
     }
     
     [self dismissExistingAlertView];
-    self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
-                                                        message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
-                                                        delegate:self
-                                               cancelButtonTitle:nil
-                                               otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    
+    // If there is a post chat survey, and pop up chat is disabled,
+    // ask the user if he wants to see it. Otherwise, just notify that the session has ended.
+    if (LIOAlertViewNextStepShowPostChatSurveyQuestion == alertViewTag) {
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertTitle")
+                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertBody")
+                                                   delegate:self
+                                          cancelButtonTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertButtonCancel")
+                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedPostChatAlertButtonAccept"), nil];
+    }
+    else
+    {
+        self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertTitle")
+                                                    message:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertBody")
+                                                   delegate:self
+                                          cancelButtonTitle:nil
+                                          otherButtonTitles:LIOLocalizedString(@"LIOLookIOManager.SessionEndedAlertButton"), nil];
+    }
     self.alertView.tag = alertViewTag;
     
     if (withAlert)
@@ -1813,6 +1912,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.controlButton setChatMode];
     [self.controlButton resetUnreadMessages];
     [self.visit refreshControlButtonVisibility];
+}
+
+- (void)cleanUpEngagementAfterEnd {
+    // Report event
+    [self reportDeveloperEvent:LPDevEventChatEnd];
+    [self reportDeveloperEvent:LPDevEventChatWindowHide];
+    
+    [self.engagement cleanUpEngagement];
+    self.engagement = nil;
+    [self.containerViewController dismissCurrentNotification];
+    
+    [self visitChatEnabledDidUpdate:self.visit];
+    [self.visit updateEnabledForAllAccountsAndSkills];
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerDidEndChat:)])
+        [self.delegate lookIOManagerDidEndChat:self];
+    
+    self.visit.visitState = LIOVisitStateVisitInProgress;
 }
 
 - (void)engagementDidCancel:(LIOEngagement *)engagement
@@ -1922,15 +2039,29 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
-            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            if ([self canShowLocalNotification]) {
+                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
             
             self.chatReceivedWhileAppBackgrounded = YES;
         }
     }
+}
+
+- (BOOL)canShowLocalNotification
+{
+    BOOL shouldShowNotification = YES;
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        UIUserNotificationSettings *settings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+        if (!(settings.types & UIUserNotificationTypeAlert))
+            shouldShowNotification = NO;
+    }
+    return shouldShowNotification;
 }
 
 - (void)engagement:(LIOEngagement *)engagement didReceiveNotification:(NSString *)notification
@@ -1978,6 +2109,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     }
 }
 
+- (BOOL)engagementShouldCacheChatMessages:(LIOEngagement *)engagement
+{
+    BOOL shouldCache = NO;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerShouldCacheChatMessagesForReconnect:)])
+        shouldCache = [self.delegate lookIOManagerShouldCacheChatMessagesForReconnect:self];
+
+    return shouldCache;
+}
+
 - (void)engagementWantsReconnectionPrompt:(LIOEngagement *)engagement
 {
     [self dismissExistingAlertView];
@@ -2015,7 +2155,10 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         [self.controlButton setChatMode];
     }
 
-    [self dismissExistingAlertView];
+    // In case the reconnect prompt alertview is still present, we shouldn't call it's default functionality
+    // This issue appeared in iOS 8 because of changes to the way the alertview works
+    [self dismissExistingAlertViewIgnoringTag:LIOAlertViewRegularReconnectPrompt];
+    
     self.alertView = [[UIAlertView alloc] initWithTitle:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertTitle")
                                                         message:LIOLocalizedString(@"LIOLookIOManager.ReconnectedAlertBody")
                                                        delegate:self
@@ -2063,11 +2206,13 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         
         if (UIApplicationStateActive != [[UIApplication sharedApplication] applicationState])
         {
-            UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-            localNotification.soundName = @"LookIODing.caf";
-            localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
-            localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
-            [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            if ([self canShowLocalNotification]) {
+                UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+                localNotification.soundName = @"LookIODing.caf";
+                localNotification.alertBody = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareBody");
+                localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationScreenshareButton");
+                [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+            }
         }
     }
     

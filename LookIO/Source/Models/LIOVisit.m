@@ -100,6 +100,7 @@
 
 @property (nonatomic, copy) NSString *lastKnownLoggingURL;
 @property (nonatomic, assign) BOOL loggingEnabled;
+@property (nonatomic, assign) BOOL loggingFailed;
 @property (nonatomic, strong) NSTimer *loggingTimer;
 
 // IAR
@@ -1038,7 +1039,8 @@
         {
             // Logging should start either if this is the first logging_url received
             // of if it's different than the last logging url recieved
-            if (self.lastKnownLoggingURL == nil || ![self.lastKnownLoggingURL isEqualToString:loggingURLString])
+            // and if it hasn't failed so far
+            if (!self.loggingFailed && (self.lastKnownLoggingURL == nil || ![self.lastKnownLoggingURL isEqualToString:loggingURLString]))
             {
                 [self startLogUploadingWithURL:loggingURLString];
             }
@@ -1165,6 +1167,11 @@
             if (404 == operation.responseCode)
             {
                 [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported that your app is not configured for use with LivePerson Mobile. Please contact mobile@liveperson.com for assistance."];
+            }
+            
+            if (500 == operation.responseCode)
+            {
+                [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"The server has reported an error with your app. This may be caused by a bad configuration - Please contact mobile@liveperson.com for assistance."];
             }
             
             if (!self.chatInProgress)
@@ -2475,6 +2482,7 @@
 - (void)stopLogUploading
 {
     self.loggingEnabled = NO;
+    self.loggingFailed = YES;
     [self.loggingTimer invalidate];
     self.loggingTimer = nil;
 }

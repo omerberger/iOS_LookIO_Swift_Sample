@@ -441,7 +441,7 @@
             break;
             
         case LIOSSEChannelStateReconnecting:
-            if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState)
+            if (LIOVisitStatePostChatSurvey == self.visit.visitState || LIOVisitStateOfflineSurvey == self.visit.visitState || (LIOVisitStatePreChatSurvey == self.visit.visitState && ![self.prechatSurvey anyQuestionsAnswered]))
             {
                 self.sseChannelState = LIOSSEChannelStateInitialized;
                 self.isAgentTyping = NO;
@@ -619,6 +619,7 @@
             {
                 [self.messages addObject:newMessage];
                 [self saveEngagementMessages];
+                [self saveEngagement];
                 
                 [self.delegate engagement:self didReceiveMessage:newMessage];
             }
@@ -1439,17 +1440,22 @@
 
 - (void)saveEngagement
 {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self] forKey:LIOLookIOManagerLastKnownEngagementKey];
-    [userDefaults synchronize];
+    if ([self.delegate engagementShouldCacheChatMessages:self]) {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self] forKey:LIOLookIOManagerLastKnownEngagementKey];
+        [userDefaults synchronize];
+    }
 }
 
 - (void)saveEngagementMessages
 {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
-    [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
-    [userDefaults synchronize];
+    // Check if enagagement messages should be saved
+    if ([self.delegate engagementShouldCacheChatMessages:self]) {
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject:[NSKeyedArchiver archivedDataWithRootObject:self.messages] forKey:LIOLookIOManagerLastKnownEngagementMessagesKey];
+        [userDefaults setObject:[NSDate date] forKey:LIOLookIOManagerLastKnownEngagementActivityDate];
+        [userDefaults synchronize];
+    }
 }
 
 - (void)loadEngagementMessages

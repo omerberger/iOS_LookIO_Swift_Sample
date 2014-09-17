@@ -183,14 +183,14 @@
         dispatch_after(popTime, dispatch_get_main_queue(), ^(){
             if (self.lastScrollId == scrollId)
             {
-                NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+                NSIndexPath *lastRow = (self.engagement.messages.count == 0) ? 0 : [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
                 [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
             }
         });
     }
     else
     {
-        NSIndexPath *lastRow = [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
+        NSIndexPath *lastRow = (self.engagement.messages.count == 0) ? 0 : [NSIndexPath indexPathForRow:([self.engagement.messages count] - 1) inSection:0];
         [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
@@ -622,7 +622,16 @@
             break;
             
         case LIOKeyboardStateMenu:
-            [self dismissKeyboardMenu];
+            if (self.inputBarView.textView.text.length > 0)
+            {
+                [self inputBarDidStopTyping:self.inputBarView];
+                [self sendLineWithText:self.inputBarView.textView.text];
+                [self.inputBarView clearTextView];
+                
+                [self updateSubviewFrames];
+            } else
+                [self dismissKeyboardMenu];
+            
             break;
             
         case LIOKeyboardStateKeyboard:
@@ -770,7 +779,10 @@
         if (self.lastKeyboardHeight == 0.0)
         {
             UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-            
+            if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+            {
+                actualOrientation = self.view.bounds.size.width > self.view.bounds.size.height ?UIInterfaceOrientationLandscapeLeft : UIInterfaceOrientationPortrait;
+            }
             [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
         }
         
@@ -786,6 +798,8 @@
                 self.tableView.frame = frame;
             }
         } completion:^(BOOL finished) {
+            if (self.chatState == LIOChatStateChat      )
+                [self scrollToBottomDelayed:NO];
         }];
     }
 }
@@ -1033,7 +1047,7 @@
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.showsVerticalScrollIndicator = NO;
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self.view addSubview:self.tableView];
 
@@ -1044,7 +1058,7 @@
     
     CGFloat inputBarHeight = padUI ? 85 : 50;
     self.inputBarView = [[LPInputBarView alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - inputBarHeight, self.view.bounds.size.width, inputBarHeight)];
-    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    self.inputBarView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.inputBarView.alpha = 1.0;
     self.inputBarView.delegate = self;
     self.inputBarView.textView.inputAccessoryView = [[LIOObservingInputAccessoryView alloc] init];
@@ -1057,7 +1071,7 @@
     self.tableView.tableFooterView = self.tableFooterView;
     
     self.keyboardMenu = [[LIOKeyboardMenu alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height, self.view.bounds.size.width, 0)];
-    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    self.keyboardMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.keyboardMenu.delegate = self;
     [self.keyboardMenu setDefaultButtonItems];
     [self.view addSubview:self.keyboardMenu];
@@ -1229,10 +1243,11 @@
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
-    {
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0")) {
+        
+    } else if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0")) {
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(keyboardDidChangeFrame:)
+                                                 selector:@selector(observingAccessoryViewDidChange:)
                                                      name:LIOObservingInputAccessoryViewSuperviewFrameDidChangeNotification
                                                    object:nil];
     }
@@ -1264,6 +1279,9 @@
 - (void)keyboardDidShow:(NSNotification *)notification
 {
     if (LIOChatStateEmailChat == self.chatState)
+        return;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
         return;
     
     [self keyboardWillShow:notification];
@@ -1300,7 +1318,15 @@
     }
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
     
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
         if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation))
@@ -1354,7 +1380,15 @@
     self.keyboardIsDraggingInKeyboardState = NO;
     
     UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+    {
+        self.lastKeyboardHeight = keyboardRect.size.height;
+    }
+    else
+    {
+        self.lastKeyboardHeight = UIInterfaceOrientationIsPortrait(actualOrientation) ? keyboardRect.size.height : keyboardRect.size.width;
+    }
     
     [self updateSubviewFramesAndSaveTableViewFrames:YES saveOtherFrames:NO maintainTableViewOffset:YES];
     [UIView animateWithDuration:duration delay:0.0 options:(curve << 16) animations:^{
@@ -1372,7 +1406,7 @@
     }];
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
+- (void)observingAccessoryViewDidChange:(NSNotification *)notification
 {
     if (self.keyboardState == LIOKeyboardStateKeyboard)
     {
@@ -1429,6 +1463,28 @@
     }
 }
 
+// iOS 8.0
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    UIInterfaceOrientation interfaceOrientation = size.width < size.height ? UIInterfaceOrientationPortrait : UIInterfaceOrientationLandscapeLeft;
+ 
+    if (LIOKeyboardStateMenu == self.keyboardState)
+    {
+        [self setDefaultKeyboardHeightsForOrientation:interfaceOrientation];
+    }
+    [self updateNumberOfMessagesToShowInScrollBackForOrientation:interfaceOrientation];
+
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (LIOKeyboardstateCompletelyHidden != self.keyboardState)
+        {
+            [self.tableView reloadData];
+            [self updateSubviewFrames];
+        }
+    } completion:nil];
+}
+
 #pragma mark -
 #pragma mark UIGestureRecognizerDelegate method
 
@@ -1454,7 +1510,7 @@
 - (void)tableViewDidPan:(id)sender
 {
     // Only allow dragging for keyboard menu on iOS 7.0
-    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+    if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") && !LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
     {
         if (!(self.keyboardState == LIOKeyboardStateMenu || self.keyboardState == LIOKeyboardStateMenuDragging))
             return;
@@ -1483,7 +1539,7 @@
                     // Let's see if we've started to drag the actual menu
                     if (locationPoint.y > (self.view.bounds.size.height - self.keyboardMenu.frame.size.height))
                     {
-                        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+                        if (!LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0") || LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
                         {
                             [self dismissKeyboardMenu];
                             return;
@@ -1552,6 +1608,10 @@
     if (shouldAnimateToEndState)
     {
         UIInterfaceOrientation actualOrientation = [UIApplication sharedApplication].statusBarOrientation;
+        if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8.0"))
+        {
+            actualOrientation = self.view.bounds.size.width > self.view.bounds.size.height ? UIInterfaceOrientationMaskLandscapeLeft : UIInterfaceOrientationMaskPortrait;
+        }
         [self setDefaultKeyboardHeightsForOrientation:actualOrientation];
 
         [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{

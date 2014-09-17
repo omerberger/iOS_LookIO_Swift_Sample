@@ -80,6 +80,7 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)flush
 {
+    /*
     NSOutputStream *outputStream = [[NSOutputStream alloc] initToFileAtPath:[self logPath] append:YES];
     [outputStream open];
     for (NSString *aLogEntry in logEntries)
@@ -91,10 +92,11 @@ static LIOLogManager *sharedLogManager = nil;
         [outputStream write:&separator maxLength:1];
     }
     
-    [logEntries removeAllObjects];
     [outputStream close];
     [outputStream release];
+    */
     
+    [logEntries removeAllObjects];
     residentLogCharacters = 0;
 }
 
@@ -140,20 +142,16 @@ static LIOLogManager *sharedLogManager = nil;
 
 - (void)uploadLogForVisit:(LIOVisit *)visitForUpload
 {
-    [self flush];
-    
     NSString *allLogEntries;
     if (failedLogEntries == nil)
     {
-        allLogEntries = [NSString stringWithContentsOfFile:[self logPath]
-                                    encoding:NSUTF8StringEncoding
-                                       error:nil];
+        allLogEntries = [self.logEntries componentsJoinedByString:@""];
+        [self flush];
     }
     else
     {
-        allLogEntries = [failedLogEntries stringByAppendingString:[NSString stringWithContentsOfFile:[self logPath]
-                                                                                            encoding:NSUTF8StringEncoding
-                                                                                               error:nil]];
+        allLogEntries = [failedLogEntries stringByAppendingString:[self.logEntries componentsJoinedByString:@""]];
+        [self flush];
         [failedLogEntries release];
         failedLogEntries = nil;
     }
@@ -196,6 +194,9 @@ static LIOLogManager *sharedLogManager = nil;
         LIOLog(@"<<<LOG UPLOAD>>> Upload log failed with error %@, stopping after 3 retries", error);
 
         failedLogUploadAttempts = 0;
+        [failedLogEntries release];
+        failedLogEntries = nil;
+
         if (visit != nil)
         {
             [visit stopLogUploading];
@@ -208,20 +209,20 @@ static LIOLogManager *sharedLogManager = nil;
     NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
     NSInteger responseStatusCode = [httpResponse statusCode];
     LIOLog(@"<<<LOG UPLOAD>>> Log upload response is %ld", (long)responseStatusCode);
-    if (200 == responseStatusCode)
+    if (responseStatusCode >= 200 && responseStatusCode < 300)
     {
         [failedLogEntries release];
         failedLogEntries = nil;
         failedLogUploadAttempts = 0;
-    }
-    if (404 == responseStatusCode && visit != nil)
-    {
+    } else if (404 == responseStatusCode && visit != nil) {
         [failedLogEntries release];
         failedLogEntries = nil;
         failedLogUploadAttempts = 0;
         
         LIOLog(@"<<<LOG UPLOAD>>> Stopping logging due to 404", (long)responseStatusCode);
         [visit stopLogUploading];
+    } else {
+        [self connection:connection didFailWithError:nil];
     }
 }
 
