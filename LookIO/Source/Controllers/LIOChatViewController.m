@@ -1007,7 +1007,7 @@
     else
     {
         
-        if (LIO_IS_IPHONE_5) {
+        if (LIO_IS_IPHONE_5 || LIO_IS_IPHONE_6 || LIO_IS_IPHONE_6PLUS) {
             if (landscape)
                 self.numberOfMessagesToShowInScrollBack = 1;
             else
