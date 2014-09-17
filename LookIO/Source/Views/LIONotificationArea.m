@@ -56,7 +56,7 @@
         self.hasCustomBranding = NO;
         if (!padUI)
         {
-            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 32.0)];
+            UIImageView *brandingImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, 32.0)];
             brandingImageView.tag = LIONotificationAreaBrandingImageViewTag;
             brandingImageView.contentMode = UIViewContentModeScaleAspectFit;
             
