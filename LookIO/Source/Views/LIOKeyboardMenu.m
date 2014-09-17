@@ -133,6 +133,9 @@
     
     self.numberOfColumns = self.bounds.size.width / rowWidth;
     self.numberOfRows = self.bounds.size.height / rowHeight;
+    if (self.numberOfColumns > 6 && !padUI)
+        self.numberOfColumns = 6;
+        
     self.numberOfItemsPerPage = self.numberOfColumns * self.numberOfRows;
     self.numberOfPages = (self.items.count / self.numberOfItemsPerPage);
     if ((self.items.count % self.numberOfItemsPerPage) != 0)
