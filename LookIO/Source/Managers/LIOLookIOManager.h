@@ -198,6 +198,16 @@ extern NSString *const kLPEventAddedToCart;
 
 -(BOOL)lookIOManagerShouldCacheChatMessagesForReconnect:(LIOLookIOManager *)aManager;
 
+/*!
+ Implement this method to specify if LP Mobile should report call deflection data, which reports the state
+ of the visit when the visitor made their first phone call from the app, and the length of the phone call. 
+ If this method is not implemented, the default value is YES, and call deflection will be reported.
+ 
+ @param aManager The LIOLookIOManager shared instance.
+ */
+
+-(BOOL)lookIOManagerShouldReportCallDeflection:(LIOLookIOManager *)aManager;
+
 ///---------------------------------------------------------------------------------------
 /// @name Troubleshooting / UI Integration Methods
 ///---------------------------------------------------------------------------------------
