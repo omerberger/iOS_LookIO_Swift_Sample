@@ -64,6 +64,7 @@ typedef enum
 - (NSString *)visitCurrentEngagementAccount:(LIOVisit *)visit;
 - (NSString *)visitCurrentEngagementSkill:(LIOVisit *)visit;
 - (BOOL)doesCurrentEngagementExist:(LIOVisit *)visit;
+- (BOOL)visitShouldReportCallDeflection:(LIOVisit *)visit;
 
 @end
 
@@ -110,6 +111,7 @@ typedef enum
 - (BOOL)maskCreditCards;
 
 - (void)launchVisit;
+- (void)setupCallCenter;
 - (void)relaunchVisit;
 - (void)stopVisit;
 - (void)sendContinuationReport;
