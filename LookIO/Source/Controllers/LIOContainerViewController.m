@@ -868,13 +868,19 @@
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
     {
         if (LIOContainerViewStateChat == self.containerViewState)
-            if (![self.chatViewController shouldHideHeaderBarForLandscape])
+            if (![self.chatViewController shouldHideHeaderBarForLandscape]) {
+                [self presentHeaderBarView:NO];
                 return;
+            }
         
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
     }
-    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        if (LIOContainerViewStateLoading == self.containerViewState)
+            return;
+        
         [self presentHeaderBarView:NO];
+    }
 }
 
 // iOS 8.0
@@ -890,13 +896,19 @@
         if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation) && LIOHeaderBarStateVisible == self.headerBarState)
         {
             if (LIOContainerViewStateChat == self.containerViewState)
-                if (![self.chatViewController shouldHideHeaderBarForLandscape])
+                if (![self.chatViewController shouldHideHeaderBarForLandscape]) {
+                    [self presentHeaderBarView:NO];
                     return;
+                }
             
             [self dismissHeaderBarView:NO withState:LIOHeaderBarStateLandscapeHidden];
         }
-        if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation) && LIOHeaderBarStateLandscapeHidden == self.headerBarState)
+        if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+            if (LIOContainerViewStateLoading == self.containerViewState)
+                return;
+            
             [self presentHeaderBarView:NO];
+        }
     } completion:nil];
 }
 
