@@ -160,6 +160,8 @@
         
         self.relaunchCount = 0;
         
+        self.callCenter = nil;
+        
         // Start monitoring analytics.
         [LIOAnalyticsManager sharedAnalyticsManager];
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -218,9 +220,6 @@
         self.lastKnownButtonVisibility = [[NSNumber alloc] initWithBool:NO];
         
         self.relaunchCountTimer = [NSTimer scheduledTimerWithTimeInterval:LIOVisitMaxRelaunchTimePeriod target:self selector:@selector(visitMaxRelaunchTimerDidFire:) userInfo:nil repeats:YES];
-        
-        // Setup the call center object to monitor phone calls
-        [self setupCallCenter];
     }
     return self;
 }
@@ -2400,6 +2399,9 @@
 
 - (void)setupCallCenter
 {
+    if (![self.delegate visitShouldReportCallDeflection:self])
+        return;
+    
     self.didReportFirstCall = NO;
     self.callConnectionTime = nil;
     self.isCurrentCallOutgoingAndFirst = NO;
@@ -2407,6 +2409,11 @@
     [self.visitUDEs removeObjectForKey:@"CALL_DURATION"];
     
     LIOVisit *currentVisit = self;
+
+    if (self.callCenter) {
+        self.callCenter.callEventHandler = nil;
+        self.callCenter = nil;
+    }
     
     self.callCenter = [[CTCallCenter alloc] init];
     self.callCenter.callEventHandler = ^(CTCall* call)

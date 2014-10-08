@@ -181,6 +181,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     
     self.visit = [[LIOVisit alloc] init];
     self.visit.delegate = self;
+    [self.visit setupCallCenter];
     [self.visit launchVisit];
     
     LIOStatusManager *statusManager = [LIOStatusManager statusManager];
@@ -803,6 +804,15 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         return self.engagement.engagementSkill;
     
     return nil;
+}
+
+- (BOOL)visitShouldReportCallDeflection:(LIOVisit *)visit {
+    BOOL shouldReport = YES;
+    
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerShouldReportCallDeflection:)])
+        shouldReport = [self.delegate lookIOManagerShouldReportCallDeflection:self];
+    
+    return shouldReport;
 }
 
 #pragma mark -
