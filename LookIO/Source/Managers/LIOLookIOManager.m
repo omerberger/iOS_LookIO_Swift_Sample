@@ -2379,8 +2379,8 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (NSURL *)engagementSSOKeyGenURL:(LIOEngagement *)engagement
 {
     NSURL *SSOKeyGenURL = nil;
-    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnKeygenURL:)])
-        SSOKeyGenURL = [self.delegate lookIOManagerSingleSignOnKeygenURL:self];
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnKeyGenURL:)])
+        SSOKeyGenURL = [self.delegate lookIOManagerSingleSignOnKeyGenURL:self];
     
     return SSOKeyGenURL;
 }
