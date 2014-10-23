@@ -245,7 +245,7 @@ extern NSString *const kLPEventAddedToCart;
  @param aManager The LIOLookIOManager shared instance.
 */
 
-- (NSURL*)lookIOManagerSingleSignOnKeygenURL:(LIOLookIOManager*)aManager;
+- (NSURL*)lookIOManagerSingleSignOnKeyGenURL:(LIOLookIOManager*)aManager;
 
 ///---------------------------------------------------------------------------------------
 /// @name Troubleshooting / UI Integration Methods
