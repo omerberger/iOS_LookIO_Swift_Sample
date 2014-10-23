@@ -238,15 +238,8 @@ extern NSString *const kLPEventAddedToCart;
  This URL should include details about the currently logged in user, as these should be used to generate a key that
  will return verified information about your logged in user to your agent's console.
 
- This URL can return the key in two ways:
- 1) If you have already implemented a Single Sign On endpoint for LivePerson Web Chat, you can use the same endpoint
-    for LPMobile. This endpoint returns a redirect to a Live Person Web Chat Server URL, with a parameter called
-    "ssoKey" appended to it, which contains they key to be used to verify the user's indentity. For example:
-    https://server.iad.liveperson.net/hc/<LPNUMBER>/?cmd=file&file=visitorWantsToChat&site=<LPNUMBER>&skill=sales&
-    referrer=http://foo/foo.htm&ssoKey=<key>
- 2) If you are implementing Single Sign On on mobile only, this endpoint can return a JSON Object with a single key-value
-    pair with the key "ssoKey", that contains the key to be used to verify the user's identify. For example:
-    {"ssoKey":"<KEY>"}
+ This endpoint should return a JSON Object with a single key-value pair with the key "ssoKey", that contains the 
+ key to be used to verify the user's identify. For example: {"ssoKey":"<KEY>"}
 
  @return A URL that will be called to generate a key which will be used to verify your logged in user's identity.
  @param aManager The LIOLookIOManager shared instance.

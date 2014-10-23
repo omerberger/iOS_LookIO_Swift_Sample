@@ -832,16 +832,16 @@
 
 - (void)sendIntroPacket
 {
-    if (!self.didCheckForSSO)
-        if ([self.delegate respondsToSelector:@selector(engagementShouldUseSSO:)])
-            if ([self.delegate engagementShouldUseSSO:self]) {
-                [self checkForSSOKey];
-                return;
-            }
-    
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
+        if (!self.didCheckForSSO)
+            if ([self.delegate respondsToSelector:@selector(engagementShouldUseSSO:)])
+                if ([self.delegate engagementShouldUseSSO:self]) {
+                    [self checkForSSOKey];
+                    return;
+                }
+        
         // Clear any existing cookies
         [[LPChatAPIClient sharedClient] clearCookies];
         
@@ -1675,21 +1675,18 @@
 #pragma mark -
 #pragma mark SSO Methods
 
-#pragma mark -
-#pragma mark SSO
-
--(void)checkForSSOKey {
+- (void)checkForSSOKey {
     self.didCheckForSSO = YES;
     
     // Let's make sure the developer has defined a url that we can use
-    
-    if ([self.delegate respondsToSelector:@selector(engagementSSOKeyGenURL:)] == NO) {
+
+    id urlObject = [self.delegate engagementSSOKeyGenURL:self];
+    if (urlObject == nil) {
         LIOLog(@"<SSO> No KeyGen URL supplied; Not using SSO.");
         [self sendIntroPacket];
         return;
     }
     
-    id urlObject = [self.delegate engagementSSOKeyGenURL:self];
     if ([urlObject isKindOfClass:[NSURL class]] == NO) {
         LIOLog(@"<SSO> Invalied KeyGen URL supplied; Not using SSO.");
         [self sendIntroPacket];
@@ -1701,86 +1698,18 @@
     LPAPIClient* ssoClient = [[LPAPIClient alloc] init];
     ssoClient.baseURL = [NSURL URLWithString:@""];
     [ssoClient getPath:ssoURL.absoluteString parameters:nil success:^(LPHTTPRequestOperation *operation, id responseObject) {
-        if (operation.redirectURLs)
-            if (operation.redirectURLs.count > 0)
-                for (NSURL* url in operation.redirectURLs) {
-                    NSString* tempString = @"";
-                    NSScanner* scanner = [NSScanner scannerWithString:url.absoluteString];
-                    [scanner scanUpToString:@"ssoKey=" intoString:nil];
-                    [scanner scanString:@"ssoKey=" intoString:nil];
-                    [scanner scanUpToString:@"&" intoString:&tempString];
-                    
-                    if (![tempString isEqualToString:@""]) {
-                        self.SSOKey = tempString;
-                        LIOLog(@"<SSO> Current SSO Key is %@", self.SSOKey);
-                    }
-                }
-        
         if (responseObject) {
             if ([responseObject isKindOfClass:[NSDictionary class]]) {
                 NSDictionary* responseDict = (NSDictionary*)responseObject;
                 if ([responseDict objectForKey:@"ssoKey"])
                     self.SSOKey = [responseObject objectForKey:@"ssoKey"];
-                    LIOLog(@"<SSO> Current SSO Key is %@", self.SSOKey);
-            }
-            if ([responseObject isKindOfClass:[NSString class]]) {
-                NSLog(@"<SSO> Response is String: %@", responseObject);
-
-                
-                responseObject = @"<input type='hidden' name='ssoKey'><input type='hidden' value='123456789'> ";
-                NSScanner* scanner = [NSScanner scannerWithString:responseObject];
-                
-                NSString *tempString = @"";
-                NSString *inputString = @"";
-                NSString *inputNameString = @"";
-                while (![scanner isAtEnd]) {
-                    inputString = @"";
-                    inputNameString = @"";
-                    [scanner scanUpToString:@"<input" intoString:nil];
-                    [scanner scanUpToString:@">" intoString:&inputString];
-
-                    if (![inputString isEqualToString:@""]) {
-                        NSLog(@"<SSO> Found input tag: %@", inputString);
-                        
-                        NSScanner *inputStringScanner = [NSScanner scannerWithString:inputString];
-                        [inputStringScanner scanUpToString:@"name='" intoString:nil];
-                        [inputStringScanner scanString:@"name='" intoString:nil];
-                        [inputStringScanner scanUpToString:@"'" intoString:&inputNameString];
-                        if ([inputNameString isEqualToString:@"ssoKey"]) {
-                            [inputStringScanner setScanLocation:0];
-                            [inputStringScanner scanUpToString:@"value='" intoString:nil];
-                            [inputStringScanner scanString:@"value='" intoString:nil];
-                            [inputStringScanner scanUpToString:@"'" intoString:&tempString];
-                            
-                            if (tempString.length > 0) {
-                                self.SSOKey = tempString;
-                                LIOLog(@"<SSO> Current SSO Key is %@", self.SSOKey);
-                            }
-                        }
-                    }
-                }
+                    LIOLog(@"<SSO> SSO Key supplied; Using SSO");
             }
         }
         
         [self sendIntroPacket];
-        
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
-        LIOLog(@"<SSO> Keygen request failed; Not using SSO.");
-        
-        if (operation.redirectURLs)
-            if (operation.redirectURLs.count > 0)
-                for (NSURL* url in operation.redirectURLs) {
-                    NSString* tempString = @"";
-                    NSScanner* scanner = [NSScanner scannerWithString:url.absoluteString];
-                    [scanner scanUpToString:@"ssoKey=" intoString:nil];
-                    [scanner scanString:@"ssoKey=" intoString:nil];
-                    [scanner scanUpToString:@"&" intoString:&tempString];
-                    
-                    if (![tempString isEqualToString:@""]) {
-                        self.SSOKey = tempString;
-                        LIOLog(@"<SSO> Current SSO Key is %@", self.SSOKey);
-                    }
-                }        
+        LIOLog(@"<SSO> Key request failed; Not using SSO.");
         [self sendIntroPacket];
     }];
 }
