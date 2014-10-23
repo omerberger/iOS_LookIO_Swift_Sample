@@ -2056,7 +2056,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             }
-            
             self.chatReceivedWhileAppBackgrounded = YES;
         }
     }
@@ -2366,6 +2365,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.origin.y = point.y - aFrame.size.height*1.5;
     }
     return aFrame;
+}
+
+- (BOOL)engagementShouldUseSSO:(LIOEngagement *)engagement
+{
+    BOOL shouldUseSSO = NO;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnEnabled:)])
+        shouldUseSSO = [self.delegate lookIOManagerSingleSignOnEnabled:self];
+    
+    return shouldUseSSO;
+}
+
+- (NSURL *)engagementSSOKeyGenURL:(LIOEngagement *)engagement
+{
+    NSURL *SSOKeyGenURL = nil;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnKeygenURL:)])
+        SSOKeyGenURL = [self.delegate lookIOManagerSingleSignOnKeygenURL:self];
+    
+    return SSOKeyGenURL;
 }
 
 #pragma mark -

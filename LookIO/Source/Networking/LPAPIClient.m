@@ -141,6 +141,7 @@ static LPAPIClient *sharedClient = nil;
 {
 	NSURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:parameters];
     LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    operation.allowStringResponse = YES;
     [self enqueueHTTPRequestOperation:operation];
 }
 

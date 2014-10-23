@@ -81,6 +81,10 @@ typedef enum
 - (void)engagement:(LIOEngagement *)engagement screenshareCursorMoveToPoint:(CGPoint)point;
 - (void)engagement:(LIOEngagement *)engagement screenshareDidClickAtPoint:(CGPoint)point;
 
+// SSO
+- (BOOL)engagementShouldUseSSO:(LIOEngagement *)engagement;
+- (NSURL *)engagementSSOKeyGenURL:(LIOEngagement *)engagement;
+
 @end
 
 @interface LIOEngagement : NSObject
