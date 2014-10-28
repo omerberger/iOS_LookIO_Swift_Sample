@@ -14,8 +14,8 @@
     NSString *data;
 }
 
-@property (nonatomic, retain) NSString *eventId;
-@property (nonatomic, retain) NSString *eventType;
-@property (nonatomic, retain) NSString *data;
+@property (nonatomic, copy) NSString *eventId;
+@property (nonatomic, copy) NSString *eventType;
+@property (nonatomic, copy) NSString *data;
 
 @end

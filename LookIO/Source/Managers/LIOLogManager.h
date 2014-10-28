@@ -36,7 +36,7 @@ typedef enum {
 }
 
 @property (nonatomic, readonly) NSMutableArray *logEntries;
-@property (nonatomic, retain) NSString *lastKnownLoggingUrl;
+@property (nonatomic, copy) NSString *lastKnownLoggingUrl;
 
 + (LIOLogManager *)sharedLogManager;
 - (void)logWithSeverity:(LIOLogManagerSeverity)severity format:(NSString *)formatString, ...;

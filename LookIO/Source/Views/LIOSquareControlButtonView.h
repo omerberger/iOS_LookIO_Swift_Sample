@@ -49,7 +49,7 @@ typedef enum
 }
 
 @property (nonatomic, retain) UIColor *tintColor, *textColor;
-@property (nonatomic, retain) NSString *labelText;
+@property (nonatomic, copy) NSString *labelText;
 @property (nonatomic, readonly) UILabel *label;
 @property (nonatomic, readonly) UIImageView *bubbleImageView;
 @property (nonatomic, assign) LIOSquareControlButtonViewMode currentMode;

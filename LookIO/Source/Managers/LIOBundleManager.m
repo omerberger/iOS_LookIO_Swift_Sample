@@ -120,8 +120,6 @@ BOOL LIOIsUIKitFlatMode(void) {
         
         imageCache = [[NSMutableDictionary alloc] init];
         
-        brandingImageCache = [[NSMutableDictionary alloc] init];
-
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         if ([userDefaults objectForKey:LIOBundleManagerBrandingImageCacheKey])
         {

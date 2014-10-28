@@ -45,8 +45,8 @@ typedef enum {
 - (void)disconnect;
 - (void)reset;
 
-@property (nonatomic, retain) NSString *host;
-@property (nonatomic, retain) NSString *urlEndpoint;
+@property (nonatomic, copy) NSString *host;
+@property (nonatomic, copy) NSString *urlEndpoint;
 @property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) id <LPSSEManagerDelegate> delegate;
 @property (nonatomic, assign) BOOL usesTLS;
