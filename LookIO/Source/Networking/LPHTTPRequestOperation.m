@@ -11,7 +11,6 @@
 
 @interface LPHTTPRequestOperation () {
     NSMutableData *responseData;
-    NSString *responseString;
 }
 
 @property (nonatomic, retain) NSURLConnection *connection;
@@ -47,14 +46,13 @@
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     [request release];
     if (responseData)
         [responseData release];
-    if (responseString)
-        [responseString release];
     
     [self.redirectURLs removeAllObjects];
+    self.redirectURLs = nil;
     
     [super dealloc];
 }
@@ -193,8 +191,8 @@
     else if (self.responseCode < 300 && self.responseCode >= 200)
     {
         // Success.
-        responseString = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] retain];
-        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);        
+        NSString *responseString = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] autorelease];
+        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);
     }
     else
     {

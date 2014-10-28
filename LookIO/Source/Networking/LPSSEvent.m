@@ -12,4 +12,12 @@
 
 @synthesize eventId, eventType, data;
 
+- (void)dealloc {
+    [eventId release];
+    [eventType release];
+    [data release];
+    
+    [super dealloc];
+}
+
 @end

@@ -30,7 +30,7 @@
     id<LIOToasterViewDelegate> delegate;
 }
 
-@property(nonatomic, retain) NSString *text;
+@property(nonatomic, copy) NSString *text;
 @property(nonatomic, assign, getter=isKeyboardIconVisible) BOOL keyboardIconVisible;
 @property(nonatomic, assign) CGFloat yOrigin;
 @property(nonatomic, readonly, getter=isShown) BOOL shown;
