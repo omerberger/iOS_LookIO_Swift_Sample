@@ -136,6 +136,8 @@
 - (void)cleanUpEngagement
 {
     self.sseManager.delegate = nil;
+    
+    [[LIOMediaManager sharedInstance] purgeAllMedia];
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     

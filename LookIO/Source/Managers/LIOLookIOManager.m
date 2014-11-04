@@ -705,8 +705,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.controlButton updateBaseValues];
     
     // Check and reconnect a disconnected engagement, only if it's disconnected
-    if (LIOVisitStateVisitInProgress == self.visit.visitState && [self engagementShouldCacheChatMessages:nil])
-        [self checkAndReconnectDisconnectedEngagement];
+    if (LIOVisitStateVisitInProgress == self.visit.visitState) {
+        if ([self engagementShouldCacheChatMessages:nil])
+            [self checkAndReconnectDisconnectedEngagement];
+        else
+            [[LIOMediaManager sharedInstance] purgeAllMedia];
+    }
 }
 
 - (void)visitWillRelaunch:(LIOVisit *)visit
