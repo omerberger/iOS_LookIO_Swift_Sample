@@ -80,6 +80,8 @@ typedef void (^LIOCompletionBlock)(void);
 
 @interface LIOLookIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
 
+@property (nonatomic, assign) BOOL didPerformSetup;
+
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
 @property (nonatomic, assign) LIOLookIOWindowState lookIOWindowState;
@@ -140,6 +142,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         // Init network manager to set the default endpoints
         [LIONetworkManager networkManager];
+        
+        // Set did perform setup to NO, so that
+        self.didPerformSetup = NO;
     }
     
     return self;
@@ -148,6 +153,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    if (self.didPerformSetup) {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"performSetupWithDelegate: has been called more than once in your application. Please call this method only once per application run. Any call except the first will be ignored."];
+        return;
+    }
+    self.didPerformSetup = YES;
 
     self.delegate = aDelegate;
 
