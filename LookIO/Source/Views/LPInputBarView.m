@@ -290,7 +290,6 @@
     [self setNeedsLayout];
     
     NSUInteger currentTextLength = aTextView.text.length;
-    NSLog(@"TextLength: %lu",(unsigned long)currentTextLength);
     if (0 == self.previousTextLength)
     {
         // "Typing" started.
@@ -307,9 +306,8 @@
     NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
 
     // Limit the length
-    if (currentTextLength > maxCharacters) //&& self.textView.markedTextRange == nil
+    if (currentTextLength > maxCharacters && self.textView.markedTextRange == nil)
     {
-        //[self.textView unmarkText]; //Ignore autocorrect if enabled
         NSString *newText = [aTextView.text substringToIndex:maxCharacters];
         aTextView.text = newText;
         currentTextLength = [newText length];
