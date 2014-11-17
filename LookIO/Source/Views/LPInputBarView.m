@@ -333,7 +333,7 @@
     }else if (range.location == maxCharacters-1 && [text isEqualToString:@""]){                                         //User deletes the last character
         return YES;
     }else if (range.length==0 && textView.text.length==maxCharacters){                                                  //Append new character text while in autocorrect
-        return NO;git 
+        return NO; 
     }else if (range.location + range.length <= maxCharacters && textView.text.length<=maxCharacters){                   //Approve autocorrect suggestion
         return YES;
     }else if (textView.text.length>=maxCharacters){                                                                     //Text is too long
