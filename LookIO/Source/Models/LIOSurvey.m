@@ -21,6 +21,7 @@
 @property (nonatomic, assign) BOOL wasSubmitted;
 @property (nonatomic, strong) NSString *surveyId;
 @property (nonatomic, strong) NSDictionary *logicDictionary;
+@property (nonatomic) NSInteger firstQuestionIndex;
 
 @end
 
@@ -35,10 +36,9 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastCompletedQuestionIndex++;
-        self.lastSeenQuestionIndex++;
+        self.firstQuestionIndex = [self isHeaderExists]?LIOSurveyViewControllerIndexForIntroPage:0;
+        self.lastCompletedQuestionIndex = self.firstQuestionIndex;
+        self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
@@ -55,15 +55,12 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateTemplateWithDictionary:aDictionary];
-        if (self.header==nil || [self.header isEqualToString:@""]){
-            self.lastCompletedQuestionIndex++;
-            self.lastSeenQuestionIndex++;
-        }
         
+        self.firstQuestionIndex = [self isHeaderExists]?LIOSurveyViewControllerIndexForIntroPage:0;
+        self.lastCompletedQuestionIndex = _firstQuestionIndex;
+        self.lastSeenQuestionIndex = _firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
@@ -79,18 +76,21 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        
         [self populateDefaultOfflineSurveyWithResponse:response];
-        if (self.header==nil || [self.header isEqualToString:@""]){
-        self.lastCompletedQuestionIndex++;
-        self.lastSeenQuestionIndex++;
-        }
+        self.firstQuestionIndex = [self isHeaderExists]?LIOSurveyViewControllerIndexForIntroPage:0;
+        self.lastCompletedQuestionIndex = self.firstQuestionIndex;
+        self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
-    
     return self;
+}
+
+- (NSInteger)firstQuestionIndex{
+    return _firstQuestionIndex;
+}
+
+- (BOOL)isHeaderExists{
+    return ((_header!=nil) && (![_header isEqualToString:@""]));
 }
 
 - (void)registerAnswerObject:(id)anAnswerObj withQuestionIndex:(NSInteger)anIndex
