@@ -159,7 +159,7 @@
     
     LIOSurveyQuestion *currentQuestion = nil;
     self.currentQuestionIndex = self.survey.lastSeenQuestionIndex;
-    if ((self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage))
+    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
     {
         currentQuestion = [self.survey questionForIntroView];
     }
@@ -180,7 +180,7 @@
         self.pageControl.pageIndicatorTintColor = [indicatorColor colorWithAlphaComponent:0.3];
     }
         
-    if (self.currentQuestionIndex == [self.survey firstQuestionIndex])
+    if (self.currentQuestionIndex == self.survey.firstQuestionIndex)
         self.pageControl.currentPage = 0;
     else
         self.pageControl.currentPage = self.currentQuestionIndex + 1;
@@ -215,9 +215,9 @@
                                                object:nil];
 }
 
--(NSInteger)numberOfQuestionsWithLogic{
+- (NSInteger)numberOfQuestionsWithLogic{
     if ([self.survey isHeaderExists]){
-        return [self.survey numberOfQuestionsWithLogic]+1;      //There is a header to show (intro question)
+        return [self.survey numberOfQuestionsWithLogic] + 1;      //There is a header to show (intro question)
     } else{
         return [self.survey numberOfQuestionsWithLogic];
     }
@@ -703,7 +703,7 @@
     NSInteger previousQuestionIndex = self.currentQuestionIndex;
     while (!foundPreviousPage) {
 
-        // If we're at the intro screen, just bounce the screen
+        // If we're at the fisrt question screen, just bounce the screen
         if (previousQuestionIndex == self.survey.firstQuestionIndex)
         {
             return NO;
