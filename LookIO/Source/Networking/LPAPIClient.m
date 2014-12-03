@@ -30,11 +30,19 @@ static LPAPIClient *sharedClient = nil;
     return sharedClient;
 }
 
+- (void)dealloc {
+    [self.operationQueue release];
+    self.operationQueue = nil;
+    
+    self.baseURL = nil;
+    
+    [super dealloc];
+}
+
 - (id)init
 {
-    if ((self = [super init]))
-    {
-        self.operationQueue = [[[NSOperationQueue alloc] init] autorelease];
+    if ((self = [super init])) {
+        self.operationQueue = [[NSOperationQueue alloc] init];
         [self.operationQueue setMaxConcurrentOperationCount:NSOperationQueueDefaultMaxConcurrentOperationCount];
     }
     
@@ -141,6 +149,7 @@ static LPAPIClient *sharedClient = nil;
 {
 	NSURLRequest *request = [self requestWithMethod:@"GET" path:path parameters:parameters];
     LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    operation.allowStringResponse = YES;
     [self enqueueHTTPRequestOperation:operation];
 }
 

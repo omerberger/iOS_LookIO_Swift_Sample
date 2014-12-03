@@ -11,7 +11,6 @@
 
 @interface LPHTTPRequestOperation () {
     NSMutableData *responseData;
-    NSString *responseString;
 }
 
 @property (nonatomic, retain) NSURLConnection *connection;
@@ -39,6 +38,7 @@
     self.state = LPOperationReadyState;
     self.retriesLeft = LIOHTTPRequestOperationRetries;
     self.requestFailed = NO;
+    self.redirectURLs = [[[NSMutableArray alloc] init] autorelease];
     
     responseData = [[[NSMutableData alloc] init] retain];
 
@@ -46,12 +46,13 @@
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     [request release];
     if (responseData)
         [responseData release];
-    if (responseString)
-        [responseString release];
+    
+    [self.redirectURLs removeAllObjects];
+    self.redirectURLs = nil;
     
     [super dealloc];
 }
@@ -146,7 +147,16 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     NSError *jsonError = nil;
                     NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&jsonError];
-                    success(self, responseDict);
+                    if (!self.allowStringResponse) {
+                        success(self, responseDict);
+                    } else {
+                        if (!jsonError) {
+                            success(self, responseDict);
+                        } else {
+                            NSString *stringResponse = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+                            success (self, stringResponse);
+                        }
+                    }
                 });
             }
         }
@@ -181,8 +191,8 @@
     else if (self.responseCode < 300 && self.responseCode >= 200)
     {
         // Success.
-        responseString = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] retain];
-        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);        
+        NSString *responseString = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] autorelease];
+        LIOLog(@"<LPHTTPRequestOperation> Success! Response: %@", responseString);
     }
     else
     {
@@ -227,6 +237,17 @@
         self.connection = nil;
         [responseData release];
     }
+}
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection
+             willSendRequest:(NSURLRequest *)sendRequest
+             redirectResponse:(NSURLResponse *)redirectResponse
+{
+    if (redirectResponse) {
+        LIOLog(@"<LPHTTPRequestOperation> Redirected to %@", sendRequest.URL.absoluteString);
+        [self.redirectURLs addObject:sendRequest.URL];
+    }
+    return sendRequest;
 }
 
 @end

@@ -25,9 +25,10 @@
     int readyState;
 }
 
+@property (nonatomic, copy) NSMutableString *partialPacket;
 @property (nonatomic, retain) AsyncSocket_LIO *socket;
 @property (nonatomic, retain) NSMutableDictionary *events;
-@property (nonatomic, retain) NSString *lastEventId;
+@property (nonatomic, copy) NSString *lastEventId;
 @property (nonatomic, assign) int readyState;
 
 
@@ -66,7 +67,7 @@
     return self;
 }
 
--(void)dealloc {    
+- (void)dealloc {    
     [events removeAllObjects];
     [events release];
     events = nil;
@@ -77,6 +78,8 @@
     [socket release];
     socket = nil;
     
+    self.cookies = nil;
+        
     [super dealloc];
 }
 
@@ -246,10 +249,10 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         NSString *readString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
         
-        if ([partialPacket length])
+        if ([self.partialPacket length])
         {
-            readString = [NSString stringWithFormat:@"%@%@", partialPacket, readString];
-            partialPacket = nil;
+            readString = [NSString stringWithFormat:@"%@%@", self.partialPacket, readString];
+            self.partialPacket = nil;
         }
         
         LIOLog(@"\n\n<LPSSEManager> Read Event Stream:\n%@\n<END>\n\n", readString);
@@ -264,7 +267,7 @@
         }
         else
         {
-            partialPacket = [readString mutableCopy];
+            self.partialPacket = [[readString mutableCopy] autorelease];
         }
         
         [socket readDataWithTimeout:-1 tag:0];

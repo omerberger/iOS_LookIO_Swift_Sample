@@ -26,5 +26,7 @@ typedef enum {
                               failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure;
 
 @property (nonatomic, assign) NSInteger responseCode;
+@property (nonatomic, retain) NSMutableArray *redirectURLs;
+@property (nonatomic, assign) BOOL allowStringResponse;
 
 @end

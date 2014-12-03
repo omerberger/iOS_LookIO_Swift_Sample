@@ -46,10 +46,10 @@ typedef enum
 @property (nonatomic, assign) LIOChatMessageKind kind;
 @property (nonatomic, assign) LIOChatMessageStatus status;
 
-@property (nonatomic, retain) NSString *text;
+@property (nonatomic, copy) NSString *text;
 @property (nonatomic, retain) NSDate *date;
-@property (nonatomic, retain) NSString *senderName;
-@property (nonatomic, retain) NSString *attachmentId;
+@property (nonatomic, copy) NSString *senderName;
+@property (nonatomic, copy) NSString *attachmentId;
 @property (nonatomic, assign) BOOL sendingFailed;
 @property (nonatomic, copy) NSString *lineId;
 @property (nonatomic, copy) NSString *clientLineId;

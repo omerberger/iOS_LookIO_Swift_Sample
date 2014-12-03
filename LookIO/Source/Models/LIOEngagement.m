@@ -67,6 +67,9 @@
 @property (nonatomic, strong) NSDate *lastSSEEventDate;
 @property (nonatomic, strong) NSTimer *timeoutTimer;
 
+@property (nonatomic, assign) BOOL didCheckForSSO;
+@property (nonatomic, copy) NSString *SSOKey;
+
 @end
 
 @implementation LIOEngagement
@@ -94,6 +97,9 @@
         self.didReportChatInteractive = NO;
         
         self.lastSSEEventDate = [NSDate date];
+        
+        self.didCheckForSSO = NO;
+        self.SSOKey = nil;
     }
     return self;
 }
@@ -130,6 +136,8 @@
 - (void)cleanUpEngagement
 {
     self.sseManager.delegate = nil;
+    
+    [[LIOMediaManager sharedInstance] purgeAllMedia];
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
@@ -829,6 +837,13 @@
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
+        if (!self.didCheckForSSO)
+            if ([self.delegate respondsToSelector:@selector(engagementShouldUseSSO:)])
+                if ([self.delegate engagementShouldUseSSO:self]) {
+                    [self checkForSSOKey];
+                    return;
+                }
+        
         // Clear any existing cookies
         [[LPChatAPIClient sharedClient] clearCookies];
         
@@ -839,6 +854,8 @@
             [introParameters setObject:self.engagementSkill forKey:@"skill"];
         if (self.engagementAccount)
             [introParameters setObject:self.engagementAccount forKey:@"site_id"];
+        if (self.SSOKey)
+            [introParameters setObject:self.SSOKey forKey:@"sso_key"];
         
         NSDictionary *headersDictionary = [NSDictionary dictionaryWithObject:@"account-skills" forKey:@"X-LivepersonMobile-Capabilities"];
 
@@ -1656,5 +1673,48 @@
         [self.sseManager disconnect];
     }
 }
+
+#pragma mark -
+#pragma mark SSO Methods
+
+- (void)checkForSSOKey {
+    self.didCheckForSSO = YES;
+    
+    // Let's make sure the developer has defined a url that we can use
+
+    id urlObject = [self.delegate engagementSSOKeyGenURL:self];
+    if (urlObject == nil) {
+        LIOLog(@"<SSO> No KeyGen URL supplied; Not using SSO.");
+        [self sendIntroPacket];
+        return;
+    }
+    
+    if ([urlObject isKindOfClass:[NSURL class]] == NO) {
+        LIOLog(@"<SSO> Invalied KeyGen URL supplied; Not using SSO.");
+        [self sendIntroPacket];
+        return;
+    }
+    
+    NSURL* ssoURL = (NSURL*)urlObject;
+    
+    LPAPIClient* ssoClient = [[LPAPIClient alloc] init];
+    ssoClient.baseURL = [NSURL URLWithString:@""];
+    [ssoClient getPath:ssoURL.absoluteString parameters:nil success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject) {
+            if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                NSDictionary* responseDict = (NSDictionary*)responseObject;
+                if ([responseDict objectForKey:@"ssoKey"])
+                    self.SSOKey = [responseObject objectForKey:@"ssoKey"];
+                    LIOLog(@"<SSO> SSO Key supplied; Using SSO");
+            }
+        }
+        
+        [self sendIntroPacket];
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<SSO> Key request failed; Not using SSO.");
+        [self sendIntroPacket];
+    }];
+}
+
 
 @end

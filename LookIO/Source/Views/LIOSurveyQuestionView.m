@@ -185,6 +185,7 @@
     self.tableView.backgroundView = nil;
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.tableView.showsVerticalScrollIndicator = NO;
+    [self.tableView reloadData];
     [self.scrollView addSubview:self.tableView];
 }
 

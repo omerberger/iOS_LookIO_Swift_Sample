@@ -80,6 +80,8 @@ typedef void (^LIOCompletionBlock)(void);
 
 @interface LIOLookIOManager () <LIOVisitDelegate, LIOEngagementDelegate, LIODraggableButtonDelegate, LIOContainerViewControllerDelegate, UIAlertViewDelegate>
 
+@property (nonatomic, assign) BOOL didPerformSetup;
+
 @property (nonatomic, strong) UIWindow *lookioWindow;
 @property (nonatomic, assign) UIWindow *previousKeyWindow;
 @property (nonatomic, assign) LIOLookIOWindowState lookIOWindowState;
@@ -140,6 +142,9 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     {
         // Init network manager to set the default endpoints
         [LIONetworkManager networkManager];
+        
+        // Set did perform setup to NO, so that
+        self.didPerformSetup = NO;
     }
     
     return self;
@@ -148,6 +153,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 - (void)performSetupWithDelegate:(id<LIOLookIOManagerDelegate>)aDelegate
 {
     NSAssert([NSThread currentThread] == [NSThread mainThread], @"LookIO can only be used on the main thread!");
+    
+    if (self.didPerformSetup) {
+        [[LIOLogManager sharedLogManager] logWithSeverity:LIOLogManagerSeverityWarning format:@"performSetupWithDelegate: has been called more than once in your application. Please call this method only once per application run. Any call except the first will be ignored."];
+        return;
+    }
+    self.didPerformSetup = YES;
 
     self.delegate = aDelegate;
 
@@ -705,8 +716,12 @@ static LIOLookIOManager *sharedLookIOManager = nil;
     [self.controlButton updateBaseValues];
     
     // Check and reconnect a disconnected engagement, only if it's disconnected
-    if (LIOVisitStateVisitInProgress == self.visit.visitState && [self engagementShouldCacheChatMessages:nil])
-        [self checkAndReconnectDisconnectedEngagement];
+    if (LIOVisitStateVisitInProgress == self.visit.visitState) {
+        if ([self engagementShouldCacheChatMessages:nil])
+            [self checkAndReconnectDisconnectedEngagement];
+        else
+            [[LIOMediaManager sharedInstance] purgeAllMedia];
+    }
 }
 
 - (void)visitWillRelaunch:(LIOVisit *)visit
@@ -2056,7 +2071,6 @@ static LIOLookIOManager *sharedLookIOManager = nil;
                 localNotification.alertAction = LIOLocalizedString(@"LIOLookIOManager.LocalNotificationChatButton");
                 [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
             }
-            
             self.chatReceivedWhileAppBackgrounded = YES;
         }
     }
@@ -2366,6 +2380,24 @@ static LIOLookIOManager *sharedLookIOManager = nil;
         aFrame.origin.y = point.y - aFrame.size.height*1.5;
     }
     return aFrame;
+}
+
+- (BOOL)engagementShouldUseSSO:(LIOEngagement *)engagement
+{
+    BOOL shouldUseSSO = NO;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnEnabled:)])
+        shouldUseSSO = [self.delegate lookIOManagerSingleSignOnEnabled:self];
+    
+    return shouldUseSSO;
+}
+
+- (NSURL *)engagementSSOKeyGenURL:(LIOEngagement *)engagement
+{
+    NSURL *SSOKeyGenURL = nil;
+    if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerSingleSignOnKeyGenURL:)])
+        SSOKeyGenURL = [self.delegate lookIOManagerSingleSignOnKeyGenURL:self];
+    
+    return SSOKeyGenURL;
 }
 
 #pragma mark -
