@@ -171,7 +171,7 @@
     self.pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 20.0, self.view.bounds.size.width, 20.0)];
     self.pageControl.userInteractionEnabled = NO;
     self.pageControl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-    self.pageControl.numberOfPages = [self numberOfQuestionsWithLogic];
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic];
     
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
@@ -213,14 +213,6 @@
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification
                                                object:nil];
-}
-
-- (NSInteger)numberOfQuestionsWithLogic{
-    if ([self.survey isHeaderExists]){
-        return [self.survey numberOfQuestionsWithLogic] + 1;      //There is a header to show (intro question)
-    } else{
-        return [self.survey numberOfQuestionsWithLogic];
-    }
 }
 
 
@@ -458,7 +450,7 @@
         [self.nextQuestionView setNeedsLayout];
         
     // We also need to reset the page control pages
-    self.pageControl.numberOfPages = [self numberOfQuestionsWithLogic];
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic];
     
 }
 
