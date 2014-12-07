@@ -48,7 +48,7 @@ typedef enum
 - (LIOSurveyQuestion *)questionForIntroView;
 - (BOOL)anyQuestionsAnswered;
 - (BOOL)isQuestionWithIndexLastQuestion:(NSInteger)anIndex;
-- (BOOL)doesHeaderExists;
+- (BOOL)doesHeaderExist;
 - (NSInteger)firstQuestionIndex;
 
 @end

@@ -36,7 +36,7 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.firstQuestionIndex = [self doesHeaderExists] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
         self.lastCompletedQuestionIndex = self.firstQuestionIndex;
         self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
@@ -58,7 +58,7 @@
         
         [self populateTemplateWithDictionary:aDictionary];
         
-        self.firstQuestionIndex = [self doesHeaderExists] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
         self.lastCompletedQuestionIndex = _firstQuestionIndex;
         self.lastSeenQuestionIndex = _firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
@@ -77,7 +77,7 @@
 
         self.responses = [[NSMutableDictionary alloc] init];
         [self populateDefaultOfflineSurveyWithResponse:response];
-        self.firstQuestionIndex = [self doesHeaderExists] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
         self.lastCompletedQuestionIndex = self.firstQuestionIndex;
         self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
@@ -89,7 +89,7 @@
     return _firstQuestionIndex;
 }
 
-- (BOOL)doesHeaderExists{
+- (BOOL)doesHeaderExist{
     return ((_header!=nil) && (![_header isEqualToString:@""]));
 }
 
@@ -257,7 +257,7 @@
             numberOfQuestions += 1;
     }
     
-    if ([self doesHeaderExists]){
+    if ([self doesHeaderExist]){
         numberOfQuestions++;      //There is a header to show (intro question)
     }
     
