@@ -197,3 +197,6 @@
 "LIOLookIOManager.SessionEndedPostChatAlertBody" = "The agent has ended the chat. Provide feedback on your experience?";
 "LIOLookIOManager.SessionEndedPostChatAlertButtonCancel" = "Cancel";
 "LIOLookIOManager.SessionEndedPostChatAlertButtonAccept" = "OK";
+
+"LIOLookIOManager.SecuredFormBubbleTitle" = "Secured form";
+"LIOLookIOManager.SecuredFormSenderNamePlaceholder" = "Agent";

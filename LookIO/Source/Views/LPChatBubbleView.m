@@ -99,9 +99,16 @@
     self.messageLabel.textColor = textColor;
     self.messageLabel.font = [[LIOBrandingManager brandingManager] fontForElement:brandingElement];
     
-    NSString *text = chatMessage.text;
+    NSString *text;
+
+    if (chatMessage.formUrl)
+        text = chatMessage.formUrl;
+    else {
+        text = chatMessage.text;;
+    }
+
     if (chatMessage.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
+        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, text];
 
     // Setup the link views
     for (LPChatBubbleLink *currentLink in chatMessage.links)
@@ -199,6 +206,12 @@
 
         LPChatBubbleLink *curLink = [chatMessage.links objectAtIndex:i];
         [newLinkButton setTitle:curLink.string forState:UIControlStateNormal];
+        
+        //TODO: If neccesery - add lock icon!
+        UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOTinyTransparentCautionIcon" withTint:[UIColor blackColor]]];
+        lockIcon.center = CGPointMake(newLinkButton.frame.size.width + 5 + lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
+        [newLinkButton addSubview:lockIcon];
+        
         [self.linkButtons addObject:newLinkButton];
         [self addSubview:newLinkButton];
         

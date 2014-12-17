@@ -30,6 +30,8 @@
 #define LIOChatMessageSendingFailedKey  @"LIOChatMessageSendingFailedKey"
 #define LIOChatMessageLineIdKey         @"LIOChatMessageLineIdKey"
 #define LIOChatMessageClientLineIdKey   @"LIOChatMessageClientLineIdKey"
+#define LIOChatMessagePCIFormUrl        @"LIOChatMessagePCIFormUrl"
+#define LIOChatMessagePCIFormSessionId  @"LIOChatmessagePCIFormSessionId"
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
     [encoder encodeObject:[NSNumber numberWithInteger:self.kind] forKey:LIOChatMessageKindKey];
@@ -41,6 +43,8 @@
     [encoder encodeObject:[NSNumber numberWithBool:self.sendingFailed] forKey:LIOChatMessageSendingFailedKey];
     [encoder encodeObject:self.lineId forKey:LIOChatMessageLineIdKey];
     [encoder encodeObject:self.clientLineId forKey:LIOChatMessageClientLineIdKey];
+    [encoder encodeObject:self.formUrl forKey:LIOChatMessagePCIFormUrl];
+    [encoder encodeObject:self.formSessionId forKey:LIOChatMessagePCIFormSessionId];
 }
 
 - (id)initWithCoder:(NSCoder *)decoder {
@@ -59,6 +63,8 @@
         self.sendingFailed = [sendingFailedNumber boolValue];
         self.lineId = [decoder decodeObjectForKey:LIOChatMessageLineIdKey];
         self.clientLineId = [decoder decodeObjectForKey:LIOChatMessageClientLineIdKey];
+        self.formSessionId = [decoder decodeObjectForKey:LIOChatMessagePCIFormSessionId];
+        self.formUrl = [decoder decodeObjectForKey:LIOChatMessagePCIFormUrl];
         
         // Detect links for textual messages, not for photo messages
         if (LIOChatMessageKindLocalImage != self.kind)
@@ -78,19 +84,26 @@
     self.isShowingLinks = NO;
 
     // We should use the text with the sender name to fit the display that we will have later
-    NSString *text = self.text;
+    NSString *text;
+    if (self.formUrl)
+        text = self.formUrl;
+    else {
+        text = self.text;
+    }
+    
     if (self.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", self.senderName, self.text];
+        text = [NSString stringWithFormat:@"%@: %@", self.senderName, text];
     
     if (text == nil)
         return;
     
     NSRange fullRange = NSMakeRange(0, [text length]);
     
-    [dataDetector enumerateMatchesInString:text options:0 range:fullRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-        
+    //declare the block to use with the dataDetector
+    void (^foundLinksBlock)(NSTextCheckingResult *, NSMatchingFlags, BOOL *) = ^void (NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop)
+    {
         LPChatBubbleLink *currentLink = [[LPChatBubbleLink alloc] init];
-        currentLink.string = [text substringWithRange:result.range];
+        currentLink.string = (!self.formUrl ? [text substringWithRange:result.range] : self.text);
         currentLink.originalRawString = [text substringWithRange:result.range];
         currentLink.URL = result.URL;
         
@@ -128,7 +141,11 @@
         {
             currentLink.isIntraAppLink = [[LIOLookIOManager sharedLookIOManager] performSelector:@selector(isIntraLink:) withObject:currentLink.URL];
         }
-    }];    
+
+    };
+
+    [dataDetector enumerateMatchesInString:text options:0 range:fullRange usingBlock:foundLinksBlock];
+    
 }
 
 @end

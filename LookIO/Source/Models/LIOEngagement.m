@@ -12,8 +12,10 @@
 #import "LPChatAPIClient.h"
 #import "LPMediaAPIClient.h"
 #import "LIOMediaManager.h"
+#import "LPPCIFormAPIClient.h"
 #import "LIOStatusManager.h"
 #import "LPHTTPRequestOperation.h"
+#import "LIOBundleManager.h"
 
 #import "NSData+Base64.h"
 #import <zlib.h>
@@ -49,6 +51,7 @@
 @property (nonatomic, copy) NSString *SSEUrlString;
 @property (nonatomic, copy) NSString *postUrlString;
 @property (nonatomic, copy) NSString *mediaUrlString;
+@property (nonatomic, copy) NSString *pciFormUrlString;
 @property (nonatomic, copy) NSString *lastSSEventId;
 
 @property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
@@ -249,6 +252,10 @@
     if ([engagementId length])
         [resolvedPayload setObject:mediaUrl forKey:@"media_url"];
     
+    NSString* pciFormUrl = [params objectForKey:@"pciform_url"];
+    if ([engagementId length])
+        [resolvedPayload setObject:pciFormUrl forKey:@"pciform_url"];
+    
     return resolvedPayload;
 }
 
@@ -274,6 +281,7 @@
         self.SSEUrlString = [resolvedPayload objectForKey:@"sse_url"];
         self.postUrlString = [resolvedPayload objectForKey:@"post_url"];
         self.mediaUrlString = [resolvedPayload objectForKey:@"media_url"];
+        self.pciFormUrlString = [resolvedPayload objectForKey:@"pciform_url"];
         
         [self setupAPIClientBaseURL];
         
@@ -288,10 +296,14 @@
     
     LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
     mediaAPIClient.baseURL = [NSURL URLWithString:self.mediaUrlString];
-    
+
+    LPPCIFormAPIClient *pciFormAPIClient = [LPPCIFormAPIClient sharedClient];
+    pciFormAPIClient.baseURL = [NSURL URLWithString:self.pciFormUrlString];
+
     // Let's remove any cookies from previous sessions
     [chatAPIClient clearCookies];
     [mediaAPIClient clearCookies];
+    [pciFormAPIClient clearCookies];
     
     for (NSHTTPCookie *cookie in self.chatCookies) {
         NSMutableDictionary *chatCookieProperties = [NSMutableDictionary dictionary];
@@ -313,6 +325,17 @@
         
         NSHTTPCookie *mediaCookie = [NSHTTPCookie cookieWithProperties:mediaCookieProperties];
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:mediaCookie];
+
+        NSMutableDictionary *pciFormCookieProperties = [NSMutableDictionary dictionary];
+        [pciFormCookieProperties setObject:cookie.name forKey:NSHTTPCookieName];
+        [pciFormCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
+        [pciFormCookieProperties setObject:pciFormAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
+        [pciFormCookieProperties setObject:pciFormAPIClient.baseURL.path forKey:NSHTTPCookiePath];
+        [pciFormCookieProperties setObject:[NSString stringWithFormat:@"%lu", (unsigned long)cookie.version] forKey:NSHTTPCookieVersion];
+        
+        NSHTTPCookie *pciFormCookie = [NSHTTPCookie cookieWithProperties:pciFormCookieProperties];
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:pciFormCookie];
+
     }
 }
 
@@ -569,8 +592,50 @@
         }
     }
     
+    // Secured form (pci_form)
+    if ([type isEqualToString:@"line"])//pci_form
+    {
+        // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
+        self.isConnected = YES;
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults synchronize];
+
+//        if ([aPacket objectForKey:@"command"])
+//        {
+//            NSString *command = [aPacket objectForKey:@"command"];
+//            if ([command isEqualToString:@"start"])
+//            {
+                NSString *form_session_id = [aPacket objectForKey:@"form_session_id"];
+                NSString *form_url = [aPacket objectForKey:@"text"]; //form_url
+                
+                LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
+                newMessage.formSessionId = form_session_id;
+                newMessage.formUrl = form_url;
+                newMessage.text = LIOLocalizedString(@"LIOLookIOManager.SecuredFormBubbleTitle");
+                newMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSenderNamePlaceholder");
+                newMessage.kind = LIOChatMessageKindRemote;
+                newMessage.status = LIOChatMessageStatusReceived;
+                newMessage.date = [NSDate date];
+                [newMessage detectLinks];
+                
+                [self.messages addObject:newMessage];
+                [self saveEngagementMessages];
+                [self saveEngagement];
+                
+                [self.delegate engagement:self didReceiveMessage:newMessage];
+                
+
+            }
+            else { //else clouse for later use
+                
+            }
+
+//        }
+//    }
+    
     // Received line
-    if ([type isEqualToString:@"line"])
+    if ([type isEqualToString:@"line1"])
     {
         // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
         self.isConnected = YES;
@@ -1018,6 +1083,56 @@
             LIOLog(@"<PHOTO UPLOAD> with failure: %@", error);
         }];
     }
+}
+
+- (void)sendSubmitPacketWithTokenURL:(NSString *)tokenUrl
+{
+//    if (LIOChatMessageStatusFailed == message.status)
+//    {
+//        message.status = LIOChatMessageStatusResending;
+//        [self.delegate engagementChatMessageStatusDidChange:self];
+//    }
+//    else
+//    {
+//        message.status = LIOChatMessageStatusSending;
+//    }
+    
+    //TODO: save somewhere the form_session_id from the incoming pci_form packet!
+    NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys: tokenUrl, @"token_url", /* TODO */ @"1" /* TODO */ , @"form_session_id", nil];
+    NSString* submitRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerPCIFormSubmitRequestURL, self.engagementId];
+    
+    [[LPPCIFormAPIClient sharedClient] postPath:submitRequestUrl parameters:submitDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<SUBMIT> response: %@", responseObject);
+        else
+            LIOLog(@"<SUBMIT> success");
+
+//        // If this is a resend, we need to update the message view
+//        if (LIOChatMessageStatusResending == message.status)
+//        {
+//            [self.delegate engagementChatMessageStatusDidChange:self];
+//            message.status = LIOChatMessageStatusSent;
+//        }
+//        else
+//        {
+//            message.status = LIOChatMessageStatusSent;
+//        }
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<SUBMIT> failure: %@", error);
+        
+        // If we get a 404, let's terminate the engagement
+        if (operation.responseCode == 404) {
+            [self engagementNotFound];
+        }
+        // For other errors, we should display an alert for the failed message
+        else
+        {
+            //message.status = LIOChatMessageStatusFailed;
+            [self.delegate engagementChatMessageStatusDidChange:self];
+        }
+    }];
+
 }
 
 - (void)sendOutroPacket
