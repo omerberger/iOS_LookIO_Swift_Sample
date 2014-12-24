@@ -208,10 +208,10 @@
         LPChatBubbleLink *curLink = [chatMessage.links objectAtIndex:i];
         [newLinkButton setTitle:curLink.string forState:UIControlStateNormal];
         
-        //TODO: If neccesery - add lock icon!
         if (chatMessage.formUrl)
         {
-            UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSecuredFormLockIcon" withTint:[UIColor redColor]]];
+            UIColor *bgColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:linkBrandingElement];
+            UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSecuredFormLockIcon" DynamiclyColoredBasedOnBackgroundColor:bgColor]];
             lockIcon.center = CGPointMake(newLinkButton.frame.size.width - 20 - lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
             lockIcon.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [newLinkButton addSubview:lockIcon];
