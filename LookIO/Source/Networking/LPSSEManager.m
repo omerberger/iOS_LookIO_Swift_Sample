@@ -231,12 +231,6 @@
     // Let's check if this event has already been dispatched
     if (![event.eventId isEqualToString:@""]) {
         if ([events objectForKey:event.eventId])
-//            if ([event.eventType isEqualToString:@"start_pci_form"]){
-//                [events setObject:event forKey:event.eventId];
-//                lastEventId = event.eventId;
-//                [delegate sseManager:self didDispatchEvent:event];
-//            }
-//            else
             return;
         else {
             [events setObject:event forKey:event.eventId];
