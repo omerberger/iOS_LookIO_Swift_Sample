@@ -28,6 +28,7 @@
 
 // Models
 #import "LIOSoundEffect.h"
+#import "LIOSecuredFormInfo.h"
 
 #define LIOChatViewControllerChatTableViewCellIdentifier        @"LIOChatViewControllerChatTableViewCellIdentifier"
 #define LIOChatViewControllerChatTableViewImageCellIdentifier   @"LIOChatViewControllerChatTableViewImageCellIdentifier"
@@ -1679,6 +1680,12 @@
     [self.toasterView hideAnimated:YES];
 }
 
+- (void)reloadTableView
+{
+    [self.tableView reloadData];
+    [self scrollToBottomDelayed:YES];
+}
+
 #pragma mark -
 #pragma mark LIOChatTableViewCellDelegate Methods
 
@@ -1702,8 +1709,13 @@
 
             if ([[link.scheme lowercaseString] hasPrefix:@"http"])
             {
-                [self openWebLinkURL:link.URL];
+                if (chatMessage.formUrl)
+                    [self openWebLinkURL:link.URL andMessage:chatMessage];
+                else
+                    [self openWebLinkURL:link.URL];
+                
                 return;
+              
             }
             else if ([[link.scheme lowercaseString] hasPrefix:@"mailto"])
             {
@@ -1756,7 +1768,20 @@
 {
     self.chatState = LIOChatStateWeb;
     [self.view endEditing:YES];
-    [self.delegate chatViewControllerDidTapWebLink:url];
+    [self.delegate chatViewControllerDidTapWebLink:url WithSecuredFormInfo:nil];
+}
+
+- (void)openWebLinkURL:(NSURL *)url andMessage:(LIOChatMessage *)message
+{
+    self.chatState = LIOChatStateWeb;
+    [self.view endEditing:YES];
+    
+    LIOSecuredFormInfo *securedFormInfo = [LIOSecuredFormInfo new];
+    securedFormInfo.formUrl = message.formUrl;
+    securedFormInfo.formSessionId = message.formSessionId;
+    securedFormInfo.originalMessage = message;
+    
+    [self.delegate chatViewControllerDidTapWebLink:url WithSecuredFormInfo:securedFormInfo];
 }
 
 @end

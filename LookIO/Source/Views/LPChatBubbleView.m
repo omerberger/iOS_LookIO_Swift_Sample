@@ -89,6 +89,7 @@
             linkBrandingElement = LIOBrandingElementAgentChatBubbleLink;
             break;
             
+            
         default:
             break;
     }
@@ -208,9 +209,14 @@
         [newLinkButton setTitle:curLink.string forState:UIControlStateNormal];
         
         //TODO: If neccesery - add lock icon!
-        UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOTinyTransparentCautionIcon" withTint:[UIColor blackColor]]];
-        lockIcon.center = CGPointMake(newLinkButton.frame.size.width + 5 + lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
-        [newLinkButton addSubview:lockIcon];
+        if (chatMessage.formUrl)
+        {
+            UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSecuredFormLockIcon" withTint:[UIColor redColor]]];
+            lockIcon.center = CGPointMake(newLinkButton.frame.size.width - 20 - lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
+            lockIcon.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            [newLinkButton addSubview:lockIcon];
+        }
+        
         
         [self.linkButtons addObject:newLinkButton];
         [self addSubview:newLinkButton];

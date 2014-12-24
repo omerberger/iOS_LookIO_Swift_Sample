@@ -16,8 +16,7 @@ typedef enum
     LIOChatMessageKindMapLocation,
     LIOChatMessageKindLink,
     LIOChatMessageKindPhoneNumber,
-    LIOChatMessageKindSystemMessage,
-    LIOChatMessageKindPCIForm
+    LIOChatMessageKindSystemMessage
 } LIOChatMessageKind;
 
 typedef enum
@@ -59,7 +58,7 @@ typedef enum
 @property (nonatomic, strong) NSMutableArray *links;
 @property (nonatomic, strong) NSMutableArray *textCheckingResults;
 
-//relevant for messages of type LIOChatMessageKindPCIForm
+//relevant for messages of PCI Form
 @property (nonatomic, copy) NSString *formSessionId;
 @property (nonatomic, copy) NSString *formUrl;
 

@@ -23,6 +23,7 @@
 
 // Models
 #import "LIOSoundEffect.h"
+#import "LIOSecuredFormInfo.h"
 
 #define LIOContainerViewControllerAlertViewNextStepDismiss      2001
 
@@ -114,6 +115,25 @@
 - (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController
 {
     return [self.delegate containerViewControllerButtonTitleForWebView:self];
+}
+
+- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo ForWebView:(LIOWebViewController *)webViewController
+{
+    securedFormInfo.redirectUrl = webViewController.currentWebViewURL.absoluteString;
+    
+    //send the redirect url back to server
+    [self.engagement sendSubmitPacketWithSecuredFormInfo:securedFormInfo Success:^{
+        //update UI (add to message bubble: "Subbmited successfuly"
+        securedFormInfo.originalMessage.formUrl = [NSString stringWithFormat:@"%@ %@", securedFormInfo.originalMessage.formUrl, LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted")];
+        [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+       
+    } Failure:^{
+        //update UI (add to message bubble: "Subbmited successfuly"
+        securedFormInfo.originalMessage.formUrl = [NSString stringWithFormat:@"%@ %@", securedFormInfo.originalMessage.formUrl, LIOLocalizedString(@"LIOLookIOManager.SecuredFormSubmittionFailed")];
+        [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+
+    }];
+    
 }
 
 - (BOOL)webViewControllerShouldAutorotate:(LIOWebViewController *)webViewController
@@ -392,7 +412,7 @@
     [self.delegate containerViewControllerDidTapIntraAppLink:url];
 }
 
-- (void)chatViewControllerDidTapWebLink:(NSURL *)url
+- (void)chatViewControllerDidTapWebLink:(NSURL *)url WithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo
 {
     self.containerViewState = LIOContainerViewStateWeb;
     
@@ -405,7 +425,12 @@
         self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
         self.webViewController.delegate = self;
         self.currentWebViewURLString = url.absoluteString;
-    };
+        
+        //Is this a secured form or just an ordinary link
+        if (securedFormInfo)
+            self.webViewController.securedFormInfo = securedFormInfo;
+            
+    }
 
     [self presentViewController:self.webViewController animated:YES completion:nil];
     [self animationPushBackScaleDown];

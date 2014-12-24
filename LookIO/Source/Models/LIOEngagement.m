@@ -24,6 +24,7 @@
 
 #import "LPSSEManager.h"
 #import "LPSSEvent.h"
+#import "LIOSecuredFormInfo.h"
 
 #import "LIOTimerProxy.h"
 
@@ -593,7 +594,7 @@
     }
     
     // Secured form (pci_form)
-    if ([type isEqualToString:@"line"])//pci_form
+    if ([type isEqualToString:@"pci_form"])
     {
         // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
         self.isConnected = YES;
@@ -601,17 +602,23 @@
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults synchronize];
 
-//        if ([aPacket objectForKey:@"command"])
-//        {
-//            NSString *command = [aPacket objectForKey:@"command"];
-//            if ([command isEqualToString:@"start"])
-//            {
+        if ([aPacket objectForKey:@"command"])
+        {
+            NSString *command = [aPacket objectForKey:@"command"];
+            if ([command isEqualToString:@"start"])
+            {
                 NSString *form_session_id = [aPacket objectForKey:@"form_session_id"];
-                NSString *form_url = [aPacket objectForKey:@"text"]; //form_url
+                NSString *form_url = [aPacket objectForKey:@"form_url"];
                 
                 LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
                 newMessage.formSessionId = form_session_id;
-                newMessage.formUrl = form_url;
+                newMessage.formUrl = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
+                                                                    NULL,
+                                                                    (CFStringRef)form_url,
+                                                                    (CFStringRef)@"%",
+                                                                    (CFStringRef)@"{}",
+                                                                    kCFStringEncodingUTF8 ));
+
                 newMessage.text = LIOLocalizedString(@"LIOLookIOManager.SecuredFormBubbleTitle");
                 newMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSenderNamePlaceholder");
                 newMessage.kind = LIOChatMessageKindRemote;
@@ -631,11 +638,11 @@
                 
             }
 
-//        }
-//    }
+        }
+    }
     
     // Received line
-    if ([type isEqualToString:@"line1"])
+    if ([type isEqualToString:@"line"])
     {
         // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
         self.isConnected = YES;
@@ -1085,20 +1092,9 @@
     }
 }
 
-- (void)sendSubmitPacketWithTokenURL:(NSString *)tokenUrl
+- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo Success:(void(^)())success Failure:(void(^)())failure
 {
-//    if (LIOChatMessageStatusFailed == message.status)
-//    {
-//        message.status = LIOChatMessageStatusResending;
-//        [self.delegate engagementChatMessageStatusDidChange:self];
-//    }
-//    else
-//    {
-//        message.status = LIOChatMessageStatusSending;
-//    }
-    
-    //TODO: save somewhere the form_session_id from the incoming pci_form packet!
-    NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys: tokenUrl, @"token_url", /* TODO */ @"1" /* TODO */ , @"form_session_id", nil];
+    NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys:securedFormInfo.redirectUrl, @"token_url",  securedFormInfo.formSessionId, @"form_session_id", nil];
     NSString* submitRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerPCIFormSubmitRequestURL, self.engagementId];
     
     [[LPPCIFormAPIClient sharedClient] postPath:submitRequestUrl parameters:submitDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
@@ -1106,17 +1102,8 @@
             LIOLog(@"<SUBMIT> response: %@", responseObject);
         else
             LIOLog(@"<SUBMIT> success");
-
-//        // If this is a resend, we need to update the message view
-//        if (LIOChatMessageStatusResending == message.status)
-//        {
-//            [self.delegate engagementChatMessageStatusDidChange:self];
-//            message.status = LIOChatMessageStatusSent;
-//        }
-//        else
-//        {
-//            message.status = LIOChatMessageStatusSent;
-//        }
+        
+        success();
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
         LIOLog(@"<SUBMIT> failure: %@", error);
@@ -1128,8 +1115,7 @@
         // For other errors, we should display an alert for the failed message
         else
         {
-            //message.status = LIOChatMessageStatusFailed;
-            [self.delegate engagementChatMessageStatusDidChange:self];
+            failure();
         }
     }];
 

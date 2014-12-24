@@ -11,16 +11,23 @@
 // Managers
 #import "LIOBrandingManager.h"
 #import "LIOBundleManager.h"
+#import "LIOEngagement.h"
 
 // Views
 #import "LIODraggableButton.h"
 
+//Model
+#import "LIOSecuredFormInfo.h"
+
 #define LIOWebViewControllerAlertViewNextStepOpenInSafari 2001
 
-@interface LIOWebViewController () <UIAlertViewDelegate, LIODraggableButtonDelegate, UIWebViewDelegate>
+@interface LIOWebViewController () <UIAlertViewDelegate, LIODraggableButtonDelegate, UIWebViewDelegate> {
+    NSInteger count;
+}
 
 @property (nonatomic, strong) UIWebView *webView;
 @property (nonatomic, strong) NSURL *url;
+
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
 
@@ -44,6 +51,7 @@
     if (self)
     {
         self.url = aURL;
+        count = 0;
     }
     return self;
 }
@@ -184,6 +192,17 @@
     [self.loadingImageView removeFromSuperview];
     
     [self.webView stringByEvaluatingJavaScriptFromString:@"window._LPM_NATIVE_ = true;"];
+    
+    if (self.securedFormInfo)
+    {
+        if (![[self currentWebViewURL].absoluteString isEqualToString:self.securedFormInfo.formUrl])
+        {
+            [self.delegate webViewControllerDidSubmitSecuredFormWithInfo:self.securedFormInfo ForWebView:self];
+            [self closeButtonWasTapped:nil];
+
+        }
+    }
+    
 }
 
 #pragma mark -

@@ -84,7 +84,7 @@
     self.isShowingLinks = NO;
 
     // We should use the text with the sender name to fit the display that we will have later
-    NSString *text;
+    __block NSString *text;
     if (self.formUrl)
         text = self.formUrl;
     else {
@@ -102,11 +102,19 @@
     //declare the block to use with the dataDetector
     void (^foundLinksBlock)(NSTextCheckingResult *, NSMatchingFlags, BOOL *) = ^void (NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop)
     {
+        //overwrite the form url to match the currentLink format
+        if (self.formUrl)
+        {
+            self.formUrl = result.URL.absoluteString;
+            text = [NSString stringWithFormat:@"%@: %@", self.senderName, self.formUrl];
+
+        }
+    
         LPChatBubbleLink *currentLink = [[LPChatBubbleLink alloc] init];
         currentLink.string = (!self.formUrl ? [text substringWithRange:result.range] : self.text);
-        currentLink.originalRawString = [text substringWithRange:result.range];
+        currentLink.originalRawString = (!self.formUrl ? [text substringWithRange:result.range] : self.text);
         currentLink.URL = result.URL;
-        
+
         if (NSTextCheckingTypeLink == result.resultType)
         {
             // Omit telephone numbers if this device can't even make a call.

@@ -34,7 +34,7 @@ typedef enum
     LIOQueuedRequestTypePermission
 } LIOQueuedRequestType;
 
-@class LIOEngagement;
+@class LIOEngagement, LIOSecuredFormInfo;
 
 @protocol LIOEngagementDelegate <NSObject>
 
@@ -121,7 +121,7 @@ typedef enum
 - (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId;
 - (void)sendLineWithMessage:(LIOChatMessage *)message;
 - (void)sendMediaPacketWithMessage:(LIOChatMessage *)message;
-- (void)sendSubmitPacketWithTokenURL:(NSString *)tokenUrl;
+- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo Success:(void(^)())success Failure:(void(^)())failure;
 
 - (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries;
 - (void)sendChatHistoryPacketWithEmail:(NSString *)email retries:(NSInteger)retries;

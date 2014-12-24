@@ -200,3 +200,6 @@
 
 "LIOLookIOManager.SecuredFormBubbleTitle" = "Secured form";
 "LIOLookIOManager.SecuredFormSenderNamePlaceholder" = "Agent";
+
+"LIOLookIOManager.SecuredFormSubmittionFailed" = "Submittion failed";
+"LIOLookIOManager.SecuredFormSuccessfullySubmitted" = "Successfully submitted";
