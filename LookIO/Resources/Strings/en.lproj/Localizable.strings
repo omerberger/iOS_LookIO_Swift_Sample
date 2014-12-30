@@ -199,7 +199,11 @@
 "LIOLookIOManager.SessionEndedPostChatAlertButtonAccept" = "OK";
 
 "LIOLookIOManager.SecuredFormBubbleTitle" = "Secured form";
-"LIOLookIOManager.SecuredFormSenderNamePlaceholder" = "Agent";
+"LIOLookIOManager.SecuredFormSenderNamePlaceholder" = "Tap to fill the form";
 
 "LIOLookIOManager.SecuredFormSubmittionFailed" = "Submittion failed";
 "LIOLookIOManager.SecuredFormSuccessfullySubmitted" = "Successfully submitted";
+
+"LIOChatBubbleView.AlertCancelClose" = "Cancel";
+"LIOChatBubbleView.AlertClose" = "Close";
+"LIOChatBubbleView.DistructiveCloseMessage" = "Closing the form will invalidate it";

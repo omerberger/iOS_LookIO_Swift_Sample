@@ -20,10 +20,9 @@
 #import "LIOSecuredFormInfo.h"
 
 #define LIOWebViewControllerAlertViewNextStepOpenInSafari 2001
+#define LIOWebViewControllerAlertViewNextStepCloseWebView 2002
 
-@interface LIOWebViewController () <UIAlertViewDelegate, LIODraggableButtonDelegate, UIWebViewDelegate> {
-    NSInteger count;
-}
+@interface LIOWebViewController () <UIAlertViewDelegate, LIODraggableButtonDelegate, UIWebViewDelegate>
 
 @property (nonatomic, strong) UIWebView *webView;
 @property (nonatomic, strong) NSURL *url;
@@ -51,7 +50,6 @@
     if (self)
     {
         self.url = aURL;
-        count = 0;
     }
     return self;
 }
@@ -202,7 +200,16 @@
 
         }
     }
+}
+
+- (void)webViewDidStartLoad:(UIWebView *)webView
+{
+    if (self.securedFormInfo)
+    {
+        self.shareButton.hidden = YES;
+        [self.webView addSubview:self.loadingImageView];
     
+    }
 }
 
 #pragma mark -
@@ -217,7 +224,14 @@
                 [[UIApplication sharedApplication] openURL:[self currentWebViewURL]];
             }
             break;
-            
+        case LIOWebViewControllerAlertViewNextStepCloseWebView:
+            if (buttonIndex == 1)
+            {
+                [self.controlButton resetUnreadMessages];
+                [self.controlButton hideCurrentMessage];
+                [self.controlButton removeTimers];
+                [self.delegate webViewControllerCloseButtonWasTapped:self];
+            }
         default:
             break;
     }
@@ -228,10 +242,29 @@
 
 - (void)closeButtonWasTapped:(id)sender
 {
-    [self.controlButton resetUnreadMessages];
-    [self.controlButton hideCurrentMessage];
-    [self.controlButton removeTimers];
-    [self.delegate webViewControllerCloseButtonWasTapped:self];
+    if (self.securedFormInfo)
+    {
+        NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelClose");
+        NSString *alertClose = LIOLocalizedString(@"LIOChatBubbleView.AlertClose");
+        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.DistructiveCloseMessage"), [self currentWebViewURL].absoluteString];
+        
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:nil
+                                                    message:alertMessage
+                                                   delegate:self
+                                          cancelButtonTitle:alertCancel
+                                          otherButtonTitles: alertClose, nil];
+        self.alertView.tag = LIOWebViewControllerAlertViewNextStepCloseWebView;
+        [self.alertView show];
+
+    }
+    else
+    {
+        [self.controlButton resetUnreadMessages];
+        [self.controlButton hideCurrentMessage];
+        [self.controlButton removeTimers];
+        [self.delegate webViewControllerCloseButtonWasTapped:self];
+    }
 }
 
 - (void)openInSafariButtonWasTapped:(id)sender

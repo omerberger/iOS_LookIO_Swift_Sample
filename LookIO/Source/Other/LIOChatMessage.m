@@ -21,17 +21,18 @@
 
 @implementation LIOChatMessage
 
-#define LIOChatMessageKindKey           @"LIOChatMessageKindKey"
-#define LIOChatMessageStatusKey         @"LIOChatMessageStatusKey"
-#define LIOChatMessageTextKey           @"LIOChatMessageTextKey"
-#define LIOChatMessageDateKey           @"LIOChatMessageDateKey"
-#define LIOChatMessageSenderNameKey     @"LIOChatMessageSenderNameKey"
-#define LIOChatMessageAttachmentIdKey   @"LIOChatMessageAttachmentIdKey"
-#define LIOChatMessageSendingFailedKey  @"LIOChatMessageSendingFailedKey"
-#define LIOChatMessageLineIdKey         @"LIOChatMessageLineIdKey"
-#define LIOChatMessageClientLineIdKey   @"LIOChatMessageClientLineIdKey"
-#define LIOChatMessagePCIFormUrl        @"LIOChatMessagePCIFormUrl"
-#define LIOChatMessagePCIFormSessionId  @"LIOChatmessagePCIFormSessionId"
+#define LIOChatMessageKindKey               @"LIOChatMessageKindKey"
+#define LIOChatMessageStatusKey             @"LIOChatMessageStatusKey"
+#define LIOChatMessageTextKey               @"LIOChatMessageTextKey"
+#define LIOChatMessageDateKey	            @"LIOChatMessageDateKey"
+#define LIOChatMessageSenderNameKey         @"LIOChatMessageSenderNameKey"
+#define LIOChatMessageAttachmentIdKey       @"LIOChatMessageAttachmentIdKey"
+#define LIOChatMessageSendingFailedKey      @"LIOChatMessageSendingFailedKey"
+#define LIOChatMessageLineIdKey             @"LIOChatMessageLineIdKey"
+#define LIOChatMessageClientLineIdKey       @"LIOChatMessageClientLineIdKey"
+#define LIOChatMessagePCIFormUrl            @"LIOChatMessagePCIFormUrl"
+#define LIOChatMessagePCIFormSessionId      @"LIOChatmessagePCIFormSessionId"
+#define LIOChatMessagePCIFormIsSubmitted    @"LIOChatmessagePCIFormIsSubmitted"
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
     [encoder encodeObject:[NSNumber numberWithInteger:self.kind] forKey:LIOChatMessageKindKey];
@@ -45,6 +46,7 @@
     [encoder encodeObject:self.clientLineId forKey:LIOChatMessageClientLineIdKey];
     [encoder encodeObject:self.formUrl forKey:LIOChatMessagePCIFormUrl];
     [encoder encodeObject:self.formSessionId forKey:LIOChatMessagePCIFormSessionId];
+    [encoder encodeObject:[NSNumber numberWithBool:self.isSubmitted] forKey:LIOChatMessagePCIFormIsSubmitted];
 }
 
 - (id)initWithCoder:(NSCoder *)decoder {
@@ -65,6 +67,8 @@
         self.clientLineId = [decoder decodeObjectForKey:LIOChatMessageClientLineIdKey];
         self.formSessionId = [decoder decodeObjectForKey:LIOChatMessagePCIFormSessionId];
         self.formUrl = [decoder decodeObjectForKey:LIOChatMessagePCIFormUrl];
+        NSNumber *isSubmittedNumber = [decoder decodeObjectForKey:LIOChatMessagePCIFormIsSubmitted];
+        self.isSubmitted = isSubmittedNumber.boolValue;
         
         // Detect links for textual messages, not for photo messages
         if (LIOChatMessageKindLocalImage != self.kind)

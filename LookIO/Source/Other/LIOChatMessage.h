@@ -61,6 +61,7 @@ typedef enum
 //relevant for messages of PCI Form
 @property (nonatomic, copy) NSString *formSessionId;
 @property (nonatomic, copy) NSString *formUrl;
+@property (nonatomic) BOOL isSubmitted;
 
 
 - (void)detectLinks;

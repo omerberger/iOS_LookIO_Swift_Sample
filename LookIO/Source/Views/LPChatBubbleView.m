@@ -215,6 +215,14 @@
             lockIcon.center = CGPointMake(newLinkButton.frame.size.width - 20 - lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
             lockIcon.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [newLinkButton addSubview:lockIcon];
+            
+            //In case the user already submitted that form - don't allow to access it again
+            if (chatMessage.isSubmitted)
+            {
+                newLinkButton.enabled = NO;
+                newLinkButton.alpha = 0.5;
+            }
+            
         }
         
         

@@ -97,6 +97,15 @@
     
     [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     [self animationPopFrontScaleUp];
+    
+    //Secured forms are valid only once! If this was the case - remove the webview to make sure it will reload all over (and fail) in the next try.
+    if (webViewController.securedFormInfo)
+    {
+        self.currentWebViewURLString = nil;
+        [self.webViewController removeFromParentViewController];
+        self.webViewController = nil;
+    }
+    
     [self dismissViewControllerAnimated:YES completion:^{
         [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
     }];
@@ -124,7 +133,9 @@
     //send the redirect url back to server
     [self.engagement sendSubmitPacketWithSecuredFormInfo:securedFormInfo Success:^{
         //update UI (add to message bubble: "Subbmited successfuly"
+
         securedFormInfo.originalMessage.formUrl = [NSString stringWithFormat:@"%@ %@", securedFormInfo.originalMessage.formUrl, LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted")];
+        securedFormInfo.originalMessage.isSubmitted = YES;
         [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
        
     } Failure:^{
