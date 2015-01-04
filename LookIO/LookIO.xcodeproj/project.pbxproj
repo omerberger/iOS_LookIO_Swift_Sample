@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		280DC5FA1A49A0F500D34188 /* LIOSecuredFormInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 280DC5F81A49A0F500D34188 /* LIOSecuredFormInfo.h */; };
-		280DC5FB1A49A0F500D34188 /* LIOSecuredFormInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 280DC5F91A49A0F500D34188 /* LIOSecuredFormInfo.m */; };
+		280DC5FB1A49A0F500D34188 /* LIOSecuredFormInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 280DC5F91A49A0F500D34188 /* LIOSecuredFormInfo.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		286EF56F1A3EFF2600295A7D /* LPPCIFormAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 286EF56D1A3EFF2600295A7D /* LPPCIFormAPIClient.h */; };
-		286EF5701A3EFF2600295A7D /* LPPCIFormAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 286EF56E1A3EFF2600295A7D /* LPPCIFormAPIClient.m */; };
+		286EF5701A3EFF2600295A7D /* LPPCIFormAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 286EF56E1A3EFF2600295A7D /* LPPCIFormAPIClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A703A0461795C23C00914649 /* LPChatAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0441795C23C00914649 /* LPChatAPIClient.h */; };
 		A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0451795C23C00914649 /* LPChatAPIClient.m */; };
 		A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0481795C24A00914649 /* LPVisitAPIClient.h */; };

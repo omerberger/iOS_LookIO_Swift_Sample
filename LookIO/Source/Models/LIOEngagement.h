@@ -121,7 +121,7 @@ typedef enum
 - (void)sendVisitorLineWithAttachmentId:(NSString *)attachmentId;
 - (void)sendLineWithMessage:(LIOChatMessage *)message;
 - (void)sendMediaPacketWithMessage:(LIOChatMessage *)message;
-- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo Success:(void(^)())success Failure:(void(^)())failure;
+- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo success:(void(^)())success failure:(void(^)())failure;
 
 - (void)submitSurvey:(LIOSurvey *)survey retries:(NSInteger)retries;
 - (void)sendChatHistoryPacketWithEmail:(NSString *)email retries:(NSInteger)retries;

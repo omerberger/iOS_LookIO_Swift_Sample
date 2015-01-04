@@ -109,7 +109,7 @@
     }
 
     if (chatMessage.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, text];
+        text = [NSString stringWithFormat:(chatMessage.formUrl ? @"%@ %@": @"%@: %@"), chatMessage.senderName, text];
 
     // Setup the link views
     for (LPChatBubbleLink *currentLink in chatMessage.links)
@@ -156,7 +156,7 @@
         
         if ([chatMessage.senderName length])
         {
-            NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", chatMessage.senderName]] ;
+            NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:(chatMessage.formUrl ? @"%@" : @"%@: "), chatMessage.senderName]] ;
             NSRange boldRange = NSMakeRange(0, [nameCallout length]);
             
             CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
@@ -175,7 +175,7 @@
     [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(id)CFBridgingRelease(standardCTFont) range:NSMakeRange(0, mutableAttributedString.length)];
     if ([chatMessage.senderName length])
     {
-        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ", chatMessage.senderName]] ;
+        NSAttributedString *nameCallout = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:(chatMessage.formUrl ? @"%@" : @"%@: "), chatMessage.senderName]] ;
         NSRange boldRange = NSMakeRange(0, [nameCallout length]);
         
         CTFontRef boldNameCTFont = CTFontCreateWithName((CFStringRef)boldNameFont.fontName, boldNameFont.pointSize, NULL);
@@ -211,13 +211,13 @@
         if (chatMessage.formUrl)
         {
             UIColor *bgColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorBackground forElement:linkBrandingElement];
-            UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSecuredFormLockIcon" DynamiclyColoredBasedOnBackgroundColor:bgColor]];
+            UIImageView *lockIcon= [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LIOSecuredFormLockIcon" dynamicallyColoredBasedOnBackgroundColor:bgColor]];
             lockIcon.center = CGPointMake(newLinkButton.frame.size.width - 20 - lockIcon.frame.size.width/2, newLinkButton.frame.size.height/2);
             lockIcon.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
             [newLinkButton addSubview:lockIcon];
             
             //In case the user already submitted that form - don't allow to access it again
-            if (chatMessage.isSubmitted)
+            if (chatMessage.isSubmitted || chatMessage.isInvalidated)
             {
                 newLinkButton.enabled = NO;
                 newLinkButton.alpha = 0.5;

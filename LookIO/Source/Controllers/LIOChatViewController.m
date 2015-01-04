@@ -1768,7 +1768,7 @@
 {
     self.chatState = LIOChatStateWeb;
     [self.view endEditing:YES];
-    [self.delegate chatViewControllerDidTapWebLink:url WithSecuredFormInfo:nil];
+    [self.delegate chatViewControllerDidTapWebLink:url withSecuredFormInfo:nil];
 }
 
 - (void)openWebLinkURL:(NSURL *)url andMessage:(LIOChatMessage *)message
@@ -1781,7 +1781,7 @@
     securedFormInfo.formSessionId = message.formSessionId;
     securedFormInfo.originalMessage = message;
     
-    [self.delegate chatViewControllerDidTapWebLink:url WithSecuredFormInfo:securedFormInfo];
+    [self.delegate chatViewControllerDidTapWebLink:url withSecuredFormInfo:securedFormInfo];
 }
 
 @end

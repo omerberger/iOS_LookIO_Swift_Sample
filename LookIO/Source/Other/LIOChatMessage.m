@@ -33,6 +33,7 @@
 #define LIOChatMessagePCIFormUrl            @"LIOChatMessagePCIFormUrl"
 #define LIOChatMessagePCIFormSessionId      @"LIOChatmessagePCIFormSessionId"
 #define LIOChatMessagePCIFormIsSubmitted    @"LIOChatmessagePCIFormIsSubmitted"
+#define LIOChatMessagePCIFormIsInvalidated  @"LIOChatMessagePCIFormIsInvalidated"
 
 - (void)encodeWithCoder:(NSCoder *)encoder {
     [encoder encodeObject:[NSNumber numberWithInteger:self.kind] forKey:LIOChatMessageKindKey];
@@ -47,6 +48,7 @@
     [encoder encodeObject:self.formUrl forKey:LIOChatMessagePCIFormUrl];
     [encoder encodeObject:self.formSessionId forKey:LIOChatMessagePCIFormSessionId];
     [encoder encodeObject:[NSNumber numberWithBool:self.isSubmitted] forKey:LIOChatMessagePCIFormIsSubmitted];
+    [encoder encodeObject:[NSNumber numberWithBool:self.isInvalidated] forKey:LIOChatMessagePCIFormIsInvalidated];
 }
 
 - (id)initWithCoder:(NSCoder *)decoder {
@@ -69,6 +71,9 @@
         self.formUrl = [decoder decodeObjectForKey:LIOChatMessagePCIFormUrl];
         NSNumber *isSubmittedNumber = [decoder decodeObjectForKey:LIOChatMessagePCIFormIsSubmitted];
         self.isSubmitted = isSubmittedNumber.boolValue;
+        NSNumber *isInvalidatedNumber = [decoder decodeObjectForKey:LIOChatMessagePCIFormIsInvalidated];
+        self.isInvalidated = isInvalidatedNumber.boolValue;
+
         
         // Detect links for textual messages, not for photo messages
         if (LIOChatMessageKindLocalImage != self.kind)
@@ -96,7 +101,7 @@
     }
     
     if (self.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", self.senderName, text];
+        text = [NSString stringWithFormat:(self.formUrl ? @"%@ %@": @"%@: %@"), self.senderName, text];
     
     if (text == nil)
         return;
@@ -110,7 +115,7 @@
         if (self.formUrl)
         {
             self.formUrl = result.URL.absoluteString;
-            text = [NSString stringWithFormat:@"%@: %@", self.senderName, self.formUrl];
+            text = [NSString stringWithFormat:(self.formUrl ? @"%@ %@": @"%@: %@"), self.senderName, self.formUrl];
 
         }
     

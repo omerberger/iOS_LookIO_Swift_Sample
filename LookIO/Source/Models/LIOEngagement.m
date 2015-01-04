@@ -607,14 +607,14 @@
             NSString *command = [aPacket objectForKey:@"command"];
             if ([command isEqualToString:@"start"])
             {
-                NSString *form_session_id = [aPacket objectForKey:@"form_session_id"];
-                NSString *form_url = [aPacket objectForKey:@"form_url"];
+                NSString *formSessionId = [aPacket objectForKey:@"form_session_id"];
+                NSString *formUrl = [aPacket objectForKey:@"form_url"];
                 
                 LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
-                newMessage.formSessionId = form_session_id;
+                newMessage.formSessionId = formSessionId;
                 newMessage.formUrl = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
                                                                     NULL,
-                                                                    (CFStringRef)form_url,
+                                                                    (CFStringRef)formUrl,
                                                                     (CFStringRef)@"%",
                                                                     (CFStringRef)@"{}",
                                                                     kCFStringEncodingUTF8 ));
@@ -1092,7 +1092,7 @@
     }
 }
 
-- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo Success:(void(^)())success Failure:(void(^)())failure
+- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo success:(void(^)())success failure:(void(^)())failure
 {
     NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys:securedFormInfo.redirectUrl, @"token_url",  securedFormInfo.formSessionId, @"form_session_id", nil];
     NSString* submitRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerPCIFormSubmitRequestURL, self.engagementId];
@@ -1156,7 +1156,7 @@
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         
-        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", nil];
+        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", @"pci_forms", nil];
         NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                   capsArray, @"capabilities",
                                   nil];
@@ -1602,6 +1602,7 @@
         self.SSEUrlString = [decoder decodeObjectForKey:@"SSEUrlString"];
         self.postUrlString = [decoder decodeObjectForKey:@"postUrlString"];
         self.mediaUrlString = [decoder decodeObjectForKey:@"mediaUrlString"];
+        self.pciFormUrlString = [decoder decodeObjectForKey:@"pciFormUrlString"];
         self.lastSSEventId = [decoder decodeObjectForKey:@"lastSSEventId"];
         
         self.isConnected = [decoder decodeBoolForKey:@"isConnected"];
@@ -1626,6 +1627,7 @@
     [encoder encodeObject:self.SSEUrlString forKey:@"SSEUrlString"];
     [encoder encodeObject:self.postUrlString forKey:@"postUrlString"];
     [encoder encodeObject:self.mediaUrlString forKey:@"mediaUrlString"];
+    [encoder encodeObject:self.pciFormUrlString forKey:@"pciFormUrlString"];
     [encoder encodeObject:self.lastSSEventId forKey:@"lastSSEventId"];
     
     [encoder encodeBool:self.isConnected forKey:@"isConnected"];

@@ -344,7 +344,7 @@ BOOL LIOIsUIKitFlatMode(void) {
     return coloredImage;
 }
 
-- (UIImage *)imageNamed:(NSString *)aString DynamiclyColoredBasedOnBackgroundColor:(UIColor *)bgColor
+- (UIImage *)imageNamed:(NSString *)aString dynamicallyColoredBasedOnBackgroundColor: (UIColor *)bgColor
 {
     
     const CGFloat *componentColors = CGColorGetComponents(bgColor.CGColor);

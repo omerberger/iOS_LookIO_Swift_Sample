@@ -55,7 +55,7 @@ BOOL LIOIsUIKitFlatMode(void);
 - (void)findBundle;
 - (UIImage *)imageNamed:(NSString *)aString;
 - (UIImage *)imageNamed:(NSString *)aString withTint:(UIColor *)color;
-- (UIImage *)imageNamed:(NSString *)aString DynamiclyColoredBasedOnBackgroundColor: (UIColor *)bgColor;
+- (UIImage *)imageNamed:(NSString *)aString dynamicallyColoredBasedOnBackgroundColor: (UIColor *)bgColor;
 - (void)cacheImage:(UIImage *)image fromURL:(NSURL *)url forBrandingElement:(LIOBrandingElement)element;
 - (void)cachedImageForBrandingElement:(LIOBrandingElement)element withBlock:(void (^)(BOOL, UIImage *))block;
 - (NSDictionary *)brandingDictionary;

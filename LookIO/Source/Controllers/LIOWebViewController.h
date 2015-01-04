@@ -16,7 +16,7 @@
 - (BOOL)webViewControllerShowControlButtonForWebView:(LIOWebViewController *)webViewController;
 - (NSInteger)webViewControllerButtonKindForWebView:(LIOWebViewController *)webViewController;
 - (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController;
-- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo ForWebView:(LIOWebViewController *)webViewController;
+- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo forWebView:(LIOWebViewController *)webViewController;
 
 // Rotation methods
 - (BOOL)webViewController:(LIOWebViewController *)webViewController shouldRotateToInterfaceOrientation:(UIInterfaceOrientation)anOrientation;

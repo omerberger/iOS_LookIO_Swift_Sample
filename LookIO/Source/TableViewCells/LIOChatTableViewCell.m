@@ -107,7 +107,8 @@
     
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
+        text = [NSString stringWithFormat:(chatMessage.formUrl ? @"%@ %@": @"%@: %@"), chatMessage.senderName, chatMessage.text];
+    
     NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithString:text];
 
     CTFontRef standardCTFont = CTFontCreateWithName((CFStringRef)font.fontName, font.pointSize, NULL);
@@ -193,7 +194,7 @@
     
     NSString *text = chatMessage.text;
     if (chatMessage.senderName != nil)
-        text = [NSString stringWithFormat:@"%@: %@", chatMessage.senderName, chatMessage.text];
+        text = [NSString stringWithFormat:(chatMessage.formUrl ? @"%@ %@": @"%@: %@"), chatMessage.senderName, chatMessage.text];
     
     if (chatMessage.isShowingLinks)
     {

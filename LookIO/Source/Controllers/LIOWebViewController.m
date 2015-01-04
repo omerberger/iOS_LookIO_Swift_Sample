@@ -195,8 +195,8 @@
     {
         if (![[self currentWebViewURL].absoluteString isEqualToString:self.securedFormInfo.formUrl])
         {
-            [self.delegate webViewControllerDidSubmitSecuredFormWithInfo:self.securedFormInfo ForWebView:self];
-            [self closeButtonWasTapped:nil];
+            [self.delegate webViewControllerDidSubmitSecuredFormWithInfo:self.securedFormInfo forWebView:self];
+            [self closeWebView];
 
         }
     }
@@ -227,10 +227,7 @@
         case LIOWebViewControllerAlertViewNextStepCloseWebView:
             if (buttonIndex == 1)
             {
-                [self.controlButton resetUnreadMessages];
-                [self.controlButton hideCurrentMessage];
-                [self.controlButton removeTimers];
-                [self.delegate webViewControllerCloseButtonWasTapped:self];
+                [self closeWebView];
             }
         default:
             break;
@@ -246,25 +243,30 @@
     {
         NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelClose");
         NSString *alertClose = LIOLocalizedString(@"LIOChatBubbleView.AlertClose");
-        NSString *alertMessage = [NSString stringWithFormat:LIOLocalizedString(@"LIOChatBubbleView.DistructiveCloseMessage"), [self currentWebViewURL].absoluteString];
+        NSString *alertMessage = LIOLocalizedString(@"LIOChatBubbleView.DistructiveCloseMessage");
+        NSString *alertTitle = LIOLocalizedString(@"LIOChatBubbleView.AlertCloseTitle");
         
         [self dismissExistingAlertView];
-        self.alertView = [[UIAlertView alloc] initWithTitle:nil
+        self.alertView = [[UIAlertView alloc] initWithTitle:alertTitle
                                                     message:alertMessage
                                                    delegate:self
                                           cancelButtonTitle:alertCancel
                                           otherButtonTitles: alertClose, nil];
         self.alertView.tag = LIOWebViewControllerAlertViewNextStepCloseWebView;
         [self.alertView show];
-
     }
     else
     {
-        [self.controlButton resetUnreadMessages];
-        [self.controlButton hideCurrentMessage];
-        [self.controlButton removeTimers];
-        [self.delegate webViewControllerCloseButtonWasTapped:self];
+        [self closeWebView];
     }
+}
+
+- (void)closeWebView
+{
+    [self.controlButton resetUnreadMessages];
+    [self.controlButton hideCurrentMessage];
+    [self.controlButton removeTimers];
+    [self.delegate webViewControllerCloseButtonWasTapped:self];
 }
 
 - (void)openInSafariButtonWasTapped:(id)sender

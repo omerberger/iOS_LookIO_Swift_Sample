@@ -62,6 +62,7 @@ typedef enum
 @property (nonatomic, copy) NSString *formSessionId;
 @property (nonatomic, copy) NSString *formUrl;
 @property (nonatomic) BOOL isSubmitted;
+@property (nonatomic) BOOL isInvalidated;
 
 
 - (void)detectLinks;

@@ -98,12 +98,11 @@
     [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     [self animationPopFrontScaleUp];
     
-    //Secured forms are valid only once! If this was the case - remove the webview to make sure it will reload all over (and fail) in the next try.
-    if (webViewController.securedFormInfo)
-    {
-        self.currentWebViewURLString = nil;
-        [self.webViewController removeFromParentViewController];
-        self.webViewController = nil;
+    //Secured forms are valid only once! If this was the case - it is now invalidated.
+    if (webViewController.securedFormInfo){
+        webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
+        webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
+        [webViewController.securedFormInfo.originalMessage detectLinks];
     }
     
     [self dismissViewControllerAnimated:YES completion:^{
@@ -126,23 +125,26 @@
     return [self.delegate containerViewControllerButtonTitleForWebView:self];
 }
 
-- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo ForWebView:(LIOWebViewController *)webViewController
+- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo forWebView:(LIOWebViewController *)webViewController
 {
     securedFormInfo.redirectUrl = webViewController.currentWebViewURL.absoluteString;
     
     //send the redirect url back to server
-    [self.engagement sendSubmitPacketWithSecuredFormInfo:securedFormInfo Success:^{
+    [self.engagement sendSubmitPacketWithSecuredFormInfo:securedFormInfo success:^{
         //update UI (add to message bubble: "Subbmited successfuly"
+        securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted");
+        [securedFormInfo.originalMessage detectLinks];
 
-        securedFormInfo.originalMessage.formUrl = [NSString stringWithFormat:@"%@ %@", securedFormInfo.originalMessage.formUrl, LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted")];
         securedFormInfo.originalMessage.isSubmitted = YES;
         [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
        
-    } Failure:^{
-        //update UI (add to message bubble: "Subbmited successfuly"
-        securedFormInfo.originalMessage.formUrl = [NSString stringWithFormat:@"%@ %@", securedFormInfo.originalMessage.formUrl, LIOLocalizedString(@"LIOLookIOManager.SecuredFormSubmittionFailed")];
+    } failure:^{
+        //update UI (add to message bubble: "Failed to submit"
+        securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSubmittionFailed");
+        [securedFormInfo.originalMessage detectLinks];
+        
+        securedFormInfo.originalMessage.isInvalidated = YES;
         [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
-
     }];
     
 }
@@ -423,7 +425,7 @@
     [self.delegate containerViewControllerDidTapIntraAppLink:url];
 }
 
-- (void)chatViewControllerDidTapWebLink:(NSURL *)url WithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo
+- (void)chatViewControllerDidTapWebLink:(NSURL *)url withSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo
 {
     self.containerViewState = LIOContainerViewStateWeb;
     
