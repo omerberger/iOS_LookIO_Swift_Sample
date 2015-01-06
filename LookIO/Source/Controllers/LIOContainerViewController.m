@@ -103,6 +103,9 @@
         webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
         webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
         [webViewController.securedFormInfo.originalMessage detectLinks];
+        [self.engagement engagementChatMessageContentDidChange];
+
+
     }
     
     [self dismissViewControllerAnimated:YES completion:^{
@@ -134,9 +137,10 @@
         //update UI (add to message bubble: "Subbmited successfuly"
         securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted");
         [securedFormInfo.originalMessage detectLinks];
-
+        
         securedFormInfo.originalMessage.isSubmitted = YES;
         [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+        [self.engagement engagementChatMessageContentDidChange];
        
     } failure:^{
         //update UI (add to message bubble: "Failed to submit"
@@ -145,6 +149,7 @@
         
         securedFormInfo.originalMessage.isInvalidated = YES;
         [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+        [self.engagement engagementChatMessageContentDidChange];
     }];
     
 }
@@ -785,6 +790,13 @@
             break;
             
         case LIOContainerViewStateWeb:
+            //invalidating the form
+            self.webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
+            self.webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
+            [self.webViewController.securedFormInfo.originalMessage detectLinks];
+            [self.engagement engagementChatMessageContentDidChange];
+
+            //continue with dissmissing
             [self dismissModalViewControllerAnimated:NO];
             [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
             [self.chatViewController dismissChat:self];

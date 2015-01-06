@@ -243,7 +243,7 @@
     {
         NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelClose");
         NSString *alertClose = LIOLocalizedString(@"LIOChatBubbleView.AlertClose");
-        NSString *alertMessage = LIOLocalizedString(@"LIOChatBubbleView.DistructiveCloseMessage");
+        NSString *alertMessage = LIOLocalizedString(@"LIOChatBubbleView.DestructiveCloseMessage");
         NSString *alertTitle = LIOLocalizedString(@"LIOChatBubbleView.AlertCloseTitle");
         
         [self dismissExistingAlertView];

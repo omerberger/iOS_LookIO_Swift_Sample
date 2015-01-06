@@ -134,6 +134,8 @@
     }
 }
 
+
+
 #pragma mark -
 #pragma mark Engagement Lifecycle Methods
 
@@ -1097,11 +1099,16 @@
     NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys:securedFormInfo.redirectUrl, @"token_url",  securedFormInfo.formSessionId, @"form_session_id", nil];
     NSString* submitRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerPCIFormSubmitRequestURL, self.engagementId];
     
+    //
+    
+    
     [[LPPCIFormAPIClient sharedClient] postPath:submitRequestUrl parameters:submitDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         if (responseObject)
             LIOLog(@"<SUBMIT> response: %@", responseObject);
         else
             LIOLog(@"<SUBMIT> success");
+        
+        
         
         success();
         
@@ -1585,6 +1592,13 @@
     }
 }
 
+- (void)engagementChatMessageContentDidChange
+{
+    [self saveEngagement];
+    [self saveEngagementMessages];
+}
+
+
 #pragma mark -
 #pragma mark NSCopying Methods
 
@@ -1722,6 +1736,7 @@
         LIOLog(@"<SCREENSHOT> with data %@ failure: %@", screenshotData, error);
     }];
 }
+
 
 #pragma mark -
 #pragma mark Credit Card Masking Methods

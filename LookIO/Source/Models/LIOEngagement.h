@@ -140,5 +140,7 @@ typedef enum
 - (void)startScreenshare;
 - (void)stopScreenshare;
 
+- (void)engagementChatMessageContentDidChange;
+
 
 @end

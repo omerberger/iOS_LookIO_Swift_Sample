@@ -206,6 +206,6 @@
 
 "LIOChatBubbleView.AlertCancelClose" = "Cancel";
 "LIOChatBubbleView.AlertClose" = "Close";
-"LIOChatBubbleView.DistructiveCloseMessage" = "If you close the form, you won’t be able to access it again. Are you sure you want to close it?";
+"LIOChatBubbleView.DestructiveCloseMessage" = "If you close the form, you won’t be able to access it again. Are you sure you want to close it?";
 "LIOChatBubbleView.AlertCloseTitle" = "Close form";
 "LIOChatBubbleView.InvalidFormTitle" = "Invalid form";
