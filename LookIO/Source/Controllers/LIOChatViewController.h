@@ -27,14 +27,14 @@ typedef enum {
     LIOChatStateImageApprove
 } LIOChatState;
 
-@class LIOChatViewController;
+@class LIOChatViewController, LIOSecuredFormInfo;
 
 @protocol LIOChatViewControllerDelegate <NSObject>
 
 - (void)chatViewControllerDidDismissChat:(LIOChatViewController *)chatViewController;
 - (void)chatViewControllerDidEndChat:(LIOChatViewController *)chatViewController;
 - (void)chatViewControllerDidTapIntraAppLink:(NSURL *)url;
-- (void)chatViewControllerDidTapWebLink:(NSURL *)url;
+- (void)chatViewControllerDidTapWebLink:(NSURL *)url withSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo;
 - (void)chatViewControllerLandscapeWantsHeaderBarHidden:(BOOL)hidden;
 
 @end

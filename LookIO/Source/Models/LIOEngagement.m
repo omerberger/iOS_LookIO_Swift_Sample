@@ -12,8 +12,10 @@
 #import "LPChatAPIClient.h"
 #import "LPMediaAPIClient.h"
 #import "LIOMediaManager.h"
+#import "LPPCIFormAPIClient.h"
 #import "LIOStatusManager.h"
 #import "LPHTTPRequestOperation.h"
+#import "LIOBundleManager.h"
 
 #import "NSData+Base64.h"
 #import <zlib.h>
@@ -22,6 +24,7 @@
 
 #import "LPSSEManager.h"
 #import "LPSSEvent.h"
+#import "LIOSecuredFormInfo.h"
 
 #import "LIOTimerProxy.h"
 
@@ -49,6 +52,7 @@
 @property (nonatomic, copy) NSString *SSEUrlString;
 @property (nonatomic, copy) NSString *postUrlString;
 @property (nonatomic, copy) NSString *mediaUrlString;
+@property (nonatomic, copy) NSString *pciFormUrlString;
 @property (nonatomic, copy) NSString *lastSSEventId;
 
 @property (nonatomic, strong) LIOTimerProxy *reconnectTimer;
@@ -129,6 +133,8 @@
         [self.messages addObject:firstMessage];
     }
 }
+
+
 
 #pragma mark -
 #pragma mark Engagement Lifecycle Methods
@@ -249,6 +255,10 @@
     if ([engagementId length])
         [resolvedPayload setObject:mediaUrl forKey:@"media_url"];
     
+    NSString* pciFormUrl = [params objectForKey:@"pciform_url"];
+    if ([engagementId length])
+        [resolvedPayload setObject:pciFormUrl forKey:@"pciform_url"];
+    
     return resolvedPayload;
 }
 
@@ -274,6 +284,7 @@
         self.SSEUrlString = [resolvedPayload objectForKey:@"sse_url"];
         self.postUrlString = [resolvedPayload objectForKey:@"post_url"];
         self.mediaUrlString = [resolvedPayload objectForKey:@"media_url"];
+        self.pciFormUrlString = [resolvedPayload objectForKey:@"pciform_url"];
         
         [self setupAPIClientBaseURL];
         
@@ -288,10 +299,14 @@
     
     LPMediaAPIClient *mediaAPIClient = [LPMediaAPIClient sharedClient];
     mediaAPIClient.baseURL = [NSURL URLWithString:self.mediaUrlString];
-    
+
+    LPPCIFormAPIClient *pciFormAPIClient = [LPPCIFormAPIClient sharedClient];
+    pciFormAPIClient.baseURL = [NSURL URLWithString:self.pciFormUrlString];
+
     // Let's remove any cookies from previous sessions
     [chatAPIClient clearCookies];
     [mediaAPIClient clearCookies];
+    [pciFormAPIClient clearCookies];
     
     for (NSHTTPCookie *cookie in self.chatCookies) {
         NSMutableDictionary *chatCookieProperties = [NSMutableDictionary dictionary];
@@ -313,6 +328,17 @@
         
         NSHTTPCookie *mediaCookie = [NSHTTPCookie cookieWithProperties:mediaCookieProperties];
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:mediaCookie];
+
+        NSMutableDictionary *pciFormCookieProperties = [NSMutableDictionary dictionary];
+        [pciFormCookieProperties setObject:cookie.name forKey:NSHTTPCookieName];
+        [pciFormCookieProperties setObject:cookie.value forKey:NSHTTPCookieValue];
+        [pciFormCookieProperties setObject:pciFormAPIClient.baseURL.host forKey:NSHTTPCookieDomain];
+        [pciFormCookieProperties setObject:pciFormAPIClient.baseURL.path forKey:NSHTTPCookiePath];
+        [pciFormCookieProperties setObject:[NSString stringWithFormat:@"%lu", (unsigned long)cookie.version] forKey:NSHTTPCookieVersion];
+        
+        NSHTTPCookie *pciFormCookie = [NSHTTPCookie cookieWithProperties:pciFormCookieProperties];
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:pciFormCookie];
+
     }
 }
 
@@ -566,6 +592,54 @@
         else
         {
             [self handleSSEConnectionFailed];
+        }
+    }
+    
+    // Secured form (pci_form)
+    if ([type isEqualToString:@"pci_form"])
+    {
+        // Just in case we didn't receive a "connected" packet, if we receive a line we are connected
+        self.isConnected = YES;
+        
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults synchronize];
+
+        if ([aPacket objectForKey:@"command"])
+        {
+            NSString *command = [aPacket objectForKey:@"command"];
+            if ([command isEqualToString:@"start"])
+            {
+                NSString *formSessionId = [aPacket objectForKey:@"form_session_id"];
+                NSString *formUrl = [aPacket objectForKey:@"form_url"];
+                
+                LIOChatMessage *newMessage = [[LIOChatMessage alloc] init];
+                newMessage.formSessionId = formSessionId;
+                newMessage.formUrl = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(
+                                                                    NULL,
+                                                                    (CFStringRef)formUrl,
+                                                                    (CFStringRef)@"%",
+                                                                    (CFStringRef)@"{}",
+                                                                    kCFStringEncodingUTF8 ));
+
+                newMessage.text = LIOLocalizedString(@"LIOLookIOManager.SecuredFormBubbleTitle");
+                newMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSenderNamePlaceholder");
+                newMessage.kind = LIOChatMessageKindRemote;
+                newMessage.status = LIOChatMessageStatusReceived;
+                newMessage.date = [NSDate date];
+                [newMessage detectLinks];
+                
+                [self.messages addObject:newMessage];
+                [self saveEngagementMessages];
+                [self saveEngagement];
+                
+                [self.delegate engagement:self didReceiveMessage:newMessage];
+                
+
+            }
+            else { //else clouse for later use
+                
+            }
+
         }
     }
     
@@ -1020,6 +1094,40 @@
     }
 }
 
+- (void)sendSubmitPacketWithSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo success:(void(^)())success failure:(void(^)())failure
+{
+    NSDictionary *submitDict = [NSDictionary dictionaryWithObjectsAndKeys:securedFormInfo.redirectUrl, @"token_url",  securedFormInfo.formSessionId, @"form_session_id", nil];
+    NSString* submitRequestUrl = [NSString stringWithFormat:@"%@/%@", LIOLookIOManagerPCIFormSubmitRequestURL, self.engagementId];
+    
+    //
+    
+    
+    [[LPPCIFormAPIClient sharedClient] postPath:submitRequestUrl parameters:submitDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject)
+            LIOLog(@"<SUBMIT> response: %@", responseObject);
+        else
+            LIOLog(@"<SUBMIT> success");
+        
+        
+        
+        success();
+        
+    } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        LIOLog(@"<SUBMIT> failure: %@", error);
+        
+        // If we get a 404, let's terminate the engagement
+        if (operation.responseCode == 404) {
+            [self engagementNotFound];
+        }
+        // For other errors, we should display an alert for the failed message
+        else
+        {
+            failure();
+        }
+    }];
+
+}
+
 - (void)sendOutroPacket
 {
     NSDictionary *outroDict = [NSDictionary dictionaryWithObjectsAndKeys:@"outro", @"type", nil];
@@ -1055,7 +1163,7 @@
     if (LIOAnalyticsManagerReachabilityStatusConnected == [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus)
     {
         
-        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", nil];
+        NSArray *capsArray = [NSArray arrayWithObjects:@"show_leavemessage", @"show_infomessage", @"auto_queue", @"pci_forms", nil];
         NSDictionary *capsDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                   capsArray, @"capabilities",
                                   nil];
@@ -1484,6 +1592,13 @@
     }
 }
 
+- (void)engagementChatMessageContentDidChange
+{
+    [self saveEngagement];
+    [self saveEngagementMessages];
+}
+
+
 #pragma mark -
 #pragma mark NSCopying Methods
 
@@ -1501,6 +1616,7 @@
         self.SSEUrlString = [decoder decodeObjectForKey:@"SSEUrlString"];
         self.postUrlString = [decoder decodeObjectForKey:@"postUrlString"];
         self.mediaUrlString = [decoder decodeObjectForKey:@"mediaUrlString"];
+        self.pciFormUrlString = [decoder decodeObjectForKey:@"pciFormUrlString"];
         self.lastSSEventId = [decoder decodeObjectForKey:@"lastSSEventId"];
         
         self.isConnected = [decoder decodeBoolForKey:@"isConnected"];
@@ -1525,6 +1641,7 @@
     [encoder encodeObject:self.SSEUrlString forKey:@"SSEUrlString"];
     [encoder encodeObject:self.postUrlString forKey:@"postUrlString"];
     [encoder encodeObject:self.mediaUrlString forKey:@"mediaUrlString"];
+    [encoder encodeObject:self.pciFormUrlString forKey:@"pciFormUrlString"];
     [encoder encodeObject:self.lastSSEventId forKey:@"lastSSEventId"];
     
     [encoder encodeBool:self.isConnected forKey:@"isConnected"];
@@ -1619,6 +1736,7 @@
         LIOLog(@"<SCREENSHOT> with data %@ failure: %@", screenshotData, error);
     }];
 }
+
 
 #pragma mark -
 #pragma mark Credit Card Masking Methods
