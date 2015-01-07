@@ -791,11 +791,14 @@
             
         case LIOContainerViewStateWeb:
             //invalidating the form
-            self.webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
-            self.webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
-            [self.webViewController.securedFormInfo.originalMessage detectLinks];
-            [self.engagement engagementChatMessageContentDidChange];
-
+            if (self.webViewController.securedFormInfo)
+            {
+                self.webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
+                self.webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
+                [self.webViewController.securedFormInfo.originalMessage detectLinks];
+                [self.engagement engagementChatMessageContentDidChange];
+            }
+            
             //continue with dissmissing
             [self dismissModalViewControllerAnimated:NO];
             [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
