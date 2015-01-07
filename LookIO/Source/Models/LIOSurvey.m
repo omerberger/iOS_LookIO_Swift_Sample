@@ -21,6 +21,7 @@
 @property (nonatomic, assign) BOOL wasSubmitted;
 @property (nonatomic, strong) NSString *surveyId;
 @property (nonatomic, strong) NSDictionary *logicDictionary;
+@property (nonatomic) NSInteger firstQuestionIndex;
 
 @end
 
@@ -35,9 +36,9 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.lastCompletedQuestionIndex = self.firstQuestionIndex;
+        self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
@@ -54,11 +55,12 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         
         [self populateTemplateWithDictionary:aDictionary];
         
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.lastCompletedQuestionIndex = _firstQuestionIndex;
+        self.lastSeenQuestionIndex = _firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
     
@@ -74,15 +76,21 @@
         self.hasMandatoryQuestions = NO;
 
         self.responses = [[NSMutableDictionary alloc] init];
-        self.lastCompletedQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        self.lastSeenQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
-        
         [self populateDefaultOfflineSurveyWithResponse:response];
-
+        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.lastCompletedQuestionIndex = self.firstQuestionIndex;
+        self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
     }
-    
     return self;
+}
+
+- (NSInteger)firstQuestionIndex{
+    return _firstQuestionIndex;
+}
+
+- (BOOL)doesHeaderExist{
+    return ((_header!=nil) && (![_header isEqualToString:@""]));
 }
 
 - (void)registerAnswerObject:(id)anAnswerObj withQuestionIndex:(NSInteger)anIndex
@@ -247,6 +255,10 @@
         
         if (shouldShowQuestion)
             numberOfQuestions += 1;
+    }
+    
+    if ([self doesHeaderExist]){
+        numberOfQuestions++;      //There is a header to show (intro question)
     }
     
     return numberOfQuestions;
