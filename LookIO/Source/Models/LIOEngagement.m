@@ -576,10 +576,6 @@
             NSNumber *retryAfterObjects = [aPacket objectForKey:@"retry_after"];
             NSInteger retryAfterSeconds = [retryAfterObjects integerValue];
 
-            BOOL retryAfter = arc4random() % 2;
-            if (retryAfter)
-                retryAfterSeconds = 5;
-
             if (retryAfterSeconds != -1) {
                 [self reconnectRetryAfter:retryAfterSeconds];
                 LIOLog(@"<LPSSEManager> Attempting reconnection in %d seconds..", retryAfterSeconds);
