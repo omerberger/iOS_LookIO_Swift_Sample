@@ -290,7 +290,6 @@
     [self setNeedsLayout];
     
     NSUInteger currentTextLength = aTextView.text.length;
-
     if (0 == self.previousTextLength)
     {
         // "Typing" started.
@@ -305,8 +304,8 @@
     
     BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
     NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
-
-    // Limit the length, and make sure there isn't any marekd text first
+    
+    // Limit the length and check we don't have marked text
     if (currentTextLength > maxCharacters && self.textView.markedTextRange == nil)
     {
         NSString *newText = [aTextView.text substringToIndex:maxCharacters];
@@ -321,15 +320,26 @@
     [self.delegate inputBarTextFieldDidBeginEditing:self];
 }
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {    
-    if ([text isEqualToString:@"\n"])
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+    //Check if input exceed MaxCharater limit.
+    BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
+    NSInteger maxCharacters = padUI ? LIOInputBarViewMaxTextLength_iPad : LIOInputBarViewMaxTextLength;
+    if ([text isEqualToString:@"\n"])                                           //send message
     {
         [self setNeedsLayout];
         
         [self.delegate inputBarViewSendButtonWasTapped:self];
         return NO;
+    }else if (range.location == maxCharacters-1 && [text isEqualToString:@""]){                                         //User deletes the last character
+        return YES;
+    }else if (range.length==0 && textView.text.length==maxCharacters){                                                  //Append new character text while in autocorrect
+        return NO; 
+    }else if (range.location + range.length <= maxCharacters && textView.text.length<=maxCharacters){                   //Approve autocorrect suggestion
+        return YES;
+    }else if (textView.text.length>=maxCharacters){                                                                     //Text is too long
+        return NO;
     }
-    
+
     return YES;
 }
 
