@@ -58,7 +58,7 @@
         
         [self populateTemplateWithDictionary:aDictionary];
         
-        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.firstQuestionIndex = ([self doesHeaderExist]||[self isEmpty]) ? LIOSurveyViewControllerIndexForIntroPage : 0;
         self.lastCompletedQuestionIndex = _firstQuestionIndex;
         self.lastSeenQuestionIndex = _firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
@@ -77,7 +77,7 @@
 
         self.responses = [[NSMutableDictionary alloc] init];
         [self populateDefaultOfflineSurveyWithResponse:response];
-        self.firstQuestionIndex = [self doesHeaderExist] ? LIOSurveyViewControllerIndexForIntroPage : 0;
+        self.firstQuestionIndex = LIOSurveyViewControllerIndexForIntroPage;
         self.lastCompletedQuestionIndex = self.firstQuestionIndex;
         self.lastSeenQuestionIndex = self.firstQuestionIndex;
         self.isSubmittedUncompletedPostChatSurvey = NO;
@@ -91,6 +91,19 @@
 
 - (BOOL)doesHeaderExist{
     return ((_header!=nil) && (![_header isEqualToString:@""]));
+}
+
+-(BOOL)hasQuestions{
+    //Check if we the questions are populated
+    if (self.questions){
+        return (self.questions.count>0);
+    }else{
+        return NO;
+    }
+}
+
+-(BOOL)isEmpty{
+    return (![self doesHeaderExist]) && (![self hasQuestions]);
 }
 
 - (void)registerAnswerObject:(id)anAnswerObj withQuestionIndex:(NSInteger)anIndex
