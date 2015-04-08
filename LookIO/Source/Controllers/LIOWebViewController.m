@@ -11,16 +11,22 @@
 // Managers
 #import "LIOBrandingManager.h"
 #import "LIOBundleManager.h"
+#import "LIOEngagement.h"
 
 // Views
 #import "LIODraggableButton.h"
 
+//Model
+#import "LIOSecuredFormInfo.h"
+
 #define LIOWebViewControllerAlertViewNextStepOpenInSafari 2001
+#define LIOWebViewControllerAlertViewNextStepCloseWebView 2002
 
 @interface LIOWebViewController () <UIAlertViewDelegate, LIODraggableButtonDelegate, UIWebViewDelegate>
 
 @property (nonatomic, strong) UIWebView *webView;
 @property (nonatomic, strong) NSURL *url;
+
 
 @property (nonatomic, strong) LIODraggableButton *controlButton;
 
@@ -184,6 +190,26 @@
     [self.loadingImageView removeFromSuperview];
     
     [self.webView stringByEvaluatingJavaScriptFromString:@"window._LPM_NATIVE_ = true;"];
+    
+    if (self.securedFormInfo)
+    {
+        if (![[self currentWebViewURL].absoluteString isEqualToString:self.securedFormInfo.formUrl])
+        {
+            [self.delegate webViewControllerDidSubmitSecuredFormWithInfo:self.securedFormInfo forWebView:self];
+            [self closeWebView];
+
+        }
+    }
+}
+
+- (void)webViewDidStartLoad:(UIWebView *)webView
+{
+    if (self.securedFormInfo)
+    {
+        self.shareButton.hidden = YES;
+        [self.webView addSubview:self.loadingImageView];
+    
+    }
 }
 
 #pragma mark -
@@ -198,7 +224,11 @@
                 [[UIApplication sharedApplication] openURL:[self currentWebViewURL]];
             }
             break;
-            
+        case LIOWebViewControllerAlertViewNextStepCloseWebView:
+            if (buttonIndex == 1)
+            {
+                [self closeWebView];
+            }
         default:
             break;
     }
@@ -208,6 +238,30 @@
 #pragma mark Action Methods
 
 - (void)closeButtonWasTapped:(id)sender
+{
+    if (self.securedFormInfo)
+    {
+        NSString *alertCancel = LIOLocalizedString(@"LIOChatBubbleView.AlertCancelClose");
+        NSString *alertClose = LIOLocalizedString(@"LIOChatBubbleView.AlertClose");
+        NSString *alertMessage = LIOLocalizedString(@"LIOChatBubbleView.DestructiveCloseMessage");
+        NSString *alertTitle = LIOLocalizedString(@"LIOChatBubbleView.AlertCloseTitle");
+        
+        [self dismissExistingAlertView];
+        self.alertView = [[UIAlertView alloc] initWithTitle:alertTitle
+                                                    message:alertMessage
+                                                   delegate:self
+                                          cancelButtonTitle:alertCancel
+                                          otherButtonTitles: alertClose, nil];
+        self.alertView.tag = LIOWebViewControllerAlertViewNextStepCloseWebView;
+        [self.alertView show];
+    }
+    else
+    {
+        [self closeWebView];
+    }
+}
+
+- (void)closeWebView
 {
     [self.controlButton resetUnreadMessages];
     [self.controlButton hideCurrentMessage];

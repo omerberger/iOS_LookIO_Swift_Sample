@@ -113,6 +113,7 @@ extern NSString *const kLPEventAddedToCart;
 
 - (void)lookIOManager:(LIOLookIOManager *)aManager didSendNotification:(NSString *)notification withUnreadMessagesCount:(NSInteger)count;
 
+
 ///---------------------------------------------------------------------------------------
 /// @name Customization Methods
 ///---------------------------------------------------------------------------------------

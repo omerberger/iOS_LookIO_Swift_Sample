@@ -235,7 +235,7 @@
         else {
             [events setObject:event forKey:event.eventId];
             lastEventId = event.eventId;
-            [delegate sseManager:self didDispatchEvent:event];            
+            [delegate sseManager:self didDispatchEvent:event];
         }
         
     }

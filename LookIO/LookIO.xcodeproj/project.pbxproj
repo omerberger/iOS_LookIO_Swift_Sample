@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		280DC5FA1A49A0F500D34188 /* LIOSecuredFormInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 280DC5F81A49A0F500D34188 /* LIOSecuredFormInfo.h */; };
+		280DC5FB1A49A0F500D34188 /* LIOSecuredFormInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 280DC5F91A49A0F500D34188 /* LIOSecuredFormInfo.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		286EF56F1A3EFF2600295A7D /* LPPCIFormAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 286EF56D1A3EFF2600295A7D /* LPPCIFormAPIClient.h */; };
+		286EF5701A3EFF2600295A7D /* LPPCIFormAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 286EF56E1A3EFF2600295A7D /* LPPCIFormAPIClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A703A0461795C23C00914649 /* LPChatAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0441795C23C00914649 /* LPChatAPIClient.h */; };
 		A703A0471795C23C00914649 /* LPChatAPIClient.m in Sources */ = {isa = PBXBuildFile; fileRef = A703A0451795C23C00914649 /* LPChatAPIClient.m */; };
 		A703A04A1795C24A00914649 /* LPVisitAPIClient.h in Headers */ = {isa = PBXBuildFile; fileRef = A703A0481795C24A00914649 /* LPVisitAPIClient.h */; };
@@ -138,6 +142,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		280DC5F81A49A0F500D34188 /* LIOSecuredFormInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOSecuredFormInfo.h; sourceTree = "<group>"; };
+		280DC5F91A49A0F500D34188 /* LIOSecuredFormInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LIOSecuredFormInfo.m; sourceTree = "<group>"; };
+		286EF56D1A3EFF2600295A7D /* LPPCIFormAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPPCIFormAPIClient.h; path = Source/Networking/LPPCIFormAPIClient.h; sourceTree = "<group>"; };
+		286EF56E1A3EFF2600295A7D /* LPPCIFormAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPPCIFormAPIClient.m; path = Source/Networking/LPPCIFormAPIClient.m; sourceTree = "<group>"; };
 		A703A0441795C23C00914649 /* LPChatAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPChatAPIClient.h; path = Source/Networking/LPChatAPIClient.h; sourceTree = "<group>"; };
 		A703A0451795C23C00914649 /* LPChatAPIClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LPChatAPIClient.m; path = Source/Networking/LPChatAPIClient.m; sourceTree = "<group>"; };
 		A703A0481795C24A00914649 /* LPVisitAPIClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LPVisitAPIClient.h; path = Source/Networking/LPVisitAPIClient.h; sourceTree = "<group>"; };
@@ -418,6 +426,8 @@
 				A7A09CE618B6AEA8004180D6 /* LIOSoundEffect.m */,
 				A7616364193656850062F9C5 /* LIOAccountSkillStatus.h */,
 				A7616365193656850062F9C5 /* LIOAccountSkillStatus.m */,
+				280DC5F81A49A0F500D34188 /* LIOSecuredFormInfo.h */,
+				280DC5F91A49A0F500D34188 /* LIOSecuredFormInfo.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -652,6 +662,8 @@
 				A703A0491795C24A00914649 /* LPVisitAPIClient.m */,
 				A7D8D8631799784F005989FD /* LPMediaAPIClient.h */,
 				A7D8D8641799784F005989FD /* LPMediaAPIClient.m */,
+				286EF56D1A3EFF2600295A7D /* LPPCIFormAPIClient.h */,
+				286EF56E1A3EFF2600295A7D /* LPPCIFormAPIClient.m */,
 				A7C85941177B3F1900493BF8 /* LPAPIClient.h */,
 				A7C85942177B3F1900493BF8 /* LPAPIClient.m */,
 				A7C85945177B458600493BF8 /* LPHTTPRequestOperation.h */,
@@ -993,6 +1005,7 @@
 				A721D28618513D860039395E /* LIONetworkManager.h in Headers */,
 				A711872F1868FE890070C22C /* LIOKeyboardMenuItem.h in Headers */,
 				A7616366193656850062F9C5 /* LIOAccountSkillStatus.h in Headers */,
+				286EF56F1A3EFF2600295A7D /* LPPCIFormAPIClient.h in Headers */,
 				D440D47E1541E8450045DBFF /* TTTAttributedLabel.h in Headers */,
 				D4868A78155AFE800081164D /* AsyncSocket.h in Headers */,
 				D42DE79A1563274B006DFE81 /* LIONotificationArea.h in Headers */,
@@ -1013,6 +1026,7 @@
 				A7C85947177B458700493BF8 /* LPHTTPRequestOperation.h in Headers */,
 				A7CF0499177C833200AFDC5D /* LPSSEvent.h in Headers */,
 				A7A397371892B7E30073A41C /* LIOBadgeView.h in Headers */,
+				280DC5FA1A49A0F500D34188 /* LIOSecuredFormInfo.h in Headers */,
 				A721D273185136580039395E /* LIOLookIOManager.h in Headers */,
 				A71E16E019460CEA00ABF4FD /* zip_LIO.h in Headers */,
 				A7981B44176BCF6900E0FB9F /* LIOSurveyLogicItem.h in Headers */,
@@ -1128,6 +1142,7 @@
 				A7913066187E0723001099ED /* LIOEmailChatView.m in Sources */,
 				A73D4435185610240030FF44 /* LIODraggableButton.m in Sources */,
 				A7DB82161860EFA400473483 /* LIOBrandingManager.m in Sources */,
+				286EF5701A3EFF2600295A7D /* LPPCIFormAPIClient.m in Sources */,
 				A71E16DB19460CEA00ABF4FD /* mztools_LIO.c in Sources */,
 				A76408B01875B76400D54CA5 /* LIOSurveyQuestionView.m in Sources */,
 				A7AE31FF18732922002D9F23 /* LIOSurvey.m in Sources */,
@@ -1140,6 +1155,7 @@
 				D486D7391521303B007C9AF8 /* ZipWriteStream.m in Sources */,
 				D403F7B915335CC100101941 /* LIOLogManager.m in Sources */,
 				D440D46A153E55CA0045DBFF /* LIOAnimatedKeyboardIcon.m in Sources */,
+				280DC5FB1A49A0F500D34188 /* LIOSecuredFormInfo.m in Sources */,
 				D440D47F1541E8450045DBFF /* TTTAttributedLabel.m in Sources */,
 				A721D2781851367D0039395E /* LIOChatViewController.m in Sources */,
 				A721D274185136580039395E /* LIOLookIOManager.m in Sources */,

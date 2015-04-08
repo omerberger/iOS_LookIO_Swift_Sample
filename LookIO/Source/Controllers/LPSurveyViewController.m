@@ -171,7 +171,8 @@
     self.pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - 20.0, self.view.bounds.size.width, 20.0)];
     self.pageControl.userInteractionEnabled = NO;
     self.pageControl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic];
+    
     if (LIO_SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"6.0"))
     {
         UIColor *indicatorColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorColor forElement:LIOBrandingElementSurveyPageControl];
@@ -179,7 +180,7 @@
         self.pageControl.pageIndicatorTintColor = [indicatorColor colorWithAlphaComponent:0.3];
     }
         
-    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+    if (self.currentQuestionIndex == self.survey.firstQuestionIndex)
         self.pageControl.currentPage = 0;
     else
         self.pageControl.currentPage = self.currentQuestionIndex + 1;
@@ -449,7 +450,7 @@
         [self.nextQuestionView setNeedsLayout];
         
     // We also need to reset the page control pages
-    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic] + 1;
+    self.pageControl.numberOfPages = [self.survey numberOfQuestionsWithLogic];
     
 }
 
@@ -465,7 +466,7 @@
 
 - (void)surveyQuestionViewDidTapPreviousButton:(LIOSurveyQuestionView *)surveyQuestionView
 {
-    if (self.currentQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+    if (self.currentQuestionIndex == self.survey.firstQuestionIndex)
     {
         [self bounceViewLeft];
         return;
@@ -694,8 +695,8 @@
     NSInteger previousQuestionIndex = self.currentQuestionIndex;
     while (!foundPreviousPage) {
 
-        // If we're at the intro screen, just bounce the screen
-        if (previousQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+        // If we're at the fisrt question screen, just bounce the screen
+        if (previousQuestionIndex == self.survey.firstQuestionIndex)
         {
             return NO;
         }
@@ -703,7 +704,7 @@
         // Mode to the previous question, but check if we should show it taking into account logic issues
         previousQuestionIndex -= 1;
         
-        if (previousQuestionIndex == LIOSurveyViewControllerIndexForIntroPage)
+        if (previousQuestionIndex == self.survey.firstQuestionIndex)
             foundPreviousPage = YES;
         else
             if ([self.survey shouldShowQuestion:previousQuestionIndex])

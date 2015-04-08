@@ -58,6 +58,13 @@ typedef enum
 @property (nonatomic, strong) NSMutableArray *links;
 @property (nonatomic, strong) NSMutableArray *textCheckingResults;
 
+//relevant for messages of PCI Form
+@property (nonatomic, copy) NSString *formSessionId;
+@property (nonatomic, copy) NSString *formUrl;
+@property (nonatomic) BOOL isSubmitted;
+@property (nonatomic) BOOL isInvalidated;
+
+
 - (void)detectLinks;
 
 @end

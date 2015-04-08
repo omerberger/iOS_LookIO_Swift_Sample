@@ -23,6 +23,7 @@
 
 // Models
 #import "LIOSoundEffect.h"
+#import "LIOSecuredFormInfo.h"
 
 #define LIOContainerViewControllerAlertViewNextStepDismiss      2001
 
@@ -96,6 +97,17 @@
     
     [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     [self animationPopFrontScaleUp];
+    
+    //Secured forms are valid only once! If this was the case - it is now invalidated.
+    if (webViewController.securedFormInfo){
+        webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
+        webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
+        [webViewController.securedFormInfo.originalMessage detectLinks];
+        [self.engagement engagementChatMessageContentDidChange];
+
+
+    }
+    
     [self dismissViewControllerAnimated:YES completion:^{
         [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
     }];
@@ -114,6 +126,32 @@
 - (NSString *)webViewControllerButtonTitleForWebView:(LIOWebViewController *)webViewController
 {
     return [self.delegate containerViewControllerButtonTitleForWebView:self];
+}
+
+- (void)webViewControllerDidSubmitSecuredFormWithInfo:(LIOSecuredFormInfo *)securedFormInfo forWebView:(LIOWebViewController *)webViewController
+{
+    securedFormInfo.redirectUrl = webViewController.currentWebViewURL.absoluteString;
+    
+    //send the redirect url back to server
+    [self.engagement sendSubmitPacketWithSecuredFormInfo:securedFormInfo success:^{
+        //update UI (add to message bubble: "Subbmited successfuly"
+        securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSuccessfullySubmitted");
+        [securedFormInfo.originalMessage detectLinks];
+        
+        securedFormInfo.originalMessage.isSubmitted = YES;
+        [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+        [self.engagement engagementChatMessageContentDidChange];
+       
+    } failure:^{
+        //update UI (add to message bubble: "Failed to submit"
+        securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOLookIOManager.SecuredFormSubmittionFailed");
+        [securedFormInfo.originalMessage detectLinks];
+        
+        securedFormInfo.originalMessage.isInvalidated = YES;
+        [self.chatViewController engagementChatMessageStatusDidChange:self.engagement];
+        [self.engagement engagementChatMessageContentDidChange];
+    }];
+    
 }
 
 - (BOOL)webViewControllerShouldAutorotate:(LIOWebViewController *)webViewController
@@ -392,7 +430,7 @@
     [self.delegate containerViewControllerDidTapIntraAppLink:url];
 }
 
-- (void)chatViewControllerDidTapWebLink:(NSURL *)url
+- (void)chatViewControllerDidTapWebLink:(NSURL *)url withSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo
 {
     self.containerViewState = LIOContainerViewStateWeb;
     
@@ -405,7 +443,12 @@
         self.webViewController = [[LIOWebViewController alloc] initWithURL:url];
         self.webViewController.delegate = self;
         self.currentWebViewURLString = url.absoluteString;
-    };
+        
+        //Is this a secured form or just an ordinary link
+        if (securedFormInfo)
+            self.webViewController.securedFormInfo = securedFormInfo;
+            
+    }
 
     [self presentViewController:self.webViewController animated:YES completion:nil];
     [self animationPushBackScaleDown];
@@ -747,6 +790,16 @@
             break;
             
         case LIOContainerViewStateWeb:
+            //invalidating the form
+            if (self.webViewController.securedFormInfo)
+            {
+                self.webViewController.securedFormInfo.originalMessage.isInvalidated = YES;
+                self.webViewController.securedFormInfo.originalMessage.senderName = LIOLocalizedString(@"LIOChatBubbleView.InvalidFormTitle");
+                [self.webViewController.securedFormInfo.originalMessage detectLinks];
+                [self.engagement engagementChatMessageContentDidChange];
+            }
+            
+            //continue with dissmissing
             [self dismissModalViewControllerAnimated:NO];
             [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor clearColor]];
             [self.chatViewController dismissChat:self];

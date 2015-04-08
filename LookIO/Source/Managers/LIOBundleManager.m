@@ -344,6 +344,23 @@ BOOL LIOIsUIKitFlatMode(void) {
     return coloredImage;
 }
 
+- (UIImage *)imageNamed:(NSString *)aString dynamicallyColoredBasedOnBackgroundColor: (UIColor *)bgColor
+{
+    
+    const CGFloat *componentColors = CGColorGetComponents(bgColor.CGColor);
+    
+    CGFloat colorBrightness = ((componentColors[0] * 299) + (componentColors[1] * 587) + (componentColors[2] * 114)) / 1000;
+    if (colorBrightness < 0.5)
+    {
+        return [self imageNamed:aString withTint:[UIColor whiteColor]];
+    }
+    else
+    {
+        return [self imageNamed:aString withTint:[UIColor blackColor]];
+    }
+    
+}
+
 - (UIImage *)imageNamed:(NSString *)aString
 {
     if (nil == lioBundle)
