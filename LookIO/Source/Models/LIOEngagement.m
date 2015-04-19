@@ -1466,7 +1466,7 @@
     newMessage.kind = LIOChatMessageKindLocal;
     newMessage.date = [NSDate date];
     newMessage.lineId = nil;
-    newMessage.senderName = @"Me";
+    newMessage.senderName = LIOLocalizedString(@"LIOAltChatViewController.LocalNameLabel");//@"Me";
     
     if (self.visit.maskCreditCards)
     {
