@@ -30,6 +30,7 @@
 @property (nonatomic, strong) UIView *tappableBackground;
 @property (nonatomic, strong) UIView *separator;
 
+@property (nonatomic, strong) UIImageView *backIcon;
 @end
 
 @implementation LIOHeaderBarView
@@ -54,6 +55,37 @@
         aFrame.size.width = self.bounds.size.width;
         aFrame.origin.y = self.bounds.size.height - 1.0;
         
+        self.backIcon = nil;
+        
+        LPBrandingBarBackButtonType backButtonType = [[LIOBrandingManager brandingManager] brandingBarBackButtonType];
+        switch (backButtonType) {
+            case LPBrandingBarBackButtonTypeText:
+                
+                break;
+
+            case LPBrandingBarBackButtonTypeImage: {
+                
+                UIColor *backIconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementBrandingBarBackButton];
+                self.backIcon = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LPBackButtonIcon" withTint:backIconColor]];
+                self.backIcon.center = CGPointMake(self.backIcon.frame.size.width/2, self.frame.size.height/2+10);
+                self.backIcon.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                [self addSubview:self.backIcon];
+                
+            }
+            break;
+
+                
+            default: //LPBrandingBarBackButtonTypeNone
+                //Nothing to do
+                break;
+        }
+        
+        if (self.backIcon) {
+            UITapGestureRecognizer *hideTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapOnHide:)];
+            [self.backIcon addGestureRecognizer:hideTapper];
+            self.backIcon.userInteractionEnabled = YES;
+        }
+        
         self.separator.frame = aFrame;
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
@@ -61,7 +93,7 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         if (!padUI)
         {
-            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
+            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(self.backIcon.frame.size.width, self.statusBarInset, self.bounds.size.width-self.backIcon.frame.size.width*2, self.bounds.size.height - self.statusBarInset)];
             self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
             self.notificationArea.delegate = self;
             [self addSubview:self.notificationArea];
@@ -74,6 +106,7 @@
         self.tappableBackground.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ScrollToTopButton");
         [self.tappableBackground addGestureRecognizer:tapper];
         [self addSubview:self.tappableBackground];
+
     }
     
     return self;
@@ -142,5 +175,9 @@
     [self.delegate headerBarViewPlusButtonWasTapped:self];
 }
 
+- (void)handleTapOnHide:(UITapGestureRecognizer *)aTapper
+{
+    
+}
 
 @end
