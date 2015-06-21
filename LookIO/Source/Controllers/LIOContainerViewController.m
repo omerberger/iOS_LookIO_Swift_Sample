@@ -180,6 +180,15 @@
     }
 }
 
+- (void)headerBarViewHideButtonWasTapped:(LIOHeaderBarView *)aView
+{
+    if (self.containerViewState == LIOContainerViewStateChat)
+    {
+        [self.chatViewController dismissChat:self];
+    }
+
+}
+
 - (BOOL)headerBarShouldDismissNotification:(LIOHeaderBarView *)aView
 {
     if (!self.engagement.isConnected)
