@@ -31,7 +31,6 @@
 @property (nonatomic, strong) UIView *separator;
 
 @property (nonatomic, strong) UIView *hideButton;   //Could be image or text
-@property (nonatomic, strong) UITapGestureRecognizer *hideButtonGest, *tapper;
 
 @end
 
@@ -61,9 +60,6 @@
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
         
-        
-    
-        
         self.hideButton = nil;
         
         LPBrandingBarBackButtonType backButtonType = [[LIOBrandingManager brandingManager] brandingBarBackButtonType];
@@ -74,11 +70,10 @@
                 CGSize expectedSize = [hideString sizeWithAttributes:
                                        @{NSFontAttributeName:hideButtonFont}];
 
-
                 UIButton *hideButton = [UIButton buttonWithType:UIButtonTypeSystem];
                 [hideButton addTarget:self action:@selector(handleTapOnHide:) forControlEvents:UIControlEventTouchUpInside];
                 [hideButton setTitle:hideString forState:UIControlStateNormal];
-                hideButton.frame = CGRectMake(0, 0, expectedSize.width, expectedSize.height);
+                hideButton.frame = CGRectMake(0, 0, ceil(expectedSize.width), ceil(expectedSize.height));
                 hideButton.titleLabel.text = hideString;
                 hideButton.titleLabel.font = hideButtonFont;
                 hideButton.tintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarBackButton];
@@ -96,21 +91,20 @@
                 break;
             }
             case LPBrandingBarBackButtonTypeImage: {
-                
                 UIColor *backIconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementBrandingBarBackButton];
-                self.hideButton = [[UIImageView alloc] initWithImage:[[LIOBundleManager sharedBundleManager] imageNamed:@"LPBackButtonIcon" withTint:backIconColor]];
-                self.hideButton.center = CGPointMake(self.hideButton.frame.size.width/2, self.frame.size.height/2+9);
+                UIImage *backButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LPBackButtonIcon" withTint:backIconColor];
+                
+                UIButton *hideButton = [UIButton buttonWithType:UIButtonTypeSystem];
+                [hideButton addTarget:self action:@selector(handleTapOnHide:) forControlEvents:UIControlEventTouchUpInside];
+                [hideButton setImage:backButtonImage forState:UIControlStateNormal];
+                hideButton.frame = CGRectMake(0, 0, backButtonImage.size.width, backButtonImage.size.height);
+                hideButton.tintColor = backIconColor;
+                
+                self.hideButton = [[UIView alloc] initWithFrame:hideButton.frame];
+                [self.hideButton addSubview:hideButton];
+                self.hideButton.center = CGPointMake(self.hideButton.frame.size.width/2+5, self.bounds.size.height/2+9);
                 self.hideButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
                 [self addSubview:self.hideButton];
-                
-                if (self.hideButton) {
-                    self.hideButtonGest = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapOnHide:)];
-                    [self.hideButton addGestureRecognizer:self.hideButtonGest];
-                    self.hideButton.userInteractionEnabled = YES;
-                    self.hideButtonGest.delegate = self;
-                }
-                
-            
             }
                 break;
                 
@@ -132,13 +126,12 @@
             [self addSubview:self.notificationArea];
         }
         
-        self.tapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-        self.tapper.delegate = self;
+        UITapGestureRecognizer *tapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         self.tappableBackground = [[UIView alloc] initWithFrame:self.bounds];
         self.tappableBackground.backgroundColor = [UIColor clearColor];
         self.tappableBackground.isAccessibilityElement = YES;
         self.tappableBackground.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ScrollToTopButton");
-        [self.tappableBackground addGestureRecognizer:self.tapper];
+        [self.tappableBackground addGestureRecognizer:tapper];
         [self addSubview:self.tappableBackground];
         
 
