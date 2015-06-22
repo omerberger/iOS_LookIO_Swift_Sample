@@ -21,7 +21,7 @@
 // Helpers
 #import "LIOTimerProxy.h"
 
-@interface LIOHeaderBarView () <LIONotificationAreaDelegate,UIGestureRecognizerDelegate>
+@interface LIOHeaderBarView () <LIONotificationAreaDelegate>
 
 @property (nonatomic, strong) LIONotificationArea* notificationArea;
 
@@ -29,8 +29,6 @@
 
 @property (nonatomic, strong) UIView *tappableBackground;
 @property (nonatomic, strong) UIView *separator;
-
-@property (nonatomic, strong) UIView *hideButton;   //Could be image or text
 
 @end
 
@@ -60,7 +58,7 @@
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
         
-        self.hideButton = nil;
+        UIView *hideButtonView = nil;
         
         LPBrandingBarBackButtonType backButtonType = [[LIOBrandingManager brandingManager] brandingBarBackButtonType];
         switch (backButtonType) {
@@ -80,11 +78,11 @@
                 hideButton.titleLabel.textAlignment = UITextAlignmentCenter;
 
                 
-                self.hideButton = [[UIView alloc] initWithFrame:hideButton.frame];
-                [self.hideButton addSubview:hideButton];
-                self.hideButton.center = CGPointMake(self.hideButton.frame.size.width/2+5, self.bounds.size.height/2+9);
-                self.hideButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-                [self addSubview:self.hideButton];
+                hideButtonView = [[UIView alloc] initWithFrame:hideButton.frame];
+                [hideButtonView addSubview:hideButton];
+                hideButtonView.center = CGPointMake(hideButtonView.frame.size.width/2+5, self.bounds.size.height/2+9);
+                hideButtonView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                [self addSubview:hideButtonView];
                 
                 
 
@@ -100,11 +98,11 @@
                 hideButton.frame = CGRectMake(0, 0, backButtonImage.size.width, backButtonImage.size.height);
                 hideButton.tintColor = backIconColor;
                 
-                self.hideButton = [[UIView alloc] initWithFrame:hideButton.frame];
-                [self.hideButton addSubview:hideButton];
-                self.hideButton.center = CGPointMake(self.hideButton.frame.size.width/2+5, self.bounds.size.height/2+9);
-                self.hideButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-                [self addSubview:self.hideButton];
+                hideButtonView = [[UIView alloc] initWithFrame:hideButton.frame];
+                [hideButtonView addSubview:hideButton];
+                hideButtonView.center = CGPointMake(hideButtonView.frame.size.width/2+5, self.bounds.size.height/2+9);
+                hideButtonView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                [self addSubview:hideButtonView];
             }
                 break;
                 
@@ -118,8 +116,8 @@
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         if (!padUI)
         {
-            CGFloat originX = (self.hideButton ? self.hideButton.frame.size.width+10 : 0);
-            CGFloat widthSize = self.bounds.size.width - (self.hideButton ? self.hideButton.frame.size.width*2+20 : 0);
+            CGFloat originX = (hideButtonView ? hideButtonView.frame.size.width+10 : 0);
+            CGFloat widthSize = self.bounds.size.width - (hideButtonView ? hideButtonView.frame.size.width*2+20 : 0);
             self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(originX, self.statusBarInset, widthSize , self.bounds.size.height - self.statusBarInset)];
             self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
             self.notificationArea.delegate = self;
@@ -135,7 +133,7 @@
         [self addSubview:self.tappableBackground];
         
 
-        [self bringSubviewToFront:self.hideButton];
+        [self bringSubviewToFront:hideButtonView];
     }
     
     return self;
