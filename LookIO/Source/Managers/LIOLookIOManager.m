@@ -822,7 +822,7 @@ static LIOLookIOManager *sharedLookIOManager = nil;
 }
 
 - (BOOL)visitShouldReportCallDeflection:(LIOVisit *)visit {
-    BOOL shouldReport = YES;
+    BOOL shouldReport = NO;
     
     if ([(NSObject *)self.delegate respondsToSelector:@selector(lookIOManagerShouldReportCallDeflection:)])
         shouldReport = [self.delegate lookIOManagerShouldReportCallDeflection:self];
