@@ -28,6 +28,7 @@ typedef enum
     LIOBrandingElementLogo,
     LIOBrandingElementBrandingBar,
     LIOBrandingElementBrandingBarNotifications,
+    LIOBrandingElementBrandingBarBackButton,
     LIOBrandingElementWebViewHeaderBar,
     LIOBrandingElementWebViewHeaderBarButtons,
     LIOBrandingElementChatBubbles,
@@ -88,6 +89,13 @@ typedef enum
     LIOKeyboardInitialPositionDown
 } LIOKeyboardInitialPosition;
 
+typedef enum
+{
+    LPBrandingBarBackButtonTypeNone = 0,
+    LPBrandingBarBackButtonTypeImage,
+    LPBrandingBarBackButtonTypeText
+} LPBrandingBarBackButtonType;
+
 // Defaults keys
 #define LIOBrandingManagerBrandingDictKey      @"LIOBrandingManagerBrandingDictKey"
 #define LIOBrandingManagerBrandingDictHashKey  @"LIOBrandingManagerBrandingDictHashKey"
@@ -120,6 +128,9 @@ typedef enum
 - (LIOKeyboardInitialPosition)keyboardInitialPositionForElement:(LIOBrandingElement)element;
 - (UIStatusBarStyle)statusBarStyleForElement:(LIOBrandingElement)element;
 - (NSURL *)customImageURLForElement:(LIOBrandingElement)element;
+
+- (LPBrandingBarBackButtonType)brandingBarBackButtonType;
+
 
 @end
 

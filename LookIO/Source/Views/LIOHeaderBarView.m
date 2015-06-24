@@ -58,10 +58,62 @@
         self.separator.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [self addSubview:self.separator];
         
+        UIButton *hideButton = nil;
+        
+        LPBrandingBarBackButtonType backButtonType = [[LIOBrandingManager brandingManager] brandingBarBackButtonType];
+        switch (backButtonType) {
+            case LPBrandingBarBackButtonTypeText: {
+                NSString *hideString = LIOLocalizedString(@"LPBrandingBar.HideChatButton");;
+                UIFont *hideButtonFont = [[LIOBrandingManager brandingManager] fontForElement:LIOBrandingElementBrandingBarBackButton];
+                CGSize expectedSize = [hideString sizeWithAttributes:
+                                       @{NSFontAttributeName:hideButtonFont}];
+
+                hideButton = [UIButton buttonWithType:UIButtonTypeSystem];
+                [hideButton addTarget:self action:@selector(handleTapOnHide:) forControlEvents:UIControlEventTouchUpInside];
+                [hideButton setTitle:hideString forState:UIControlStateNormal];
+                hideButton.frame = CGRectMake(0, 0, ceil(expectedSize.width), ceil(expectedSize.height));
+                hideButton.titleLabel.text = hideString;
+                hideButton.titleLabel.font = hideButtonFont;
+                hideButton.tintColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorText forElement:LIOBrandingElementBrandingBarBackButton];
+                hideButton.titleLabel.textAlignment = UITextAlignmentCenter;
+                
+                hideButton.center = CGPointMake(hideButton.frame.size.width/2+5, self.bounds.size.height/2+9);
+                hideButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                [self addSubview:hideButton];
+                
+                break;
+            }
+            case LPBrandingBarBackButtonTypeImage: {
+                UIColor *backIconColor = [[LIOBrandingManager brandingManager] colorType:LIOBrandingColorIcon forElement:LIOBrandingElementBrandingBarBackButton];
+                UIImage *backButtonImage = [[LIOBundleManager sharedBundleManager] imageNamed:@"LPBackButtonIcon" withTint:backIconColor];
+                
+                hideButton = [UIButton buttonWithType:UIButtonTypeSystem];
+                [hideButton addTarget:self action:@selector(handleTapOnHide:) forControlEvents:UIControlEventTouchUpInside];
+                [hideButton setImage:backButtonImage forState:UIControlStateNormal];
+                hideButton.frame = CGRectMake(0, 0, backButtonImage.size.width, backButtonImage.size.height);
+                hideButton.tintColor = backIconColor;
+                
+                hideButton.center = CGPointMake(hideButton.frame.size.width/2+5, self.bounds.size.height/2+9);
+                hideButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+                [self addSubview:hideButton];
+                
+            }
+                break;
+                
+                
+            default: //LPBrandingBarBackButtonTypeNone
+                //Nothing to do
+                break;
+        }
+
+        
         BOOL padUI = UIUserInterfaceIdiomPad == [[UIDevice currentDevice] userInterfaceIdiom];
         if (!padUI)
         {
-            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(0, self.statusBarInset, self.bounds.size.width, self.bounds.size.height - self.statusBarInset)];
+            CGFloat originX = (hideButton ? hideButton.frame.size.width+10 : 0);
+            CGFloat widthSize = self.bounds.size.width - (hideButton ? hideButton.frame.size.width*2+20 : 0);
+            
+            self.notificationArea = [[LIONotificationArea alloc] initWithFrame:CGRectMake(originX, self.statusBarInset, widthSize , self.bounds.size.height - self.statusBarInset)];
             self.notificationArea.autoresizingMask = UIViewAutoresizingFlexibleWidth;
             self.notificationArea.delegate = self;
             [self addSubview:self.notificationArea];
@@ -74,6 +126,10 @@
         self.tappableBackground.accessibilityLabel = LIOLocalizedString(@"LIOAltChatViewController.ScrollToTopButton");
         [self.tappableBackground addGestureRecognizer:tapper];
         [self addSubview:self.tappableBackground];
+        
+
+        [self bringSubviewToFront:hideButton];
+
     }
     
     return self;
@@ -142,5 +198,9 @@
     [self.delegate headerBarViewPlusButtonWasTapped:self];
 }
 
+- (void)handleTapOnHide:(UITapGestureRecognizer *)aTapper
+{
+    [self.delegate headerBarViewHideButtonWasTapped:self];
+}
 
 @end

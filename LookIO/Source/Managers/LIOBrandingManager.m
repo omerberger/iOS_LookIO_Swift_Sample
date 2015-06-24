@@ -509,6 +509,20 @@ static LIOBrandingManager *brandingManager = nil;
             }
         }
         
+        if (LIOBrandingElementBrandingBarBackButton == element)
+        {
+            if (engagementDictionary)
+            {
+                NSDictionary *brandingBarDictionary = [engagementDictionary objectForKey:@"branding_bar"];
+                if (brandingBarDictionary)
+                {
+                    NSDictionary *backButtonDictionary = [brandingBarDictionary objectForKey:@"back_button"];
+                    if (backButtonDictionary)
+                        dictionary = backButtonDictionary;
+                }
+            }
+        }
+        
         if (LIOBrandingElementWebViewHeaderBar == element)
         {
             if (engagementDictionary)
@@ -1352,6 +1366,39 @@ static LIOBrandingManager *brandingManager = nil;
     }
     
     return url;
+}
+
+
+- (LPBrandingBarBackButtonType)brandingBarBackButtonType
+{
+    LPBrandingBarBackButtonType backButtonType = LPBrandingBarBackButtonTypeNone;
+    
+    @try {
+        NSDictionary *elementDictionary = [self brandingDictionaryForElement:LIOBrandingElementBrandingBar];
+        if (elementDictionary)
+        {
+            NSDictionary *backButtonDictionary = [elementDictionary objectForKey:@"back_button"];
+            if (backButtonDictionary)
+            {
+                NSString *buttonType = [backButtonDictionary objectForKey:@"type"];
+                if ([buttonType isEqualToString:@"none"])
+                    backButtonType = LPBrandingBarBackButtonTypeNone;
+                if ([buttonType isEqualToString:@"text"])
+                    backButtonType = LPBrandingBarBackButtonTypeText;
+                if ([buttonType isEqualToString:@"image"])
+                    backButtonType = LPBrandingBarBackButtonTypeImage;
+
+            }
+        }
+    }
+    @catch (NSException *exception) {
+        
+    }
+    
+    return backButtonType;
+
+    
+    
 }
 
 @end
