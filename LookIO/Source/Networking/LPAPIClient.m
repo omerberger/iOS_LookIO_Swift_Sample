@@ -167,10 +167,10 @@ static LPAPIClient *sharedClient = nil;
 //        NSInteger aaa = arc4random_uniform(2);
 //        switch (aaa) {
 //            
-//            case 1:
-//                operation.responseCode = 200;
-//                success(operation,nil);
-//                break;
+////            case 1:
+////                operation.responseCode = 200;
+////                success(operation,nil);
+////                break;
 //            default:
 //                operation.responseCode = 404;
 //                failure(operation,nil);

@@ -1235,7 +1235,7 @@
             }
             
             // Send any funnel requests that were queued while disconnected
-            [self handleFunnelQueueIfNeeded];
+            [self sendFunnelPacketAndHandelQueueIfNeededForState:LIOFunnelStateNone];
             
             break;
             
@@ -2001,9 +2001,6 @@
         return;
     }
     
-    //check for previous funnel that might wait in the queue.
-    [self handleFunnelQueueIfNeeded];
-    
     // For visit state, let's see if we can upgrade to hotlead
     if (self.funnelState == LIOFunnelStateVisit)
     {
@@ -2017,10 +2014,7 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 
                 self.didReportInitialColdLead = YES;
@@ -2032,10 +2026,7 @@
             self.funnelState = LIOFunnelStateHotlead;
             LIOLog(@"<FUNNEL STATE> Hotlead");
             
-            //check for previous funnel that might wait in the queue.
-            [self handleFunnelQueueIfNeeded];
-            //send new funnel
-            [self sendFunnelPacketForState:self.funnelState];
+            [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
             [self.delegate visit:self didChangeFunnelState:self.funnelState];
 
             self.didReportInitialColdLead = YES;
@@ -2062,10 +2053,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
@@ -2075,10 +2063,7 @@
                     self.funnelState = LIOFunnelStateInvitation;
                     LIOLog(@"<FUNNEL STATE> Invitation");
 
-                    //check for previous funnel that might wait in the queue.
-                    [self handleFunnelQueueIfNeeded];
-                    //send new funnel
-                    [self sendFunnelPacketForState:self.funnelState];
+                    [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                     [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
@@ -2090,10 +2075,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
@@ -2109,10 +2091,7 @@
             self.funnelState = LIOFunnelStateClicked;
             LIOLog(@"<FUNNEL STATE> Clicked");
             
-            //check for previous funnel that might wait in the queue.
-            [self handleFunnelQueueIfNeeded];
-            //send new funnel
-            [self sendFunnelPacketForState:self.funnelState];
+            [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
             [self.delegate visit:self didChangeFunnelState:self.funnelState];
             return;
         }
@@ -2128,10 +2107,7 @@
                 self.funnelState = LIOFunnelStateVisit;
                 LIOLog(@"<FUNNEL STATE> Visit");
                 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
             else
@@ -2143,10 +2119,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     
-                    //check for previous funnel that might wait in the queue.
-                    [self handleFunnelQueueIfNeeded];
-                    //send new funnel
-                    [self sendFunnelPacketForState:self.funnelState];
+                    [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                     [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 }
             }
@@ -2159,10 +2132,7 @@
                 self.funnelState = LIOFunnelStateHotlead;
                 LIOLog(@"<FUNNEL STATE> Hotlead");
                 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
             }
         }
@@ -2183,10 +2153,7 @@
                     self.funnelState = LIOFunnelStateVisit;
                     LIOLog(@"<FUNNEL STATE> Visit");
                     
-                    //check for previous funnel that might wait in the queue.
-                    [self handleFunnelQueueIfNeeded];
-                    //send new funnel
-                    [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                     [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
@@ -2197,10 +2164,7 @@
                     self.funnelState = LIOFunnelStateHotlead;
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                     
-                    //check for previous funnel that might wait in the queue.
-                    [self handleFunnelQueueIfNeeded];
-                    //send new funnel
-                    [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                     [self.delegate visit:self didChangeFunnelState:self.funnelState];
                     return;
                 }
@@ -2209,10 +2173,7 @@
                 self.funnelState = LIOFunnelStateInvitation;
                 LIOLog(@"<FUNNEL STATE> Invitation");
                 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
                 
@@ -2229,27 +2190,19 @@
                     LIOLog(@"<FUNNEL STATE> Hotlead");
                 }
                 
-                //check for previous funnel that might wait in the queue.
-                [self handleFunnelQueueIfNeeded];
-                //send new funnel
-                [self sendFunnelPacketForState:self.funnelState];
+                [self sendFunnelPacketAndHandelQueueIfNeededForState:self.funnelState];
                 [self.delegate visit:self didChangeFunnelState:self.funnelState];
                 return;
             }
         }
     }
+
+    //    check for previous funnel that might wait in the queue.
+    [self sendFunnelPacketAndHandelQueueIfNeededForState:LIOFunnelStateNone];
+
 }
 
-- (void)handleFunnelQueueIfNeeded
-{
-    if (self.funnelRequestQueue.count > 0) {
-        NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
-        [self.funnelRequestQueue removeObjectAtIndex:0];
-        [self sendFunnelPacketForState:[nextFunnelState intValue]];
-    }
-}
-
-- (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
+- (void)sendFunnelPacketAndHandelQueueIfNeededForState:(LIOFunnelState)funnelState
 {
     [[LIOAnalyticsManager sharedAnalyticsManager] pumpReachabilityStatus];
     
@@ -2257,12 +2210,53 @@
     // otherwise queue this request until network returns or a new state is updated
     
     if (self.funnelRequestIsActive || (LIOAnalyticsManagerReachabilityStatusConnected != [LIOAnalyticsManager sharedAnalyticsManager].lastKnownReachabilityStatus || ![self visitActive])) {
-        NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
-        [self.funnelRequestQueue addObject:nextFunnelRequest];
+        if (funnelState != LIOFunnelStateNone) {
+            NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
+            [self.funnelRequestQueue addObject:nextFunnelRequest];
+        }
+        return;
+    }
+
+    
+    self.funnelRequestIsActive = YES;
+
+    LIOFunnelState *funnelStateToSend = funnelState;
+    
+    //if queue contains previous funnels, add the new one to the end of the queue and first deal with the older funnels
+    if ( self.funnelRequestQueue.count > 0) {
+        //adding new funnel to the end of the queue
+        if (funnelState != LIOFunnelStateNone) {
+            NSNumber* nextFunnelRequest = [NSNumber numberWithInt:funnelState];
+            [self.funnelRequestQueue addObject:nextFunnelRequest];
+        }
+        
+        //deal with previous funnels
+        NSNumber* previousFunnel = [self.funnelRequestQueue objectAtIndex:0];
+        [self.funnelRequestQueue removeObjectAtIndex:0];
+        funnelStateToSend = [previousFunnel intValue];
+        [self sendFunnelPacketForState:funnelStateToSend];
         return;
     }
     
-    self.funnelRequestIsActive = YES;
+    if (funnelState == LIOFunnelStateNone)
+        self.funnelRequestIsActive = NO;
+    else
+        [self sendFunnelPacketForState:funnelStateToSend];
+    
+
+}
+
+//- (void)handleFunnelQueueIfNeeded
+//{
+//    if ( self.funnelRequestQueue.count > 0) {
+//        NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
+//        [self.funnelRequestQueue removeObjectAtIndex:0];
+//        [self sendFunnelPacketForState:[nextFunnelState intValue]];
+//    }
+//}
+
+- (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
+{
     
     NSString *currentStateString = @"";
     
@@ -2297,24 +2291,24 @@
     
     [[LPVisitAPIClient sharedClient] postPath:LIOLookIOManagerVisitFunnelRequestURL parameters:funnelDict success:^(LPHTTPRequestOperation *operation, id responseObject) {
         
-        NSLog(@"<GIL> Funnel succeed after %@ tries with data: %@",[NSNumber numberWithInteger:self.failedFunnelCount],funnelDict);    //DELETE
+        self.funnelRequestIsActive = NO;
         
+        NSLog(@"<GIL> Funnel succeed after %@ tries with data: %@",[NSNumber numberWithInteger:self.failedFunnelCount],funnelDict);    //DELETE
         
         if (responseObject)
             LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
         else
             LIOLog(@"<FUNNEL> with data:%@ success", funnelDict);
         
-        self.funnelRequestIsActive = NO;
         self.failedFunnelCount = 0;
         
-        [self handleFunnelQueueIfNeeded];
+
+        [self sendFunnelPacketAndHandelQueueIfNeededForState:LIOFunnelStateNone];
         
     } failure:^(LPHTTPRequestOperation *operation, NSError *error) {
+        self.funnelRequestIsActive = NO;
         if (operation.responseCode == 404)
         {
-            self.funnelRequestIsActive = NO;
-            
             if (self.currentVisitId)
             {
                 if ([self.currentVisitId isEqualToString:currentVisitId])
@@ -2338,22 +2332,18 @@
                 else
                 {
                     LIOLog(@"<FUNNEL> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
-                    [self handleFunnelQueueIfNeeded];
                 }
             }
             else
             {
                 LIOLog(@"<FUNNEL> Failure. HTTP code: 404, but for a previous visit; Ignoring.");
-                [self handleFunnelQueueIfNeeded];
             }
         }
         else
         {
             LIOLog(@"<FUNNEL> with data:%@ failure: %@ code: %d", funnelDict, error, operation.responseCode);
-
-            self.funnelRequestIsActive = NO;
             self.failedFunnelCount += 1;
-            if (self.failedFunnelCount < 10)
+            if (self.failedFunnelCount < 3)
             {
                 NSNumber* failedFunnelRequest = [NSNumber numberWithInt:funnelState];
                 [self.funnelRequestQueue insertObject:failedFunnelRequest atIndex:0];
@@ -2362,8 +2352,8 @@
             {
                 self.failedFunnelCount = 0;
             }
-        
-            [self handleFunnelQueueIfNeeded];
+
+            [self sendFunnelPacketAndHandelQueueIfNeededForState:LIOFunnelStateNone];
         }
     }];
 }
