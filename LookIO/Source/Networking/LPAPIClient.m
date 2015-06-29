@@ -157,31 +157,7 @@ static LPAPIClient *sharedClient = nil;
       parameters:(NSDictionary *)parameters
          success:(void (^)(LPHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(LPHTTPRequestOperation *operation, NSError *error))failure
-{
-//    /**
-//     *  DELETE
-//     */
-//    if ([path isEqualToString:@"/funnel"]){
-//        
-//        LPHTTPRequestOperation *operation = [[LPHTTPRequestOperation alloc] initWithRequest:nil];
-//        NSInteger aaa = arc4random_uniform(2);
-//        switch (aaa) {
-//            
-////            case 1:
-////                operation.responseCode = 200;
-////                success(operation,nil);
-////                break;
-//            default:
-//                operation.responseCode = 404;
-//                failure(operation,nil);
-//                break;
-//        }
-//        
-//        return;
-//    }
-//    
-    
-    
+{    
 	NSURLRequest *request = [self requestWithMethod:@"POST" path:path parameters:parameters];
 	LPHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     [self enqueueHTTPRequestOperation:operation];

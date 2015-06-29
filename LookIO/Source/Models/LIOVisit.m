@@ -2246,15 +2246,6 @@
 
 }
 
-//- (void)handleFunnelQueueIfNeeded
-//{
-//    if ( self.funnelRequestQueue.count > 0) {
-//        NSNumber* nextFunnelState = [self.funnelRequestQueue objectAtIndex:0];
-//        [self.funnelRequestQueue removeObjectAtIndex:0];
-//        [self sendFunnelPacketForState:[nextFunnelState intValue]];
-//    }
-//}
-
 - (void)sendFunnelPacketForState:(LIOFunnelState)funnelState
 {
     
@@ -2293,8 +2284,6 @@
         
         self.funnelRequestIsActive = NO;
         
-        NSLog(@"<GIL> Funnel succeed after %@ tries with data: %@",[NSNumber numberWithInteger:self.failedFunnelCount],funnelDict);    //DELETE
-        
         if (responseObject)
             LIOLog(@"<FUNNEL> with data:%@ response: %@", funnelDict, responseObject);
         else
@@ -2316,7 +2305,6 @@
                     LIOLog(@"<FUNNEL> Failure. HTTP code: 404. Failed funnel count %@ out of 3. With data: %@",[NSNumber numberWithInteger:self.failedFunnelCount]);
 
                     self.failedFunnelCount += 1;
-                    NSLog(@"<GIL> Funnel failed after %@ tries with data: %@",[NSNumber numberWithInteger:self.failedFunnelCount],funnelDict);    //DELETE
                     if (self.failedFunnelCount < 3)
                     {
                         NSNumber* failedFunnelRequest = [NSNumber numberWithInt:funnelState];
