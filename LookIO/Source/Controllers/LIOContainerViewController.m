@@ -88,6 +88,11 @@
     [self.blurImageView setImageAndBlur:image];
 }
 
+- (void)setContainerViewState:(LIOContainerViewState)containerViewState
+{
+    _containerViewState = containerViewState;
+    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
+}
 #pragma mark -
 #pragma mark WebViewController Methods
 
@@ -182,10 +187,7 @@
 
 - (void)headerBarViewHideButtonWasTapped:(LIOHeaderBarView *)aView
 {
-    if (self.containerViewState == LIOContainerViewStateChat)
-    {
         [self.chatViewController dismissChat:self];
-    }
 
 }
 
