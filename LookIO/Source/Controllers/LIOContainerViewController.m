@@ -88,13 +88,17 @@
     [self.blurImageView setImageAndBlur:image];
 }
 
+- (void)setContainerViewState:(LIOContainerViewState)containerViewState
+{
+    _containerViewState = containerViewState;
+    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
+}
 #pragma mark -
 #pragma mark WebViewController Methods
 
 - (void)webViewControllerCloseButtonWasTapped:(LIOWebViewController *)webViewController
 {
     self.containerViewState = LIOContainerViewStateChat;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     
     [self.delegate containerViewControllerWantsWindowBackgroundColor:[UIColor blackColor]];
     [self animationPopFrontScaleUp];
@@ -440,7 +444,6 @@
 - (void)chatViewControllerDidTapWebLink:(NSURL *)url withSecuredFormInfo:(LIOSecuredFormInfo *)securedFormInfo
 {
     self.containerViewState = LIOContainerViewStateWeb;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     
     [self.headerBarView hideCurrentNotification];
     
@@ -552,7 +555,6 @@
 - (void)presentLoadingViewControllerWithQueueingMessage:(BOOL)withMessage
 {
     self.containerViewState = LIOContainerViewStateLoading;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     
     if (LIOHeaderBarStateVisible == self.headerBarState)
         [self dismissHeaderBarView:YES withState:LIOHeaderBarStateHidden];
@@ -571,7 +573,6 @@
 {
     [self.chatViewController setEngagement:self.engagement];
     self.containerViewState = LIOContainerViewStateChat;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     [self swapCurrentControllerWith:self.chatViewController animated:animated];
 }
 
@@ -602,7 +603,6 @@
     self.surveyViewController = [[LPSurveyViewController alloc] initWithSurvey:survey];
     self.surveyViewController.delegate = self;
     self.containerViewState = LIOContainerViewStateSurvey;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     [self swapCurrentControllerWith:self.surveyViewController animated:animated];
 }
 
@@ -830,7 +830,6 @@
     } completion:^(BOOL finished) {
         [self.delegate containerViewControllerDidDismiss:self];
         self.containerViewState = LIOContainerViewStateLoading;
-        [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
         [self swapCurrentControllerWith:self.loadingViewController animated:NO];
         [self.loadingViewController hideBezel];
         [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
@@ -852,7 +851,6 @@
 
     [self.delegate containerViewControllerDidDismiss:self];
     self.containerViewState = LIOContainerViewStateLoading;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     [self swapCurrentControllerWith:self.loadingViewController animated:NO];
     [self.loadingViewController hideBezel];
     [self dismissHeaderBarView:NO withState:LIOHeaderBarStateHidden];
@@ -1022,7 +1020,6 @@
     self.loadingViewController.delegate = self;
 
     self.containerViewState = LIOContainerViewStateLoading;
-    [self.headerBarView updateBackButtonVisibilityWithContainerState:self.containerViewState];
     [self addChildViewController:self.loadingViewController];
     self.loadingViewController.view.frame = self.contentView.bounds;
     [self.contentView addSubview:self.loadingViewController.view];
