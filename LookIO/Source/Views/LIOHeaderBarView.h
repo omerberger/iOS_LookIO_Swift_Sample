@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LIOContainerViewController.h"
 
 #define LIOHeaderBarViewDefaultHeight 32.0
 
@@ -26,6 +27,7 @@
 @property (nonatomic, assign) id<LIOHeaderBarViewDelegate> delegate;
 @property (nonatomic, readonly) LIONotificationArea* notificationArea;
 
+
 - (id)initWithFrame:(CGRect)frame statusBarInset:(CGFloat)anInset;
 
 - (void)revealNotificationString:(NSString *)aString withAnimatedKeyboard:(BOOL)animated permanently:(BOOL)permanent;
@@ -34,5 +36,6 @@
 
 - (void)updateStatusBarInset:(CGFloat)inset;
 - (void)rejiggerSubviews;
+- (void)updateBackButtonVisibilityWithContainerState:(LIOContainerViewState)containerState;
 
 @end
