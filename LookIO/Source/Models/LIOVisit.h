@@ -18,6 +18,7 @@ typedef enum
     LIOFunnelStateHotlead = 2,
     LIOFunnelStateInvitation = 3,
     LIOFunnelStateClicked = 4,
+    LIOFunnelStateNone = 5,
 } LIOFunnelState;
 
 typedef enum
