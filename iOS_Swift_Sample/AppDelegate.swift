@@ -15,7 +15,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        //Instansiating The main window:
+        self.window?.makeKeyAndVisible()
+        
+        //Geting Reference to the root ViewController & converting it to LIOLookIOManagerDelegate:
+        let initialViewController = self.window?.rootViewController as? protocol<LIOLookIOManagerDelegate>
+        
+        //Initializing LIOLookIOManager with the root Viewcontroller as delegate:
+        LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(initialViewController)
+        
+        //Select Backend Environment:
+        //LIOLookIOManager.sharedLookIOManager().performSelector(Selector("setStagingMode"))
+    
         return true
     }
 
