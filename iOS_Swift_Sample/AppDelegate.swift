@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         //Initializing LIOLookIOManager with the root Viewcontroller as delegate:
         LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(initialViewController)
-        
+    
         //Select Backend Environment:
         //LIOLookIOManager.sharedLookIOManager().performSelector(Selector("setStagingMode"))
     
