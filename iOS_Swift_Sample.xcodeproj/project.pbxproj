@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9A9F3D621D2F0EBF0001B07E /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9F3D5F1D2F0EBF0001B07E /* libLookIO.a */; };
+		9A9F3D631D2F0EBF0001B07E /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9F3D5F1D2F0EBF0001B07E /* libLookIO.a */; };
+		9A9F3D641D2F0EBF0001B07E /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9F3D5F1D2F0EBF0001B07E /* libLookIO.a */; };
+		9A9F3D651D2F0EBF0001B07E /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9F3D611D2F0EBF0001B07E /* LookIO.bundle */; };
+		9A9F3D661D2F0EBF0001B07E /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9F3D611D2F0EBF0001B07E /* LookIO.bundle */; };
+		9A9F3D671D2F0EBF0001B07E /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9F3D611D2F0EBF0001B07E /* LookIO.bundle */; };
 		9AE50F8F1D14420600C27FFE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50F8E1D14420600C27FFE /* AppDelegate.swift */; };
 		9AE50F911D14420600C27FFE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50F901D14420600C27FFE /* ViewController.swift */; };
 		9AE50F941D14420600C27FFE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9AE50F921D14420600C27FFE /* Main.storyboard */; };
@@ -24,11 +30,16 @@
 		9AE50FCB1D1443DA00C27FFE /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FCA1D1443DA00C27FFE /* Accelerate.framework */; };
 		9AE50FCD1D1443E100C27FFE /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FCC1D1443E100C27FFE /* CoreTelephony.framework */; };
 		9AE50FCF1D1443E900C27FFE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FCE1D1443E900C27FFE /* AudioToolbox.framework */; };
-		9AE50FE71D144ED100C27FFE /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9AE50FE61D144ED100C27FFE /* LookIO.bundle */; };
-		9AE50FE91D144EE800C27FFE /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FE81D144EE800C27FFE /* libLookIO.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9A9F3D591D2F0E390001B07E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A9F3D541D2F0E390001B07E /* LookIO.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D48ABEE41404607500835205;
+			remoteInfo = LookIO;
+		};
 		9AE50FA01D14420700C27FFE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9AE50F831D14420600C27FFE /* Project object */;
@@ -43,16 +54,13 @@
 			remoteGlobalIDString = 9AE50F8A1D14420600C27FFE;
 			remoteInfo = iOS_Swift_Sample;
 		};
-		9AE50FDE1D144E8E00C27FFE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9AE50FDA1D144E8E00C27FFE /* LookIO.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D48ABEE41404607500835205;
-			remoteInfo = LookIO;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9A9F3D541D2F0E390001B07E /* LookIO.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LookIO.xcodeproj; path = ios_lib/LookIO/LookIO.xcodeproj; sourceTree = SOURCE_ROOT; };
+		9A9F3D5F1D2F0EBF0001B07E /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = ios_lib/Sample/libLookIO_dist/libLookIO.a; sourceTree = SOURCE_ROOT; };
+		9A9F3D601D2F0EBF0001B07E /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = ios_lib/Sample/libLookIO_dist/LIOLookIOManager.h; sourceTree = SOURCE_ROOT; };
+		9A9F3D611D2F0EBF0001B07E /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = LookIO.bundle; path = ios_lib/Sample/libLookIO_dist/LookIO.bundle; sourceTree = SOURCE_ROOT; };
 		9AE50F8B1D14420600C27FFE /* iOS_Swift_Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS_Swift_Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AE50F8E1D14420600C27FFE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9AE50F901D14420600C27FFE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -77,10 +85,6 @@
 		9AE50FCC1D1443E100C27FFE /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		9AE50FCE1D1443E900C27FFE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		9AE50FD71D14449200C27FFE /* iOS_Swift_Sample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iOS_Swift_Sample-Bridging-Header.h"; sourceTree = "<group>"; };
-		9AE50FDA1D144E8E00C27FFE /* LookIO.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LookIO.xcodeproj; path = LookIO/LookIO/LookIO.xcodeproj; sourceTree = "<group>"; };
-		9AE50FE51D144EB900C27FFE /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = LookIO/LookIO/LIOLookIOManager.h; sourceTree = "<group>"; };
-		9AE50FE61D144ED100C27FFE /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = LookIO.bundle; path = LookIO/LookIO/LookIO.bundle; sourceTree = "<group>"; };
-		9AE50FE81D144EE800C27FFE /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = LookIO/LookIO/libLookIO.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,7 +93,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9AE50FCF1D1443E900C27FFE /* AudioToolbox.framework in Frameworks */,
-				9AE50FE91D144EE800C27FFE /* libLookIO.a in Frameworks */,
+				9A9F3D621D2F0EBF0001B07E /* libLookIO.a in Frameworks */,
 				9AE50FCD1D1443E100C27FFE /* CoreTelephony.framework in Frameworks */,
 				9AE50FCB1D1443DA00C27FFE /* Accelerate.framework in Frameworks */,
 				9AE50FC91D1443D400C27FFE /* libz.tbd in Frameworks */,
@@ -106,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A9F3D631D2F0EBF0001B07E /* libLookIO.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,12 +118,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A9F3D641D2F0EBF0001B07E /* libLookIO.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9A9F3D551D2F0E390001B07E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9A9F3D5A1D2F0E390001B07E /* libLookIO.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		9AE50F821D14420600C27FFE = {
 			isa = PBXGroup;
 			children = (
@@ -190,19 +204,11 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		9AE50FDB1D144E8E00C27FFE /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9AE50FDF1D144E8E00C27FFE /* libLookIO.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		9AE50FEA1D144F6E00C27FFE /* LookIO */ = {
 			isa = PBXGroup;
 			children = (
 				9AE50FEB1D144F7D00C27FFE /* Dependency */,
-				9AE50FDA1D144E8E00C27FFE /* LookIO.xcodeproj */,
+				9A9F3D541D2F0E390001B07E /* LookIO.xcodeproj */,
 			);
 			name = LookIO;
 			sourceTree = "<group>";
@@ -210,9 +216,9 @@
 		9AE50FEB1D144F7D00C27FFE /* Dependency */ = {
 			isa = PBXGroup;
 			children = (
-				9AE50FE81D144EE800C27FFE /* libLookIO.a */,
-				9AE50FE51D144EB900C27FFE /* LIOLookIOManager.h */,
-				9AE50FE61D144ED100C27FFE /* LookIO.bundle */,
+				9A9F3D5F1D2F0EBF0001B07E /* libLookIO.a */,
+				9A9F3D601D2F0EBF0001B07E /* LIOLookIOManager.h */,
+				9A9F3D611D2F0EBF0001B07E /* LookIO.bundle */,
 			);
 			name = Dependency;
 			sourceTree = "<group>";
@@ -310,8 +316,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 9AE50FDB1D144E8E00C27FFE /* Products */;
-					ProjectRef = 9AE50FDA1D144E8E00C27FFE /* LookIO.xcodeproj */;
+					ProductGroup = 9A9F3D551D2F0E390001B07E /* Products */;
+					ProjectRef = 9A9F3D541D2F0E390001B07E /* LookIO.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -324,11 +330,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		9AE50FDF1D144E8E00C27FFE /* libLookIO.a */ = {
+		9A9F3D5A1D2F0E390001B07E /* libLookIO.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libLookIO.a;
-			remoteRef = 9AE50FDE1D144E8E00C27FFE /* PBXContainerItemProxy */;
+			remoteRef = 9A9F3D591D2F0E390001B07E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -340,7 +346,7 @@
 			files = (
 				9AE50F991D14420600C27FFE /* LaunchScreen.storyboard in Resources */,
 				9AE50F961D14420600C27FFE /* Assets.xcassets in Resources */,
-				9AE50FE71D144ED100C27FFE /* LookIO.bundle in Resources */,
+				9A9F3D651D2F0EBF0001B07E /* LookIO.bundle in Resources */,
 				9AE50F941D14420600C27FFE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -349,6 +355,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A9F3D661D2F0EBF0001B07E /* LookIO.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,6 +363,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A9F3D671D2F0EBF0001B07E /* LookIO.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -519,6 +527,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOS_Swift_Sample",
 					"$(PROJECT_DIR)/iOS_Swift_Sample/LookIO/LookIO",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.look.omer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -539,6 +548,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOS_Swift_Sample",
 					"$(PROJECT_DIR)/iOS_Swift_Sample/LookIO/LookIO",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.look.omer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -552,6 +562,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = iOS_Swift_SampleTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS_Swift_Sample.app/iOS_Swift_Sample";
@@ -564,6 +578,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				INFOPLIST_FILE = iOS_Swift_SampleTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS_Swift_Sample.app/iOS_Swift_Sample";
@@ -575,6 +593,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = iOS_Swift_SampleUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_TARGET_NAME = iOS_Swift_Sample;
@@ -586,6 +608,10 @@
 			buildSettings = {
 				INFOPLIST_FILE = iOS_Swift_SampleUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_TARGET_NAME = iOS_Swift_Sample;
