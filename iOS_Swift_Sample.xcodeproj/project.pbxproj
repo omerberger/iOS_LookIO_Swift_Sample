@@ -33,13 +33,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9A9982921D2FF8DD00DB3C64 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9A99828D1D2FF8DD00DB3C64 /* LookIO.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D48ABEE41404607500835205;
-			remoteInfo = LookIO;
-		};
 		9AE50FA01D14420700C27FFE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9AE50F831D14420600C27FFE /* Project object */;
@@ -60,7 +53,6 @@
 		9A9982841D2FF7AD00DB3C64 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/libLookIO.a; sourceTree = "<group>"; };
 		9A9982851D2FF7AD00DB3C64 /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/LIOLookIOManager.h; sourceTree = "<group>"; };
 		9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = LookIO.bundle; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/LookIO.bundle; sourceTree = "<group>"; };
-		9A99828D1D2FF8DD00DB3C64 /* LookIO.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LookIO.xcodeproj; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/LookIO/LookIO.xcodeproj; sourceTree = "<group>"; };
 		9AE50F8B1D14420600C27FFE /* iOS_Swift_Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS_Swift_Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AE50F8E1D14420600C27FFE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9AE50F901D14420600C27FFE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -125,14 +117,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9A99828E1D2FF8DD00DB3C64 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9A9982931D2FF8DD00DB3C64 /* libLookIO.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		9AE50F821D14420600C27FFE = {
 			isa = PBXGroup;
 			children = (
@@ -208,7 +192,6 @@
 			isa = PBXGroup;
 			children = (
 				9AE50FEB1D144F7D00C27FFE /* Dependency */,
-				9A99828D1D2FF8DD00DB3C64 /* LookIO.xcodeproj */,
 			);
 			name = LookIO;
 			sourceTree = "<group>";
@@ -314,12 +297,6 @@
 			mainGroup = 9AE50F821D14420600C27FFE;
 			productRefGroup = 9AE50F8C1D14420600C27FFE /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 9A99828E1D2FF8DD00DB3C64 /* Products */;
-					ProjectRef = 9A99828D1D2FF8DD00DB3C64 /* LookIO.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				9AE50F8A1D14420600C27FFE /* iOS_Swift_Sample */,
@@ -328,16 +305,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		9A9982931D2FF8DD00DB3C64 /* libLookIO.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libLookIO.a;
-			remoteRef = 9A9982921D2FF8DD00DB3C64 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9AE50F891D14420600C27FFE /* Resources */ = {
