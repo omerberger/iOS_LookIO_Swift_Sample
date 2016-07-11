@@ -26,8 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(initialViewController)
     
         //Test SDK Version:
-        let v1 = LIOLookIOManager.sharedLookIOManager()
-        let v2 = LIOLookIOManager.sharedLookIOManager()
+        let v1 = LIOLookIOManager()
+        let v2 = LIOLookIOManager()
         print (v1 , v2)
         
         //Select Backend Environment:
