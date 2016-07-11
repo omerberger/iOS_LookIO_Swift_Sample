@@ -4,15 +4,17 @@
 
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "87247E127CD0CF6150FBF3FEA68C5DD226AFCD4E" : 0,
     "FB92CE33C074D49740D059C62AF939DAE39A4F94" : 0,
-    "61DFD8CE6D3D15FA717CE05E869483CE086420FC" : 0,
-    "10265E242415D473A6A613214DB7AC3EE3D43F93" : 0
+    "10265E242415D473A6A613214DB7AC3EE3D43F93" : 0,
+    "61DFD8CE6D3D15FA717CE05E869483CE086420FC" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "CB94B235-E4C9-4CE6-931B-97D7317C979D",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "87247E127CD0CF6150FBF3FEA68C5DD226AFCD4E" : "iOS_SampleApp_LookIO_SDK\/",
     "FB92CE33C074D49740D059C62AF939DAE39A4F94" : "iOS_Swift_Sample_LookIO_SDK\/",
-    "61DFD8CE6D3D15FA717CE05E869483CE086420FC" : "iOS_Swift_Sample_LookIO_SDK\/ios_lib\/",
-    "10265E242415D473A6A613214DB7AC3EE3D43F93" : "iOS_Swift_Sample_LookIO_SDK\/ios_lib\/KIF\/"
+    "10265E242415D473A6A613214DB7AC3EE3D43F93" : "iOS_Swift_Sample_LookIO_SDK\/ios_lib\/KIF\/",
+    "61DFD8CE6D3D15FA717CE05E869483CE086420FC" : "iOS_Swift_Sample_LookIO_SDK\/ios_lib\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "iOS_Swift_Sample",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
@@ -27,6 +29,11 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:omerberger\/ios_lib.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "61DFD8CE6D3D15FA717CE05E869483CE086420FC"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/omerberger\/ios-sample-app.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "87247E127CD0CF6150FBF3FEA68C5DD226AFCD4E"
     },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/omerberger\/iOS_LookIO_Swift_Sample.git",
