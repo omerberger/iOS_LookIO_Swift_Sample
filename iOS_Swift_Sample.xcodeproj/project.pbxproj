@@ -7,18 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9A9982871D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9982841D2FF7AD00DB3C64 /* libLookIO.a */; };
-		9A9982881D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9982841D2FF7AD00DB3C64 /* libLookIO.a */; };
-		9A9982891D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A9982841D2FF7AD00DB3C64 /* libLookIO.a */; };
-		9A99828A1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */; };
-		9A99828B1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */; };
-		9A99828C1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */; };
+		9A85477A1D382E18003D328F /* libLookIO.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A8547771D382E18003D328F /* libLookIO.a */; };
+		9A85477B1D382E18003D328F /* LookIO.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9A8547791D382E18003D328F /* LookIO.bundle */; };
 		9AE50F8F1D14420600C27FFE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50F8E1D14420600C27FFE /* AppDelegate.swift */; };
 		9AE50F911D14420600C27FFE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50F901D14420600C27FFE /* ViewController.swift */; };
 		9AE50F941D14420600C27FFE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9AE50F921D14420600C27FFE /* Main.storyboard */; };
 		9AE50F961D14420600C27FFE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9AE50F951D14420600C27FFE /* Assets.xcassets */; };
 		9AE50F991D14420600C27FFE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9AE50F971D14420600C27FFE /* LaunchScreen.storyboard */; };
-		9AE50FA41D14420700C27FFE /* iOS_Swift_SampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50FA31D14420700C27FFE /* iOS_Swift_SampleTests.swift */; };
 		9AE50FAF1D14420700C27FFE /* iOS_Swift_SampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE50FAE1D14420700C27FFE /* iOS_Swift_SampleUITests.swift */; };
 		9AE50FBD1D1443A500C27FFE /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FBC1D1443A500C27FFE /* MapKit.framework */; };
 		9AE50FBF1D1443AC00C27FFE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AE50FBE1D1443AC00C27FFE /* CoreText.framework */; };
@@ -33,13 +28,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9AE50FA01D14420700C27FFE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9AE50F831D14420600C27FFE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9AE50F8A1D14420600C27FFE;
-			remoteInfo = iOS_Swift_Sample;
-		};
 		9AE50FAB1D14420700C27FFE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9AE50F831D14420600C27FFE /* Project object */;
@@ -50,9 +38,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		9A9982841D2FF7AD00DB3C64 /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLookIO.a; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/libLookIO.a; sourceTree = "<group>"; };
-		9A9982851D2FF7AD00DB3C64 /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LIOLookIOManager.h; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/LIOLookIOManager.h; sourceTree = "<group>"; };
-		9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = LookIO.bundle; path = ../../iOS_SampleApp_LookIO_SDK/ios_lib/Sample/libLookIO_dist/LookIO.bundle; sourceTree = "<group>"; };
+		9A8547771D382E18003D328F /* libLookIO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libLookIO.a; sourceTree = "<group>"; };
+		9A8547781D382E18003D328F /* LIOLookIOManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LIOLookIOManager.h; sourceTree = "<group>"; };
+		9A8547791D382E18003D328F /* LookIO.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = LookIO.bundle; sourceTree = "<group>"; };
 		9AE50F8B1D14420600C27FFE /* iOS_Swift_Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS_Swift_Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AE50F8E1D14420600C27FFE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9AE50F901D14420600C27FFE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -60,7 +48,6 @@
 		9AE50F951D14420600C27FFE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9AE50F981D14420600C27FFE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9AE50F9A1D14420600C27FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9AE50F9F1D14420700C27FFE /* iOS_Swift_SampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOS_Swift_SampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AE50FA31D14420700C27FFE /* iOS_Swift_SampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOS_Swift_SampleTests.swift; sourceTree = "<group>"; };
 		9AE50FA51D14420700C27FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9AE50FAA1D14420700C27FFE /* iOS_Swift_SampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOS_Swift_SampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,7 +72,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9AE50FCF1D1443E900C27FFE /* AudioToolbox.framework in Frameworks */,
-				9A9982871D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */,
+				9A85477A1D382E18003D328F /* libLookIO.a in Frameworks */,
 				9AE50FCD1D1443E100C27FFE /* CoreTelephony.framework in Frameworks */,
 				9AE50FCB1D1443DA00C27FFE /* Accelerate.framework in Frameworks */,
 				9AE50FC91D1443D400C27FFE /* libz.tbd in Frameworks */,
@@ -98,19 +85,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9AE50F9C1D14420700C27FFE /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9A9982881D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9AE50FA71D14420700C27FFE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9A9982891D2FF7AD00DB3C64 /* libLookIO.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,7 +110,6 @@
 			isa = PBXGroup;
 			children = (
 				9AE50F8B1D14420600C27FFE /* iOS_Swift_Sample.app */,
-				9AE50F9F1D14420700C27FFE /* iOS_Swift_SampleTests.xctest */,
 				9AE50FAA1D14420700C27FFE /* iOS_Swift_SampleUITests.xctest */,
 			);
 			name = Products;
@@ -199,9 +176,9 @@
 		9AE50FEB1D144F7D00C27FFE /* Dependency */ = {
 			isa = PBXGroup;
 			children = (
-				9A9982841D2FF7AD00DB3C64 /* libLookIO.a */,
-				9A9982851D2FF7AD00DB3C64 /* LIOLookIOManager.h */,
-				9A9982861D2FF7AD00DB3C64 /* LookIO.bundle */,
+				9A8547771D382E18003D328F /* libLookIO.a */,
+				9A8547781D382E18003D328F /* LIOLookIOManager.h */,
+				9A8547791D382E18003D328F /* LookIO.bundle */,
 			);
 			name = Dependency;
 			sourceTree = "<group>";
@@ -225,24 +202,6 @@
 			productName = iOS_Swift_Sample;
 			productReference = 9AE50F8B1D14420600C27FFE /* iOS_Swift_Sample.app */;
 			productType = "com.apple.product-type.application";
-		};
-		9AE50F9E1D14420700C27FFE /* iOS_Swift_SampleTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 9AE50FB61D14420700C27FFE /* Build configuration list for PBXNativeTarget "iOS_Swift_SampleTests" */;
-			buildPhases = (
-				9AE50F9B1D14420700C27FFE /* Sources */,
-				9AE50F9C1D14420700C27FFE /* Frameworks */,
-				9AE50F9D1D14420700C27FFE /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				9AE50FA11D14420700C27FFE /* PBXTargetDependency */,
-			);
-			name = iOS_Swift_SampleTests;
-			productName = iOS_Swift_SampleTests;
-			productReference = 9AE50F9F1D14420700C27FFE /* iOS_Swift_SampleTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		9AE50FA91D14420700C27FFE /* iOS_Swift_SampleUITests */ = {
 			isa = PBXNativeTarget;
@@ -274,14 +233,12 @@
 				TargetAttributes = {
 					9AE50F8A1D14420600C27FFE = {
 						CreatedOnToolsVersion = 7.3.1;
-						DevelopmentTeam = NL7DYKLAH5;
-					};
-					9AE50F9E1D14420700C27FFE = {
-						CreatedOnToolsVersion = 7.3.1;
-						TestTargetID = 9AE50F8A1D14420600C27FFE;
+						DevelopmentTeam = 7A76CR8BD8;
+						LastSwiftMigration = 0800;
 					};
 					9AE50FA91D14420700C27FFE = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 						TestTargetID = 9AE50F8A1D14420600C27FFE;
 					};
 				};
@@ -300,7 +257,6 @@
 			projectRoot = "";
 			targets = (
 				9AE50F8A1D14420600C27FFE /* iOS_Swift_Sample */,
-				9AE50F9E1D14420700C27FFE /* iOS_Swift_SampleTests */,
 				9AE50FA91D14420700C27FFE /* iOS_Swift_SampleUITests */,
 			);
 		};
@@ -313,16 +269,8 @@
 			files = (
 				9AE50F991D14420600C27FFE /* LaunchScreen.storyboard in Resources */,
 				9AE50F961D14420600C27FFE /* Assets.xcassets in Resources */,
-				9A99828A1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */,
+				9A85477B1D382E18003D328F /* LookIO.bundle in Resources */,
 				9AE50F941D14420600C27FFE /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		9AE50F9D1D14420700C27FFE /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9A99828B1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,7 +278,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9A99828C1D2FF7AD00DB3C64 /* LookIO.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,14 +293,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9AE50F9B1D14420700C27FFE /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9AE50FA41D14420700C27FFE /* iOS_Swift_SampleTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		9AE50FA61D14420700C27FFE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -365,11 +304,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9AE50FA11D14420700C27FFE /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 9AE50F8A1D14420600C27FFE /* iOS_Swift_Sample */;
-			targetProxy = 9AE50FA01D14420700C27FFE /* PBXContainerItemProxy */;
-		};
 		9AE50FAC1D14420700C27FFE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9AE50F8A1D14420600C27FFE /* iOS_Swift_Sample */;
@@ -488,6 +422,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7A76CR8BD8;
 				INFOPLIST_FILE = iOS_Swift_Sample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -498,6 +433,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS_Swift_Sample/iOS_Swift_Sample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Debug;
 		};
@@ -507,6 +443,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7A76CR8BD8;
 				INFOPLIST_FILE = iOS_Swift_Sample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -516,38 +453,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.look.omer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS_Swift_Sample/iOS_Swift_Sample-Bridging-Header.h";
-			};
-			name = Release;
-		};
-		9AE50FB71D14420700C27FFE /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				INFOPLIST_FILE = iOS_Swift_SampleTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS_Swift_Sample.app/iOS_Swift_Sample";
-			};
-			name = Debug;
-		};
-		9AE50FB81D14420700C27FFE /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				INFOPLIST_FILE = iOS_Swift_SampleTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios_lib/Sample/libLookIO_dist",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOS_Swift_Sample.app/iOS_Swift_Sample";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Release;
 		};
@@ -562,6 +468,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 				TEST_TARGET_NAME = iOS_Swift_Sample;
 			};
 			name = Debug;
@@ -577,6 +484,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "io.look.omer.iOS-Swift-SampleUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 				TEST_TARGET_NAME = iOS_Swift_Sample;
 			};
 			name = Release;
@@ -598,15 +506,6 @@
 			buildConfigurations = (
 				9AE50FB41D14420700C27FFE /* Debug */,
 				9AE50FB51D14420700C27FFE /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		9AE50FB61D14420700C27FFE /* Build configuration list for PBXNativeTarget "iOS_Swift_SampleTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9AE50FB71D14420700C27FFE /* Debug */,
-				9AE50FB81D14420700C27FFE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

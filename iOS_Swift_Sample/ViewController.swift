@@ -8,53 +8,64 @@
 
 import UIKit
 
-
-
-
-/*
- ***   LookIO properties and methodes:  ***
- 
- let isChatEnabledForSkill : Bool  =   LIOLookIOManager.sharedLookIOManager().isChatEnabledForSkill("mobile")
- let isChatEnabledForSkillforAccount : Bool  =   LIOLookIOManager.sharedLookIOManager().isChatEnabledForSkill("mobile", forAccount: "P74505730")
- LIOLookIOManager.sharedLookIOManager().beginChat()
- LIOLookIOManager.sharedLookIOManager().beginChatWithSkill("mobile")
- LIOLookIOManager.sharedLookIOManager().beginChatWithSkill("mobile", withAccount: "P74505730")
- LIOLookIOManager.sharedLookIOManager().endChatAndShowAlert(true)
- LIOLookIOManager.sharedLookIOManager().setChatDisabled(false)
- LIOLookIOManager.sharedLookIOManager().setChatAvailable()
- LIOLookIOManager.sharedLookIOManager().setChatUnavailable()
- LIOLookIOManager.sharedLookIOManager().setInvitationShown()
- LIOLookIOManager.sharedLookIOManager().setInvitationNotShown()
- LIOLookIOManager.sharedLookIOManager().setSkill("cat")
- LIOLookIOManager.sharedLookIOManager().setSkill("cat", withAccount: "P74505730")
- LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent")
- LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent",
- withData: ["SomeDataKey_1":"SomeDataValue_1", "SomeDataKey_2":"SomeDataValue_2"])
- LIOLookIOManager.sharedLookIOManager().addCustomVariables(["CustomVariableKey_1":"CustomVariable_1", "CustomVariableKey_2":"CustomVariable_2"])
- LIOLookIOManager.sharedLookIOManager().setCustomVariable(["CustomVariableKey_1":"CustomVariable_1", "CustomVariableKey_2":"CustomVariable_2"],forKey: "SomeKey")
- LIOLookIOManager.sharedLookIOManager().customVariableForKey("SomeKey")
- */
-
-
 // MARK: - Lifecycle:
 
-
-private var ObserverClassContext = 0
-
 class ViewController: UIViewController ,LIOLookIOManagerDelegate{
+    var customChatButton : UIButton = UIButton()
+    let authenticatedUserId:NSString = "23"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
+        }
     
+
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-    }
-    
+        
+         LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(nil)
+        LIOLookIOManager.sharedLookIOManager().delegate = self
+        
+        //[[LIOLookIOManager sharedLookIOManager] reportEvent:kLPEventPageView withData:@"page_detail_abc"];
+        
+        // To report a sign up event:
+        // [[LIOLookIOManager sharedLookIOManager] reportEvent:kLPEventSignUp];
+        
+        // To report an item that was added to the cart:
+        //[[LIOLookIOManager sharedLookIOManager] reportEvent:kLPEventAddedToCart withData:@"product_name"];
+        
+        
+        //        LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent")
+        //        LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent",
+        //        withData: ["SomeDataKey_1":"SomeDataValue_1", "SomeDataKey_2":"SomeDataValue_2"])
+        }
     
     // MARK: - Lookio Delegate
+    
+    /*
+     ***   LookIO properties and methodes:  ***
+     
+     let isChatEnabledForSkill : Bool  =   LIOLookIOManager.sharedLookIOManager().isChatEnabledForSkill("mobile")
+     let isChatEnabledForSkillforAccount : Bool  =   LIOLookIOManager.sharedLookIOManager().isChatEnabledForSkill("mobile", forAccount: "P74505730")
+     LIOLookIOManager.sharedLookIOManager().beginChat()
+     LIOLookIOManager.sharedLookIOManager().beginChatWithSkill("mobile")
+     LIOLookIOManager.sharedLookIOManager().beginChatWithSkill("mobile", withAccount: "P74505730")
+     LIOLookIOManager.sharedLookIOManager().endChatAndShowAlert(true)
+     LIOLookIOManager.sharedLookIOManager().setChatDisabled(false)
+     LIOLookIOManager.sharedLookIOManager().setChatAvailable()
+     LIOLookIOManager.sharedLookIOManager().setChatUnavailable()
+     LIOLookIOManager.sharedLookIOManager().setInvitationShown()
+     LIOLookIOManager.sharedLookIOManager().setInvitationNotShown()
+     LIOLookIOManager.sharedLookIOManager().setSkill("cat")
+     LIOLookIOManager.sharedLookIOManager().setSkill("cat", withAccount: "P74505730")
+     LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent")
+     LIOLookIOManager.sharedLookIOManager().reportEvent("SomeEvent",
+     withData: ["SomeDataKey_1":"SomeDataValue_1", "SomeDataKey_2":"SomeDataValue_2"])
+     LIOLookIOManager.sharedLookIOManager().addCustomVariables(["CustomVariableKey_1":"CustomVariable_1", "CustomVariableKey_2":"CustomVariable_2"])
+     LIOLookIOManager.sharedLookIOManager().setCustomVariable(["CustomVariableKey_1":"CustomVariable_1", "CustomVariableKey_2":"CustomVariable_2"],forKey: "SomeKey")
+     LIOLookIOManager.sharedLookIOManager().customVariableForKey("SomeKey")
+     */
+
     
     func lookIOManager(aManager: LIOLookIOManager!, onEvent eventName: String!, withParameters parameters: [NSObject : AnyObject]!) -> Void {
         
@@ -80,7 +91,7 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
     
     func lookIOManagerDidShowControlButton(aManager: LIOLookIOManager!) -> Void {
         
-        print("LIODidShowControlButton")
+         print("LIODidShowControlButton")
         
     }
     
@@ -97,7 +108,11 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
     }
     
     func lookIOManagerDidEndChat(aManager: LIOLookIOManager!) -> Void {
-        
+ 
+        let alertController = UIAlertController(title: "Thanks!", message: "Thanks for chatting with us!", preferredStyle: UIAlertControllerStyle.Alert)
+
+        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
+
         print("LIODidEndChat")
         
     }
@@ -116,8 +131,7 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
     
     func lookIOManagerEnabledCollaborationComponents(aManager: LIOLookIOManager!) -> UInt32 {
         
-        print("Submit Number of LIOEnabledCollaborationComponents")
-        return 0
+        return UInt32(kLPCollaborationComponentPhoto)
     }
     
     func lookIOManagerShouldUseCustomActionForChatNotAnswered(aManager: LIOLookIOManager!) -> Bool {
@@ -127,8 +141,10 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
     }
     
     func lookIOManagerCustomActionForChatNotAnswered(aManager: LIOLookIOManager!) -> Void {
-        
-        print("LIOChatNotAnswered")
+    
+        let alert = UIAlertController(title: "No agents are available", message: "No agents are available. Please try again later.", preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
+
     }
     
     func lookIOManagerShouldCacheChatMessagesForReconnect(aManager: LIOLookIOManager!) -> Bool {
@@ -153,8 +169,19 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
     }
     
     func lookIOManagerSingleSignOnKeyGenURL(aManager: LIOLookIOManager!) -> NSURL! {
+//        
+//        let ssoURLString : NSString = "https://www.example.com/ssoKeyGen?userId="+(self.authenticatedUserId as String);
+//        
+//        return NSURL(string: ssoURLString as String)
         
-        print("Submit a URL for LIOSingleSignOnKeyGenURL")
+
+       // print("Submit a URL for LIOSingleSignOnKeyGenURL")
+       // let ssoURLString : NSString =
+        
+        //NSString *ssoURLString = [NSString stringWithFormat:@"https://www.example.com/ssoKeyGen?userId=%@", self.authenticatedUserId];
+        //return [NSURL URLWithString:ssoURLString];
+
+        
         return nil
     }
     
@@ -189,5 +216,6 @@ class ViewController: UIViewController ,LIOLookIOManagerDelegate{
         print("Submit a flag if support LIODeprecatedXcodeVersions")
         return false
     }
+    
     
 }

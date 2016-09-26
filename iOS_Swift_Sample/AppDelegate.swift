@@ -20,19 +20,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window?.makeKeyAndVisible()
         
         //Geting Reference to the root ViewController & converting it to LIOLookIOManagerDelegate:
-        let initialViewController = self.window?.rootViewController as? protocol<LIOLookIOManagerDelegate>
-        
-        //Initializing LIOLookIOManager with the root Viewcontroller as delegate:
-        LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(initialViewController)
-    
-        //Test SDK Version:
-        let v1 = LIOLookIOManager()
-        let v2 = LIOLookIOManager()
-        print (v1 , v2)
+        //let initialViewController = self.window?.rootViewController as? LIOLookIOManagerDelegate
         
         //Select Backend Environment:
-        //LIOLookIOManager.sharedLookIOManager().performSelector(Selector("setStagingMode"))
-    
+         LIOLookIOManager.sharedLookIOManager().performSelector(Selector("setStagingMode"))
+
+        //Initializing LIOLookIOManager with the root Viewcontroller as delegate:
+        
+        //LIOLookIOManager.sharedLookIOManager().performSetupWithDelegate(nil)
+        //LIOLookIOManager.sharedLookIOManager().setSkill("skillname")
+        
+        //Test SDK Version:
+        //let v1 = LIOLookIOManager()
+        //let v2 = LIOLookIOManager()
+        //print (v1 , v2)
+        
+        
         return true
     }
 
